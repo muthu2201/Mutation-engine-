@@ -76,6 +76,8 @@ class EngineConfig(BaseModel):
     # only their carrying genes whose locus means the same thing here (shared database/kernel
     # knobs with an identical specification), and use their operator evidence as priors
     lake_transfer: bool = False
+    # learned CRL rules from the lake as a search operator (one rule_apply arm per rule)
+    rules: bool = False
 
     def resolved(self, key: str) -> str:
         return getattr(self, key).replace("{name}", self.name)

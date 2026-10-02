@@ -121,7 +121,7 @@ C_FORBIDDEN = re.compile(
 
 
 # ---------------------------------------------------------------------------- SQL
-SQL_FIRST_WORD = re.compile(r"^[\s(]*([A-Za-z]+)")
+SQL_FIRST_WORD = re.compile(r"^[\s(]*([A-Za-z]+)(?=\s|;|$)")  # a keyword followed by whitespace, not "create_order" or "listen: %v"
 SQL_STATEMENT_WORDS = {
     "SELECT", "INSERT", "UPDATE", "DELETE", "WITH", "VALUES", "TABLE", "MERGE", "CREATE", "DROP", "ALTER", "TRUNCATE", "SET", "RESET",
     "SHOW", "DO", "COPY", "LOCK", "PREPARE", "EXECUTE", "DEALLOCATE", "DISCARD", "LISTEN", "NOTIFY", "UNLISTEN", "BEGIN", "COMMIT",
@@ -228,7 +228,7 @@ def scan_go(new_source: str, baseline_source: str, name: str, file: Path) -> lis
     if res.returncode != 0:
         return [f"policy scanner error: {res.stderr.strip()[:300]}"]
     data = json.loads(res.stdout)
-    return sorted(set(data["reasons"]) | set(scan_sql(data["strings"])))
+    return sorted(set(data["reasons"] or ()) | set(scan_sql(data["strings"] or ())))
 
 
 @dataclass(frozen=True)

@@ -5,7 +5,7 @@ against baseline, is worth more than the run that found it. The lake keeps that 
 across runs, days, machines and targets, so each new run starts from what earlier runs proved
 instead of from zero.
 
-Two kinds of record:
+Three kinds of record:
 
 * **gene** - one change at one locus: the locus in language- and platform-neutral terms
   (unit path, surface, layer, language), the payload (new source text or knob value), the
@@ -17,6 +17,9 @@ Two kinds of record:
   them, holdout persistence, attribution (Shapley / ablation), the A/A noise floor in force,
   the platform fingerprint, the run and engine commit, and links to earlier program records
   it extends (``derived_from``).
+* **rule** - a CRL rule (``colloid.core.rules``) mined from program records: its canonical
+  text, its meaning-only ``rule_id``, and the evidence (program record ids, gains and CIs) it
+  generalises. A rule is a candidate generator for the search side, never a verdict.
 
 **Addressing.** A record's id is ``sha256(schema || canonical JSON of its content)``.
 Canonical JSON means sorted keys, no whitespace, UTF-8, and no NaN/Infinity, so the id is a
@@ -45,10 +48,11 @@ from typing import Any
 
 SCHEMA = "colloid.mutation/1"
 GENESIS = "0" * 64
-KINDS = ("gene", "program")
+KINDS = ("gene", "program", "rule")
 REQUIRED: dict[str, tuple[str, ...]] = {
     "gene": ("locus", "payload_kind", "payload", "explain", "provenance"),
     "program": ("target", "genes", "effects", "status", "platform"),
+    "rule": ("name", "version", "rule_id", "text", "evidence"),
 }
 
 

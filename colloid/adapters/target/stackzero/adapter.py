@@ -146,6 +146,10 @@ class StackZeroTarget:
     def knobs(self) -> Sequence[KnobSpec]:
         return self._knobs
 
+    def schema_sql(self) -> str:
+        """The database schema script (primary keys are the indexes every stack starts with)."""
+        return (self.root / "db" / "schema.sql").read_text()
+
     def knob(self, name: str) -> KnobSpec:
         return self._knob_by_name[name]
 

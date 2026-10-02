@@ -131,6 +131,9 @@ class StackZeroGoTarget(StackZeroTarget):
     def knobs(self) -> Sequence[KnobSpec]:
         return self._knobs
 
+    def schema_sql(self) -> str:
+        return (SHARED_DB / "schema.sql").read_text()
+
     def regions(self) -> Sequence[Region]:
         return regions()
 

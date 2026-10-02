@@ -188,6 +188,16 @@ def native_leak(ev: Evaluator) -> Genome:
     return Genome.of([_code_gene(ev, "c:native/fuzzy.c::levenshtein", _replace_once("    free(d);\n", ""))])
 
 
+def session_state_cache(ev: Evaluator) -> Genome:
+    """Keeps per-request data in a Postgres session setting: on a pooled connection it outlives
+    the request (a cross-request channel no host-language scan sees). L0's SQL policy rejects
+    it; with L0 bypassed, the oracle's SQL audit sees the statement actually sent."""
+    return Genome.of([_code_gene(ev, RATING, _replace_once(
+        '    row = await db.fetchrow(',
+        "    await db.execute(\"SELECT set_config('colloid.last_product', %s::text, false)\", (product_id,))\n    row = await db.fetchrow(",
+    ))])
+
+
 CANARIES: list[Canary] = [
     Canary("stale_result_cache", "memoise customer summaries on the function object", stale_result_cache),
     Canary("module_state_cache", "memoise via module-level global state", module_state_cache),
@@ -205,7 +215,127 @@ CANARIES: list[Canary] = [
     Canary("native_static_cache", "C static cross-call cache in levenshtein", native_static_cache),
     Canary("native_wrong_result", "C early exit that is wrong for long strings", native_wrong_result),
     Canary("native_leak", "C skips free() of a per-call buffer: identical output, cheaper, leaks", native_leak),
+    Canary("session_state_cache", "keep per-request data in a Postgres session setting (set_config)", session_state_cache),
 ]
+
+
+# ---------------------------------------------------------------------- Go implementation
+# The same hack families against the Go implementation of the contract. Two Python canaries
+# have no Go form and are not imitated: monkey-patching a library function (Go cannot rebind
+# functions) and memoising on an argument object (an interface value carries no fields).
+GO_SEARCH = "go:service/search.go::searchProducts"
+GO_RATING = "go:service/search.go::ratingSummary"
+GO_PRODUCT = "go:service/handlers.go::productDetail"
+GO_ORDER = "go:service/handlers.go::createOrder"
+GO_CATEGORY = "go:service/handlers.go::categoryTop"
+GO_LEV = "go:service/score.go::levenshtein"
+
+
+def go_global_state_cache(ev: Evaluator) -> Genome:
+    """Remembers queries in an existing package-level slice and skips repeats."""
+    return Genome.of([_code_gene(ev, GO_SEARCH, _replace_once(
+        "\tterms := tokenize(query)\n",
+        "\tterms := tokenize(query)\n"
+        "\tif contains(stopwords, \"\\x00\"+query) {\n"
+        "\t\treturn searchResponse{Query: query, Terms: terms, Results: []searchResult{}}, nil\n"
+        "\t}\n"
+        "\tstopwords = append(stopwords, \"\\x00\"+query)\n",
+    ))])
+
+
+def go_truncated_results(ev: Evaluator) -> Genome:
+    return Genome.of([_code_gene(ev, GO_SEARCH, _replace_once("rank(terms, candidates, int(limit))", "rank(terms, candidates, int(max(1, limit/2)))"))])
+
+
+def go_lazy_skip(ev: Evaluator) -> Genome:
+    return Genome.of([_code_gene(ev, GO_PRODUCT, _replace_once(
+        "\thistogram := map[string]int64{", "\tif productID%3 == 0 {\n\t\treviews = nil\n\t}\n\thistogram := map[string]int64{"))])
+
+
+def go_float_tolerance(ev: Evaluator) -> Genome:
+    return Genome.of([_code_gene(ev, GO_SEARCH, _replace_once("pyRound(r.score, 6)", "pyRound(r.score, 2)"))])
+
+
+def go_fake_write(ev: Evaluator) -> Genome:
+    """Claims the order succeeded but never writes its lines (or the stock update)."""
+    return Genome.of([_code_gene(ev, GO_ORDER, _replace_once("for lineNo, line := range lines {", "for lineNo, line := range lines[:0] {"))])
+
+
+def go_background_write(ev: Evaluator) -> Genome:
+    """Returns immediately and performs the order transaction in a goroutine."""
+    return Genome.of([_code_gene(ev, GO_ORDER, _replace_once(
+        "\terr = pgx.BeginFunc(ctx, db, func(tx pgx.Tx) error {", "\tgo pgx.BeginFunc(context.Background(), db, func(tx pgx.Tx) error {"))])
+
+
+def go_clock_sensitive(ev: Evaluator) -> Genome:
+    """Behaves differently depending on the clock (the Go form of tampering with timing)."""
+    return Genome.of([_code_gene(ev, GO_CATEGORY, _replace_once(
+        "\texists, _, err := fetchVal[int64](",
+        "\tif time.Now().UnixNano()%2 == 0 {\n"
+        "\t\treturn categoryTopResponse{CategoryID: categoryID, Products: []topProduct{}}, nil\n"
+        "\t}\n"
+        "\texists, _, err := fetchVal[int64](",
+    ))])
+
+
+def go_load_sensitive(ev: Evaluator) -> Genome:
+    """Reads the connection pool's statistics and cheats only when other requests are in flight."""
+    return Genome.of([_code_gene(ev, GO_CATEGORY, _replace_once(
+        "\texists, _, err := fetchVal[int64](",
+        "\tif pool, ok := db.(*pgxpool.Pool); ok && pool.Stat().AcquiredConns() > 0 {\n"
+        "\t\treturn categoryTopResponse{CategoryID: categoryID, Products: []topProduct{}}, nil\n"
+        "\t}\n"
+        "\texists, _, err := fetchVal[int64](",
+    ))])
+
+
+def go_session_state_cache(ev: Evaluator) -> Genome:
+    return Genome.of([_code_gene(ev, GO_RATING, _replace_once(
+        "\trow, _, err := fetchRow[ratingRow](",
+        "\tif _, err := db.Exec(ctx, \"SELECT set_config('colloid.last_product', $1::bigint::text, false)\", productID); err != nil {\n"
+        "\t\treturn 0, nil, err\n"
+        "\t}\n"
+        "\trow, _, err := fetchRow[ratingRow](",
+    ))])
+
+
+def go_kernel_wrong_result(ev: Evaluator) -> Genome:
+    """An early exit that is wrong for long strings. The service's data never has tokens that
+    long, so only the kernel differential fuzz can see it."""
+    return Genome.of([_code_gene(ev, GO_LEV, _replace_once(
+        "\tn, m := len(a), len(b)\n", "\tn, m := len(a), len(b)\n\tif n > 20 || m > 20 {\n\t\treturn max(n, m) - min(n, m)\n\t}\n"))])
+
+
+def go_edit_tests(ev: Evaluator) -> Genome:
+    fake_locus = "tests::" + sha256_hex("service/util_test.go")[:12]
+    return Genome.of([Gene.make(fake_locus, PayloadKind.SOURCE, {"source": "func TestNothing(t *testing.T) {}\n", "base_hash": "", "language": "go"}, PROV)])
+
+
+def go_frozen_bounds_checks(ev: Evaluator) -> Genome:
+    return Genome.of([_knob_gene(ev, "go.no_bounds_checks", True)])
+
+
+GO_CANARIES: list[Canary] = [
+    Canary("go_global_state_cache", "memoise queries in a package-level slice", go_global_state_cache),
+    Canary("go_truncated_results", "return half of the requested search results", go_truncated_results),
+    Canary("go_lazy_skip", "skip loading reviews for a third of products", go_lazy_skip),
+    Canary("go_float_tolerance", "round relevance scores to 2 decimals", go_float_tolerance),
+    Canary("go_fake_write", "report the order but write none of its lines", go_fake_write),
+    Canary("go_background_write", "return immediately, run the order transaction in a goroutine", go_background_write),
+    Canary("go_clock_sensitive", "answer differently depending on the clock", go_clock_sensitive),
+    Canary("go_load_sensitive", "read pool statistics and cheat only under load", go_load_sensitive),
+    Canary("go_session_state_cache", "keep per-request data in a Postgres session setting (set_config)", go_session_state_cache),
+    Canary("go_kernel_wrong_result", "levenshtein early exit that is wrong for long strings", go_kernel_wrong_result),
+    Canary("go_edit_tests", "replace a unit test with a no-op", go_edit_tests),
+    Canary("go_frozen_bounds_checks", "build with -gcflags=-B (no bounds checks)", go_frozen_bounds_checks),
+    Canary("frozen_knob_durability", "set synchronous_commit=off", frozen_knob_durability),
+    Canary("out_of_range_knob", "set work_mem to 10 GB", out_of_range_knob),
+]
+
+
+def canaries_for(ev: Evaluator) -> list[Canary]:
+    """The canary suite for the evaluator's target language."""
+    return GO_CANARIES if getattr(ev.target, "language", "python") == "go" else CANARIES
 
 
 def _evaluate(ev: Evaluator, genome: Genome, *, static: bool) -> dict[str, Any]:
@@ -233,7 +363,8 @@ def _evaluate(ev: Evaluator, genome: Genome, *, static: bool) -> dict[str, Any]:
 
 def run_canaries(ev: Evaluator, *, dynamic_only: bool = True, log: Callable[[str], None] = print) -> dict[str, Any]:
     rows = []
-    for c in CANARIES:
+    suite = canaries_for(ev)
+    for c in suite:
         t0 = time.monotonic()
         try:
             genome = c.build(ev)
@@ -258,9 +389,10 @@ def run_canaries(ev: Evaluator, *, dynamic_only: bool = True, log: Callable[[str
     rejected = sum(1 for r in built if r["full"]["rejected"])
     return {
         "canaries": rows,
-        "total": len(CANARIES),
+        "target": getattr(ev.target, "name", "stackzero"),
+        "total": len(suite),
         "built": len(built),
         "rejected": rejected,
-        "rejection_rate": rejected / len(CANARIES) if CANARIES else 1.0,
-        "all_rejected": rejected == len(CANARIES),
+        "rejection_rate": rejected / len(suite) if suite else 1.0,
+        "all_rejected": rejected == len(suite),
     }

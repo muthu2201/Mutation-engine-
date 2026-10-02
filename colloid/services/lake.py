@@ -216,7 +216,7 @@ def verify(lake: LakeStore) -> dict[str, Any]:
     if orphans:
         raise ChainError(f"{len(orphans)} record(s) present but never entered in the ledger, e.g. {orphans[0][:12]}")
     return {"location": lake.location, "head": h, "entries": len(entries), "genes": sum(1 for e in entries if e.kind == "gene"),
-            "programs": sum(1 for e in entries if e.kind == "program"),
+            "programs": sum(1 for e in entries if e.kind == "program"), "rules": sum(1 for e in entries if e.kind == "rule"),
             "oldest": entries[0].recorded_at if entries else None, "newest": entries[-1].recorded_at if entries else None}
 
 
@@ -228,6 +228,8 @@ def listing(lake: LakeStore) -> list[dict[str, Any]]:
         row: dict[str, Any] = {"seq": e.seq, "recorded_at": e.recorded_at, "kind": e.kind, "id": e.record, "entry_hash": e.entry_hash}
         if e.kind == "gene":
             row["what"] = r.content["explain"]
+        elif e.kind == "rule":
+            row["what"] = f"CRL rule {r.content['name']} v{r.content['version']} ({len(r.content['evidence'])} evidence)"
         else:
             cost = r.content["effects"].get("cost") or {}
             row["what"] = (f"{len(r.content['genes'])} genes, {r.content['status']}, cost {cost.get('gain_pct')}% "

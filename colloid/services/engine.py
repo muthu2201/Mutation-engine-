@@ -139,6 +139,7 @@ class Engine:
                 self.tele.emit("profile.failed", error=repr(exc)[:300])
         if self.cfg.aa_runs:
             self._aa_test()
+        self._load_rules()
         self._build_islands()
         self._lake_priors()
         self.store.put_atlas(self.atlas)
@@ -214,7 +215,32 @@ class Engine:
         for a in self.cfg.llm_arms:
             for tmpl in a.templates:
                 arms.append(("llm_rewrite", a.model, tmpl))
+        for rule in sorted(self.factory.rule_options):
+            arms.append(("rule_apply", None, rule))
         return arms
+
+    def _load_rules(self) -> None:
+        """CRL rules from the lake become ``rule_apply`` arms: each rule's proposals for *this*
+        stack, mapped onto its index knobs (``services.rules``). Only with ``rules: true``."""
+        if not (self.cfg.rules and self.cfg.lake):
+            return
+        from colloid.adapters.lake import open_lake
+        from colloid.services import rules as rules_svc
+
+        try:
+            rules = rules_svc.load_rules(open_lake(self.cfg.lake))
+            mapped = rules_svc.apply(rules, self.atlas, list(self.knobs.values()), self.target.schema_sql())
+        except Exception as exc:
+            self.tele.emit("rules.unavailable", location=self.cfg.lake, error=repr(exc)[:300])
+            return
+        locus_of = {name: lid for lid, name in self.knob_of_locus.items()}
+        options: dict[str, list[tuple[str, str]]] = {}
+        for m in mapped:
+            if m.knob is not None and m.knob in locus_of:
+                options.setdefault(m.proposal.rule, []).append((locus_of[m.knob], f"{m.proposal.render()} via {m.knob}"))
+            self.tele.emit("rules.proposal", rule=m.proposal.rule, index=m.proposal.render(), knob=m.knob, exact=m.exact,
+                           queries=len(m.proposal.queries))
+        self.factory.rule_options = options
 
     def _island_arms(self, island: str) -> list[Arm]:
         if island == "redteam":
@@ -227,7 +253,7 @@ class Engine:
             op = arm[0]
             if op in CODE_OPS and not has_code:
                 continue
-            if op.startswith("knob") and not has_knob:
+            if (op.startswith("knob") or op == "rule_apply") and not has_knob:
                 continue
             arms.append(arm)
         return arms or self._all_arms()

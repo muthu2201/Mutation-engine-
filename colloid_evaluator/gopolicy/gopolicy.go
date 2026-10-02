@@ -395,7 +395,7 @@ func scan(pkgDir, file, name, source, baseline string) (result, error) {
 		res.Reasons = append(res.Reasons, r)
 	}
 	sort.Strings(res.Reasons)
-	res.Strings = s.strings
+	res.Strings = append(res.Strings, s.strings...)
 	return res, nil
 }
 

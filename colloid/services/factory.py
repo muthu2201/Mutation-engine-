@@ -17,6 +17,8 @@ LLM call - and keeps it out of the core:
 * **crossover** / **splice** recombine two parents' genomes.
 * **redteam** arms build a deliberately-incorrect variant (used only by the red-team island,
   whose fitness is "fool the evaluator").
+* **rule_apply** arms (one per CRL rule) set the index knob of one of the rule's proposals
+  for this stack (``services.rules``): learned patterns as candidate generators.
 
 Every returned proposal carries the arm that produced it, so lineage credit flows back to
 the right bandit arm.
@@ -90,6 +92,7 @@ class MutationFactory:
         *,
         max_tokens: int = 1400,
         parse_code: Callable[[str, str, Unit], ParseResult] | None = None,
+        rule_options: Mapping[str, Sequence[tuple[str, str]]] | None = None,
     ) -> None:
         self.atlas = atlas
         self.knobs = knobs
@@ -101,6 +104,8 @@ class MutationFactory:
         # Response parser for languages the pure core cannot parse itself (Go: the target's
         # own Go parser). Python and C responses are parsed in the core.
         self.parse_code = parse_code
+        # CRL rule name -> [(locus id of the index knob implementing a proposal, description)]
+        self.rule_options = dict(rule_options or {})
         self.memory: dict[str, LocusMemory] = {}
 
     def _memory(self, locus_id: str) -> LocusMemory:
@@ -134,6 +139,8 @@ class MutationFactory:
                 return self._llm(arm, parent, parent_id, ctx)
             if op == "redteam":
                 return self._redteam(parent, parent_id, ctx)
+            if op == "rule_apply":
+                return self._rule_apply(arm, parent, parent_id, ctx)
         except LocusConflict as exc:
             return ProposalResult(None, reject_reason=f"locus conflict: {exc.why}")
         return ProposalResult(None, reject_reason=f"unknown operator {op}")
@@ -187,6 +194,23 @@ class MutationFactory:
                 continue
             return ProposalResult(Proposal(child, parent_id, "gi_edit", changed_loci=(lid,), notes=desc))
         return ProposalResult(None, reject_reason="no GI edit produced")
+
+    # ------------------------------------------------------------------ learned rules
+    def _rule_apply(self, arm: Arm, parent: Genome, parent_id: str, ctx: OperatorContext) -> ProposalResult:
+        rule = arm[2] or ""
+        allowed = set(ctx.region_loci)
+        cfg = ctx.effective_config(parent)
+        options = [(lid, what) for lid, what in self.rule_options.get(rule, [])
+                   if lid in allowed and cfg.get(self.knob_of_locus.get(lid, "")) is not True]
+        if not options:
+            return ProposalResult(None, reject_reason=f"rule {rule}: every proposal is already applied or outside this region")
+        lid, what = ctx.rng.choice(options)
+        gene = Gene.make(lid, PayloadKind.VALUE, {"value": True}, Provenance(operator="rule_apply", template=rule, notes=what))
+        try:
+            child = parent.with_gene(gene, self.atlas)
+        except LocusConflict as exc:
+            return ProposalResult(None, reject_reason=f"locus conflict: {exc.why}")
+        return ProposalResult(Proposal(child, parent_id, "rule_apply", template=rule, changed_loci=(lid,), notes=f"CRL {rule}: {what}"))
 
     # ------------------------------------------------------------------ code: LLM
     def _llm(self, arm: Arm, parent: Genome, parent_id: str, ctx: OperatorContext) -> ProposalResult:

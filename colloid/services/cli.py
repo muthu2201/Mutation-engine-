@@ -15,6 +15,13 @@
     colloid lake push [--lake git:BRANCH] push the data-lake branch to origin
     colloid stack materialize RECORD --out DIR [--carrying-only]   deployable stack from a lake record
     colloid stack publish DIR [--branch stack/stackzero-verified] [--push]   commit it on its own branch
+    colloid rules mine [--commit] [--out FILE]   CRL rules learned from the lake's verified evidence
+    colloid rules apply --target T [--file F]    what the rules propose for a stack, mapped to its loci
+    colloid rules check FILE                     parse + validate a CRL file
+    colloid compare COLD PRIMED                  the transfer A/B (verified gain per hour) of two runs
+    colloid ladder [--cold RUN --primed RUN]     which milestones the evidence has earned (gates)
+
+Most commands take --target (stackzero | stackzero-go): which implementation to work on.
 
 Experiments are YAML files under experiments/ (data, never code).
 """
@@ -130,6 +137,66 @@ def cmd_stack(args: argparse.Namespace) -> int:
         print(f"{args.branch} -> {commit}")
         if args.push:
             print(push(Path("."), args.branch, args.remote))
+    return 0
+
+
+def cmd_rules(args: argparse.Namespace) -> int:
+    from colloid.adapters.lake import open_lake
+    from colloid.adapters.target import open_target
+    from colloid.core.rules import parse, render_file
+    from colloid.services import rules as rules_svc
+
+    if args.action == "check":
+        rules = parse(Path(args.file).read_text())
+        print(f"{len(rules)} rule(s) OK: " + ", ".join(f"{r.name} v{r.version} ({r.rule_id[:12]})" for r in rules))
+        return 0
+    lake = open_lake(args.lake)
+    if args.action == "mine":
+        rep = rules_svc.mine(lake)
+        text = render_file(rep.rules)
+        print(text or "# no rule: the lake holds no verified, carrying gene that v0 can express")
+        for i in rep.instances:
+            print(f"# instance {i['template']}: {i['index']} on {i['target']} ({i['contribution_pct']}% CI {i['ci_pct']}), serves {len(i['queries'])} queries")
+        for u in rep.unexplained:
+            print(f"# unexplained: {u}")
+        if args.out:
+            Path(args.out).write_text(text)
+        if args.commit and rep.rules:
+            n, h = rules_svc.commit_rules(lake, rep.rules)
+            print(f"# lake {lake.location}: +{n} rule record(s), head {h[:16]}")
+        return 0
+    rules = parse(Path(args.file).read_text()) if args.file else rules_svc.load_rules(lake)
+    target = open_target(args.target, observe_system=False)
+    for m in rules_svc.apply(rules, target.atlas_seed(), target.knobs(), target.schema_sql()):
+        where = m.knob or "NO LOCUS on this target"
+        print(f"{m.proposal.rule:30} {m.proposal.render():50} -> {where}{'' if m.exact or not m.knob else ' (a wider index)'}"
+              f"  [{len(m.proposal.queries)} queries]")
+    return 0
+
+
+def cmd_compare(args: argparse.Namespace) -> int:
+    from colloid.services.ladder import arm_result, same_experiment
+
+    diff = same_experiment(args.cold, args.primed)
+    out = {"cold": arm_result(args.cold).__dict__, "primed": arm_result(args.primed).__dict__, "config_differences_besides_the_lake": diff}
+    print(json.dumps(out, indent=2))
+    Path(args.out).write_text(json.dumps(out, indent=2)) if args.out else None
+    return 0
+
+
+def cmd_ladder(args: argparse.Namespace) -> int:
+    from colloid.adapters.lake import open_lake
+    from colloid.services.ladder import ladder
+
+    gates = ladder(open_lake(args.lake), transfer=(args.cold, args.primed) if args.cold and args.primed else None)
+    for g in gates:
+        print(f"[{g.status.upper():7}] {g.rung:4} {g.title}")
+        for e in g.evidence:
+            print(f"            evidence: {e}")
+        for n in g.needs:
+            print(f"            needs:    {n}")
+    if args.out:
+        Path(args.out).write_text(json.dumps([g.__dict__ for g in gates], indent=2))
     return 0
 
 
@@ -273,10 +340,16 @@ def main(argv: list[str] | None = None) -> int:
     sk.add_argument("--lake", default="git:colloid/datalake"); sk.add_argument("--out", default="stack-out"); sk.add_argument("--carrying-only", action="store_true")
     sk.add_argument("--branch", default="stack/stackzero-verified"); sk.add_argument("--push", action="store_true"); sk.add_argument("--remote", default="origin")
     sk.set_defaults(fn=cmd_stack)
+    ru = sub.add_parser("rules"); ru.add_argument("action", choices=["mine", "apply", "check"]); ru.add_argument("file", nargs="?")
+    ru.add_argument("--lake", default="git:colloid/datalake"); ru.add_argument("--commit", action="store_true"); ru.add_argument("--out")
+    ru.set_defaults(fn=cmd_rules)
+    cp = sub.add_parser("compare"); cp.add_argument("cold"); cp.add_argument("primed"); cp.add_argument("--out"); cp.set_defaults(fn=cmd_compare)
+    ld = sub.add_parser("ladder"); ld.add_argument("--lake", default="git:colloid/datalake"); ld.add_argument("--cold"); ld.add_argument("--primed")
+    ld.add_argument("--out"); ld.set_defaults(fn=cmd_ladder)
     d = sub.add_parser("dashboard"); d.add_argument("run"); d.add_argument("--port", type=int, default=8080); d.set_defaults(fn=cmd_dashboard)
     from colloid.adapters.target import DEFAULT_TARGET, TARGETS
 
-    for sp in (c, a, pr, at, b):
+    for sp in (c, a, pr, at, b, ru):
         sp.add_argument("--target", default=DEFAULT_TARGET, choices=sorted(TARGETS), help="which implementation to work on")
     args = p.parse_args(argv)
     return int(args.fn(args))
