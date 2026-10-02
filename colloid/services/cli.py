@@ -94,6 +94,8 @@ def cmd_aa(args: argparse.Namespace) -> int:
     finally:
         ev.shutdown()
     print(json.dumps(report, indent=2))
+    print("\nnoise floor (between-run SD per cycle): " + ", ".join(f"{k}={v * 100:.2f}%" for k, v in report["noise_floor_per_cycle"].items()))
+    print(f"gate: {report['gate']} -> promotions {'ALLOWED' if report['promotions_allowed'] else 'HALTED'}")
     Path(args.out).write_text(json.dumps(report, indent=2)) if args.out else None
     return 0 if report["promotions_allowed"] else 1
 

@@ -62,6 +62,7 @@ def _build(store: Any, run: str) -> dict[str, Any]:
     funnel = {stage: dict(c) for stage, c in sorted(by_stage_verdict.items())}
 
     promoted = store.programs(status=__import__("colloid.core.models", fromlist=["ProgramStatus"]).ProgramStatus.PROMOTED)
+    verified = store.programs(status=__import__("colloid.core.models", fromlist=["ProgramStatus"]).ProgramStatus.VERIFIED)
     elites = store.programs(status=__import__("colloid.core.models", fromlist=["ProgramStatus"]).ProgramStatus.ELITE)
 
     def program_summary(prog: Any) -> dict[str, Any]:
@@ -84,7 +85,7 @@ def _build(store: Any, run: str) -> dict[str, Any]:
 
     seen: set[str] = set()
     best_programs = []
-    for prog in promoted + elites:
+    for prog in promoted + verified + elites:
         if prog.id in seen:
             continue
         seen.add(prog.id)
@@ -94,8 +95,9 @@ def _build(store: Any, run: str) -> dict[str, Any]:
         g = row.get("gains_pct", {}).get("cost")
         return g["pct"] if g else -1e9
 
-    # promoted first, then by measured cost gain (best first)
-    best_programs.sort(key=lambda r: (r["status"] != "promoted", -_cost_gain(r)))
+    # promoted first, then L6-verified (promotion held by the A/A gate), then by measured cost gain
+    rank = {"promoted": 0, "verified": 1}
+    best_programs.sort(key=lambda r: (rank.get(r["status"], 2), -_cost_gain(r)))
 
     epistasis = [{"gene_a": r.gene_a[:8], "gene_b": r.gene_b[:8], "epsilon": round(r.epsilon, 4), "ci": [round(r.ci_lo, 4), round(r.ci_hi, 4)],
                   "kind": "synergy" if r.epsilon > 0 else "interference"} for r in store.epistasis()]
@@ -116,6 +118,7 @@ def _build(store: Any, run: str) -> dict[str, Any]:
         "cascade_funnel": funnel,
         "best_programs": best_programs,
         "promoted": [p.id for p in promoted],
+        "verified": [p.id for p in verified],
         "epistasis": epistasis,
         "llm": llm_summary,
         "alerts": [a.model_dump() for a in store.alerts()],

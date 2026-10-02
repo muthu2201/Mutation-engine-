@@ -54,7 +54,7 @@ from colloid.core.models import (
     UnitKind,
     Verdict,
 )
-from colloid.core.stats import combine_effects_se
+from colloid.core.stats import calibrate_aa, combine_effects_se, with_noise_floor
 from colloid.ports import CostModel, Workspace
 from colloid_evaluator import oracles, policy
 from colloid_evaluator.fingerprint import fingerprint
@@ -116,6 +116,9 @@ class Evaluator:
         self.knobs = {k.name: k for k in target.knobs()}
         self.knob_of_locus = target.knob_name_of_locus(atlas)
         self.oracle: oracles.DifferentialOracle | None = None
+        # Between-run SD of each objective's log-ratio for ONE benchmark cycle, measured by the
+        # A/A test. Empty until measured, i.e. CIs are within-run only.
+        self.noise_floor: dict[str, float] = {}
 
     # ------------------------------------------------------------------ setup
     def setup(self, baseline_program_id: str) -> dict[str, Any]:
@@ -234,11 +237,17 @@ class Evaluator:
         return StageResult(self._evaluation(program_id, stage, f"oracle-{size}", verdict, reasons, raw=raw, duration=time.monotonic() - t0), ws)
 
     # ------------------------------------------------------------------ L4 / L5
-    def _estimates(self, cmp: Comparison, cand: str, ref: str, ref_program: str, reference: str) -> list[ObjectiveEstimate]:
+    def noise_tau(self, objective: str, protocol: Protocol) -> float:
+        """Between-run SD for a comparison made with ``protocol``: cycles are independent runs of
+        the arms, so the per-cycle variance component averages down as 1/cycles."""
+        return self.noise_floor.get(objective, 0.0) / math.sqrt(max(1, protocol.cycles))
+
+    def _estimates(self, cmp: Comparison, cand: str, ref: str, ref_program: str, reference: str, protocol: Protocol) -> list[ObjectiveEstimate]:
         assert self.bench is not None
         out = []
         for i, obj in enumerate(OBJECTIVES):
             e = effect(cmp, cand, ref, obj, seed=i, usd_cpu_s=self.bench.usd_cpu_s, usd_gb_s=self.bench.usd_gb_s)
+            e = with_noise_floor(e, self.noise_tau(obj, protocol))
             out.append(ObjectiveEstimate(objective=obj, reference=reference, reference_program_id=ref_program, log_ratio=e.log_ratio,
                                          ci_lo=e.ci_lo, ci_hi=e.ci_hi, p_value=e.p_value, n_candidate=e.n_candidate, n_reference=e.n_reference))
         return out
@@ -290,7 +299,7 @@ class Evaluator:
             spot = self._spot_failures(cmp, "child", ref_label)
             if spot:
                 reasons += [f"spot check vs {label}: {s}" for s in spot]
-            objectives += self._estimates(cmp, "child", ref_label, pid, label)
+            objectives += self._estimates(cmp, "child", ref_label, pid, label, protocol)
         if reasons:
             return StageResult(self._evaluation(program_id, stage, protocol.name, Verdict.FAIL, reasons, raw=raw,
                                                 duration=time.monotonic() - t0), ws, cmp)
@@ -381,38 +390,61 @@ class Evaluator:
         return Measured(est.log_ratio, combine_effects_se(est.ci_lo, est.ci_hi)), ""
 
     # ------------------------------------------------------------------ A/A
-    def aa_test(self, runs: int, alpha: float = 0.05, on_run: Callable[[int, dict[str, Any]], None] | None = None) -> dict[str, Any]:
-        """Identical programs compared with the promotion protocol. The fraction of runs with
-        p < alpha estimates the false-positive rate; promotions halt if it exceeds alpha."""
+    def aa_test(self, runs: int, alpha: float = 0.05, on_run: Callable[[int, dict[str, Any]], None] | None = None,
+                *, apply: bool = True) -> dict[str, Any]:
+        """Identical programs compared with the promotion protocol (L5), ``runs`` times.
+
+        Each run's own p-value gives the *raw* false-positive rate of within-run CIs. The spread
+        of the A/A effects across runs then measures the between-run variance component tau^2
+        (see :func:`colloid.core.stats.calibrate_aa`); with ``apply`` it becomes this evaluator's
+        noise floor, widening every later comparison's CI. Calibration is checked out-of-sample
+        (leave-one-out) and promotions are allowed only if an exact binomial test cannot reject
+        "calibrated false-positive rate <= alpha" for the primary objective (cost)."""
         assert self.bench is not None
-        pvals: dict[str, list[float]] = {o: [] for o in OBJECTIVES}
         effects: dict[str, list[float]] = {o: [] for o in OBJECTIVES}
-        ci_contains_zero: dict[str, int] = dict.fromkeys(OBJECTIVES, 0)
+        ses: dict[str, list[float]] = {o: [] for o in OBJECTIVES}
+        pvals: dict[str, list[float]] = {o: [] for o in OBJECTIVES}
+        failed = 0
         for i in range(runs):
             cmp = self.bench.compare([Arm("A", "baseline", self.baseline_ws), Arm("B", "baseline", self.baseline_ws)], L5, seed=fresh_seed())
             if cmp.failures:
+                failed += 1
                 continue
             row = {}
             for j, obj in enumerate(OBJECTIVES):
                 e = effect(cmp, "B", "A", obj, seed=j, usd_cpu_s=self.bench.usd_cpu_s, usd_gb_s=self.bench.usd_gb_s)
-                pvals[obj].append(e.p_value)
                 effects[obj].append(e.log_ratio)
-                ci_contains_zero[obj] += int(e.ci_lo <= 0 <= e.ci_hi)
+                ses[obj].append(combine_effects_se(e.ci_lo, e.ci_hi))
+                pvals[obj].append(e.p_value)
                 row[obj] = {"log_ratio": e.log_ratio, "ci": [e.ci_lo, e.ci_hi], "p": e.p_value}
             if on_run:
                 on_run(i, row)
-        report: dict[str, Any] = {"runs": len(pvals["cost"]), "alpha": alpha, "objectives": {}}
+        n = len(effects["cost"])
+        report: dict[str, Any] = {"runs": n, "failed_runs": failed, "alpha": alpha, "protocol": L5.name, "objectives": {}}
+        floor: dict[str, float] = {}
         for obj in OBJECTIVES:
-            ps = pvals[obj]
-            n = len(ps)
-            fp = sum(1 for p in ps if p < alpha)
+            cal = calibrate_aa(effects[obj], ses[obj], pvals[obj], alpha) if n else {}
+            ci_cover = sum(1 for e, se in zip(effects[obj], ses[obj], strict=True) if abs(e) <= 1.959964 * se)
             report["objectives"][obj] = {
-                "false_positive_rate": fp / n if n else float("nan"),
-                "false_positives": fp,
-                "ci_coverage_of_zero": ci_contains_zero[obj] / n if n else float("nan"),
+                "false_positive_rate": cal.get("raw_fpr", float("nan")),
+                "false_positives": int(cal.get("raw_fp", 0)),
+                "ci_coverage_of_zero": ci_cover / n if n else float("nan"),
                 "effect_sd": float(np.std(effects[obj], ddof=1)) if n > 1 else float("nan"),
                 "mean_effect": float(np.mean(effects[obj])) if n else float("nan"),
+                "median_within_se": cal.get("median_within_se", float("nan")),
+                "tau": cal.get("tau", 0.0),
+                "calibrated_false_positive_rate": cal.get("calibrated_fpr", float("nan")),
+                "calibrated_false_positives": int(cal.get("calibrated_fp", 0)),
+                "binomial_p": cal.get("binomial_p", float("nan")),
             }
-        primary = report["objectives"]["cost"]["false_positive_rate"]
-        report["promotions_allowed"] = bool(primary <= alpha + 1e-12) if report["runs"] else False
+            # tau was measured on L5 comparisons (L5.cycles cycles each); store it per cycle.
+            floor[obj] = float(cal.get("tau", 0.0)) * math.sqrt(L5.cycles)
+        primary = report["objectives"]["cost"]
+        report["noise_floor_per_cycle"] = floor
+        report["promotions_allowed"] = bool(n >= 5 and primary["binomial_p"] >= alpha)
+        report["gate"] = (f"cost: {primary['calibrated_false_positives']}/{n} calibrated false positives "
+                          f"(raw {primary['false_positives']}/{n}), binomial p={primary['binomial_p']:.3f} vs alpha={alpha}"
+                          if n else "no successful A/A runs")
+        if apply:
+            self.noise_floor = floor
         return report

@@ -106,6 +106,10 @@ class Engine:
         self.best_score = 0.0
         self.best_program: str | None = None
         self.promoted: list[str] = []
+        self.verified: list[str] = []
+        # Blueprint: no promotion before the A/A test has shown the harness is calibrated.
+        self.promotions_allowed = False
+        self.promotion_gate = "no A/A test run (aa_runs: 0)"
         self.shapley = ShapleyRunner(self)
         self.splicer = SpliceRunner(self)
         self.started = 0.0
@@ -156,10 +160,14 @@ class Engine:
             report = self.evaluator.aa_test(self.cfg.aa_runs, on_run=lambda i, row: self.tele.emit("aa.run", i=i, **{k: v["log_ratio"] for k, v in row.items()}))
         self.store.kv_set("aa_test", report)
         fp = report["objectives"][PRIMARY]["false_positive_rate"]
-        self.tele.emit("aa.done", false_positive_rate=fp, allowed=report["promotions_allowed"])
-        if not report["promotions_allowed"]:
+        cal = report["objectives"][PRIMARY]["calibrated_false_positive_rate"]
+        self.promotions_allowed, self.promotion_gate = bool(report["promotions_allowed"]), str(report["gate"])
+        self.tele.emit("aa.done", false_positive_rate=fp, calibrated_false_positive_rate=cal, allowed=self.promotions_allowed,
+                       noise_floor={k: round(v, 5) for k, v in report["noise_floor_per_cycle"].items()}, gate=self.promotion_gate)
+        if not self.promotions_allowed:
             self.store.put_alert(Alert(id="aa-" + str(time.time_ns())[:12], kind="aa_test", severity="critical",
-                                       message=f"A/A false-positive rate {fp:.2%} exceeds alpha; promotions halted"))
+                                       message=f"A/A calibration gate failed ({self.promotion_gate}); promotions halted - "
+                                               "elites still get L6 deep review and are marked 'verified', never 'promoted'"))
 
     def _build_islands(self) -> None:
         regions = {r.name: r for r in self.target.regions()}
@@ -510,10 +518,16 @@ class Engine:
             r6 = store.l6(pid, rec["prop"].genome, rec["ws"])
         self.store.put_evaluation(r6.evaluation)
         if r6.passed:
-            self.store.set_status(pid, ProgramStatus.PROMOTED)
-            self.promoted.append(pid)
             base = r6.evaluation.objective(PRIMARY, "baseline")
-            self.tele.emit("promoted", program=pid, holdout_cost_gain_pct=round(gain_percent(base.log_ratio), 2) if base else None)
+            gain = round(gain_percent(base.log_ratio), 2) if base else None
+            if self.promotions_allowed:
+                self.store.set_status(pid, ProgramStatus.PROMOTED)
+                self.promoted.append(pid)
+                self.tele.emit("promoted", program=pid, holdout_cost_gain_pct=gain)
+            else:
+                self.store.set_status(pid, ProgramStatus.VERIFIED)
+                self.verified.append(pid)
+                self.tele.emit("promotion.held", program=pid, holdout_cost_gain_pct=gain, gate=self.promotion_gate)
         else:
             self.tele.emit("l6.reject", program=pid, reasons=list(r6.evaluation.reasons)[:3])
             if any("suspicion" in r or "holdout" in r for r in r6.evaluation.reasons):
@@ -541,7 +555,7 @@ class Engine:
 
         self.tele.emit("islands", generation=gen, islands=summarize_islands(list(self.islands.values())))
         self.store.kv_set("progress", {"generation": gen, "best_score": self.best_score, "best_program": self.best_program,
-                                       "evaluated": len(self.evaluated), "promoted": len(self.promoted), "elapsed_min": (time.monotonic() - self.started) / 60})
+                                       "evaluated": len(self.evaluated), "promoted": len(self.promoted), "verified": len(self.verified), "elapsed_min": (time.monotonic() - self.started) / 60})
 
     # ------------------------------------------------------------------ finish
     def finish(self) -> dict[str, Any]:
@@ -550,6 +564,7 @@ class Engine:
             "name": self.cfg.name, "generations": self.cfg.generations, "rate_rps": self.cfg.rate_rps,
             "programs_evaluated": len(self.evaluated), "programs_total": len(self.programs),
             "best_program": self.best_program, "best_score": self.best_score, "promoted": self.promoted,
+            "verified": self.verified, "promotions_allowed": self.promotions_allowed, "promotion_gate": self.promotion_gate,
             "best_genes": list(best.genome.gene_ids) if best else [], "elapsed_min": (time.monotonic() - self.started) / 60,
             "arms": self.bandit.table(), "alerts": [a.model_dump() for a in self.store.alerts()],
         }

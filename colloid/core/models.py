@@ -230,6 +230,7 @@ class ProgramStatus(StrEnum):
     EVALUATED = "evaluated"  # has an L5 fitness estimate
     ELITE = "elite"  # occupies a MAP-Elites cell / Pareto front
     PROMOTED = "promoted"  # passed L6 deep assurance and holdout persistence
+    VERIFIED = "verified"  # passed L6, but promotion withheld: the A/A noise-floor gate failed
     FAILED = "failed"  # infrastructure error (not the candidate's fault)
 
 

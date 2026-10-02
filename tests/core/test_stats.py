@@ -76,3 +76,58 @@ def test_bootstrap_ci_contains_point():
 def test_spearman_constant_is_nan():
     assert np.isnan(stats.spearman([1, 1, 1], [1, 2, 3]))
     assert abs(stats.spearman([1, 2, 3, 4], [1, 2, 3, 4]) - 1.0) < 1e-9
+
+
+# ---------------------------------------------------------------- A/A noise floor
+def test_between_run_variance_recovers_tau():
+    import numpy as np
+
+    from colloid.core.stats import between_run_variance
+
+    rng = np.random.default_rng(1)
+    tau, se = 0.02, 0.01
+    effects = rng.normal(0, np.sqrt(tau**2 + se**2), 4000)
+    est = between_run_variance(effects, [se] * len(effects))
+    assert abs(np.sqrt(est) - tau) < 0.002
+    # no between-run component -> clipped at 0, never negative
+    assert between_run_variance(rng.normal(0, se, 500) * 0.5, [se] * 500) == 0.0
+    assert between_run_variance([0.1], [0.01]) == 0.0
+
+
+def test_with_noise_floor_widens_keeps_asymmetry_and_never_sharpens_p():
+    from colloid.core.stats import Effect, combine_effects_se, with_noise_floor
+
+    e = Effect(0.05, 0.03, 0.08, 0.001, 20, 20)  # asymmetric CI
+    w = with_noise_floor(e, 0.02)
+    se_w, se_t = combine_effects_se(e.ci_lo, e.ci_hi), combine_effects_se(w.ci_lo, w.ci_hi)
+    assert abs(se_t - (se_w**2 + 0.02**2) ** 0.5) < 1e-9
+    assert abs((w.ci_hi - w.log_ratio) / (w.log_ratio - w.ci_lo) - (0.03 / 0.02)) < 1e-9
+    assert w.p_value >= e.p_value and w.log_ratio == e.log_ratio
+    assert with_noise_floor(e, 0.0) is e
+
+
+def test_binomial_sf_exact():
+    from colloid.core.stats import binomial_sf
+
+    assert binomial_sf(0, 10, 0.05) == 1.0
+    assert abs(binomial_sf(1, 10, 0.05) - (1 - 0.95**10)) < 1e-12  # ~0.401: why "FPR<=alpha" on 10 runs is wrong
+    assert abs(binomial_sf(3, 10, 0.05) - 0.011504) < 1e-5
+
+
+def test_calibrate_aa_fixes_miscalibrated_harness():
+    """Simulated harness whose within-run SE ignores a between-run component 2x its size: raw
+    FPR is far above alpha, the leave-one-out calibrated FPR is back near alpha."""
+    import numpy as np
+
+    from colloid.core.stats import calibrate_aa, normal_p
+
+    rng = np.random.default_rng(7)
+    se, tau, n = 0.01, 0.02, 400
+    eff = rng.normal(0, np.sqrt(se**2 + tau**2), n)
+    p = [normal_p(x, se) for x in eff]
+    cal = calibrate_aa(eff, [se] * n, p, 0.05)
+    assert cal["raw_fpr"] > 0.3
+    assert abs(cal["tau"] - tau) < 0.003
+    assert cal["calibrated_fpr"] < 0.09
+    # a calibrated harness passes the binomial gate; the raw one would not
+    assert cal["binomial_p"] > 0.05

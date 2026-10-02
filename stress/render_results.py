@@ -22,6 +22,19 @@ def _fmt_ci(g: dict) -> str:
     return f"{g['pct']:+.1f}% (CI [{g['ci_pct'][1]:+.1f}%, {g['ci_pct'][0]:+.1f}%], p={g['p']:.3f})"
 
 
+def aa_block(aa: dict, title: str) -> str:
+    out = [f"**{title}** ({aa.get('runs')} runs of the L5 protocol, identical program vs itself, α={aa.get('alpha')}):\n",
+           "| objective | raw FPR (within-run CI) | effect SD across runs | median within-run SE | τ (between-run SD) | calibrated FPR (leave-one-out) | binomial p |",
+           "|---|---|---|---|---|---|---|"]
+    for obj, s in aa.get("objectives", {}).items():
+        out.append(f"| {obj} | {s['false_positive_rate']:.0%} ({s['false_positives']}) | {s['effect_sd'] * 100:.2f}% | "
+                   f"{s.get('median_within_se', float('nan')) * 100:.2f}% | {s.get('tau', 0) * 100:.2f}% | "
+                   f"{s.get('calibrated_false_positive_rate', float('nan')):.0%} ({s.get('calibrated_false_positives', '?')}) | "
+                   f"{s.get('binomial_p', float('nan')):.3f} |")
+    out.append(f"\nGate: {aa.get('gate', '—')} → promotions allowed: **{aa.get('promotions_allowed')}**.\n")
+    return "\n".join(out)
+
+
 def run_block(run: str) -> str:
     rep = build_report(run)
     events = read_events(Path(run) / "events.jsonl")
@@ -31,7 +44,7 @@ def run_block(run: str) -> str:
     setup = rep["setup"]
     out.append(f"**Run `{rep['run']}`** — rate {setup.get('rate_rps')} rps (knee ≈ {setup.get('calibration_knee')} rps), "
                f"{res.get('generations', '?')} generations, {res.get('programs_evaluated', 0)} programs evaluated of "
-               f"{res.get('programs_total', 0)} proposed, {len(rep.get('promoted', []))} promoted, "
+               f"{res.get('programs_total', 0)} proposed, {len(rep.get('promoted', []))} promoted, {len(rep.get('verified', []))} L6-verified (promotion held), "
                f"{res.get('elapsed_min', 0):.0f} min wall.\n")
     # cascade funnel
     out.append("**Cascade funnel** (how many candidates each stage saw / passed):\n")
@@ -77,12 +90,7 @@ def run_block(run: str) -> str:
     # A/A
     aa = rep.get("aa_test")
     if aa:
-        out.append("**A/A noise floor** (identical program vs itself, false-positive rate must be ≤ α=5%):\n")
-        out.append("| objective | false-positive rate | CI covers 0 | effect SD |")
-        out.append("|---|---|---|---|")
-        for obj, s in aa.get("objectives", {}).items():
-            out.append(f"| {obj} | {s['false_positive_rate']:.0%} | {s['ci_coverage_of_zero']:.0%} | {s['effect_sd']:.4f} |")
-        out.append(f"\nPromotions allowed: **{aa.get('promotions_allowed')}** (primary-objective false-positive rate within α).\n")
+        out.append(aa_block(aa, "A/A noise floor"))
     # alerts / red-team
     breaches = [a for a in rep.get("alerts", []) if a["kind"] == "redteam_breach"]
     out.append(f"**Red-team island**: {kinds.get('redteam.caught', 0)} attacks generated and caught by the oracle, "
@@ -119,6 +127,8 @@ def stress_block() -> str:
             for p in d["pathologies"]:
                 out.append(f"| {p['name']} | {p['stage']} | {p['verdict']} |")
             out.append("")
+        if aa.get("objectives"):
+            out.append(aa_block(aa, "Stress A/A (independent of the run's own A/A)"))
     return "\n".join(out) if out else "_(stress reports not yet generated — run the harnesses in `stress/`.)_"
 
 

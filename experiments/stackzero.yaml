@@ -37,5 +37,5 @@ splice_top_k: 3
 
 profile: true
 profile_delays: [0.0, 0.4]
-aa_runs: 10
-max_runtime_minutes: 150
+aa_runs: 20               # ~15 min; tau needs enough runs to be estimated, the binomial gate enough to have power
+max_runtime_minutes: 180

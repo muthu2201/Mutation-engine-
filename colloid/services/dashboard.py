@@ -121,6 +121,8 @@ async function tick(){
    <table><tr><td>rate</td><td>${(rep.setup.rate_rps||0).toFixed(0)} rps</td></tr>
    <tr><td>evaluated</td><td>${rep.program_counts.evaluated||res.programs_evaluated||0}</td></tr>
    <tr><td>promoted</td><td>${(rep.promoted||[]).length}</td></tr>
+   <tr><td>verified (held)</td><td>${(rep.verified||[]).length}</td></tr>
+   <tr><td>A/A gate</td><td class=${rep.aa_test&&rep.aa_test.promotions_allowed?'good':'bad'}>${rep.aa_test?(rep.aa_test.promotions_allowed?'pass':'fail'):'—'}</td></tr>
    <tr><td>LLM cost</td><td>$${(rep.llm.cost_usd||0).toFixed(3)} (${rep.llm.calls} calls)</td></tr></table>`;
   let f='<tr><th>stage</th><th>pass</th><th>fail</th><th>susp</th><th>err</th></tr>';
   for(const [s,c] of Object.entries(rep.cascade_funnel)){f+=`<tr><td>${s}</td><td class=good>${c.pass||0}</td><td class=bad>${c.fail||0}</td><td class=warn>${c.suspicious||0}</td><td class=mut>${c.error||0}</td></tr>`}

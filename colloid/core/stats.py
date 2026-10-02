@@ -16,6 +16,16 @@ single number. This module provides the pieces the evaluator protocol uses:
   simulation-output-analysis rule: choose the truncation point that minimises the marginal
   standard error of what remains. We detect steady state instead of assuming it.
 * :func:`steady` - a cheap online check used while a warm-up is still running.
+* :func:`between_run_variance`, :func:`with_noise_floor`, :func:`calibrate_aa` - the A/A
+  *noise floor*. A single comparison's CI is computed from paired chunks inside one run, so it
+  sees only within-run noise. On shared hardware there is also a run-to-run component (noisy
+  neighbours, frequency scaling, a different random link order/env padding per run) that every
+  chunk of a run shares. The A/A test measures it directly as a random-effects variance
+  component tau^2 = Var(A/A effects) - mean(within-run SE^2) (method of moments, the
+  DerSimonian-Laird idea), and every later comparison's CI is widened to sqrt(SE^2 + tau^2).
+  Calibration is verified out-of-sample (leave-one-out over the A/A runs) and gated with an
+  exact binomial test, because "observed FPR <= alpha" on n=10 runs would reject a perfectly
+  calibrated harness 40% of the time (P[Binom(10, 0.05) >= 1] = 0.40).
 """
 
 from __future__ import annotations
@@ -244,6 +254,72 @@ def normal_p(value: float, se: float) -> float:
     if se <= 0 or not math.isfinite(se):
         return 1.0
     return float(2 * sps.norm.sf(abs(value) / se))
+
+
+def between_run_variance(effects: Sequence[float], ses: Sequence[float]) -> float:
+    """Method-of-moments random-effects variance component: tau^2 = max(0, s^2 - mean(se^2)).
+
+    ``effects`` are A/A log-ratios (true effect 0) and ``ses`` their within-run standard errors.
+    The unweighted form is used on purpose: it is conservative under heavy-tailed run noise
+    (one bad run inflates tau rather than being down-weighted away)."""
+    e = np.asarray(effects, dtype=np.float64)
+    se = np.asarray(ses, dtype=np.float64)
+    ok = np.isfinite(e) & np.isfinite(se)
+    e, se = e[ok], se[ok]
+    if len(e) < 2:
+        return 0.0
+    return float(max(0.0, e.var(ddof=1) - float(np.mean(se**2))))
+
+
+def with_noise_floor(e: Effect, tau: float) -> Effect:
+    """Widen an effect's CI from within-run SE to sqrt(SE^2 + tau^2), keeping its asymmetry, and
+    make the p-value at least the normal-theory p under the total SE (never *more* significant)."""
+    if tau <= 0 or not math.isfinite(tau):
+        return e
+    se_w = combine_effects_se(e.ci_lo, e.ci_hi)
+    if not math.isfinite(se_w):
+        return e
+    se_t = math.sqrt(se_w**2 + tau**2)
+    if se_w > 0:
+        k = se_t / se_w
+        lo, hi = e.log_ratio - (e.log_ratio - e.ci_lo) * k, e.log_ratio + (e.ci_hi - e.log_ratio) * k
+    else:
+        lo, hi = normal_ci(e.log_ratio, se_t)
+    return Effect(e.log_ratio, lo, hi, max(e.p_value, normal_p(e.log_ratio, se_t)), e.n_candidate, e.n_reference)
+
+
+def binomial_sf(k: int, n: int, p: float) -> float:
+    """Exact P[X >= k] for X ~ Binomial(n, p)."""
+    if k <= 0:
+        return 1.0
+    return float(sum(math.comb(n, i) * p**i * (1 - p) ** (n - i) for i in range(k, n + 1)))
+
+
+def calibrate_aa(effects: Sequence[float], ses: Sequence[float], p_values: Sequence[float], alpha: float = 0.05) -> dict[str, float]:
+    """Noise-floor calibration from A/A runs of one objective.
+
+    Returns the raw false-positive count/rate (each run's own p-value), tau (the between-run SD
+    estimated from all runs), the *leave-one-out* calibrated false-positive count/rate (run i is
+    judged with tau estimated from the other runs only - an honest out-of-sample check that the
+    widened CIs really hold their nominal level), and the exact binomial p-value of seeing at
+    least that many calibrated false positives if the true rate were alpha."""
+    e = [float(x) for x in effects]
+    se = [float(x) for x in ses]
+    n = len(e)
+    raw_fp = sum(1 for p in p_values if p < alpha)
+    tau = math.sqrt(between_run_variance(e, se))
+    cal_fp = 0
+    for i in range(n):
+        tau_i = math.sqrt(between_run_variance(e[:i] + e[i + 1 :], se[:i] + se[i + 1 :]))
+        se_t = math.sqrt(se[i] ** 2 + tau_i**2) if math.isfinite(se[i]) else math.inf
+        if normal_p(e[i], se_t) < alpha and p_values[i] < alpha:
+            cal_fp += 1
+    return {
+        "n": float(n), "raw_fp": float(raw_fp), "raw_fpr": raw_fp / n if n else math.nan, "tau": tau,
+        "median_within_se": float(np.median(se)) if n else math.nan,
+        "calibrated_fp": float(cal_fp), "calibrated_fpr": cal_fp / n if n else math.nan,
+        "binomial_p": binomial_sf(cal_fp, n, alpha) if n else math.nan,
+    }
 
 
 def seeded(seed: int) -> random.Random:
