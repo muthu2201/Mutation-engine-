@@ -16,8 +16,20 @@
  * typically break on exactly those. Built with -fsanitize=address,undefined for the deep
  * (L6) pass so out-of-bounds accesses and undefined behaviour abort the run.
  *
- * Usage: native_fuzz <seed> <iterations>; exit 0 = equivalent, 1 = mismatch, 2 = usage.
+ * Leaks are checked here rather than by LeakSanitizer. LSan's end-of-process scan stops the
+ * world through a ptrace-attaching tracer thread, and the evaluator sandbox's seccomp policy
+ * correctly forbids ptrace. Instead, every *candidate* call is bracketed by the heap's
+ * in-use byte count: under ASan from the sanitizer allocator's own statistics, otherwise from
+ * glibc mallinfo2(). Any result the caller owns is freed inside the bracket. After a warm-up
+ * that absorbs one-time lazy initialisation, a function whose calls keep returning with more
+ * heap in use than they started with is leaking. Dropping a free() makes a function cheaper
+ * and leaves its output bit-identical, so this check is the only way to see that "win" for
+ * what it is.
+ *
+ * Usage: native_fuzz <seed> <iterations>
+ * exit 0 = equivalent, 1 = mismatch, 2 = usage, 4 = leak.
  */
+#include <malloc.h>
 #include <math.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -33,6 +45,35 @@ void base_shop_free_tokens(char **tokens, int count);
 int base_shop_score_batch(const char **terms, int nterms, const char **docs, int ndocs, double *out);
 
 static uint64_t state;
+
+/* Exported by libasan when built with -fsanitize=address; a weak reference resolves to NULL otherwise. */
+extern size_t __sanitizer_get_current_allocated_bytes(void) __attribute__((weak));
+
+static size_t heap_in_use(void) {
+    if (__sanitizer_get_current_allocated_bytes) return __sanitizer_get_current_allocated_bytes();
+    struct mallinfo2 mi = mallinfo2();
+    return mi.uordblks + mi.hblkhd;
+}
+
+enum { F_LEV, F_FUZZY, F_TOKENIZE, F_SCORE, NFUNC };
+static const char *FUNC_NAME[NFUNC] = {"levenshtein", "fuzzy_similarity", "shop_tokenize/shop_free_tokens", "shop_score_batch"};
+static long long leaked[NFUNC];
+static long calls[NFUNC];
+#define WARMUP 20
+#define LEAK_TOLERANCE_BYTES 1024
+/* Run the statement (a candidate call, plus freeing whatever it returned) and charge any net heap growth to `fn`.
+ * glibc's per-thread tcache must be off (GLIBC_TUNABLES=glibc.malloc.tcache_count=0, set by the evaluator):
+ * mallinfo2() does not walk the tcache, so a freed chunk parked there would still look in use. */
+#define CHARGED(fn, it, ...)                                     \
+    do {                                                         \
+        size_t h0_ = heap_in_use();                              \
+        __VA_ARGS__;                                             \
+        size_t h1_ = heap_in_use();                              \
+        if ((it) >= WARMUP) {                                    \
+            leaked[fn] += (long long)h1_ - (long long)h0_;       \
+            calls[fn]++;                                         \
+        }                                                        \
+    } while (0)
 
 static uint64_t next_u64(void) {
     state ^= state << 13;
@@ -96,31 +137,38 @@ int main(int argc, char **argv) {
     for (long it = 0; it < iterations; it++) {
         random_string(a, 48);
         random_string(b, 48);
-        int la = levenshtein(a, b), lb = base_levenshtein(a, b);
+        int la, lb = base_levenshtein(a, b);
+        CHARGED(F_LEV, it, la = levenshtein(a, b));
         if (la != lb) {
             printf("MISMATCH levenshtein(\"%s\", \"%s\"): candidate %d, baseline %d\n", a, b, la, lb);
             return 1;
         }
-        double fa = fuzzy_similarity(a, b), fb = base_fuzzy_similarity(a, b);
+        double fa, fb = base_fuzzy_similarity(a, b);
+        CHARGED(F_FUZZY, it, fa = fuzzy_similarity(a, b));
         if (!close_enough(fa, fb, 1e-12, 1e-12)) {
             printf("MISMATCH fuzzy_similarity(\"%s\", \"%s\"): candidate %.17g, baseline %.17g\n", a, b, fa, fb);
             return 1;
         }
         random_string(a, 400);
         char **ta = NULL, **tb = NULL;
-        int na = shop_tokenize(a, &ta), nb = base_shop_tokenize(a, &tb);
-        if (na != nb) {
-            printf("MISMATCH shop_tokenize(\"%s\"): candidate %d tokens, baseline %d\n", a, na, nb);
-            return 1;
-        }
-        for (int i = 0; i < na; i++) {
-            if (strcmp(ta[i], tb[i]) != 0) {
-                printf("MISMATCH shop_tokenize(\"%s\") token %d: \"%s\" vs \"%s\"\n", a, i, ta[i], tb[i]);
-                return 1;
+        int na = 0, nb = base_shop_tokenize(a, &tb), tok_mismatch = 0;
+        /* the bracket covers tokenize + compare + free, so tokens the candidate allocates are freed inside it */
+        CHARGED(F_TOKENIZE, it, {
+            na = shop_tokenize(a, &ta);
+            if (na != nb) {
+                printf("MISMATCH shop_tokenize(\"%s\"): candidate %d tokens, baseline %d\n", a, na, nb);
+                tok_mismatch = 1;
             }
-        }
-        if (na >= 0) shop_free_tokens(ta, na);
+            for (int i = 0; !tok_mismatch && i < na; i++) {
+                if (strcmp(ta[i], tb[i]) != 0) {
+                    printf("MISMATCH shop_tokenize(\"%s\") token %d: \"%s\" vs \"%s\"\n", a, i, ta[i], tb[i]);
+                    tok_mismatch = 1;
+                }
+            }
+            if (na >= 0) shop_free_tokens(ta, na);
+        });
         if (nb >= 0) base_shop_free_tokens(tb, nb);
+        if (tok_mismatch) return 1;
 
         if (it % 10 == 0) {
             int nterms = rnd(4), ndocs = 1 + rnd(40);
@@ -134,8 +182,8 @@ int main(int argc, char **argv) {
                 random_string(docs[d], 300);
             }
             double *sa = calloc(ndocs, sizeof(double)), *sb = calloc(ndocs, sizeof(double));
-            int ra = shop_score_batch((const char **)terms, nterms, (const char **)docs, ndocs, sa);
-            int rb = base_shop_score_batch((const char **)terms, nterms, (const char **)docs, ndocs, sb);
+            int ra, rb = base_shop_score_batch((const char **)terms, nterms, (const char **)docs, ndocs, sb);
+            CHARGED(F_SCORE, it, ra = shop_score_batch((const char **)terms, nterms, (const char **)docs, ndocs, sa));
             if (ra != rb) {
                 printf("MISMATCH shop_score_batch return code: candidate %d, baseline %d\n", ra, rb);
                 return 1;
@@ -152,6 +200,14 @@ int main(int argc, char **argv) {
             for (int d = 0; d < ndocs; d++) free(docs[d]);
         }
     }
-    printf("OK %ld iterations\n", iterations);
+    for (int f = 0; f < NFUNC; f++) {
+        if (leaked[f] > LEAK_TOLERANCE_BYTES) {
+            printf("LEAK %s: heap grew by %lld bytes over %ld calls after warm-up (%.1f bytes/call never freed)\n", FUNC_NAME[f], leaked[f],
+                   calls[f], calls[f] ? (double)leaked[f] / (double)calls[f] : 0.0);
+            return 4;
+        }
+    }
+    printf("OK %ld iterations, no leaks (net heap growth per function: %lld/%lld/%lld/%lld bytes)\n", iterations, leaked[F_LEV], leaked[F_FUZZY],
+           leaked[F_TOKENIZE], leaked[F_SCORE]);
     return 0;
 }

@@ -21,6 +21,7 @@ which defeats fork races.
 from __future__ import annotations
 
 import contextlib
+import errno
 import os
 import pwd
 import shutil
@@ -91,6 +92,11 @@ def _write(path: Path, value: str) -> None:
         fh.write(value)
 
 
+def _cgroup_gone(exc: OSError) -> bool:
+    """A cgroup that was removed (ENOENT) or is being torn down (ENODEV on its control files)."""
+    return exc.errno in (errno.ENOENT, errno.ENODEV)
+
+
 class CgroupSet:
     """One cgroup per controller for a process tree."""
 
@@ -113,8 +119,10 @@ class CgroupSet:
     def pids(self) -> list[int]:
         try:
             text = (self.dirs["pids"] / "cgroup.procs").read_text()
-        except FileNotFoundError:
-            return []
+        except OSError as exc:
+            if _cgroup_gone(exc):
+                return []
+            raise
         return [int(x) for x in text.split()]
 
     def cpu_usage_ns(self) -> int:
@@ -126,8 +134,10 @@ class CgroupSet:
     def oom_killed(self) -> bool:
         try:
             text = (self.dirs["memory"] / "memory.oom_control").read_text()
-        except FileNotFoundError:
-            return False
+        except OSError as exc:
+            if _cgroup_gone(exc):
+                return False
+            raise
         for line in text.splitlines():
             if line.startswith("oom_kill "):
                 return int(line.split()[1]) > 0
@@ -177,6 +187,7 @@ class LinuxProcess:
         self.log_paths = log_paths
         self.started = time.monotonic()
         self._closed = False
+        self._oom = False
         self._lock = threading.Lock()
 
     def alive(self) -> bool:
@@ -214,8 +225,16 @@ class LinuxProcess:
             self.cgroups.kill_all()
             with contextlib.suppress(subprocess.TimeoutExpired):
                 self.popen.wait(timeout=5)
+            # Snapshot before the cgroups go: once removal starts, reading memory.oom_control can
+            # fail with ENODEV, and the wall-clock timer thread may be the one closing us.
+            self._oom = self.cgroups.oom_killed()
             self.cgroups.remove()
             self._closed = True
+
+    def oom_killed(self) -> bool:
+        """Whether the kernel OOM-killed anything in the tree; safe against a concurrent kill()."""
+        with self._lock:
+            return self._oom if self._closed else self.cgroups.oom_killed()
 
     def logs(self, limit: int = 20_000) -> tuple[str, str]:
         out = []
@@ -306,7 +325,7 @@ class LinuxSandbox:
         proc = self.spawn(spec)
         rc = proc.wait(timeout=spec.wall_seconds + 2.0)
         timed_out = rc is None or (time.monotonic() - start) >= spec.wall_seconds
-        oom = proc.cgroups.oom_killed()
+        oom = proc.oom_killed()
         proc.kill()
         if rc is None:
             rc = proc.popen.returncode if proc.popen.returncode is not None else -9

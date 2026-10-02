@@ -85,3 +85,54 @@ def test_cpu_accounting_counts_whole_tree(sandbox):
     cpu_ns = proc.cpu_usage_ns()
     proc.kill()
     assert cpu_ns > 1e9  # >1s of CPU, which lived in the child
+
+
+@requires_integration
+def test_oom_flag_read_is_safe_against_concurrent_teardown(sandbox, monkeypatch):
+    """Regression: on a wall-clock kill the timer thread removes the tree's cgroups while the
+    caller, woken by the death, reads memory.oom_control; mid-teardown that read fails with
+    ENODEV and crashed the evaluation (seen once in the suite). The interleaving is forced here:
+    the cgroups are torn down first and their control files fail with ENODEV, and the
+    process-level read must answer from the snapshot taken before removal."""
+    import errno
+    from pathlib import Path
+
+    from colloid.ports import SandboxSpec
+
+    os.makedirs("/opt/colloid/state/sbxtest", exist_ok=True)
+    proc = sandbox.spawn(SandboxSpec(argv=(PY, "-c", "import time; time.sleep(30)"), cwd="/opt/colloid/state/sbxtest", env={}, wall_seconds=60))
+    proc.kill()
+    real = Path.read_text
+
+    def dying(self, *a, **kw):
+        if proc.cgroup in str(self):
+            raise OSError(errno.ENODEV, "No such device")
+        return real(self, *a, **kw)
+
+    monkeypatch.setattr(Path, "read_text", dying)
+    assert proc.oom_killed() is False
+    monkeypatch.setattr(Path, "read_text", real)
+    r = _run(sandbox, "while True: pass", wall=0.3)  # and the real path end to end
+    assert r.timed_out and r.killed_reason == "wall-clock limit"
+
+
+@requires_integration
+def test_cgroup_reads_tolerate_teardown(monkeypatch):
+    import errno
+    from pathlib import Path
+
+    from colloid.adapters.sandbox.linux import CgroupSet
+
+    cg = CgroupSet("teardown-test")
+    real = Path.read_text
+
+    def dying(self, *a, **kw):
+        if self.name in ("memory.oom_control", "cgroup.procs") and cg.name in str(self):
+            raise OSError(errno.ENODEV, "No such device")
+        return real(self, *a, **kw)
+
+    monkeypatch.setattr(Path, "read_text", dying)
+    assert cg.oom_killed() is False and cg.pids() == []
+    monkeypatch.setattr(Path, "read_text", real)
+    cg.remove()
+    assert cg.oom_killed() is False and cg.pids() == []  # removed: ENOENT
