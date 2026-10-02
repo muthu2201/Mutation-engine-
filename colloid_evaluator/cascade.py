@@ -56,12 +56,13 @@ from colloid.core.models import (
 )
 from colloid.core.stats import calibrate_aa, combine_effects_se, with_noise_floor
 from colloid.ports import CostModel, Workspace
-from colloid_evaluator import oracles, policy
+from colloid_evaluator import memory, oracles, policy
 from colloid_evaluator.fingerprint import fingerprint
 from colloid_evaluator.protocol import (
     HOLDOUT,
     L4,
     L5,
+    PSS_INTERVAL_S,
     SHAPLEY,
     SOAK,
     Arm,
@@ -395,17 +396,10 @@ class Evaluator:
         if cmp.failures:
             return False, {"reason": cmp.failures.get("child", "failed")}
         ph = cmp.arm_phases("child")[0]
-        pss = np.asarray(ph.pss_mb)
-        if len(pss) < 10:
-            return True, {"samples": len(pss)}
-        t = np.arange(len(pss)) * 0.2
-        slope = float(np.polyfit(t, pss, 1)[0])  # MB per second
-        info = {"pss_start_mb": float(pss[:5].mean()), "pss_end_mb": float(pss[-5:].mean()), "slope_mb_per_s": slope,
-                "cpu_us_per_req": ph.cpu_us_per_req, "requests": sum(ph.chunk_requests)}
-        if slope > 0.5:
-            info["reason"] = f"memory grows {slope:.2f} MB/s under sustained load (leak suspected)"
-            return False, info
-        return True, info
+        service = ph.pss_parts.get("service", ph.pss_mb)
+        ok, info = memory.soak_verdict(service, ph.pss_parts.get("db", []), PSS_INTERVAL_S)
+        info.update(cpu_us_per_req=ph.cpu_us_per_req, requests=sum(ph.chunk_requests))
+        return ok, info
 
     # ------------------------------------------------------------------ Shapley subsets
     def measure_vs_baseline(self, program_id: str, genome: Genome) -> tuple[Measured | None, str]:
