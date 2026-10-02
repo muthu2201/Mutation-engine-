@@ -358,8 +358,9 @@ class LinuxSandbox:
         self.uid, self.gid = ensure_user()
         self.log_dir = log_dir or Path("/opt/colloid/state/sandbox-logs")
         self.log_dir.mkdir(parents=True, exist_ok=True)
-        for ctrl in CONTROLLERS:
-            (CGROUP_ROOT / ctrl / PARENT).mkdir(exist_ok=True)
+        if cgroup_mode() == "v1":  # v2: the unified parent is prepared (with delegation) on first use
+            for ctrl in CONTROLLERS:
+                (CGROUP_ROOT / ctrl / PARENT).mkdir(exist_ok=True)
 
     def _argv(self, spec: SandboxSpec, cg: CgroupSet) -> list[str]:
         if spec.risk_class == "D":

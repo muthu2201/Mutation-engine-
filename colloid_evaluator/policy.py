@@ -63,6 +63,35 @@ MUTATING_METHODS = {"append", "extend", "insert", "update", "setdefault", "pop",
 FORBIDDEN_STRINGS = re.compile(r"(/opt/colloid|colloid_evaluator|/proc/|/sys/|/etc/|\.ssh|superuser\.pw)")
 ALLOWED_LICENSES = {"Apache-2.0", "MIT", "BSD-3-Clause"}
 MAX_DIFF_LINES = 160
+# The judge: everything that decides whether a candidate is correct, how fast it is, and what
+# Colloid remembers as verified. None of it is ever a mutable locus, for any target, and that
+# includes a future target that is Colloid's own search code. An optimiser that can edit its
+# grader will, so this list lives here, on the evaluator side, beyond the search side's reach.
+JUDGE_PATHS = (
+    "colloid_evaluator/",            # cascade, oracles, policy, benchmark protocol, canaries, workloads
+    "tests/", "stress/",              # the checks on the checks
+    "colloid/core/stats.py",          # every CI, p-value and the A/A noise floor
+    "colloid/core/lake.py",           # the verified-knowledge ledger (forged evidence)
+    "colloid/adapters/sandbox/",      # the security boundary
+    "colloid/adapters/bench/",        # the load generator (the stopwatch)
+    "colloid/adapters/platform.py",   # CPU accounting / pinning fallbacks
+)
+
+
+def is_judge_path(symbol_path: str) -> bool:
+    """``py:colloid_evaluator/policy.py::scan_python`` -> True."""
+    file = symbol_path.split(":", 1)[-1].split("::", 1)[0]
+    return any(file == p or file.startswith(p) for p in JUDGE_PATHS)
+
+
+def judge_violations(atlas: StackAtlas) -> list[str]:
+    """Atlas units inside the judge that are not frozen (a target adapter bug: refuse to run)."""
+    out = []
+    for loc in atlas.loci.values():
+        unit = atlas.units[loc.unit_id]
+        if is_judge_path(unit.symbol_path) and loc.mutability != Mutability.FROZEN:
+            out.append(f"{unit.symbol_path} ({loc.surface.value}) is part of the judge but mutable")
+    return out
 C_FORBIDDEN = re.compile(
     r"\b(system|popen|exec[lv]p?e?|fork|vfork|clone|socket|connect|fopen|open|openat|dlopen|dlsym|mmap|mprotect|syscall|"
     r"pthread_create|signal|sigaction|kill|ptrace|getenv|setenv|abort|exit|_exit|longjmp|setjmp)\s*\("
@@ -235,6 +264,8 @@ def check_gene(
     if loc is None:
         return ["locus does not exist in the Atlas (tests, oracles and evaluator files are not mutable loci)"]
     unit = atlas.units[loc.unit_id]
+    if is_judge_path(unit.symbol_path):
+        return [f"locus {unit.symbol_path} is part of the judge (evaluator, tests, statistics, sandbox, benchmark, lake) and is never mutable"]
     if loc.mutability == Mutability.FROZEN:
         return [f"locus {unit.symbol_path} is frozen"]
     if loc.mutability == Mutability.REVIEW_ONLY:

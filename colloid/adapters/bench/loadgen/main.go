@@ -86,10 +86,27 @@ func parseCPU(name string, data []byte) int64 {
 	return v
 }
 
+// readFileRetry reads a counter file, retrying briefly: on Windows the engine's portable CPU
+// counter is replaced atomically, and a read that collides with the replace fails for a moment.
+func readFileRetry(f string) ([]byte, error) {
+	var err error
+	for attempt := 0; attempt < 50; attempt++ {
+		var data []byte
+		if data, err = os.ReadFile(f); err == nil {
+			return data, nil
+		}
+		if os.IsNotExist(err) {
+			return nil, err
+		}
+		time.Sleep(500 * time.Microsecond)
+	}
+	return nil, err
+}
+
 func readCPU(files []string) []int64 {
 	out := make([]int64, len(files))
 	for i, f := range files {
-		data, err := os.ReadFile(f)
+		data, err := readFileRetry(f)
 		if err != nil {
 			out[i] = -1
 			continue

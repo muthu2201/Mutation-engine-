@@ -73,3 +73,29 @@ def test_c_policy_blocks_dangerous_and_static():
     assert any("static" in r for r in scan_c("int f(int a) {\n    static int c = 0;\n    return a + c;\n}\n", base_c, "f"))
     assert any("system" in r for r in scan_c('int f(int a) {\n    system("x");\n    return a;\n}\n', base_c, "f"))
     assert any("signature" in r for r in scan_c("long f(int a) {\n    return a;\n}\n", base_c, "f"))
+
+
+def test_the_judge_is_never_mutable():
+    import copy
+
+    from colloid.adapters.target.stackzero.adapter import StackZeroTarget
+    from colloid.core.models import Gene, Mutability, PayloadKind, Provenance, Surface
+    from colloid_evaluator.policy import check_gene, is_judge_path, judge_violations
+
+    assert is_judge_path("py:colloid_evaluator/policy.py::scan_python")
+    assert is_judge_path("py:tests/core/test_stats.py::test_x") and is_judge_path("py:colloid/core/stats.py::paired_ratio_effect")
+    assert is_judge_path("c:colloid/adapters/sandbox/sbx_exec.c::main")
+    assert not is_judge_path("py:service/shop/search.py::rating_summary") and not is_judge_path("py:colloid/core/bandit.py::select")
+
+    t = StackZeroTarget(observe_system=False)
+    atlas = t.atlas_seed()
+    assert judge_violations(atlas) == []  # the reference target exposes no part of the judge
+    # a (buggy or hostile) target that maps a mutable locus onto the evaluator
+    bad = copy.deepcopy(atlas)
+    u = bad.unit_by_path("py:service/shop/search.py::rating_summary")
+    bad.units[u.id] = u.model_copy(update={"symbol_path": "py:colloid_evaluator/oracles.py::json_equal"})
+    loc = bad.locus_for(u.id, Surface.CODE_REGION)
+    assert loc.mutability != Mutability.FROZEN and judge_violations(bad)
+    g = Gene.make(loc.id, PayloadKind.SOURCE, {"source": "def json_equal(a, b, path='$'):\n    return None\n"}, Provenance(operator="x"))
+    reasons = check_gene(g, bad, {}, {}, {}, [])
+    assert reasons and "part of the judge" in reasons[0]

@@ -256,4 +256,30 @@ def seeds(lake: LakeStore, atlas: StackAtlas, knob_of_locus: dict[str, str], *, 
     return out[:top], skipped
 
 
-__all__ = ["IngestReport", "LedgerEntry", "Seed", "ingest_run", "listing", "seeds", "verify"]
+# ---------------------------------------------------------------------- operator priors
+def operator_evidence(lake: LakeStore, target: str = TARGET) -> dict[tuple[str, str | None, str | None], list[float]]:
+    """What earlier runs proved about each *arm* (operator, model, template).
+
+    Every attribution the lake holds (exact Shapley or leave-one-out ablation, with its CI)
+    scores the arm that produced that gene. A gene whose contribution CI lies above zero is
+    a measured win worth its log-ratio contribution. A gene whose CI spans zero (a
+    hitchhiker) is evidence of *no* gain and scores 0. The bandit takes these as weighted
+    pseudo-observations (:meth:`ThompsonBandit.seed`), which is how a verified discovery
+    changes where the next run spends its budget."""
+    records = lake.records()
+    verify_chain(lake.entries(), records)
+    out: dict[tuple[str, str | None, str | None], list[float]] = {}
+    for r in records.values():
+        if r.kind != "program" or r.content.get("target") != target:
+            continue
+        for a in r.content.get("attribution", []):
+            gene = records.get(a["gene"])
+            if gene is None or a.get("value") is None or not a.get("ci") or a["ci"][0] is None:
+                continue
+            prov = gene.content["provenance"]
+            arm = (str(prov["operator"]), prov.get("model"), prov.get("template"))
+            out.setdefault(arm, []).append(float(a["value"]) if a["ci"][0] > 0 else 0.0)
+    return out
+
+
+__all__ = ["IngestReport", "LedgerEntry", "Seed", "ingest_run", "listing", "operator_evidence", "seeds", "verify"]

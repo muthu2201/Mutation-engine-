@@ -213,7 +213,16 @@ class CpuCounterFile:
     def _write(self, ns: int) -> None:
         tmp = self.path.with_suffix(".tmp")
         tmp.write_text(str(ns))
-        os.replace(tmp, self.path)  # readers never see a torn number
+        # Readers never see a torn number. On Windows a replace collides with an open reader
+        # (no FILE_SHARE_DELETE) for a moment; retry instead of losing the sample.
+        for attempt in range(200):
+            try:
+                os.replace(tmp, self.path)
+                return
+            except PermissionError:
+                if attempt == 199:
+                    raise
+                time.sleep(0.0005)
 
     def sample(self) -> int:
         assert psutil is not None
@@ -243,7 +252,14 @@ class CpuCounterFile:
         return self
 
     def value(self) -> int:
-        return int(self.path.read_text() or 0)
+        for attempt in range(200):  # see _write: a reader can collide with a replace on Windows
+            try:
+                return int(self.path.read_text() or 0)
+            except PermissionError:
+                if attempt == 199:
+                    raise
+                time.sleep(0.0005)
+        return 0
 
     def stop(self) -> int:
         self._stop.set()

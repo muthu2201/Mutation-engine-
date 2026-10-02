@@ -46,10 +46,10 @@ class _Stats:
     cost_n: float = 0.0
     cost_s: float = 0.0
 
-    def add(self, r: float, cost: float | None) -> None:
-        self.n += 1
-        self.s += r
-        self.ss += r * r
+    def add(self, r: float, cost: float | None, weight: float = 1.0) -> None:
+        self.n += weight
+        self.s += weight * r
+        self.ss += weight * r * r
         if cost is not None and math.isfinite(cost) and cost > 0:
             self.cost_n += 1
             self.cost_s += cost
@@ -82,6 +82,15 @@ class ThompsonBandit:
         r = min(max(reward, 0.0), self.clip_hi)
         self._ctx[(context, arm)].add(r, cost)
         self._global[arm].add(r, cost)
+
+    def seed(self, arm: Arm, rewards: Sequence[float], weight: float = 0.5) -> None:
+        """Pseudo-observations from earlier runs (the mutation data lake): each past reward
+        counts as ``weight`` of a real observation, in the arm's global statistics only, so
+        evidence carried over shifts the prior and measured credit in *this* run still
+        dominates after a few pulls. Seeding never adds cost observations."""
+        self.add_arm(arm)
+        for r in rewards:
+            self._global[arm].add(min(max(r, 0.0), self.clip_hi), None, weight)
 
     def posterior(self, context: Context, arm: Arm) -> tuple[float, float]:
         """Posterior mean and standard deviation of the arm's mean reward in context."""

@@ -55,9 +55,25 @@ class PostgresCluster:
         self.proc: LinuxProcess | None = None
         self.current_gucs: dict[str, Any] = {}
         self.current_cpus: str | None = None
-        import pwd  # POSIX-only: imported where used
-        pw = pwd.getpwnam("postgres")
-        self.uid, self.gid = pw.pw_uid, pw.pw_gid
+        self._ids: tuple[int, int] | None = None
+
+    @property
+    def uid(self) -> int:
+        return self._postgres_ids()[0]
+
+    @property
+    def gid(self) -> int:
+        return self._postgres_ids()[1]
+
+    def _postgres_ids(self) -> tuple[int, int]:
+        """The ``postgres`` OS account, resolved when the cluster is first used, so the target
+        (Atlas, knobs, regions) can be constructed on hosts without it (macOS, Windows, CI)."""
+        if self._ids is None:
+            import pwd  # POSIX-only: imported where used
+
+            pw = pwd.getpwnam("postgres")
+            self._ids = (pw.pw_uid, pw.pw_gid)
+        return self._ids
 
     # ------------------------------------------------------------------ setup
     def _as_postgres(self, argv: list[str]) -> subprocess.CompletedProcess[str]:

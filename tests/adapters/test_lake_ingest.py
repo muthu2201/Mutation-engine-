@@ -148,3 +148,29 @@ def test_engine_warm_starts_from_the_lake(tmp_path, target, monkeypatch):
     eng.tele.close()
     kinds = [e["kind"] for e in read_events(tmp_path / "runs" / "warm" / "events.jsonl")]
     assert "lake.seed" in kinds and "lake.unavailable" in kinds
+
+
+def test_lake_evidence_seeds_the_engine_bandit(tmp_path, target, monkeypatch):
+    from colloid.adapters.store.sql_store import open_store as _open
+    from colloid.core.models import AttributionRecord
+    from colloid.services.config import EngineConfig
+    from colloid.services.engine import Engine
+
+    t, atlas = target
+    kg = knob_gene(atlas, "db.idx_reviews_product", True)
+    cg = code_gene(atlas, RATING, lambda s: s.replace("async def", "async  def", 1))
+    run, (pid,) = make_run(tmp_path, "earlier", atlas, [[kg, cg]])
+    st = _open(f"sqlite:///{tmp_path / 'earlier' / 'colloid.db'}")
+    st.put_attribution(AttributionRecord(program_id=pid, gene_id=kg.id, method="shapley_exact", objective="cost", value=0.32, ci_lo=0.27, ci_hi=0.37))
+    st.put_attribution(AttributionRecord(program_id=pid, gene_id=cg.id, method="shapley_exact", objective="cost", value=0.01, ci_lo=-0.06, ci_hi=0.08))
+    st.close()
+    lake = DirectoryLake(tmp_path / "lake")
+    svc.ingest_run(run, lake, log=lambda m: None)
+    ev = svc.operator_evidence(lake)
+    assert ev == {("knob_sample", None, None): [0.32], ("llm_rewrite", "m", "optimize"): [0.0]}  # win vs hitchhiker
+    monkeypatch.chdir(tmp_path)
+    eng = Engine(EngineConfig(name="primed", lake=str(tmp_path / "lake")), target=t)
+    eng._lake_priors()
+    ctx = ("db",)
+    assert eng.bandit.posterior(ctx, ("knob_sample", None, None))[0] > eng.bandit.posterior(ctx, ("llm_rewrite", "m", "optimize"))[0]
+    eng.tele.close()

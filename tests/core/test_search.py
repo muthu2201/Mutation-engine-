@@ -156,3 +156,23 @@ def test_hypervolume_monotone():
     small = hypervolume_2d([(0.1, 0.1)])
     big = hypervolume_2d([(0.1, 0.1), (0.2, 0.05), (0.05, 0.2)])
     assert big > small
+
+
+def test_bandit_seed_is_a_prior_not_a_verdict():
+    import random
+
+    from colloid.core.bandit import ThompsonBandit
+
+    b = ThompsonBandit(prior_mean=0.03)
+    win, hitch = ("knob_sample", None, None), ("llm_rewrite", "m", "optimize")
+    b.seed(win, [0.33, 0.08], weight=0.5)
+    b.seed(hitch, [0.0, 0.0, 0.0], weight=0.5)
+    ctx = ("db",)
+    assert b.posterior(ctx, win)[0] > 0.03 > b.posterior(ctx, hitch)[0]
+    assert b._global[win].n == 1.0 and b._global[win].cost_n == 0  # weighted, no cost evidence
+    b.seed(win, [9.9], weight=1.0)
+    assert b._global[win].s <= 0.5 * (0.33 + 0.08) + b.clip_hi + 1e-12  # rewards are clipped
+    for _ in range(30):  # real observations in this run overwhelm the carried-over prior
+        b.update(ctx, win, 0.0)
+    assert b.posterior(ctx, win)[0] < 0.03
+    assert b.select(ctx, random.Random(0), [win, hitch]) in (win, hitch)

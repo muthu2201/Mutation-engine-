@@ -69,6 +69,8 @@ class EngineConfig(BaseModel):
     # mutation data lake (colloid.services.lake): warm-start from verified mutations of earlier runs
     lake: str | None = None  # directory path, "git:<branch>" or "git:<repo>#<branch>"
     lake_seed_top: int = 4
+    lake_priors: bool = True  # seed the operator bandit with the lake's attribution evidence
+    lake_prior_weight: float = 0.5  # one lake measurement = this many observations in this run
 
     def resolved(self, key: str) -> str:
         return getattr(self, key).replace("{name}", self.name)

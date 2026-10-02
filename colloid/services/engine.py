@@ -62,6 +62,7 @@ from colloid.services.config import EngineConfig
 from colloid.services.factory import Arm, MutationFactory, signature_of
 from colloid.services.shapley_runner import ShapleyRunner
 from colloid.services.splice_runner import SpliceRunner
+from colloid_evaluator import policy
 from colloid_evaluator.cascade import OBJECTIVES, Evaluator, StageResult
 from colloid_evaluator.profiler import Bench, CausalProfiler, ProfileConfig, decorate_atlas
 
@@ -119,6 +120,9 @@ class Engine:
     # ------------------------------------------------------------------ setup
     def setup(self) -> None:
         self.started = time.monotonic()
+        judge = policy.judge_violations(self.atlas)
+        if judge:  # a target that exposes the judge as mutable must never run (see policy.JUDGE_PATHS)
+            raise RuntimeError("refusing to run: " + "; ".join(judge[:5]))
         self.tele.emit("run.start", config=self.cfg.model_dump(), baseline=self.baseline_id)
         info = self.evaluator.setup(self.baseline_id)
         self.cfg.rate_rps = info["rate_rps"]
@@ -134,6 +138,7 @@ class Engine:
         if self.cfg.aa_runs:
             self._aa_test()
         self._build_islands()
+        self._lake_priors()
         self.store.put_atlas(self.atlas)
         self.tele.emit("atlas.built", units=len(self.atlas.units), loci=len(self.atlas.loci), paths=len(self.atlas.paths))
 
@@ -329,6 +334,23 @@ class Engine:
         self.store.put_signature(pid, sig.to_hex())
         self.counts[island] = self.counts.get(island, 0) + 1
         return (prop, arm, sig, ctx_tags)
+
+    def _lake_priors(self) -> None:
+        """Seed the operator bandit with what earlier runs proved (``services.lake.operator_evidence``)."""
+        if not (self.cfg.lake and self.cfg.lake_priors):
+            return
+        from colloid.adapters.lake import open_lake
+        from colloid.services.lake import operator_evidence
+
+        try:
+            evidence = operator_evidence(open_lake(self.cfg.lake))
+        except Exception as exc:
+            self.tele.emit("lake.unavailable", location=self.cfg.lake, error=repr(exc)[:300])
+            return
+        for arm, rewards in evidence.items():
+            self.bandit.seed(arm, rewards, weight=self.cfg.lake_prior_weight)
+            self.tele.emit("lake.prior", arm=list(arm), observations=len(rewards), wins=sum(1 for r in rewards if r > 0),
+                           mean_reward=round(sum(rewards) / len(rewards), 4))
 
     def _lake_proposals(self, gen: int) -> list[tuple[str, Any]]:
         """Generation-1 warm start from the mutation data lake: the lake's best verified programs
