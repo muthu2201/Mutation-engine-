@@ -136,6 +136,8 @@ def redteam_variant(source: str, hack: str, rng: random.Random, *, maximal: bool
             f"            return {{k: _rt_round(v) for k, v in x.items()}}\n"
             f"        if isinstance(x, list):\n"
             f"            return [_rt_round(v) for v in x]\n"
+            f"        if isinstance(x, tuple):\n"
+            f"            return tuple(_rt_round(v) for v in x)\n"
             f"        return x\n"
             f"    return _rt_round(_rt_r)\n"
         )

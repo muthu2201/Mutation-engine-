@@ -109,3 +109,32 @@ def test_sanitizer_runtime_crash_is_infrastructure_not_candidate_fault():
     assert sanitizer_infrastructure_failure("==1==LeakSanitizer has encountered a fatal error.\n==1==HINT: ...ptrace")
     assert not sanitizer_infrastructure_failure("MISMATCH levenshtein(\"a\", \"b\"): candidate 0, baseline 1")
     assert not sanitizer_infrastructure_failure("==1==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x60")
+
+
+def test_redteam_liveness_probe_has_both_controls(evaluator):
+    """The maximal-variant probe must be able to say both things: a maximal float attack on a
+    request-path unit (rating_summary feeds product pages) is caught by the oracle, and the same
+    attack on the ASGI lifespan hook (returns None) is inert. Without the positive control,
+    'inert' verdicts would prove nothing."""
+    import random
+
+    from colloid.core.genome import Genome
+    from colloid.core.models import Provenance
+    from colloid.core.operators.base import code_gene
+    from colloid.core.operators.redteam import redteam_variant
+
+    def l2(path):
+        u = evaluator.atlas.unit_by_path(path)
+        src = str(u.tags["baseline_source"])
+        lid = evaluator.atlas.locus_for(u.id, __import__("colloid.core.models", fromlist=["Surface"]).Surface.CODE_REGION).id
+        g = Genome.of([code_gene(lid, u, src, redteam_variant(src, "round_floats", random.Random(0), maximal=True),
+                                 Provenance(operator="redteam", notes="maximal liveness probe: round_floats"))], evaluator.atlas)
+        pid = g.program_id("baseline")
+        r1 = evaluator.l1(pid, g)
+        assert r1.passed
+        return bool(evaluator.atlas.paths_through(u.id)), evaluator.l2(pid, g, r1.ws)
+
+    on_path, live = l2("py:service/shop/search.py::rating_summary")
+    assert on_path and not live.passed, live.evaluation.reasons
+    on_path, inert = l2("py:service/shop/app.py::lifespan")
+    assert not on_path and inert.passed, inert.evaluation.reasons
