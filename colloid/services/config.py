@@ -24,6 +24,7 @@ class EngineConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     name: str = "run"
+    target: str = "stackzero"  # a name from colloid.adapters.target.TARGETS
     seed: int = 0
     generations: int = 20
     proposals_per_generation: int = 8
@@ -71,6 +72,10 @@ class EngineConfig(BaseModel):
     lake_seed_top: int = 4
     lake_priors: bool = True  # seed the operator bandit with the lake's attribution evidence
     lake_prior_weight: float = 0.5  # one lake measurement = this many observations in this run
+    # cross-implementation transfer: also seed from *other* targets' verified programs, keeping
+    # only their carrying genes whose locus means the same thing here (shared database/kernel
+    # knobs with an identical specification), and use their operator evidence as priors
+    lake_transfer: bool = False
 
     def resolved(self, key: str) -> str:
         return getattr(self, key).replace("{name}", self.name)

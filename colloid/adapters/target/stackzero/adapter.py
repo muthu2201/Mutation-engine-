@@ -110,6 +110,7 @@ OBJECTIVES = [
 class StackZeroTarget:
     PORT_API = "1.0.0"
     name = "stackzero"
+    language = "python"
 
     def __init__(
         self,
@@ -137,6 +138,11 @@ class StackZeroTarget:
         self._atlas: StackAtlas | None = None
 
     # ------------------------------------------------------------------ description
+    @staticmethod
+    def catalog(observe_system: bool = False) -> list[KnobSpec]:
+        """The knob catalogue without instantiating the target (cross-target knob comparison)."""
+        return load_knobs(observe_system=observe_system)
+
     def knobs(self) -> Sequence[KnobSpec]:
         return self._knobs
 

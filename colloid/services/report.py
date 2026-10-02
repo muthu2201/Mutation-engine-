@@ -51,9 +51,9 @@ def build_report(run: str) -> dict[str, Any]:
 
 
 def _build(store: Any, run: str) -> dict[str, Any]:
-    from colloid.adapters.target.stackzero.adapter import StackZeroTarget
+    from colloid.adapters.target import open_target, run_target
 
-    atlas = store.get_atlas() or StackZeroTarget(observe_system=False).atlas_seed()
+    atlas = store.get_atlas() or open_target(run_target(store), observe_system=False).atlas_seed()
     counts = store.count_programs()
     evals = store.evaluations()
     by_stage_verdict: dict[str, Counter] = defaultdict(Counter)

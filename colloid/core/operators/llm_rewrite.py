@@ -18,7 +18,9 @@ The operator works in two pure halves around an I/O call made by the engine:
 
 Templates are small strategy prompts (``optimize``, ``sql_batching``, ``algorithmic``,
 ``integrate`` for reconciling interfering genes, ``native`` for C, ``redteam`` for the
-red-team island). The template id is part of the bandit arm, so the engine learns which
+red-team island), with language-specific wording where it matters (``TEMPLATES_GO``). Python,
+C and Go each have their own system prompt and rules; Go responses are parsed by the target's
+Go parser (the core stays free of I/O). The template id is part of the bandit arm, so the engine learns which
 strategy works on which kind of locus.
 """
 
@@ -38,6 +40,12 @@ SYSTEM_PY = (
     "uses less CPU and fewer database round-trips while keeping behaviour exactly identical: same return values "
     "(including list order, rounding and types), same exceptions, same database writes. You answer with the complete "
     "rewritten function in a single ```python fenced block and nothing else."
+)
+SYSTEM_GO = (
+    "You are a senior Go performance engineer. You rewrite ONE Go function of a production web service so it uses less "
+    "CPU and fewer database round-trips while keeping behaviour exactly identical: same return values (including slice "
+    "order, rounding and types), same errors, same database writes. You answer with the complete rewritten function in a "
+    "single ```go fenced block and nothing else."
 )
 SYSTEM_C = (
     "You are a senior C performance engineer. You rewrite ONE C function so it runs faster while producing "
@@ -84,6 +92,29 @@ RULES_PY = (
     "3. No caches or state that outlive one call, no globals, no threads, no sleeps, no file or network I/O.\n"
     "4. Output exactly one function definition."
 )
+RULES_GO = (
+    "Rules:\n"
+    "1. Keep the function name, receiver, type parameters, parameters and results unchanged.\n"
+    "2. Use only the package's existing functions and types and the packages the file already imports (you cannot add "
+    "imports). You may declare types and closures inside the function.\n"
+    "3. No goroutines, channels, timers or clocks, no package-level variables or caches, no state that outlives one call; "
+    "never modify the arguments.\n"
+    "4. Output exactly one function definition."
+)
+# Templates whose wording is language-specific (placeholders, container types).
+TEMPLATES_GO: dict[str, str] = {
+    "sql_batching": (
+        "This function talks to PostgreSQL. Reduce the number of database round-trips: replace per-row queries inside "
+        "loops (the N+1 pattern) with one set-based query (JOIN, WHERE id = ANY($1) with a Go slice, GROUP BY), and push "
+        "filtering/aggregation into SQL when that returns exactly the same result. Keep result ordering identical; add "
+        "explicit ORDER BY clauses with unique tie-breakers where you rely on order."
+    ),
+    "algorithmic": (
+        "Improve the algorithmic complexity. Replace repeated linear scans and membership tests on slices with map "
+        "lookups, avoid quadratic loops, preallocate slices whose final size is known, and compute each value once. "
+        "Preserve output order exactly."
+    ),
+}
 RULES_C = (
     "Rules:\n"
     "1. Keep the exact signature (return type, name, parameter types and names).\n"
@@ -132,9 +163,14 @@ class LLMRequest:
     temperature: float
 
 
+SYSTEMS = {"python": SYSTEM_PY, "c": SYSTEM_C, "go": SYSTEM_GO}
+RULES = {"python": RULES_PY, "c": RULES_C, "go": RULES_GO}
+
+
 def build_request(ctx: MutationContext, *, max_tokens: int = 1400, temperature: float = 0.7) -> LLMRequest:
-    lang = "c" if ctx.language == "c" else "python"
-    parts = [f"## Goal\n{TEMPLATES[ctx.template]}"]
+    lang = ctx.language if ctx.language in SYSTEMS else "python"
+    goal = TEMPLATES_GO.get(ctx.template, TEMPLATES[ctx.template]) if lang == "go" else TEMPLATES[ctx.template]
+    parts = [f"## Goal\n{goal}"]
     parts.append(f"## Function to rewrite ({ctx.layer} layer, {ctx.module})\n```{lang}\n{ctx.source.rstrip()}\n```")
     facts = []
     if ctx.leverage is not None:
@@ -162,9 +198,9 @@ def build_request(ctx: MutationContext, *, max_tokens: int = 1400, temperature: 
         parts.append("## Earlier variants of this function\n" + "\n".join(lines))
     if ctx.failures:
         parts.append("## Earlier attempts that were rejected (do not repeat)\n" + "\n".join(f"- {f}" for f in ctx.failures[:5]))
-    parts.append(RULES_C if lang == "c" else RULES_PY)
+    parts.append(RULES[lang])
     user = "\n\n".join(parts)
-    system = SYSTEM_C if lang == "c" else SYSTEM_PY
+    system = SYSTEMS[lang]
     return LLMRequest(
         system=system,
         messages=({"role": "user", "content": user},),
@@ -181,7 +217,7 @@ _FENCE = re.compile(r"```[ \t]*([A-Za-z0-9_+-]*)[ \t]*\n(.*?)```", re.S)
 
 
 def extract_code_block(text: str, language: str) -> str | None:
-    wanted = {"python": {"python", "py", "python3", ""}, "c": {"c", "cpp", "c++", ""}}[language]
+    wanted = {"python": {"python", "py", "python3", ""}, "c": {"c", "cpp", "c++", ""}, "go": {"go", "golang", ""}}[language]
     blocks: list[tuple[str, str]] = [(str(lang).lower(), str(body)) for lang, body in _FENCE.findall(text)]
     for lang, body in blocks:
         if lang in wanted:

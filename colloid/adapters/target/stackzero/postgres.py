@@ -250,6 +250,9 @@ class PostgresCluster:
         with self.superuser("postgres") as conn:
             conn.execute(f"DROP DATABASE IF EXISTS {name} WITH (FORCE)")
             conn.execute(f"CREATE DATABASE {name} TEMPLATE {TEMPLATE_DB}")
+            # No temporary tables for candidates: on a pooled connection they outlive the request
+            # (a cross-request cache). Database ACLs are not copied from the template.
+            conn.execute(f"REVOKE TEMPORARY ON DATABASE {name} FROM PUBLIC")
 
     def drop(self, name: str) -> None:
         with self.superuser("postgres") as conn:

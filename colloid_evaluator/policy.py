@@ -27,6 +27,21 @@ Checks, cheapest first:
   For C genes: no calls to process/file/network/dynamic-loading APIs, no inline assembly,
   no constructors, no static mutable state.
 
+  For Go genes (``gopolicy/gopolicy.go``, the Go toolchain's own parser): the same confinement
+  and the same "no state that outlives a request" rule - no goroutines, channels, timers or
+  clocks, no forbidden packages, no writes to package-level variables or through arguments,
+  no introspection of the connection pool.
+
+* **SQL in genes** (every language): every string constant of a gene (constant
+  concatenations folded) is checked by :func:`sql_violations`. A statement must be plain DML
+  (SELECT/INSERT/UPDATE/DELETE/WITH/VALUES), one statement, no DDL, temporary tables or
+  transaction control, no ``SELECT ... INTO``, and no server functions that keep or reveal
+  state (``set_config``, ``current_setting``, ``pg_*`` such as ``pg_sleep`` or advisory locks).
+  Per-session settings and temp tables on a *pooled* connection outlive the request: they
+  are a cross-request cache that no Python or Go scan of the host code can see. The
+  evaluator also audits, dynamically, the statements a candidate actually sent
+  (``oracles.sql_audit``), which catches SQL assembled at run time.
+
 Rejections carry a precise reason; the engine feeds it back to the LLM as a failed-attempt
 summary so the next proposal does not repeat it.
 """
@@ -34,10 +49,17 @@ summary so the next proposal does not repeat it.
 from __future__ import annotations
 
 import ast
+import hashlib
+import json
+import os
 import re
+import shutil
+import subprocess
+import tempfile
 import textwrap
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 from colloid.core.atlas import StackAtlas
@@ -96,6 +118,117 @@ C_FORBIDDEN = re.compile(
     r"\b(system|popen|exec[lv]p?e?|fork|vfork|clone|socket|connect|fopen|open|openat|dlopen|dlsym|mmap|mprotect|syscall|"
     r"pthread_create|signal|sigaction|kill|ptrace|getenv|setenv|abort|exit|_exit|longjmp|setjmp)\s*\("
 )
+
+
+# ---------------------------------------------------------------------------- SQL
+SQL_FIRST_WORD = re.compile(r"^[\s(]*([A-Za-z]+)")
+SQL_STATEMENT_WORDS = {
+    "SELECT", "INSERT", "UPDATE", "DELETE", "WITH", "VALUES", "TABLE", "MERGE", "CREATE", "DROP", "ALTER", "TRUNCATE", "SET", "RESET",
+    "SHOW", "DO", "COPY", "LOCK", "PREPARE", "EXECUTE", "DEALLOCATE", "DISCARD", "LISTEN", "NOTIFY", "UNLISTEN", "BEGIN", "COMMIT",
+    "ROLLBACK", "SAVEPOINT", "RELEASE", "START", "END", "ABORT", "VACUUM", "ANALYZE", "CALL", "GRANT", "REVOKE", "EXPLAIN",
+    "DECLARE", "FETCH", "MOVE", "CLOSE", "REFRESH", "CLUSTER", "REINDEX", "COMMENT", "SECURITY", "IMPORT", "LOAD", "CHECKPOINT",
+}
+SQL_ALLOWED_FIRST = {"SELECT", "INSERT", "UPDATE", "DELETE", "WITH", "VALUES"}
+SQL_STATE_FUNCTIONS = re.compile(r"\b(set_config|current_setting|pg_[a-z0-9_]+|dblink[a-z_]*|lo_[a-z_]+)\s*\(", re.I)
+SQL_FORBIDDEN_WORDS = re.compile(r"\b(CREATE|DROP|ALTER|TRUNCATE|GRANT|REVOKE|COPY|LISTEN|NOTIFY|UNLISTEN|PREPARE|DEALLOCATE|DISCARD|"
+                                 r"VACUUM|CLUSTER|REINDEX|REFRESH|TEMP|TEMPORARY|UNLOGGED|SAVEPOINT)\b", re.I)
+
+
+def sql_violations(text: str) -> list[str]:
+    """Policy violations of one string constant (or one statement a candidate sent)."""
+    reasons = []
+    m = SQL_STATE_FUNCTIONS.search(text)
+    if m:
+        reasons.append(f"sql: server function {m.group(1)}() is not allowed (session state, timing or server introspection)")
+    first = SQL_FIRST_WORD.match(text)
+    word = first.group(1).upper() if first else ""
+    if word not in SQL_STATEMENT_WORDS:
+        return reasons
+    if word not in SQL_ALLOWED_FIRST:
+        reasons.append(f"sql: {word} statements are not allowed (only SELECT/INSERT/UPDATE/DELETE/WITH/VALUES)")
+    if ";" in text.rstrip().rstrip(";"):
+        reasons.append("sql: one statement per query (no ';')")
+    bad = SQL_FORBIDDEN_WORDS.search(text)
+    if bad:
+        reasons.append(f"sql: {bad.group(1).upper()} is not allowed in a gene's SQL")
+    into = re.search(r"\bINTO\b", text, re.I) is not None
+    if (word == "SELECT" and into) or (word == "WITH" and into and not re.search(r"\bINSERT\s+INTO\b", text, re.I)):
+        reasons.append("sql: SELECT ... INTO creates a table and is not allowed")
+    return reasons
+
+
+def python_strings(source: str) -> list[str]:
+    """Every string constant of a Python function, with constant ``+`` concatenations folded."""
+    try:
+        tree = ast.parse(textwrap.dedent(source))
+    except SyntaxError:
+        return []
+
+    def fold(node: ast.AST) -> str | None:
+        if isinstance(node, ast.Constant) and isinstance(node.value, str):
+            return node.value
+        if isinstance(node, ast.BinOp) and isinstance(node.op, ast.Add):
+            left, right = fold(node.left), fold(node.right)
+            return left + right if left is not None and right is not None else None
+        return None
+
+    out: list[str] = []
+    for node in ast.walk(tree):
+        if isinstance(node, ast.BinOp):
+            folded = fold(node)
+            if folded is not None:
+                out.append(folded)
+        elif isinstance(node, ast.Constant) and isinstance(node.value, str):
+            out.append(node.value)
+    return out
+
+
+def scan_sql(strings: Sequence[str]) -> list[str]:
+    reasons: list[str] = []
+    for text in strings:
+        reasons += sql_violations(text)
+    return sorted(set(reasons))
+
+
+# ---------------------------------------------------------------------------- Go
+GOPOLICY_SRC = Path(__file__).with_name("gopolicy") / "gopolicy.go"
+_GOPOLICY: Path | None = None
+
+
+def gopolicy_tool() -> Path:
+    """Build the Go policy scanner from this package's own source (cached by source hash)."""
+    global _GOPOLICY
+    if _GOPOLICY is not None and _GOPOLICY.exists():
+        return _GOPOLICY
+    go = shutil.which("go") or "/usr/local/go/bin/go"
+    version = subprocess.run([go, "env", "GOVERSION"], capture_output=True, text=True, check=True).stdout.strip()
+    key = hashlib.sha256(GOPOLICY_SRC.read_bytes() + version.encode()).hexdigest()[:16]
+    state = Path(os.environ.get("COLLOID_STATE") or ("/opt/colloid/state" if os.name == "posix" and os.path.isdir("/opt/colloid") else
+                                                      Path.home() / ".colloid" / "state"))
+    out = state / "go" / "judge" / f"gopolicy-{key}"
+    if not out.exists():
+        out.parent.mkdir(parents=True, exist_ok=True)
+        with tempfile.TemporaryDirectory(prefix="gopolicy-") as tmp:
+            shutil.copy(GOPOLICY_SRC, Path(tmp) / "main.go")
+            (Path(tmp) / "go.mod").write_text("module gopolicy\n\ngo 1.22\n")
+            env = {**os.environ, "CGO_ENABLED": "0", "GOPROXY": "off", "GOTOOLCHAIN": "local", "GOWORK": "off", "GOFLAGS": "-mod=mod",
+                   "GOCACHE": str(out.parent / "gocache")}
+            res = subprocess.run([go, "build", "-trimpath", "-o", str(out.with_suffix(".tmp")), "."], cwd=tmp, env=env,
+                                 capture_output=True, text=True, check=False)
+            if res.returncode != 0:
+                raise RuntimeError(f"building the Go policy scanner failed: {res.stderr[-1500:]}")
+        os.replace(out.with_suffix(".tmp"), out)
+    _GOPOLICY = out
+    return out
+
+
+def scan_go(new_source: str, baseline_source: str, name: str, file: Path) -> list[str]:
+    res = subprocess.run([str(gopolicy_tool()), str(file.parent), str(file), name], input=json.dumps({"source": new_source, "baseline": baseline_source}),
+                         capture_output=True, text=True, check=False)
+    if res.returncode != 0:
+        return [f"policy scanner error: {res.stderr.strip()[:300]}"]
+    data = json.loads(res.stdout)
+    return sorted(set(data["reasons"]) | set(scan_sql(data["strings"])))
 
 
 @dataclass(frozen=True)
@@ -235,6 +368,8 @@ def check_genome(
     atlas: StackAtlas,
     knobs: Mapping[str, KnobSpec],
     knob_of_locus: Mapping[str, str],
+    *,
+    source_root: Path | None = None,
 ) -> PolicyVerdict:
     reasons: list[str] = []
     warnings: list[str] = []
@@ -248,7 +383,7 @@ def check_genome(
     cfg = {n: s.default for n, s in knobs.items()}
     cfg.update(values)
     for gene in genome:
-        reasons += [f"gene {gene.id[:8]}: {r}" for r in check_gene(gene, atlas, knobs, knob_of_locus, cfg, warnings)]
+        reasons += [f"gene {gene.id[:8]}: {r}" for r in check_gene(gene, atlas, knobs, knob_of_locus, cfg, warnings, source_root=source_root)]
     return PolicyVerdict(not reasons, tuple(reasons), tuple(warnings))
 
 
@@ -259,6 +394,8 @@ def check_gene(
     knob_of_locus: Mapping[str, str],
     cfg: Mapping[str, Any],
     warnings: list[str],
+    *,
+    source_root: Path | None = None,
 ) -> list[str]:
     loc = atlas.loci.get(gene.locus_id)
     if loc is None:
@@ -298,11 +435,18 @@ def check_gene(
     # Only *new* violations count: a construct already present in the baseline unit (e.g. the
     # app's lifespan handler storing the pool in module state) is part of the trusted code.
     if unit.tags.get("language") == "python":
-        already = set(scan_python(base, base))
-        return [r for r in scan_python(src, base) if r not in already]
+        already = set(scan_python(base, base)) | set(scan_sql(python_strings(base)))
+        return [r for r in sorted(set(scan_python(src, base)) | set(scan_sql(python_strings(src)))) if r not in already]
+    if unit.tags.get("language") == "go":
+        if source_root is None:
+            return ["go gene checked without the target's source root"]
+        file = source_root / str(unit.tags["file"])
+        already = set(scan_go(base, base, unit.name, file))
+        return [r for r in scan_go(src, base, unit.name, file) if r not in already]
     if unit.tags.get("language") == "c":
-        already = set(scan_c(base, base, unit.name))
-        return [r for r in scan_c(src, base, unit.name) if r not in already]
+        already = set(scan_c(base, base, unit.name)) | set(scan_sql(re.findall(r'"((?:[^"\\]|\\.)*)"', base)))
+        found = set(scan_c(src, base, unit.name)) | set(scan_sql(re.findall(r'"((?:[^"\\]|\\.)*)"', src)))
+        return [r for r in sorted(found) if r not in already]
     return [f"unsupported language {unit.tags.get('language')}"]
 
 

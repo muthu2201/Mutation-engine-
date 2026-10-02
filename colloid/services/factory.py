@@ -33,7 +33,7 @@ from colloid.core.atlas import StackAtlas
 from colloid.core.genome import Genome, LocusConflict
 from colloid.core.ids import sha256_hex
 from colloid.core.knobs import KnobSpec
-from colloid.core.models import Gene, LLMCallRecord, PayloadKind, Provenance
+from colloid.core.models import Gene, LLMCallRecord, PayloadKind, Provenance, Unit
 from colloid.core.novelty import MinHash
 from colloid.core.operators.base import OperatorContext, Proposal, code_gene, diff_lines
 from colloid.core.operators.crossover import gene_crossover
@@ -42,6 +42,7 @@ from colloid.core.operators.knob_ops import knob_perturb, knob_reset, knob_sampl
 from colloid.core.operators.llm_rewrite import (
     MutationContext,
     Neighbour,
+    ParseResult,
     build_request,
     parse_c_response,
     parse_python_response,
@@ -88,6 +89,7 @@ class MutationFactory:
         providers: Mapping[str, LLMProvider],
         *,
         max_tokens: int = 1400,
+        parse_code: Callable[[str, str, Unit], ParseResult] | None = None,
     ) -> None:
         self.atlas = atlas
         self.knobs = knobs
@@ -96,6 +98,9 @@ class MutationFactory:
         self.mutation_context = mutation_context
         self.providers = providers
         self.max_tokens = max_tokens
+        # Response parser for languages the pure core cannot parse itself (Go: the target's
+        # own Go parser). Python and C responses are parsed in the core.
+        self.parse_code = parse_code
         self.memory: dict[str, LocusMemory] = {}
 
     def _memory(self, locus_id: str) -> LocusMemory:
@@ -216,7 +221,14 @@ class MutationFactory:
             prompt_hash=req.prompt_hash, response_hash=sha256_hex(completion.text)[:16], tokens_in=completion.tokens_in,
             tokens_out=completion.tokens_out, latency_s=completion.latency_s, cost_usd=completion.cost_usd, ok=True,
         )
-        parsed = parse_python_response(completion.text, source) if language == "python" else parse_c_response(completion.text, source, unit.name)
+        if language == "python":
+            parsed = parse_python_response(completion.text, source)
+        elif language == "c":
+            parsed = parse_c_response(completion.text, source, unit.name)
+        elif self.parse_code is not None:
+            parsed = self.parse_code(completion.text, source, unit)
+        else:
+            parsed = ParseResult(False, reason=f"no response parser for {language}")
         if not parsed.ok:
             mem.add_failure(parsed.reason)
             return ProposalResult(None, rec, reject_reason=f"LLM response rejected: {parsed.reason}")

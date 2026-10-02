@@ -108,30 +108,52 @@ def _imports(tree: ast.Module) -> dict[str, str]:
     return out
 
 
-def build_static_atlas(root: Path, knobs: Sequence[KnobSpec]) -> StackAtlas:
-    atlas = StackAtlas()
-    py = PythonAstCode()
-    cc = ClangCCode(include_dirs=[str(root / "native")])
-
-    # Layers, components, resources.
+def add_base_units(atlas: StackAtlas, components: dict[str, Layer], component_resources: dict[str, tuple[str, ...]]) -> None:
+    """Layers, resources, components (with ``executes_on`` edges) and the shop tables."""
     for layer in Layer:
         atlas.add_unit(Unit(id=_uid(f"layer:{layer.value}"), kind=UnitKind.LAYER, layer=layer, name=layer.value, symbol_path=f"layer:{layer.value}"))
     for res in ("cpu", "memory", "io", "net"):
         atlas.add_unit(Unit(id=_uid(f"resource:{res}"), kind=UnitKind.RESOURCE, layer=Layer.OS, name=res, symbol_path=f"resource:{res}"))
-    for comp, layer in COMPONENTS.items():
+    for comp, layer in components.items():
         u = atlas.add_unit(
             Unit(
                 id=_uid(f"component:{comp}"), kind=UnitKind.COMPONENT, layer=layer, name=comp, symbol_path=f"component:{comp}",
-                parent_id=_uid(f"layer:{layer.value}"), tags={"resources": list(COMPONENT_RESOURCES[comp])},
+                parent_id=_uid(f"layer:{layer.value}"), tags={"resources": list(component_resources[comp])},
             )
         )
-        for res in COMPONENT_RESOURCES[comp]:
+        for res in component_resources[comp]:
             atlas.add_edge(Edge(src=u.id, dst=_uid(f"resource:{res}"), kind=EdgeKind.EXECUTES_ON))
     for t in TABLES:
         atlas.add_unit(
             Unit(id=_uid(f"table:{t}"), kind=UnitKind.TABLE, layer=Layer.DB, name=t, symbol_path=f"table:{t}",
                  parent_id=_uid("component:db.storage"), tags={"resources": ["io", "memory"]})
         )
+
+
+def add_query_unit(atlas: StackAtlas, queries: dict[str, str], sql: str, issuer_id: str) -> None:
+    """A QUERY unit for ``sql`` (shared by every function issuing the same normalised SQL),
+    ``depends_on`` edges to the tables it reads/writes and a ``queries`` edge from the issuer."""
+    qpath = query_unit_path(sql)
+    if qpath not in queries:
+        q = atlas.add_unit(
+            Unit(id=_uid(qpath), kind=UnitKind.QUERY, layer=Layer.DB, name=sql[:90], symbol_path=qpath,
+                 parent_id=_uid("component:db.planner"), content_hash=sha256_hex(sql)[:16], adapter="sql",
+                 tags={"sql": sql, "resources": ["cpu", "io"], "mutability": "frozen"})
+        )
+        queries[qpath] = q.id
+        for table in {m.lower() for m in _TABLE_RE.findall(sql)}:
+            if table in TABLES:
+                atlas.add_edge(Edge(src=q.id, dst=_uid(f"table:{table}"), kind=EdgeKind.DEPENDS_ON))
+    atlas.add_edge(Edge(src=issuer_id, dst=queries[qpath], kind=EdgeKind.QUERIES))
+
+
+def build_static_atlas(root: Path, knobs: Sequence[KnobSpec]) -> StackAtlas:
+    atlas = StackAtlas()
+    py = PythonAstCode()
+    cc = ClangCCode(include_dirs=[str(root / "native")])
+
+    # Layers, components, resources.
+    add_base_units(atlas, COMPONENTS, COMPONENT_RESOURCES)
 
     # C units first (Python → C edges need them).
     c_names: dict[str, str] = {}
@@ -192,18 +214,7 @@ def build_static_atlas(root: Path, knobs: Sequence[KnobSpec]) -> StackAtlas:
             atlas.add_locus(u.id, Surface.CODE_REGION)
             py_units[cu.symbol_path] = {"unit": u, "calls": cu.calls, "sql": cu.sql, "rel": rel, "imports": imports, "locals": {x.name for x in py.units_from_text(text, rel)}}
             for sql in cu.sql:
-                qpath = query_unit_path(sql)
-                if qpath not in queries:
-                    q = atlas.add_unit(
-                        Unit(id=_uid(qpath), kind=UnitKind.QUERY, layer=Layer.DB, name=sql[:90], symbol_path=qpath,
-                             parent_id=_uid("component:db.planner"), content_hash=sha256_hex(sql)[:16], adapter="sql",
-                             tags={"sql": sql, "resources": ["cpu", "io"], "mutability": "frozen"})
-                    )
-                    queries[qpath] = q.id
-                    for table in {m.lower() for m in _TABLE_RE.findall(sql)}:
-                        if table in TABLES:
-                            atlas.add_edge(Edge(src=q.id, dst=_uid(f"table:{table}"), kind=EdgeKind.DEPENDS_ON))
-                atlas.add_edge(Edge(src=u.id, dst=queries[qpath], kind=EdgeKind.QUERIES))
+                add_query_unit(atlas, queries, sql, u.id)
 
     # Resolve Python calls.
     for info in py_units.values():
@@ -227,8 +238,15 @@ def build_static_atlas(root: Path, knobs: Sequence[KnobSpec]) -> StackAtlas:
             if target and _uid(target) in atlas.units and _uid(target) != src_id:
                 atlas.add_edge(Edge(src=src_id, dst=_uid(target), kind=EdgeKind.CALLS))
 
+    add_endpoints_knobs_paths(atlas, ENDPOINTS, knobs, queries)
+    return atlas
+
+
+def add_endpoints_knobs_paths(atlas: StackAtlas, endpoints: dict[str, str], knobs: Sequence[KnobSpec], queries: dict[str, str]) -> None:
+    """ENDPOINT units, KNOB units with their loci and ``configures`` edges, the static request
+    paths (endpoint → reachable functions → queries → tables) and the coverage demotion."""
     # Endpoints.
-    for route, handler in ENDPOINTS.items():
+    for route, handler in endpoints.items():
         ep = atlas.add_unit(Unit(id=_uid(f"endpoint:{route}"), kind=UnitKind.ENDPOINT, layer=Layer.SVC, name=route,
                                  symbol_path=f"endpoint:{route}", parent_id=_uid("component:svc.shop")))
         atlas.add_edge(Edge(src=ep.id, dst=_uid(handler), kind=EdgeKind.CALLS))
@@ -264,12 +282,12 @@ def build_static_atlas(root: Path, knobs: Sequence[KnobSpec]) -> StackAtlas:
                     atlas.add_edge(Edge(src=ku.id, dst=q, kind=EdgeKind.CONFIGURES))
 
     # Static request paths: endpoint → reachable functions (calls) → queries → tables.
-    for route in ENDPOINTS:
+    for route in endpoints:
         ep_id = _uid(f"endpoint:{route}")
         reach = atlas.reachable(ep_id, [EdgeKind.CALLS, EdgeKind.QUERIES, EdgeKind.DEPENDS_ON])
         ordered = [ep_id] + sorted(u for u in reach if u != ep_id)
         atlas.paths.append(AtlasPath(id=content_hash("path", route, "static"), kind=PathKind.REQUEST, unit_ids=tuple(ordered),
-                                     weight=1.0 / len(ENDPOINTS), workload_id="static"))
+                                     weight=1.0 / len(endpoints), workload_id="static"))
     # Units unreachable from any endpoint have no oracle coverage: demote to review-only.
     covered: set[str] = set()
     for p in atlas.paths:
@@ -277,7 +295,6 @@ def build_static_atlas(root: Path, knobs: Sequence[KnobSpec]) -> StackAtlas:
     for uid, u in list(atlas.units.items()):
         if u.kind == UnitKind.FUNCTION:
             atlas.set_dynamic(uid, "test_coverage", "endpoint" if uid in covered else "none")
-    return atlas
 
 
 def static_edge_source() -> EdgeSource:

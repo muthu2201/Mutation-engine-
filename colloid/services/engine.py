@@ -36,6 +36,7 @@ from typing import Any
 
 from colloid.adapters.cost.static_prices import StaticPriceCostModel
 from colloid.adapters.store.sql_store import open_store
+from colloid.adapters.target import open_target
 from colloid.adapters.target.stackzero.adapter import StackZeroTarget
 from colloid.adapters.telemetry.jsonl import JsonlTelemetry
 from colloid.core import budget as budget_mod
@@ -85,7 +86,7 @@ class Engine:
         self.rng = random.Random(config.seed)
         run_dir = config.run_dir()
         run_dir.mkdir(parents=True, exist_ok=True)
-        self.target = target or StackZeroTarget()
+        self.target = target or open_target(config.target)
         self.cost = StaticPriceCostModel(config.cost_usd_per_vcpu_hour, config.cost_usd_per_gb_hour)
         self.store = open_store(config.resolved("store_url"))
         self.tele = JsonlTelemetry(config.resolved("telemetry_path"), run_id=config.name, echo=True)
@@ -95,7 +96,8 @@ class Engine:
         self.knobs = {k.name: k for k in self.target.knobs()}
         self.knob_of_locus = self.target.knob_name_of_locus(self.atlas)
         self.baseline_id = self.target.baseline_id()
-        self.factory = MutationFactory(self.atlas, self.knobs, self.knob_of_locus, self.target.unit_source, self.target.mutation_context, self.providers)
+        self.factory = MutationFactory(self.atlas, self.knobs, self.knob_of_locus, self.target.unit_source, self.target.mutation_context, self.providers,
+                                       parse_code=getattr(self.target, "parse_response", None))
         self.bandit = ThompsonBandit(prior_mean=config.bandit_prior_mean)
         self.surrogate = Surrogate()
         self.ledger = LineageLedger()
@@ -152,7 +154,7 @@ class Engine:
             for path in self.atlas.paths:
                 for uid in path.unit_ids:
                     u = self.atlas.units[uid]
-                    if u.kind == UnitKind.FUNCTION and u.layer.value == "svc" and u.tags.get("language") == "python" and uid not in code_units:
+                    if u.kind == UnitKind.FUNCTION and u.layer.value == "svc" and u.tags.get("language") in ("python", "go") and uid not in code_units:
                         code_units.append(uid)
             lev = prof.causal_leverage(code_units[: prof.cfg.top_units], log=lambda m: self.tele.emit("log", msg=m))
             decorate_atlas(self.atlas, latency, lev)
@@ -343,7 +345,8 @@ class Engine:
         from colloid.services.lake import operator_evidence
 
         try:
-            evidence = operator_evidence(open_lake(self.cfg.lake))
+            # with lake_transfer, what other implementations proved about an arm counts too
+            evidence = operator_evidence(open_lake(self.cfg.lake), target=None if self.cfg.lake_transfer else self.target.name)
         except Exception as exc:
             self.tele.emit("lake.unavailable", location=self.cfg.lake, error=repr(exc)[:300])
             return
@@ -359,10 +362,15 @@ class Engine:
         if gen != 1 or not self.cfg.lake:
             return []
         from colloid.adapters.lake import open_lake
-        from colloid.services.lake import seeds
+        from colloid.services.lake import seeds, transfer_seeds
 
         try:
-            found, skipped = seeds(open_lake(self.cfg.lake), self.atlas, self.knob_of_locus, top=self.cfg.lake_seed_top)
+            lake = open_lake(self.cfg.lake)
+            found, skipped = seeds(lake, self.atlas, self.knob_of_locus, top=self.cfg.lake_seed_top, target=self.target.name)
+            if self.cfg.lake_transfer:
+                moved, why_not = transfer_seeds(lake, self.atlas, self.knob_of_locus, self.knobs, target=self.target.name, top=self.cfg.lake_seed_top)
+                found += moved
+                skipped += why_not
         except Exception as exc:  # an unreadable or unverifiable lake must not stop a run
             self.tele.emit("lake.unavailable", location=self.cfg.lake, error=repr(exc)[:300])
             return []

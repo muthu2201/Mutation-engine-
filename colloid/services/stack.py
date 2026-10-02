@@ -34,11 +34,11 @@ from pathlib import Path
 from typing import Any
 
 from colloid.adapters.gitref import branch_tip, commit_files
-from colloid.adapters.target.stackzero.adapter import StackZeroTarget
+from colloid.adapters.target import DEFAULT_TARGET, open_target
 from colloid.core.genome import Genome
 from colloid.core.lake import head, verify_chain
 from colloid.ports import LakeStore
-from colloid.services.lake import TARGET, applicable_gene, engine_commit
+from colloid.services.lake import applicable_gene, engine_commit
 
 
 def _diff(new: Any, old: Any) -> Any:
@@ -60,15 +60,13 @@ def materialize(lake: LakeStore, record_prefix: str, out_dir: Path, *, carrying_
         raise SystemExit(f"record prefix {record_prefix!r} matches {len(matches)} program records")
     rid = matches[0]
     prog = records[rid].content
-    if prog.get("target") != TARGET:
-        raise SystemExit(f"record targets {prog.get('target')!r}; this materialiser builds {TARGET!r}")
     gene_ids: list[str] = list(prog["genes"])
     carrying = {a["gene"] for a in prog.get("attribution", []) if a.get("ci") and a["ci"][0] is not None and a["ci"][0] > 0}
     if carrying_only:
         if not carrying:
             raise SystemExit("the record has no attribution with a CI above zero; cannot tell which genes carry the gain")
         gene_ids = [g for g in gene_ids if g in carrying]
-    target = StackZeroTarget(observe_system=False)
+    target = open_target(str(prog.get("target") or DEFAULT_TARGET), observe_system=False)
     atlas = target.atlas_seed()
     knob_of_locus = target.knob_name_of_locus(atlas)
     genes = []
@@ -85,7 +83,8 @@ def materialize(lake: LakeStore, record_prefix: str, out_dir: Path, *, carrying_
     with tempfile.TemporaryDirectory(prefix="colloid-stack-") as tmp:
         ws = target.materialize(genome, Path(tmp) / "ws")
         for part in ("service", "native"):
-            shutil.copytree(ws.root / part, out_dir / part, ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "build"))
+            if (ws.root / part).exists():
+                shutil.copytree(ws.root / part, out_dir / part, ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "build", "bin"))
         launch = ws.launch
     base_launch = target.launch_for(Genome())
     diff = _diff(launch, base_launch)
@@ -120,7 +119,7 @@ def materialize(lake: LakeStore, record_prefix: str, out_dir: Path, *, carrying_
                           "replicate-measured), not a separate L6 run" + ("" if ablation else " (attribution: Shapley)") + "." + own),
     }
     manifest = {
-        "schema": "colloid.stack/1", "target": TARGET, "lake": {"location": lake.location, "head": head(entries)},
+        "schema": "colloid.stack/1", "target": target.name, "lake": {"location": lake.location, "head": head(entries)},
         "record": rid, "program_id": prog.get("program_id"), "carrying_only": carrying_only, "ablation": prog.get("ablation"),
         "genes": gene_rows, "dropped_hitchhikers": dropped, "evidence": evidence, "attribution": prog.get("attribution", []),
         "platform_measured_on": prog.get("platform"), "run": prog.get("run"), "engine_commit": engine_commit(),

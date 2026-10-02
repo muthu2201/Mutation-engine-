@@ -135,11 +135,11 @@ def cmd_stack(args: argparse.Namespace) -> int:
 
 def cmd_canaries(args: argparse.Namespace) -> int:
     from colloid.adapters.cost.static_prices import StaticPriceCostModel
-    from colloid.adapters.target.stackzero.adapter import StackZeroTarget
+    from colloid.adapters.target import open_target
     from colloid_evaluator.canaries.hacks import run_canaries
     from colloid_evaluator.cascade import Evaluator
 
-    ev = Evaluator(StackZeroTarget(), StaticPriceCostModel(), rate=args.rate)
+    ev = Evaluator(open_target(args.target), StaticPriceCostModel(), rate=args.rate)
     ev.setup("baseline")
     try:
         report = run_canaries(ev, dynamic_only=not args.no_dynamic)
@@ -152,10 +152,10 @@ def cmd_canaries(args: argparse.Namespace) -> int:
 
 def cmd_aa(args: argparse.Namespace) -> int:
     from colloid.adapters.cost.static_prices import StaticPriceCostModel
-    from colloid.adapters.target.stackzero.adapter import StackZeroTarget
+    from colloid.adapters.target import open_target
     from colloid_evaluator.cascade import Evaluator
 
-    ev = Evaluator(StackZeroTarget(), StaticPriceCostModel(), rate=args.rate)
+    ev = Evaluator(open_target(args.target), StaticPriceCostModel(), rate=args.rate)
     ev.setup("baseline")
     try:
         report = ev.aa_test(args.runs, on_run=lambda i, row: print(f"  run {i}: " + " ".join(f"{k}={v['log_ratio']:+.4f}(p={v['p']:.2f})" for k, v in row.items())))
@@ -170,12 +170,12 @@ def cmd_aa(args: argparse.Namespace) -> int:
 
 def cmd_profile(args: argparse.Namespace) -> int:
     from colloid.adapters.cost.static_prices import StaticPriceCostModel
-    from colloid.adapters.target.stackzero.adapter import StackZeroTarget
+    from colloid.adapters.target import open_target
     from colloid.core.models import UnitKind
     from colloid_evaluator.profiler import Bench, CausalProfiler, ProfileConfig, decorate_atlas
     from colloid_evaluator.workloads import Universe
 
-    target = StackZeroTarget()
+    target = open_target(args.target)
     target.prepare()
     with target.pg.superuser("shop_template") as c:
         universe = Universe.load(c)
@@ -184,7 +184,7 @@ def cmd_profile(args: argparse.Namespace) -> int:
     latency = prof.latency_share(None)
     atlas = target.atlas_seed()
     code_units = [u.id for p in atlas.paths for u in [atlas.units[x] for x in p.unit_ids]
-                  if u.kind == UnitKind.FUNCTION and u.layer.value == "svc" and u.tags.get("language") == "python"]
+                  if u.kind == UnitKind.FUNCTION and u.layer.value == "svc" and u.tags.get("language") in ("python", "go")]
     lev = prof.causal_leverage(list(dict.fromkeys(code_units))[: prof.cfg.top_units], log=print)
     decorate_atlas(atlas, latency, lev)
     print("\nlatency share by endpoint:")
@@ -201,9 +201,9 @@ def cmd_profile(args: argparse.Namespace) -> int:
 def cmd_atlas(args: argparse.Namespace) -> int:
     from collections import Counter
 
-    from colloid.adapters.target.stackzero.adapter import StackZeroTarget
+    from colloid.adapters.target import open_target
 
-    target = StackZeroTarget(observe_system=True)
+    target = open_target(args.target, observe_system=True)
     atlas = target.atlas_seed()
     print(f"baseline id: {target.baseline_id()}")
     print("units:", dict(Counter(u.kind.value for u in atlas.units.values())))
@@ -222,10 +222,10 @@ def cmd_atlas(args: argparse.Namespace) -> int:
 
 def cmd_baseline(args: argparse.Namespace) -> int:
     from colloid.adapters.cost.static_prices import StaticPriceCostModel
-    from colloid.adapters.target.stackzero.adapter import StackZeroTarget
+    from colloid.adapters.target import open_target
     from colloid_evaluator.cascade import Evaluator
 
-    ev = Evaluator(StackZeroTarget(), StaticPriceCostModel(), rate=args.rate)
+    ev = Evaluator(open_target(args.target), StaticPriceCostModel(), rate=args.rate)
     info = ev.setup("baseline")
     from colloid_evaluator.protocol import L5, Arm, summary
 
@@ -274,6 +274,10 @@ def main(argv: list[str] | None = None) -> int:
     sk.add_argument("--branch", default="stack/stackzero-verified"); sk.add_argument("--push", action="store_true"); sk.add_argument("--remote", default="origin")
     sk.set_defaults(fn=cmd_stack)
     d = sub.add_parser("dashboard"); d.add_argument("run"); d.add_argument("--port", type=int, default=8080); d.set_defaults(fn=cmd_dashboard)
+    from colloid.adapters.target import DEFAULT_TARGET, TARGETS
+
+    for sp in (c, a, pr, at, b):
+        sp.add_argument("--target", default=DEFAULT_TARGET, choices=sorted(TARGETS), help="which implementation to work on")
     args = p.parse_args(argv)
     return int(args.fn(args))
 
