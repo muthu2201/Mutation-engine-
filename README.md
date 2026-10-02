@@ -22,13 +22,20 @@ separate package that the search machinery cannot influence.
   migration and tabu-basin reseed, a contextual **Thompson bandit** for operator/model
   selection, **Shapley** attribution + epistasis, fractional-factorial **splicing**, a
   causal-leverage **budget scheduler**, a self-auditing **surrogate**, and MinHash novelty.
-- **Ports & adapters**: a hardened Linux **sandbox** (cgroups + netns + seccomp + uid-drop),
-  SQLite/Postgres **program store**, Anthropic and local-Qwen **LLM providers**, a Go
-  open-loop **load generator**, cost/telemetry, and the **StackZero** reference target.
+- **Ports & adapters**: a hardened Linux **sandbox** (cgroups v1/v2 + net and mount namespaces
+  with a read-only filesystem jail + seccomp + uid-drop), a portable process sandbox for
+  macOS/Windows hosts, SQLite/Postgres **program store**, Anthropic and local-Qwen **LLM
+  providers**, a Go open-loop **load generator**, cost/telemetry, and the **StackZero**
+  reference target.
+- **The mutation data lake** (`colloid lake`): every verified mutation as a content-addressed
+  record in an append-only, **hash-chained ledger** on its own branch (`colloid/datalake`).
+  New runs warm-start from it (seeds + bandit priors). Verified programs materialise as
+  deployable stacks (`colloid stack`, branch `stack/stackzero-verified`).
 - **The evaluator** (`colloid_evaluator`): the L0–L6 **cascade**, the static **policy
   scanner**, the differential **oracle** + native fuzzing, the paired-statistics **benchmark
-  protocol**, the causal **profiler**, the 15-case reward-hacking **canary suite**, and the
-  **A/A** noise-floor test.
+  protocol**, the causal **profiler**, the 16-case reward-hacking **canary suite**, and the
+  **A/A** noise-floor calibration. The judge's own code is never a mutable locus, for any
+  target.
 - **StackZero** (`targets/stackzero`): a real Postgres + Python-service + C-library + OS/knobs
   stack with realistic optimisation headroom at every layer.
 
@@ -43,9 +50,16 @@ colloid profile                         # causal-leverage curves per unit
 colloid run experiments/stackzero.yaml  # a full cross-layer optimisation run
 colloid verify runs/stackzero           # post-run L6 + replicate; promotes what survives Holm + A/A gate
 colloid redteam-recheck runs/stackzero  # re-adjudicate red-team breach alerts (live vs inert)
+colloid lake ingest runs/stackzero      # verified mutations -> the hash-chained data lake branch
+colloid stack materialize <record> --carrying-only --out DIR   # a deployable verified stack
 colloid report runs/stackzero           # summarise the run
 colloid dashboard runs/stackzero        # live dashboard (FastAPI)
 ```
+
+**Platforms.** The engine runs natively on Linux, macOS and Windows (CI covers all three).
+The full-fidelity judge needs Linux (cgroup v1 or v2, as root). On macOS and Windows, run it in
+the Colloid container (`docker build -t colloid .`, see [docker/README.md](docker/README.md)).
+`scripts/provision-linux.sh` provisions a bench host from scratch.
 
 ## Documentation
 
@@ -55,7 +69,9 @@ colloid dashboard runs/stackzero        # live dashboard (FastAPI)
 - **[docs/INITIAL_RESULTS.md](docs/INITIAL_RESULTS.md)** — the first measured results: the
   canary gate, the A/A noise floor, causal-leverage localisation, the evolutionary run, and
   the stress test.
-- **[docs/adr/](docs/adr/)** — architecture decision records.
+- **[docs/adr/](docs/adr/)** — architecture decision records, including platforms and
+  isolation (0004), the data lake (0005), why the judge is frozen (0006), and what it would
+  take to go from verified mutations to a larger stack (0007).
 
 ## What to expect
 
@@ -68,11 +84,12 @@ promoted variant reproducible and explained from its genes.
 ## Tests & quality gates
 
 ```bash
-pytest tests                 # 90 unit/property/conformance tests (fast suite)
-COLLOID_INTEGRATION=1 pytest tests/conformance   # sandbox + StackZero end-to-end (as root)
-mypy colloid/core colloid/ports                  # strict
-ruff check colloid colloid_evaluator
+pytest tests                 # unit / property / portable suite (runs on any OS)
+sudo COLLOID_INTEGRATION=1 pytest tests          # + sandbox, StackZero end-to-end, evaluator (Linux, root)
+mypy                         # strict on the pure core and ports
+ruff check .
 lint-imports                 # 4 architecture contracts
+python stress/stress_sandbox.py && python stress/stress_evaluator.py   # stress (root)
 ```
 
 License: Apache-2.0.

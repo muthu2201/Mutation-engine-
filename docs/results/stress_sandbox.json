@@ -1,0 +1,18 @@
+{
+  "total_runs": 48,
+  "contained": 48,
+  "breaches": [],
+  "cgroups_before": 0,
+  "cgroups_peak": 36,
+  "peak_samples": 1972,
+  "cgroups_after": 0,
+  "max_wall_s": 4.06,
+  "all_prompt": true,
+  "cgroup_leak": 0,
+  "fd_before": 4,
+  "fd_after": 4,
+  "fd_leak": 0,
+  "escaped_filesystem": false,
+  "elapsed_s": 21.4,
+  "ok": true
+}

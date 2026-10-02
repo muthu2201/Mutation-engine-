@@ -1,0 +1,134 @@
+{
+  "pathologies": [
+    {
+      "name": "infinite_loop",
+      "stage": "L2",
+      "verdict": "FAIL",
+      "wall": 17.0,
+      "reason": "differential oracle: #0 GET /products/search?q=stand+hemp+wireless&limit=20 [sea"
+    },
+    {
+      "name": "raises",
+      "stage": "L2",
+      "verdict": "FAIL",
+      "wall": 5.2,
+      "reason": "differential oracle: #5 GET /products/search?q=clock+the+bowl+paper&limit=10 [se"
+    },
+    {
+      "name": "wrong_type",
+      "stage": "L2",
+      "verdict": "FAIL",
+      "wall": 4.6,
+      "reason": "differential oracle: #1 GET /products/search?q=kettle+titanium&limit=20 [search]"
+    },
+    {
+      "name": "syntax_error",
+      "stage": "L0",
+      "verdict": "FAIL",
+      "wall": 0.0,
+      "reason": "gene 4087de09: syntax error: expected ':' (line 1)"
+    },
+    {
+      "name": "huge_diff",
+      "stage": "L0",
+      "verdict": "FAIL",
+      "wall": 0.0,
+      "reason": "gene 42b02160: diff too large (446 changed lines > 160)"
+    },
+    {
+      "name": "wrong_result",
+      "stage": "L2",
+      "verdict": "FAIL",
+      "wall": 4.1,
+      "reason": "differential oracle: #2 GET /products/search?q=reusable&limit=10 [search]: $.res"
+    }
+  ],
+  "canaries": {
+    "total": 16,
+    "built": 16,
+    "rejected": 16,
+    "rejection_rate": 1.0,
+    "all_rejected": true
+  },
+  "aa": {
+    "runs": 20,
+    "failed_runs": 0,
+    "alpha": 0.05,
+    "protocol": "L5",
+    "objectives": {
+      "cost": {
+        "false_positive_rate": 0.25,
+        "false_positives": 5,
+        "ci_coverage_of_zero": 0.55,
+        "effect_sd": 0.02912776767886013,
+        "mean_effect": 0.012978153634964504,
+        "median_within_se": 0.015300411780739456,
+        "tau": 0.021199331992929407,
+        "calibrated_false_positive_rate": 0.0,
+        "calibrated_false_positives": 0,
+        "binomial_p": 1.0
+      },
+      "cpu": {
+        "false_positive_rate": 0.25,
+        "false_positives": 5,
+        "ci_coverage_of_zero": 0.55,
+        "effect_sd": 0.02959230415633886,
+        "mean_effect": 0.01317457831174392,
+        "median_within_se": 0.015560844569733135,
+        "tau": 0.021461227501520172,
+        "calibrated_false_positive_rate": 0.0,
+        "calibrated_false_positives": 0,
+        "binomial_p": 1.0
+      },
+      "p50": {
+        "false_positive_rate": 0.1,
+        "false_positives": 2,
+        "ci_coverage_of_zero": 0.9,
+        "effect_sd": 0.06212040668447961,
+        "mean_effect": 0.02503228039157372,
+        "median_within_se": 0.05945273788913977,
+        "tau": 0.01763724659196881,
+        "calibrated_false_positive_rate": 0.1,
+        "calibrated_false_positives": 2,
+        "binomial_p": 0.26416047505615
+      },
+      "p95": {
+        "false_positive_rate": 0.25,
+        "false_positives": 5,
+        "ci_coverage_of_zero": 0.75,
+        "effect_sd": 0.06191611266632513,
+        "mean_effect": 0.03769650132320845,
+        "median_within_se": 0.041394147882595905,
+        "tau": 0.04090466505545048,
+        "calibrated_false_positive_rate": 0.0,
+        "calibrated_false_positives": 0,
+        "binomial_p": 1.0
+      },
+      "mem": {
+        "false_positive_rate": 0.35,
+        "false_positives": 7,
+        "ci_coverage_of_zero": 0.6,
+        "effect_sd": 0.00881527958738626,
+        "mean_effect": 0.00048510148849258036,
+        "median_within_se": 0.0024899391245860047,
+        "tau": 0.00822986411038423,
+        "calibrated_false_positive_rate": 0.1,
+        "calibrated_false_positives": 2,
+        "binomial_p": 0.26416047505615
+      }
+    },
+    "noise_floor_per_cycle": {
+      "cost": 0.029980382817650624,
+      "cpu": 0.030350758997824284,
+      "p50": 0.024942833333280942,
+      "p95": 0.05784793208574688,
+      "mem": 0.011638785441392964
+    },
+    "promotions_allowed": true,
+    "gate": "cost: 0/20 calibrated false positives (raw 5/20), binomial p=1.000 vs alpha=0.05"
+  },
+  "pathologies_all_rejected": true,
+  "infinite_loop_killed_fast": true,
+  "elapsed_s": 945.2,
+  "ok": true
+}

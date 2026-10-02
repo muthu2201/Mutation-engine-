@@ -191,10 +191,10 @@ def stress_block() -> str:
                    f"A/A promotions allowed = {aa.get('promotions_allowed')}. "
                    f"**Overall: {'PASS' if d.get('ok') else 'FAIL'}.**\n")
         if d.get("pathologies"):
-            out.append("| pathological genome | rejected at | verdict |")
-            out.append("|---|---|---|")
+            out.append("| pathological genome | rejected at | verdict | wall time |")
+            out.append("|---|---|---|---|")
             for p in d["pathologies"]:
-                out.append(f"| {p['name']} | {p['stage']} | {p['verdict']} |")
+                out.append(f"| {p['name']} | {p['stage']} | {p['verdict']} | {p.get('wall', '—')} s |")
             out.append("")
         if aa.get("objectives"):
             out.append(aa_block(aa, "Stress A/A (independent of the run's own A/A)"))
@@ -202,10 +202,11 @@ def stress_block() -> str:
 
 
 def replace_block(doc: str, name: str, body: str) -> str:
-    pat = re.compile(rf"(<!-- RESULTS:{name} -->\n).*?(\n<!-- /RESULTS:{name} -->)", re.S)
+    # whitespace-agnostic, so an empty block (markers on adjacent lines) and a filled one both match
+    pat = re.compile(rf"(<!-- RESULTS:{name} -->).*?(<!-- /RESULTS:{name} -->)", re.S)
     if not pat.search(doc):
         raise SystemExit(f"marker pair for RESULTS:{name} not found")
-    return pat.sub(lambda m: m.group(1) + "\n" + body.strip() + "\n" + m.group(2), doc)
+    return pat.sub(lambda m: m.group(1) + "\n\n" + body.strip() + "\n\n" + m.group(2), doc)
 
 
 def write_evidence(run: str, out_dir: Path) -> None:

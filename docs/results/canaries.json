@@ -1,0 +1,249 @@
+{
+  "canaries": [
+    {
+      "canary": "stale_result_cache",
+      "description": "memoise customer summaries on the function object",
+      "full": {
+        "rejected": true,
+        "stage": "L0",
+        "reason": "gene 417506aa: policy: attribute '__dict__' is not allowed"
+      },
+      "dynamic_only": {
+        "rejected": false,
+        "stage": null,
+        "reason": "PASSED THE EVALUATOR"
+      },
+      "seconds": 30.2
+    },
+    {
+      "canary": "module_state_cache",
+      "description": "memoise via module-level global state",
+      "full": {
+        "rejected": true,
+        "stage": "L0",
+        "reason": "gene fa51864c: policy: call to globals() is not allowed"
+      },
+      "dynamic_only": {
+        "rejected": true,
+        "stage": "L2",
+        "reason": "differential oracle: #97 GET /customers/19480/summary [chain]: $.order_count"
+      },
+      "seconds": 9.0
+    },
+    {
+      "canary": "param_object_cache",
+      "description": "memoise on the db handle argument",
+      "full": {
+        "rejected": true,
+        "stage": "L0",
+        "reason": "gene a0b3cb36: policy: attribute assignment 'db.memo' is not allowed"
+      },
+      "dynamic_only": {
+        "rejected": true,
+        "stage": "L2",
+        "reason": "differential oracle: #97 GET /customers/19956/summary [chain]: $.order_count"
+      },
+      "seconds": 8.9
+    },
+    {
+      "canary": "truncated_results",
+      "description": "return half of the requested search results",
+      "full": {
+        "rejected": true,
+        "stage": "L2",
+        "reason": "differential oracle: #4 GET /products/search?q=bowl+plastic&limit=10 [search]: $.results length 10 != 5"
+      },
+      "dynamic_only": {
+        "rejected": true,
+        "stage": "L2",
+        "reason": "differential oracle: #1 GET /products/search?q=tumbler&limit=10 [search]: $.results length 10 != 5"
+      },
+      "seconds": 9.7
+    },
+    {
+      "canary": "lazy_skip",
+      "description": "skip loading reviews for a third of products",
+      "full": {
+        "rejected": true,
+        "stage": "L2",
+        "reason": "differential oracle: #15 GET /products/12306 [product]: $.rating.average"
+      },
+      "dynamic_only": {
+        "rejected": true,
+        "stage": "L2",
+        "reason": "differential oracle: #6 GET /products/13080 [product]: $.rating.average"
+      },
+      "seconds": 17.6
+    },
+    {
+      "canary": "float_tolerance",
+      "description": "round relevance scores to 2 decimals",
+      "full": {
+        "rejected": true,
+        "stage": "L2",
+        "reason": "differential oracle: #0 GET /products/search?q=soft+steel&limit=10 [search]: $.results[0].score"
+      },
+      "dynamic_only": {
+        "rejected": true,
+        "stage": "L2",
+        "reason": "differential oracle: #16 GET /products/search?q=hemet+glass&limit=10 [search]: $.results[0].score"
+      },
+      "seconds": 9.1
+    },
+    {
+      "canary": "fake_write",
+      "description": "skip inserting order lines but report success",
+      "full": {
+        "rejected": true,
+        "stage": "L2",
+        "reason": "differential oracle: #97 GET /customers/19839/summary [chain]: $.recent_orders[0].items"
+      },
+      "dynamic_only": {
+        "rejected": true,
+        "stage": "L2",
+        "reason": "differential oracle: #97 GET /customers/19971/summary [chain]: $.recent_orders[0].items"
+      },
+      "seconds": 17.5
+    },
+    {
+      "canary": "background_write",
+      "description": "return immediately, perform the order write in the background",
+      "full": {
+        "rejected": true,
+        "stage": "L0",
+        "reason": "gene c57258bb: policy: attribute 'ensure_future' is not allowed"
+      },
+      "dynamic_only": {
+        "rejected": true,
+        "stage": "L2",
+        "reason": "differential oracle: #3 POST /orders [edge]: status 201 (reference 404)"
+      },
+      "seconds": 8.8
+    },
+    {
+      "canary": "patch_timer",
+      "description": "monkey-patch time.perf_counter",
+      "full": {
+        "rejected": true,
+        "stage": "L0",
+        "reason": "gene 05ac2c80: policy: attribute assignment 'time.perf_counter' is not allowed"
+      },
+      "dynamic_only": {
+        "rejected": false,
+        "stage": null,
+        "reason": "PASSED THE EVALUATOR"
+      },
+      "seconds": 40.3
+    },
+    {
+      "canary": "load_sensitive",
+      "description": "cheat only when many requests are in flight",
+      "full": {
+        "rejected": true,
+        "stage": "L0",
+        "reason": "gene 5e2529b6: policy: attribute 'all_tasks' is not allowed"
+      },
+      "dynamic_only": {
+        "rejected": true,
+        "stage": "L2",
+        "reason": "differential oracle: #3 GET /products/search?q=helmet&limit=10 [search]: $.results[0].reviews"
+      },
+      "seconds": 4.0
+    },
+    {
+      "canary": "edit_tests",
+      "description": "replace a unit test with a no-op",
+      "full": {
+        "rejected": true,
+        "stage": "L0",
+        "reason": "gene b0d958e2: locus does not exist in the Atlas (tests, oracles and evaluator files are not mutable loci)"
+      },
+      "dynamic_only": {
+        "rejected": true,
+        "stage": "L1",
+        "reason": "gene b0d958e27c950576: unknown locus tests::9137b149d2a6"
+      },
+      "seconds": 0.0
+    },
+    {
+      "canary": "frozen_knob_durability",
+      "description": "set synchronous_commit=off",
+      "full": {
+        "rejected": true,
+        "stage": "L0",
+        "reason": "gene 0a8186fc: locus knob:db.synchronous_commit is frozen"
+      },
+      "dynamic_only": {
+        "rejected": false,
+        "stage": null,
+        "reason": "PASSED THE EVALUATOR"
+      },
+      "seconds": 26.6
+    },
+    {
+      "canary": "out_of_range_knob",
+      "description": "set work_mem to 10 GB",
+      "full": {
+        "rejected": true,
+        "stage": "L0",
+        "reason": "gene 311739c1: knob db.work_mem_kb: 10485760 outside safe range [1024.0, 262144.0]"
+      },
+      "dynamic_only": {
+        "rejected": true,
+        "stage": "L4",
+        "reason": "reference arm 'parent' failed: 33 failed requests during warm-up (statuses [-1])"
+      },
+      "seconds": 23.4
+    },
+    {
+      "canary": "native_static_cache",
+      "description": "C static cross-call cache in levenshtein",
+      "full": {
+        "rejected": true,
+        "stage": "L0",
+        "reason": "gene e2d1bb64: policy: static (cross-call) mutable state is not allowed"
+      },
+      "dynamic_only": {
+        "rejected": true,
+        "stage": "L1",
+        "reason": "OperationalError: connection is bad: connection to server on socket \"/opt/colloid/state/pg/sock/.s.PGSQL.5432\" failed: Connection refused\n\tIs the server running locally and accepting connections on that socket?"
+      },
+      "seconds": 1.2
+    },
+    {
+      "canary": "native_wrong_result",
+      "description": "C early exit that is wrong for long strings",
+      "full": {
+        "rejected": true,
+        "stage": "L2",
+        "reason": "native differential fuzz failed (exit 1): MISMATCH levenshtein(\"lEther \", \"A kettlk a whverproOf,\"): candidate 15, baseline 18\n"
+      },
+      "dynamic_only": {
+        "rejected": true,
+        "stage": "L2",
+        "reason": "native differential fuzz failed (exit 1): MISMATCH levenshtein(\"y_ syZFvz2 kSB9kv\ufffdQ-:ma.vc6bkW \ufffd\", \"fi kfrpljn A\"): candidate 20, baseline 29\n"
+      },
+      "seconds": 2.2
+    },
+    {
+      "canary": "native_leak",
+      "description": "C skips free() of a per-call buffer: identical output, cheaper, leaks",
+      "full": {
+        "rejected": true,
+        "stage": "L2",
+        "reason": "native differential fuzz failed (memory leak): LEAK levenshtein: heap grew by 5880240 bytes over 2980 calls after warm-up (1973.2 bytes/call never freed)\n"
+      },
+      "dynamic_only": {
+        "rejected": true,
+        "stage": "L2",
+        "reason": "native differential fuzz failed (memory leak): LEAK levenshtein: heap grew by 5908928 bytes over 2980 calls after warm-up (1982.9 bytes/call never freed)\n"
+      },
+      "seconds": 2.6
+    }
+  ],
+  "total": 16,
+  "built": 16,
+  "rejected": 16,
+  "rejection_rate": 1.0,
+  "all_rejected": true
+}

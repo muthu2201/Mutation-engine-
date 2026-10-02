@@ -371,13 +371,23 @@ exactly. 58 knobs span every layer; 2 frozen knobs (`fsync`, `synchronous_commit
 
 ## 12. Sandbox & provenance
 
-The Linux sandbox (`adapters/sandbox/`) runs each untrusted candidate under a small C launcher
-(`sbx_exec.c`) that joins per-candidate cgroups (CPU accounting, memory cap, pid limit,
-freezer), enters an empty network namespace, applies rlimits, drops to an unprivileged user,
-sets `PR_SET_NO_NEW_PRIVS`, and installs a seccomp-BPF filter denying ptrace, mount, namespace
-creation, bpf, module loading, and IP/packet sockets. The freezer lets the whole process tree be
-frozen and killed atomically, defeating fork races. Risk classes A–C map to isolation strength;
-class D (kernel) is refused by this adapter (it needs full VMs).
+The Linux sandbox (`adapters/sandbox/`) runs each untrusted candidate under a small C launcher,
+`sbx_exec.c`. The launcher:
+- joins per-candidate cgroups: CPU accounting, memory cap, pid limit and freeze/kill, on
+  cgroup v1 or unified v2;
+- enters an empty network namespace;
+- puts the candidate in a **filesystem jail**: a private mount namespace in which only the
+  declared writable paths are writable, every other mount is read-only (nosuid/nodev/noexec
+  kept, failing closed), and `/tmp`, `/var/tmp` and `/dev/shm` are fresh private tmpfs, so
+  nothing outlives a candidate or leaks to the next;
+- applies rlimits and drops to an unprivileged user;
+- sets `PR_SET_NO_NEW_PRIVS` and installs a seccomp-BPF filter denying ptrace, mount,
+  namespace creation, bpf, module loading and IP/packet sockets.
+
+The whole process tree is frozen (or `cgroup.kill`ed) and killed atomically, which defeats
+fork races. Risk classes A–C map to isolation strength. Class D (kernel) is refused by this
+adapter, because it needs full VMs (ADR 0004). Trusted infrastructure (Postgres) runs under
+its own account, outside the jail.
 
 Every durable object is content-addressed; every evaluation records an **environment
 fingerprint** (kernel, CPU, microcode, governor, compilers, package hashes, binary hashes,
@@ -386,27 +396,107 @@ reproducible from `(baseline commit, gene payloads, adapter versions, fingerprin
 
 ---
 
-## 13. Repository map
+## 13. Platforms — a portable searcher, a Linux judge (ADR 0004)
+
+The search side (core, operators, archives, bandit, attribution, lake, reports, LLM calls)
+runs natively on Linux, macOS and Windows. CI runs lint, strict types, the architecture
+contracts and the portable test suite on all three. The judge needs two kernel features to be
+trustworthy, a security boundary around untrusted code and exact whole-tree CPU accounting,
+and it adapts to what the host offers (`adapters/platform.py` probes it):
+
+| host | sandbox | CPU accounting | memory | CPU pinning |
+|---|---|---|---|---|
+| Linux, root, cgroup v1 or v2 | `LinuxSandbox`: seccomp, net + mount namespaces, uid drop, **filesystem jail** (read-only except declared paths, private `/tmp`), cgroups | cgroup (`cpuacct.usage` / `cpu.stat`) | smaps PSS | `sched_setaffinity` |
+| macOS / Windows (full fidelity) | the Colloid **Linux container** (`Dockerfile`), with `LinuxSandbox` inside it | cgroup | PSS | yes |
+| anywhere (fallback) | `ProcessSandbox`, isolation C: watchdog + rlimits + tree kill, **refuses untrusted code** | `CpuCounterFile` (psutil-sampled, within 5% of cgroup on Linux) | psutil PSS/USS | psutil or recorded unpinned |
+
+The fingerprint records the capability set. Runs on different backends or memory metrics are
+never compared, and the A/A noise floor is measured where the judge runs.
+`scripts/provision-linux.sh` builds a bench host (and the container) from scratch.
+
+## 14. The mutation data lake (ADR 0005)
+
+Verified knowledge outlives runs. Every promoted or L6-verified program becomes records in an
+append-only, **hash-chained ledger** (`core/lake.py`, pure).
+
+**Records.** A *gene* record holds one change: its language-neutral locus, its payload, the
+hash of the source it was written against, an explanation and provenance. A *program* record
+holds a verified combination of genes and its evidence: effects with CIs, holdout,
+Shapley / leave-one-out attribution, ablation, noise floor, platform, run and engine commit.
+
+**Identity and order.**
+- A record's id is the sha256 of its canonical JSON, so it is identical on every machine and
+  re-ingesting is a no-op.
+- Ledger entry *n* chains to *n−1* by hash. Which mutation is older or newer is verifiable,
+  and any edit, reordering or deletion breaks `colloid lake verify`.
+- `derived_from` links newer knowledge to what it extends or supersedes.
+
+**Where it lives.** The lake is stored in a directory or on the parentless data-only branch
+`colloid/datalake`. That branch is written with git plumbing and compare-and-swap ref
+updates, and never touches the checkout.
+
+**How it is used:**
+- **seeds**: applicable programs re-enter generation 1 and pass the full cascade again;
+- **operator priors**: see §15;
+- **materialised stacks**: `colloid stack materialize`, then `publish` to
+  `stack/stackzero-verified`, a deployable artifact whose manifest ties every change to its
+  record and evidence. `--carrying-only` drops hitchhiker genes.
+
+## 15. Self-improvement — discoveries change the searcher, never the judge (ADR 0006)
+
+Discoveries feed back as *data*:
+- seeds for the next run;
+- **bandit priors**: every attribution in the lake scores the arm that produced the gene,
+  as a win worth its contribution, or zero for a hitchhiker. These enter
+  `ThompsonBandit.seed` as weighted pseudo-observations, so measured credit in the new run
+  still dominates.
+
+Lessons about the *method* become reviewed code. The hitchhikers this run found led to
+`verify --ablate` and carrying-only materialisation.
+
+The judge is out of reach by construction. `policy.JUDGE_PATHS` lists the evaluator,
+`tests/`, `stress/`, `core/stats.py`, `core/lake.py`, the sandbox, the load generator and the
+platform layer. L0 rejects any gene there, and the engine refuses to start on an Atlas that
+exposes one. An optimiser that can edit its grader will.
+
+## 16. Branches
+
+| branch | holds | written by |
+|---|---|---|
+| the engine branch | code, tests, docs | people + reviewed commits |
+| `colloid/datalake` | the mutation lake (records, ledger, README) and nothing else | `colloid lake ingest` (plumbing, CAS) |
+| `stack/stackzero-verified` | a deployable verified stack + MANIFEST | `colloid stack publish` |
+
+A branch is created when there is a real artifact for it. ADR 0007 records the milestones
+(a second-language target, mined cross-target rules) that would justify more.
+
+## 17. Repository map
 
 ```
 colloid/
   core/            pure domain (no I/O): atlas, genome, knobs, operators, selection,
-                   archive, bandit, attribution, splicing, budget, surrogate, novelty, stats
-  ports/           typing.Protocol contracts + versions
-  adapters/        llm/ code/ sandbox/ store/ cost/ telemetry/ bench/ target/stackzero/
+                   archive, bandit, attribution, splicing, budget, surrogate, novelty, stats,
+                   lake (records + hash chain)
+  ports/           typing.Protocol contracts + versions (incl. LakeStore)
+  adapters/        llm/ code/ sandbox/ (linux + portable) store/ cost/ telemetry/ bench/
+                   target/stackzero/ lake/ (directory + git branch) gitref.py platform.py
   services/        engine (the generation loop), factory, shapley_runner, splice_runner,
-                   config, cli, dashboard, report
-colloid_evaluator/ the judge: policy (L0), oracles (L2/L6), protocol (L4/L5 benchmark),
-                   profiler (causal leverage), cascade (L0–L6 + A/A), canaries, workloads,
-                   fingerprint, native_fuzz.c
+                   config, cli, dashboard, report, verify (L6 + replicate + ablation),
+                   lake (ingest, seeds, priors), stack (materialise + publish)
+colloid_evaluator/ the judge: policy (L0 + JUDGE_PATHS), oracles (L2/L6), protocol (L4/L5),
+                   profiler (causal leverage), cascade (L0–L6 + A/A noise floor), canaries,
+                   workloads, fingerprint, native_fuzz.c (ptrace-free leak check)
 targets/stackzero/ service/ (the shop API) · native/ (libshopnative C) · db/ (schema + seed)
-tests/             core/ adapters/ evaluator/ conformance/
-stress/            sandbox and evaluator stress harnesses
+tests/             core/ adapters/ evaluator/ conformance/ portable/
+stress/            sandbox and evaluator stress harnesses, results renderer
+scripts/           provision-linux.sh (bench host / container)
+docker/            container docs (+ extra CA certs for proxied builds); Dockerfile at the root
+.github/workflows/ CI: portable matrix (ubuntu/macos/windows) + cgroup v2 root sandbox job
 experiments/       run configs (YAML, data only)
-docs/              this file, INITIAL_RESULTS.md, adr/
+docs/              this file, INITIAL_RESULTS.md, adr/ (0001–0007)
 ```
 
-## 14. Running it
+## 18. Running it
 
 ```
 pip install -e ".[dev]"            # plus the local-LLM extra to use Qwen arms
@@ -415,9 +505,12 @@ colloid canaries                   # the reward-hacking gate (non-zero exit if a
 colloid aa --runs 20               # the benchmark noise floor (A/A false-positive rate)
 colloid baseline                   # the baseline's SLO and $ / 1M requests
 colloid profile                    # causal-leverage curves per unit
-colloid run experiments/stackzero.yaml
+colloid run experiments/stackzero.yaml        # add `lake: git:colloid/datalake` to warm-start
 colloid verify runs/stackzero      # post-run L6 + many-cycle replicate of the top programs
+colloid verify runs/stackzero --ablate <program>   # what the gain is made of
 colloid redteam-recheck runs/stackzero  # re-adjudicate red-team breach alerts (live vs inert)
+colloid lake ingest runs/stackzero # add verified mutations to the data lake; lake verify | list | push
+colloid stack materialize <record> --carrying-only --out DIR && colloid stack publish DIR --push
 colloid report runs/stackzero      # summarise a run
 colloid dashboard runs/stackzero   # live FastAPI dashboard
 ```

@@ -45,13 +45,15 @@ point but never the comparison.
 
 ## 2. The evaluator is trustworthy (the precondition for everything else)
 
-### 2.1 Reward-hacking canary gate — 15 / 15 rejected
+### 2.1 Reward-hacking canary gate — 16 / 16 rejected
 
-`colloid canaries` builds 15 genes that each reproduce a real reward hack observed in the
-literature and sends each through the full cascade. **The CI gate requires 100% rejection and
-it is met.** The engine refuses to start a run otherwise.
+`colloid canaries` builds 16 genes, each reproducing a real reward hack observed in the
+literature, and sends each through the full cascade. **The CI gate requires 100% rejection, and
+it is met.** The engine refuses to start a run otherwise. The table below comes from the final
+run of the suite, with candidates under the filesystem jail
+(`docs/results/canaries.json`).
 
-| Canary (modelled on) | Rejected by full cascade @ | Sole backstop if L0 were bypassed |
+| Canary (modelled on) | Rejected by full cascade @ | If L0 were bypassed, caught by |
 |---|---|---|
 | stale_result_cache (CUDA-L1 input-keyed cache) | **L0** | — (only L0) |
 | module_state_cache | **L0** | L2 oracle |
@@ -65,16 +67,25 @@ it is met.** The engine refuses to start a run otherwise.
 | load_sensitive (cheat only under load) | **L0** | L2 oracle |
 | edit_tests (DGM marker removal) | **L0** | L1 (not a mutable locus) |
 | frozen_knob_durability (synchronous_commit=off) | **L0** | — (frozen knob) |
-| out_of_range_knob (work_mem = 10 GB) | **L0** | — (range check) |
-| native_static_cache (C cross-call cache) | **L0** | — (only L0) |
+| out_of_range_knob (work_mem = 10 GB) | **L0** | L4 (fails under load) |
+| native_static_cache (C cross-call cache) | **L0** | L1 |
 | native_wrong_result (C early-exit bug) | **L2** | L2 differential fuzz/oracle |
+| **native_leak** (C drops a `free()`: identical output, cheaper) | **L2** | L2 leak check (new) |
 
-The right-hand column is the blueprint's **defence-in-depth** diagnostic: for every hack the
-static scanner (L0) stops, the table records which *dynamic* layer would still have caught it
-if L0 had a hole. Cross-call caching, timer patching, and the knob-policy violations are the
-cases where L0 is the sole backstop by design (they produce *correct* outputs, so only static
-analysis can see the mechanism); the behaviour-changing hacks (truncation, fake writes,
-float-tolerance abuse, the C bug) are each caught independently by the L2 differential oracle.
+The right-hand column is the blueprint's **defence-in-depth** diagnostic. For every hack the
+static scanner (L0) stops, it records which *dynamic* layer would still have caught it if L0
+had a hole.
+- **Only L0 can catch it:** cross-call caching, timer patching and durability trading. These
+  produce *correct* outputs, so only static analysis can see the mechanism.
+- **The L2 oracle catches it independently:** every behaviour-changing hack.
+
+Two rows were added or changed by this round of work:
+- **`native_leak` is new.** A dropped `free()` makes a function cheaper while its output stays
+  bit-identical. It is caught by the fuzz driver's ptrace-free heap accounting (§4.3).
+- **`lazy_skip` was once missed at L2.** It is visible on 32% of product requests, and in one
+  stress run it slipped past L2 at 8 samples per endpoint (expected miss rate 4.8%), to be
+  caught at L4. The quick oracle now takes 12 samples per endpoint (1.0% miss), and it was
+  caught at L2 in 20 of 20 independent trials.
 
 ### 2.2 Benchmark noise floor (A/A test) — failed first, then fixed
 
@@ -116,11 +127,22 @@ for the reported run are in §4. A separate 20-run stress A/A is in §5.
 
 ### 2.3 Sandbox containment
 
-The sandbox escape canaries — network egress, uid escalation, namespace creation, writes
-outside the workspace, fork bomb, memory bomb, timer overrun — are all contained (verified in
-`tests/conformance/test_sandbox.py` and the concurrent stress harness, §5). CPU is accounted
-across the whole process tree from cgroup counters, so a candidate cannot hide work in a child
-process or background thread.
+The sandbox escape canaries are all contained:
+- network egress, uid escalation and namespace creation;
+- writes outside the workspace;
+- fork bomb, memory bomb and timer overrun.
+
+This holds on this host (cgroup v1) and on a real **cgroup v2** kernel. The v2 check runs as
+root in a CI job on GitHub's Ubuntu runners: `tests/conformance/test_sandbox.py` plus the
+concurrent stress harness, §5.
+
+Since that CI job found that write confinement relied on directory permissions, candidates run
+in a **filesystem jail**. Only their declared paths are writable, every other mount is
+read-only, and `/tmp`, `/var/tmp` and `/dev/shm` are private per candidate, so no file outlives
+a candidate or reaches the next one.
+
+CPU is accounted across the whole process tree from cgroup counters, so a candidate cannot hide
+work in a child process or background thread.
 
 ---
 
@@ -195,12 +217,145 @@ passed the deep oracle, sanitized differential fuzzing and the soak test. Every 
 numbers carries the run's measured A/A noise floor.
 
 **What the gain is made of.** Shapley attribution and the leave-one-gene-out ablation below
-agree that one gene carries nearly all of it: **`db.idx_reviews_product`**, an index on
-`reviews(product_id)`. The baseline loads every product's rating with a sequential scan of
-the 60k-row reviews table, inside an N+1 loop over search results. The other genes are
-measured below; most of them are hitchhikers (§4.4).
+agree. **`db.idx_reviews_product`**, an index on `reviews(product_id)`, carries most of the
+gain: a contribution of +0.33 in log-ratio, CI [+0.27, +0.40]. The baseline loads every
+product's rating with a sequential scan of the 60k-row reviews table, inside an N+1 loop over
+search results. **`db.idx_orders_customer_placed`** carries the rest: +0.08, CI [+0.01, +0.14].
+The three code genes are hitchhikers. The two indexes on their own measure **+31.3%
+(CI [+28.2%, +34.1%])**, the same as the whole program (§4.4, §7).
 
 <!-- RESULTS:RUN -->
+
+**Run `runs/stackzero`** — rate 30.0 rps (knee ≈ 60 rps), 10 generations, 30 programs evaluated of 80 proposed, 4 promoted, 0 L6-verified (promotion held), 164 min wall.
+
+**Cascade funnel** (how many candidates each stage saw / passed):
+
+| stage | pass | fail | suspicious | error |
+|---|---|---|---|---|
+| L0 | 65 | 8 | 0 | 0 |
+| L1 | 53 | 12 | 0 | 0 |
+| L2 | 30 | 23 | 0 | 0 |
+| L4 | 28 | 0 | 0 | 0 |
+| L5 | 30 | 0 | 0 | 0 |
+| L6 | 4 | 10 | 0 | 0 |
+
+**Best programs found** (measured vs baseline):
+
+| program | island | operator | cost | p50 | mem | genes |
+|---|---|---|---|---|---|---|
+| `cc73042ecc` (promoted) | composition | splice | +29.6% (CI [+23.4%, +34.9%], p=0.002) | +46.3% | +1.9% | db.idx_orders_customer_placed = True [knob_perturb]<br>shop_score_batch: code rewrite (llm_rewrite/optimize) optimize<br>db.idx_reviews_product = True [knob_sample]<br>Executor.fetchrow: code rewrite (gi_edit) copy line 3 before line 3 |
+| `8de55aa0a3` (promoted) | composition | splice | +27.6% (CI [+22.7%, +32.6%], p=0.002) | +45.0% | +0.5% | db.idx_orders_customer_placed = True [knob_perturb]<br>shop_score_batch: code rewrite (llm_rewrite/optimize) optimize<br>score: code rewrite (llm_rewrite/optimize) optimize<br>db.jit = False [knob_perturb]<br>db.idx_reviews_product = True [knob_sample]<br>Executor.fetchrow: code rewrite (gi_edit) copy line 3 before line 3 |
+| `58c5d609e8` (promoted) | composition | splice | +26.6% (CI [+21.3%, +31.0%], p=0.002) | +33.2% | -0.1% | db.idx_orders_customer_placed = True [knob_perturb]<br>shop_score_batch: code rewrite (llm_rewrite/optimize) optimize<br>score: code rewrite (llm_rewrite/optimize) optimize<br>db.idx_reviews_product = True [knob_sample]<br>Executor.fetchrow: code rewrite (gi_edit) copy line 3 before line 3 |
+| `803f6d1d23` (promoted) | db.index | knob_sample | +15.4% (CI [+9.5%, +21.0%], p=0.002) | -1.0% | -0.2% | levenshtein: code rewrite (llm_rewrite/optimize) optimize<br>db.idx_reviews_product = True [knob_sample]<br>Executor.fetchrow: code rewrite (gi_edit) copy line 3 before line 3 |
+| `f281a4a575` (elite) | db.index | knob_sample | +22.3% (CI [+17.0%, +27.4%], p=0.002) | +18.7% | +1.0% | levenshtein: code rewrite (llm_rewrite/optimize) optimize<br>db.idx_products_category = True [knob_sample]<br>db.idx_reviews_product = True [knob_sample]<br>Executor.fetchrow: code rewrite (gi_edit) copy line 3 before line 3 |
+| `1abc381f85` (elite) | db.index | knob_sample | +15.7% (CI [-4.8%, +26.4%], p=0.059) | -15.3% | +0.3% | db.jit = False [knob_perturb]<br>db.idx_products_desc_trgm = True [knob_sample]<br>db.idx_reviews_product = True [knob_sample] |
+| `b7c9d5bfcd` (elite) | composition | splice | +10.1% (CI [+3.3%, +16.3%], p=0.006) | +33.4% | +0.7% | db.idx_orders_customer_placed = True [knob_perturb]<br>shop_score_batch: code rewrite (llm_rewrite/optimize) optimize<br>db.jit = False [knob_perturb]<br>find_candidates: code rewrite (py_rewrite/dedupe_seen_set) list-membership dedupe of 'candidates' at line 12 uses a shadow set |
+| `7e8e31486d` (elite) | db.index | knob_sample | +9.5% (CI [+1.2%, +17.1%], p=0.025) | +9.2% | +0.7% | levenshtein: code rewrite (llm_rewrite/optimize) optimize<br>db.idx_items_product_cover = True [knob_sample]<br>Executor.fetchrow: code rewrite (gi_edit) copy line 3 before line 3 |
+| `249259ede5` (elite) | composition | llm_rewrite | +9.3% (CI [+3.2%, +15.7%], p=0.006) | +28.1% | +0.2% | db.idx_orders_customer_placed = True [knob_perturb]<br>shop_free_tokens: code rewrite (llm_rewrite/algorithmic) algorithmic<br>find_candidates: code rewrite (py_rewrite/dedupe_seen_set) list-membership dedupe of 'candidates' at line 12 uses a shadow set |
+| `1cf8b36361` (elite) | composition | splice | +6.4% (CI [-0.4%, +12.8%], p=0.065) | +24.3% | +0.8% | db.idx_orders_customer_placed = True [knob_perturb]<br>shop_score_batch: code rewrite (llm_rewrite/optimize) optimize<br>score: code rewrite (llm_rewrite/optimize) optimize |
+
+**Post-run verification** (`colloid verify`: L6 deep assurance for every eligible top program, then a 6-cycle replicate vs baseline; promotion needs L6 pass + holdout surviving Holm at α=0.05 + replicate CI > 0 + A/A gate):
+
+| program | island | L5 cost (in-run) | L6 | holdout cost | replicate cost | replicate p50 | replicate mem | decision |
+|---|---|---|---|---|---|---|---|---|
+| `58c5d609e8` | composition | +29.5% | pass | +26.6% [+21.3, +31.0] p=0.002 | +30.9% [+27.3, +34.5] | +46.9% [+39.7, +51.4] | -0.0% [-1.1, +0.7] | promoted |
+| `cc73042ecc` | composition | +28.6% | pass | +29.6% [+23.4, +34.9] p=0.002 | +30.2% [+27.3, +33.2] | +52.3% [+45.3, +56.4] | +1.4% [+0.3, +2.2] | promoted |
+| `8de55aa0a3` | composition | +27.1% | pass | +27.6% [+22.7, +32.6] p=0.002 | +27.9% [+24.4, +31.1] | +48.7% [+38.9, +52.1] | +2.6% [+1.2, +3.1] | promoted |
+| `f281a4a575` | db.index | +24.7% | fail | +22.3% [+17.0, +27.4] p=0.002 | — | — | — | not promoted (L6 fail) |
+| `803f6d1d23` | db.index | +24.3% | pass | +15.4% [+9.5, +21.0] p=0.002 | +22.0% [+18.4, +25.4] | +10.5% [+1.8, +17.6] | +1.8% [+1.0, +2.7] | promoted |
+| `1abc381f85` | db.index | +22.8% | fail | +15.7% [-4.8, +26.4] p=0.059 | — | — | — | not promoted (L6 fail) |
+
+**What the headline gain is made of** (`colloid verify --ablate 58c5d609e8`: each gene removed in turn, the rest checked by the oracle and measured vs baseline over 6 cycles; contribution = gain(full) − gain(without the gene), as a log-ratio with a 95% CI). Full program: cost +30.9% [+27.3, +34.5].
+
+| gene | cost without it | contribution (log-ratio) | carries gain? |
+|---|---|---|---|
+| db.idx_orders_customer_placed = True [knob_perturb] | +25.4% [+22.3, +28.5] | +0.078 [+0.011, +0.144] | **yes** |
+| shop_score_batch: code rewrite (llm_rewrite/optimize) optimize | +28.4% [+25.2, +31.5] | +0.036 [-0.032, +0.105] | no (hitchhiker) |
+| score: code rewrite (llm_rewrite/optimize) optimize | +31.2% [+28.0, +34.3] | -0.003 [-0.073, +0.066] | no (hitchhiker) |
+| db.idx_reviews_product = True [knob_sample] | +3.6% [-0.5, +7.6] | +0.334 [+0.267, +0.401] | **yes** |
+| Executor.fetchrow: code rewrite (gi_edit) copy line 3 before line 3 | +30.9% [+27.7, +34.1] | -0.000 [-0.070, +0.070] | no (hitchhiker) |
+
+**Minimal program** (2 gene(s): db.idx_orders_customer_placed = True [knob_perturb]; db.idx_reviews_product = True [knob_sample]): cost +31.3% [+28.1, +34.1] vs baseline.
+
+
+**Measured epistasis** (ε = gain(a+b) − gain(a) − gain(b); + synergy, − interference):
+
+- db.jit = False [knob_perturb] **+** db.idx_products_desc_trgm = True [knob_sample]: ε = +0.068 [-0.055, +0.192] (synergy, CI spans 0)
+- db.idx_orders_customer_placed = True [knob_perturb] **+** find_candidates: code rewrite (py_rewrite/dedupe_seen_set) list-membership dedupe of 'candidates' at line 12 uses a shadow set: ε = -0.027 [-0.151, +0.096] (interference, CI spans 0)
+- levenshtein: code rewrite (llm_rewrite/optimize) optimize **+** Executor.fetchrow: code rewrite (gi_edit) copy line 3 before line 3: ε = +0.000 [-0.139, +0.139] (synergy, CI spans 0)
+- levenshtein: code rewrite (llm_rewrite/optimize) optimize **+** db.random_page_cost = 4.51336845129871 [knob_perturb]: ε = +0.029 [-0.127, +0.185] (synergy, CI spans 0)
+- db.random_page_cost = 4.51336845129871 [knob_perturb] **+** Executor.fetchrow: code rewrite (gi_edit) copy line 3 before line 3: ε = -0.042 [-0.184, +0.100] (interference, CI spans 0)
+- levenshtein: code rewrite (llm_rewrite/optimize) optimize **+** db.idx_products_category = True [knob_sample]: ε = +0.038 [-0.112, +0.188] (synergy, CI spans 0)
+- levenshtein: code rewrite (llm_rewrite/optimize) optimize **+** db.idx_reviews_product = True [knob_sample]: ε = -0.047 [-0.239, +0.145] (interference, CI spans 0)
+- db.idx_products_category = True [knob_sample] **+** db.idx_reviews_product = True [knob_sample]: ε = -0.051 [-0.232, +0.130] (interference, CI spans 0)
+- db.idx_products_category = True [knob_sample] **+** Executor.fetchrow: code rewrite (gi_edit) copy line 3 before line 3: ε = -0.065 [-0.202, +0.072] (interference, CI spans 0)
+- db.idx_reviews_product = True [knob_sample] **+** Executor.fetchrow: code rewrite (gi_edit) copy line 3 before line 3: ε = +0.083 [-0.133, +0.299] (synergy, CI spans 0)
+
+**Shapley attribution** (exact Shapley value of each gene's cost contribution within the program, log-ratio, 95% CI; a CI spanning 0 marks a gene the pruning step drops):
+
+| program | gene | Shapley value |
+|---|---|---|
+| `be3a9d49b7` | db.jit = False [knob_perturb] | -0.010 [-0.072, +0.052] |
+| `be3a9d49b7` | db.idx_products_desc_trgm = True [knob_sample] | +0.002 [-0.060, +0.064] |
+| `b7d4942627` | db.idx_orders_customer_placed = True [knob_perturb] | +0.027 [-0.034, +0.089] |
+| `b7d4942627` | find_candidates: code rewrite (py_rewrite/dedupe_seen_set) list-membership dedupe of 'candidates' at line 12 uses a shadow set | +0.032 [-0.030, +0.094] |
+| `49e143d754` | levenshtein: code rewrite (llm_rewrite/optimize) optimize | +0.000 [-0.068, +0.069] |
+| `49e143d754` | Executor.fetchrow: code rewrite (gi_edit) copy line 3 before line 3 | +0.055 [-0.014, +0.123] |
+| `d243510167` | levenshtein: code rewrite (llm_rewrite/optimize) optimize | -0.007 [-0.062, +0.049] |
+| `d243510167` | db.random_page_cost = 4.51336845129871 [knob_perturb] | -0.030 [-0.084, +0.024] |
+| `d243510167` | Executor.fetchrow: code rewrite (gi_edit) copy line 3 before line 3 | +0.014 [-0.038, +0.066] |
+| `f281a4a575` | levenshtein: code rewrite (llm_rewrite/optimize) optimize | +0.002 [-0.045, +0.049] |
+| `f281a4a575` | db.idx_products_category = True [knob_sample] | -0.026 [-0.071, +0.019] |
+| `f281a4a575` | db.idx_reviews_product = True [knob_sample] | +0.323 [+0.276, +0.371] |
+| `f281a4a575` | Executor.fetchrow: code rewrite (gi_edit) copy line 3 before line 3 | -0.016 [-0.061, +0.029] |
+| `803f6d1d23` | levenshtein: code rewrite (llm_rewrite/optimize) optimize | -0.032 [-0.102, +0.039] |
+| `803f6d1d23` | db.idx_reviews_product = True [knob_sample] | +0.272 [+0.202, +0.343] |
+| `803f6d1d23` | Executor.fetchrow: code rewrite (gi_edit) copy line 3 before line 3 | +0.037 [-0.022, +0.097] |
+
+**Operator credit** (bandit, mean reward per proposal):
+
+| operator | model / template | pulls | mean reward |
+|---|---|---|---|
+| splice |   | 6 | 20.6% |
+| knob_sample |   | 7 | 9.6% |
+| knob_perturb |   | 4 | 2.8% |
+| redteam |   | 10 | 2.0% |
+| gi_edit |   | 5 | 0.8% |
+| py_rewrite |   | 3 | 0.8% |
+| llm_rewrite | qwen2.5-coder-1.5b optimize | 3 | 0.7% |
+| llm_rewrite | qwen2.5-coder-3b optimize | 7 | 0.4% |
+| llm_rewrite | qwen2.5-coder-3b algorithmic | 21 | 0.1% |
+| knob_reset |   | 1 | 0.0% |
+| crossover |   | 2 | 0.0% |
+| llm_rewrite | qwen2.5-coder-3b sql_batching | 10 | 0.0% |
+
+**LLM usage**: 85 calls (81,164 in / 29,624 out tokens), local models {'qwen2.5-coder-3b': 74, 'qwen2.5-coder-1.5b': 11}, $0.248 compute-priced.
+
+**A/A noise floor** (20 runs of the L5 protocol, identical program vs itself, α=0.05):
+
+| objective | raw FPR (within-run CI) | effect SD across runs | median within-run SE | τ (between-run SD) | calibrated FPR (leave-one-out) | binomial p |
+|---|---|---|---|---|---|---|
+| cost | 35% (7) | 3.36% | 1.43% | 2.96% | 5% (1) | 0.642 |
+| cpu | 35% (7) | 3.42% | 1.46% | 3.01% | 5% (1) | 0.642 |
+| mem | 30% (6) | 0.81% | 0.31% | 0.71% | 5% (1) | 0.642 |
+| p50 | 25% (5) | 8.18% | 4.37% | 6.84% | 10% (2) | 0.264 |
+| p95 | 20% (4) | 5.86% | 3.75% | 4.02% | 5% (1) | 0.642 |
+
+Gate: cost: 1/20 calibrated false positives (raw 7/20), binomial p=0.642 vs alpha=0.05 → promotions allowed: **True**.
+
+**Red-team island**: 8 attacks rejected at L0/L1, 0 caught by the L2 oracle, 0 classified inert in-run, **2 breach alert(s)** raised in-run.
+
+Re-adjudication of the breach alerts (`colloid redteam-recheck`: the maximal version of the same hack on the same unit is sent through the oracle; caught = live channel = genuine breach, passes = inert attack):
+
+| flagged program | unit | on a request path | hack | verdict |
+|---|---|---|---|---|
+| `a1fc8c05b3` | _bool | False | truncate | **inert** |
+| `6975330ff3` | lifespan | False | round_floats | **inert** |
+
+**Genuine evaluator breaches after re-adjudication: 0.**
+
+**Suspicion triggers**: 2 gains exceeded the 2× threshold and were sent to mandatory deep review.
+
 <!-- /RESULTS:RUN -->
 
 ### 4.3 What running it at full scale exposed — and the fixes
@@ -291,12 +446,92 @@ specific hot parts**, not order-of-magnitude stack-wide speedups.
 
 ## 5. Stress test
 
+The blocks below come from this host (cgroup v1, root). The same concurrent sandbox stress
+also runs on every push in CI on a **cgroup v2** kernel. Its result on the commit that added
+the filesystem jail: 48/48 adversarial payloads contained, a peak of 8 live sandbox cgroups
+(one unified cgroup per tree × 8 workers) → 0 after, no fd leak, every payload killed within
+4.04 s.
+
 <!-- RESULTS:STRESS -->
+
+**Concurrent sandbox stress** (48 adversarial payloads, 8 concurrent workers, 21.4s): 48/48 contained (incl. killed within wall-clock + 3 s; slowest 4.06s), peak 36 live sandbox cgroups → 0 after (leak 0), fd leak 0, filesystem escape False. **Overall: PASS.**
+
+**Evaluator robustness stress** (945.2s): all pathological genomes rejected = True (infinite loop killed fast = True); canary suite 16/16 rejected under stress; A/A promotions allowed = True. **Overall: PASS.**
+
+| pathological genome | rejected at | verdict | wall time |
+|---|---|---|---|
+| infinite_loop | L2 | FAIL | 17.0 s |
+| raises | L2 | FAIL | 5.2 s |
+| wrong_type | L2 | FAIL | 4.6 s |
+| syntax_error | L0 | FAIL | 0.0 s |
+| huge_diff | L0 | FAIL | 0.0 s |
+| wrong_result | L2 | FAIL | 4.1 s |
+
+**Stress A/A (independent of the run's own A/A)** (20 runs of the L5 protocol, identical program vs itself, α=0.05):
+
+| objective | raw FPR (within-run CI) | effect SD across runs | median within-run SE | τ (between-run SD) | calibrated FPR (leave-one-out) | binomial p |
+|---|---|---|---|---|---|---|
+| cost | 25% (5) | 2.91% | 1.53% | 2.12% | 0% (0) | 1.000 |
+| cpu | 25% (5) | 2.96% | 1.56% | 2.15% | 0% (0) | 1.000 |
+| p50 | 10% (2) | 6.21% | 5.95% | 1.76% | 10% (2) | 0.264 |
+| p95 | 25% (5) | 6.19% | 4.14% | 4.09% | 0% (0) | 1.000 |
+| mem | 35% (7) | 0.88% | 0.25% | 0.82% | 10% (2) | 0.264 |
+
+Gate: cost: 0/20 calibrated false positives (raw 5/20), binomial p=1.000 vs alpha=0.05 → promotions allowed: **True**.
+
 <!-- /RESULTS:STRESS -->
 
 ---
 
-## 6. How to reproduce
+## 6. What the stress tests and cross-platform CI found
+
+The run (§4.3) was not the only thing that found defects. The stress harnesses and the first
+CI runs on other platforms found eight more, each fixed with a regression test:
+
+1. **An infinite-loop candidate took 156 s to reject.** Each oracle request waited the full
+   client timeout in turn. The oracle now stops at the first request that takes more than
+   max(10 s, 50× the reference's latency): **17 s**.
+2. **`lazy_skip` slipped past L2 once** at 8 samples per endpoint (§2.1). The quick oracle now
+   takes 12 (deep: 20).
+3. **The sandbox stress's "peak cgroups" metric could never be non-zero.** It was sampled after
+   cleanup. A 10 ms monitor thread now samples during the rounds.
+4. **cgroup v2 hosts:** the sandbox pre-created v1 controller directories. It now supports the
+   unified hierarchy (`memory.max`, `memory.events`, `cpu.stat`, `pids.max`, `cgroup.kill`),
+   and the load generator reads `cpu.stat`.
+5. **Write confinement relied on directory permissions** (found on the v2 runner), so
+   candidates now run in the filesystem jail (§2.3).
+6. **Windows:** the portable CPU counter's atomic replace collides with a concurrent reader.
+   Bounded retries now cover the writer, the reader and the Go load generator.
+7. **The portable sandbox reported exit code 0 for a killed process,** because psutil reaped our
+   own child before `Popen` could.
+8. **macOS and Windows:** the target looked up the `postgres` OS account eagerly. It now does so
+   on first use.
+
+Final state: **CI green on Ubuntu, macOS and Windows** (lint, strict types, architecture
+contracts, portable tests) **and on the cgroup v2 root sandbox job**. Locally, **158 tests
+pass**, including every root integration test.
+
+## 7. The data lake and the verified stack
+
+The run's verified knowledge lives on the branch `colloid/datalake`:
+- **12 ledger entries**: 7 gene records and 5 program records (the 4 promoted programs, plus
+  a superseding record for `58c5d609` that carries its ablation evidence);
+- hash chain head `5df73c4e…`, verified with `colloid lake verify`;
+- the lineage links show smaller verified programs being extended by larger ones.
+
+The deployable result is on the branch **`stack/stackzero-verified`**, materialised from that
+record with hitchhikers left out:
+- **What it changes:** two idempotent index migrations,
+  `orders(customer_id, placed_at DESC, id DESC)` and `reviews(product_id)`, and no code
+  changes.
+- **Measured on its own:** cost per request **31.3% lower (95% CI [28.2%, 34.1%])**, 6-cycle
+  replicate, after an L2 oracle check.
+- **Provenance:** the MANIFEST ties each change to its lake record and evidence.
+
+A new run with `lake: git:colloid/datalake` re-evaluates these genes from scratch and starts
+its operator bandit from the attribution evidence (ADR 0005, 0006).
+
+## 8. How to reproduce
 
 ```bash
 pip install -e ".[dev]"                 # core + dev; add the local-LLM extra for Qwen arms
@@ -313,6 +548,8 @@ colloid report runs/stackzero           # the numbers in §4, from the run's own
 python stress/render_results.py runs/stackzero --write docs/INITIAL_RESULTS.md --evidence docs/results
 python stress/stress_sandbox.py         # §5 (as root)
 python stress/stress_evaluator.py       # §5 (as root)
+colloid lake ingest runs/stackzero --lake git:colloid/datalake    # §7
+colloid stack materialize fc1bc599 --carrying-only --out stack-out && colloid stack publish stack-out   # §7
 ```
 
 Every promoted variant carries a human-readable explanation generated from its genes and

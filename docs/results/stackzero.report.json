@@ -1,0 +1,2907 @@
+{
+ "run": "runs/stackzero",
+ "setup": {
+  "rate_rps": 30.0,
+  "calibration_knee": 60,
+  "fingerprint": {
+   "kernel": "6.18.44-fc-v51",
+   "cpu_model": "Intel(R) Xeon(R) Processor @ 2.10GHz",
+   "cpu_count": 4,
+   "gcc": "gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+   "python": "3.12.3",
+   "postgres": "postgres (PostgreSQL) 16.14 (Ubuntu 16.14-0ubuntu0.24.04.1)"
+  }
+ },
+ "program_counts": {
+  "elite": 26,
+  "evaluated": 1,
+  "promoted": 4,
+  "proposed": 4,
+  "rejected": 45
+ },
+ "cascade_funnel": {
+  "L0": {
+   "pass": 65,
+   "fail": 8
+  },
+  "L1": {
+   "pass": 53,
+   "fail": 12
+  },
+  "L2": {
+   "pass": 30,
+   "fail": 23
+  },
+  "L4": {
+   "pass": 28
+  },
+  "L5": {
+   "pass": 30
+  },
+  "L6": {
+   "fail": 10,
+   "pass": 4
+  }
+ },
+ "best_programs": [
+  {
+   "id": "cc73042ecce1bcda",
+   "island": "composition",
+   "generation": 10,
+   "operator": "splice",
+   "status": "promoted",
+   "genes": [
+    "db.idx_orders_customer_placed = True [knob_perturb]",
+    "shop_score_batch: code rewrite (llm_rewrite/optimize) optimize",
+    "db.idx_reviews_product = True [knob_sample]",
+    "Executor.fetchrow: code rewrite (gi_edit) copy line 3 before line 3"
+   ],
+   "gains_pct": {
+    "cost": {
+     "pct": 29.57,
+     "ci_pct": [
+      34.94,
+      23.41
+     ],
+     "p": 0.002
+    },
+    "cpu": {
+     "pct": 29.88,
+     "ci_pct": [
+      35.36,
+      23.57
+     ],
+     "p": 0.002
+    },
+    "p50": {
+     "pct": 46.3,
+     "ci_pct": [
+      55.65,
+      30.01
+     ],
+     "p": 0.0005
+    },
+    "p95": {
+     "pct": 42.55,
+     "ci_pct": [
+      50.12,
+      34.17
+     ],
+     "p": 0.0005
+    },
+    "mem": {
+     "pct": 1.87,
+     "ci_pct": [
+      2.41,
+      -0.53
+     ],
+     "p": 0.0129
+    }
+   },
+   "stage": "L6",
+   "usd_per_mreq": {
+    "baseline": 0.8083,
+    "candidate": 0.5693
+   }
+  },
+  {
+   "id": "8de55aa0a396750a",
+   "island": "composition",
+   "generation": 10,
+   "operator": "splice",
+   "status": "promoted",
+   "genes": [
+    "db.idx_orders_customer_placed = True [knob_perturb]",
+    "shop_score_batch: code rewrite (llm_rewrite/optimize) optimize",
+    "score: code rewrite (llm_rewrite/optimize) optimize",
+    "db.jit = False [knob_perturb]",
+    "db.idx_reviews_product = True [knob_sample]",
+    "Executor.fetchrow: code rewrite (gi_edit) copy line 3 before line 3"
+   ],
+   "gains_pct": {
+    "cost": {
+     "pct": 27.65,
+     "ci_pct": [
+      32.58,
+      22.7
+     ],
+     "p": 0.002
+    },
+    "cpu": {
+     "pct": 27.99,
+     "ci_pct": [
+      32.77,
+      22.8
+     ],
+     "p": 0.002
+    },
+    "p50": {
+     "pct": 45.04,
+     "ci_pct": [
+      52.63,
+      14.23
+     ],
+     "p": 0.0005
+    },
+    "p95": {
+     "pct": 42.75,
+     "ci_pct": [
+      51.87,
+      34.07
+     ],
+     "p": 0.0005
+    },
+    "mem": {
+     "pct": 0.54,
+     "ci_pct": [
+      3.15,
+      0.12
+     ],
+     "p": 0.4904
+    }
+   },
+   "stage": "L6",
+   "usd_per_mreq": {
+    "baseline": 0.8801,
+    "candidate": 0.6367
+   }
+  },
+  {
+   "id": "58c5d609e82eef78",
+   "island": "composition",
+   "generation": 10,
+   "operator": "splice",
+   "status": "promoted",
+   "genes": [
+    "db.idx_orders_customer_placed = True [knob_perturb]",
+    "shop_score_batch: code rewrite (llm_rewrite/optimize) optimize",
+    "score: code rewrite (llm_rewrite/optimize) optimize",
+    "db.idx_reviews_product = True [knob_sample]",
+    "Executor.fetchrow: code rewrite (gi_edit) copy line 3 before line 3"
+   ],
+   "gains_pct": {
+    "cost": {
+     "pct": 26.6,
+     "ci_pct": [
+      30.97,
+      21.28
+     ],
+     "p": 0.002
+    },
+    "cpu": {
+     "pct": 26.85,
+     "ci_pct": [
+      31.47,
+      21.75
+     ],
+     "p": 0.002
+    },
+    "p50": {
+     "pct": 33.24,
+     "ci_pct": [
+      43.06,
+      13.54
+     ],
+     "p": 0.0005
+    },
+    "p95": {
+     "pct": 38.37,
+     "ci_pct": [
+      47.86,
+      31.89
+     ],
+     "p": 0.0005
+    },
+    "mem": {
+     "pct": -0.08,
+     "ci_pct": [
+      0.87,
+      -2.33
+     ],
+     "p": 0.9173
+    }
+   },
+   "stage": "L6",
+   "usd_per_mreq": {
+    "baseline": 0.864,
+    "candidate": 0.6342
+   }
+  },
+  {
+   "id": "803f6d1d23d93cce",
+   "island": "db.index",
+   "generation": 8,
+   "operator": "knob_sample",
+   "status": "promoted",
+   "genes": [
+    "levenshtein: code rewrite (llm_rewrite/optimize) optimize",
+    "db.idx_reviews_product = True [knob_sample]",
+    "Executor.fetchrow: code rewrite (gi_edit) copy line 3 before line 3"
+   ],
+   "gains_pct": {
+    "cost": {
+     "pct": 15.39,
+     "ci_pct": [
+      21.0,
+      9.47
+     ],
+     "p": 0.002
+    },
+    "cpu": {
+     "pct": 15.62,
+     "ci_pct": [
+      21.18,
+      9.43
+     ],
+     "p": 0.002
+    },
+    "p50": {
+     "pct": -0.97,
+     "ci_pct": [
+      12.37,
+      -30.3
+     ],
+     "p": 0.9242
+    },
+    "p95": {
+     "pct": 27.65,
+     "ci_pct": [
+      35.85,
+      17.49
+     ],
+     "p": 0.0005
+    },
+    "mem": {
+     "pct": -0.2,
+     "ci_pct": [
+      0.7,
+      -2.19
+     ],
+     "p": 0.7821
+    }
+   },
+   "stage": "L6",
+   "usd_per_mreq": {
+    "baseline": 0.7597,
+    "candidate": 0.6428
+   }
+  },
+  {
+   "id": "f281a4a575d4f4c9",
+   "island": "db.index",
+   "generation": 10,
+   "operator": "knob_sample",
+   "status": "elite",
+   "genes": [
+    "levenshtein: code rewrite (llm_rewrite/optimize) optimize",
+    "db.idx_products_category = True [knob_sample]",
+    "db.idx_reviews_product = True [knob_sample]",
+    "Executor.fetchrow: code rewrite (gi_edit) copy line 3 before line 3"
+   ],
+   "gains_pct": {
+    "cost": {
+     "pct": 22.31,
+     "ci_pct": [
+      27.41,
+      17.01
+     ],
+     "p": 0.002
+    },
+    "cpu": {
+     "pct": 22.57,
+     "ci_pct": [
+      27.76,
+      17.3
+     ],
+     "p": 0.002
+    },
+    "p50": {
+     "pct": 18.68,
+     "ci_pct": [
+      39.97,
+      -2.77
+     ],
+     "p": 0.1315
+    },
+    "p95": {
+     "pct": 40.51,
+     "ci_pct": [
+      49.93,
+      33.8
+     ],
+     "p": 0.0005
+    },
+    "mem": {
+     "pct": 1.03,
+     "ci_pct": [
+      3.14,
+      0.02
+     ],
+     "p": 0.1999
+    }
+   },
+   "stage": "L6",
+   "usd_per_mreq": {
+    "baseline": 0.9148,
+    "candidate": 0.7106
+   }
+  },
+  {
+   "id": "1abc381f85cfa309",
+   "island": "db.index",
+   "generation": 10,
+   "operator": "knob_sample",
+   "status": "elite",
+   "genes": [
+    "db.jit = False [knob_perturb]",
+    "db.idx_products_desc_trgm = True [knob_sample]",
+    "db.idx_reviews_product = True [knob_sample]"
+   ],
+   "gains_pct": {
+    "cost": {
+     "pct": 15.67,
+     "ci_pct": [
+      26.44,
+      -4.85
+     ],
+     "p": 0.0595
+    },
+    "cpu": {
+     "pct": 15.87,
+     "ci_pct": [
+      26.77,
+      -4.9
+     ],
+     "p": 0.0594
+    },
+    "p50": {
+     "pct": -15.32,
+     "ci_pct": [
+      15.68,
+      -43.8
+     ],
+     "p": 0.2953
+    },
+    "p95": {
+     "pct": 3.01,
+     "ci_pct": [
+      29.97,
+      -64.06
+     ],
+     "p": 0.8881
+    },
+    "mem": {
+     "pct": 0.29,
+     "ci_pct": [
+      2.29,
+      -0.87
+     ],
+     "p": 0.7248
+    }
+   },
+   "stage": "L6",
+   "usd_per_mreq": {
+    "baseline": 0.8627,
+    "candidate": 0.7275
+   }
+  },
+  {
+   "id": "b7c9d5bfcdafb8af",
+   "island": "composition",
+   "generation": 5,
+   "operator": "splice",
+   "status": "elite",
+   "genes": [
+    "db.idx_orders_customer_placed = True [knob_perturb]",
+    "shop_score_batch: code rewrite (llm_rewrite/optimize) optimize",
+    "db.jit = False [knob_perturb]",
+    "find_candidates: code rewrite (py_rewrite/dedupe_seen_set) list-membership dedupe of 'candidates' at line 12 uses a shadow set"
+   ],
+   "gains_pct": {
+    "cost": {
+     "pct": 10.11,
+     "ci_pct": [
+      16.27,
+      3.29
+     ],
+     "p": 0.0059
+    },
+    "cpu": {
+     "pct": 10.39,
+     "ci_pct": [
+      16.59,
+      3.32
+     ],
+     "p": 0.0059
+    },
+    "p50": {
+     "pct": 33.35,
+     "ci_pct": [
+      42.49,
+      20.19
+     ],
+     "p": 0.0005
+    },
+    "p95": {
+     "pct": -3.42,
+     "ci_pct": [
+      15.48,
+      -12.16
+     ],
+     "p": 0.6418
+    },
+    "mem": {
+     "pct": 0.74,
+     "ci_pct": [
+      1.46,
+      -1.42
+     ],
+     "p": 0.3094
+    }
+   },
+   "stage": "L5",
+   "usd_per_mreq": {
+    "baseline": 0.3902,
+    "candidate": 0.3508
+   }
+  },
+  {
+   "id": "7e8e31486d9dd4ae",
+   "island": "db.index",
+   "generation": 6,
+   "operator": "knob_sample",
+   "status": "elite",
+   "genes": [
+    "levenshtein: code rewrite (llm_rewrite/optimize) optimize",
+    "db.idx_items_product_cover = True [knob_sample]",
+    "Executor.fetchrow: code rewrite (gi_edit) copy line 3 before line 3"
+   ],
+   "gains_pct": {
+    "cost": {
+     "pct": 9.54,
+     "ci_pct": [
+      17.07,
+      1.2
+     ],
+     "p": 0.0248
+    },
+    "cpu": {
+     "pct": 9.75,
+     "ci_pct": [
+      17.61,
+      1.31
+     ],
+     "p": 0.0259
+    },
+    "p50": {
+     "pct": 9.22,
+     "ci_pct": [
+      22.52,
+      -5.95
+     ],
+     "p": 0.2258
+    },
+    "p95": {
+     "pct": -2.78,
+     "ci_pct": [
+      8.07,
+      -15.81
+     ],
+     "p": 0.6413
+    },
+    "mem": {
+     "pct": 0.68,
+     "ci_pct": [
+      1.3,
+      -1.5
+     ],
+     "p": 0.3413
+    }
+   },
+   "stage": "L5",
+   "usd_per_mreq": {
+    "baseline": 0.4627,
+    "candidate": 0.4186
+   }
+  },
+  {
+   "id": "249259ede5e6619a",
+   "island": "composition",
+   "generation": 7,
+   "operator": "llm_rewrite",
+   "status": "elite",
+   "genes": [
+    "db.idx_orders_customer_placed = True [knob_perturb]",
+    "shop_free_tokens: code rewrite (llm_rewrite/algorithmic) algorithmic",
+    "find_candidates: code rewrite (py_rewrite/dedupe_seen_set) list-membership dedupe of 'candidates' at line 12 uses a shadow set"
+   ],
+   "gains_pct": {
+    "cost": {
+     "pct": 9.33,
+     "ci_pct": [
+      15.68,
+      3.16
+     ],
+     "p": 0.0056
+    },
+    "cpu": {
+     "pct": 9.57,
+     "ci_pct": [
+      16.1,
+      3.4
+     ],
+     "p": 0.0052
+    },
+    "p50": {
+     "pct": 28.12,
+     "ci_pct": [
+      38.72,
+      11.9
+     ],
+     "p": 0.0005
+    },
+    "p95": {
+     "pct": 6.04,
+     "ci_pct": [
+      16.92,
+      -6.34
+     ],
+     "p": 0.3222
+    },
+    "mem": {
+     "pct": 0.23,
+     "ci_pct": [
+      1.49,
+      -1.62
+     ],
+     "p": 0.7749
+    }
+   },
+   "stage": "L5",
+   "usd_per_mreq": {
+    "baseline": 0.4261,
+    "candidate": 0.3863
+   }
+  },
+  {
+   "id": "1cf8b36361ba77c1",
+   "island": "composition",
+   "generation": 5,
+   "operator": "splice",
+   "status": "elite",
+   "genes": [
+    "db.idx_orders_customer_placed = True [knob_perturb]",
+    "shop_score_batch: code rewrite (llm_rewrite/optimize) optimize",
+    "score: code rewrite (llm_rewrite/optimize) optimize"
+   ],
+   "gains_pct": {
+    "cost": {
+     "pct": 6.38,
+     "ci_pct": [
+      12.75,
+      -0.38
+     ],
+     "p": 0.0651
+    },
+    "cpu": {
+     "pct": 6.5,
+     "ci_pct": [
+      13.1,
+      -0.34
+     ],
+     "p": 0.0669
+    },
+    "p50": {
+     "pct": 24.27,
+     "ci_pct": [
+      35.74,
+      6.21
+     ],
+     "p": 0.004
+    },
+    "p95": {
+     "pct": 7.7,
+     "ci_pct": [
+      15.24,
+      -8.59
+     ],
+     "p": 0.205
+    },
+    "mem": {
+     "pct": 0.8,
+     "ci_pct": [
+      2.64,
+      -0.8
+     ],
+     "p": 0.3661
+    }
+   },
+   "stage": "L5",
+   "usd_per_mreq": {
+    "baseline": 0.5411,
+    "candidate": 0.5065
+   }
+  },
+  {
+   "id": "5976f84fdfde8857",
+   "island": "composition",
+   "generation": 5,
+   "operator": "splice",
+   "status": "elite",
+   "genes": [
+    "db.idx_orders_customer_placed = True [knob_perturb]",
+    "shop_score_batch: code rewrite (llm_rewrite/optimize) optimize",
+    "find_candidates: code rewrite (py_rewrite/dedupe_seen_set) list-membership dedupe of 'candidates' at line 12 uses a shadow set"
+   ],
+   "gains_pct": {
+    "cost": {
+     "pct": 6.01,
+     "ci_pct": [
+      12.14,
+      -0.02
+     ],
+     "p": 0.0608
+    },
+    "cpu": {
+     "pct": 6.2,
+     "ci_pct": [
+      12.71,
+      0.41
+     ],
+     "p": 0.0571
+    },
+    "p50": {
+     "pct": 24.47,
+     "ci_pct": [
+      34.45,
+      10.12
+     ],
+     "p": 0.0005
+    },
+    "p95": {
+     "pct": 2.34,
+     "ci_pct": [
+      11.29,
+      -10.03
+     ],
+     "p": 0.6662
+    },
+    "mem": {
+     "pct": -0.64,
+     "ci_pct": [
+      0.94,
+      -1.9
+     ],
+     "p": 0.3742
+    }
+   },
+   "stage": "L5",
+   "usd_per_mreq": {
+    "baseline": 0.4361,
+    "candidate": 0.4099
+   }
+  },
+  {
+   "id": "b7d4942627fb3d64",
+   "island": "svc.code",
+   "generation": 4,
+   "operator": "py_rewrite",
+   "status": "elite",
+   "genes": [
+    "db.idx_orders_customer_placed = True [knob_perturb]",
+    "find_candidates: code rewrite (py_rewrite/dedupe_seen_set) list-membership dedupe of 'candidates' at line 12 uses a shadow set"
+   ],
+   "gains_pct": {
+    "cost": {
+     "pct": 5.77,
+     "ci_pct": [
+      11.33,
+      -0.86
+     ],
+     "p": 0.0704
+    },
+    "cpu": {
+     "pct": 5.92,
+     "ci_pct": [
+      11.54,
+      -0.95
+     ],
+     "p": 0.0703
+    },
+    "p50": {
+     "pct": 24.62,
+     "ci_pct": [
+      36.73,
+      12.77
+     ],
+     "p": 0.0006
+    },
+    "p95": {
+     "pct": -2.91,
+     "ci_pct": [
+      9.76,
+      -10.16
+     ],
+     "p": 0.5732
+    },
+    "mem": {
+     "pct": 1.84,
+     "ci_pct": [
+      2.56,
+      -0.23
+     ],
+     "p": 0.0097
+    }
+   },
+   "stage": "L5",
+   "usd_per_mreq": {
+    "baseline": 0.3887,
+    "candidate": 0.3663
+   }
+  },
+  {
+   "id": "49e143d7542de035",
+   "island": "native.code",
+   "generation": 5,
+   "operator": "llm_rewrite",
+   "status": "elite",
+   "genes": [
+    "levenshtein: code rewrite (llm_rewrite/optimize) optimize",
+    "Executor.fetchrow: code rewrite (gi_edit) copy line 3 before line 3"
+   ],
+   "gains_pct": {
+    "cost": {
+     "pct": 5.36,
+     "ci_pct": [
+      13.44,
+      -2.48
+     ],
+     "p": 0.2012
+    },
+    "cpu": {
+     "pct": 5.48,
+     "ci_pct": [
+      13.89,
+      -2.69
+     ],
+     "p": 0.2096
+    },
+    "p50": {
+     "pct": 9.42,
+     "ci_pct": [
+      22.3,
+      -8.59
+     ],
+     "p": 0.2466
+    },
+    "p95": {
+     "pct": 5.6,
+     "ci_pct": [
+      17.48,
+      -3.19
+     ],
+     "p": 0.3124
+    },
+    "mem": {
+     "pct": -0.68,
+     "ci_pct": [
+      1.27,
+      -1.62
+     ],
+     "p": 0.3557
+    }
+   },
+   "stage": "L5",
+   "usd_per_mreq": {
+    "baseline": 0.5342,
+    "candidate": 0.5056
+   }
+  },
+  {
+   "id": "a1ebc29309238b61",
+   "island": "db.index",
+   "generation": 9,
+   "operator": "knob_perturb",
+   "status": "elite",
+   "genes": [
+    "db.idx_items_product = True [knob_perturb]",
+    "Executor.fetchrow: code rewrite (gi_edit) copy line 3 before line 3"
+   ],
+   "gains_pct": {
+    "cost": {
+     "pct": 3.75,
+     "ci_pct": [
+      11.24,
+      -4.3
+     ],
+     "p": 0.3529
+    },
+    "cpu": {
+     "pct": 3.86,
+     "ci_pct": [
+      11.56,
+      -4.14
+     ],
+     "p": 0.3448
+    },
+    "p50": {
+     "pct": -1.57,
+     "ci_pct": [
+      13.23,
+      -18.17
+     ],
+     "p": 0.8435
+    },
+    "p95": {
+     "pct": -6.35,
+     "ci_pct": [
+      4.38,
+      -19.53
+     ],
+     "p": 0.2793
+    },
+    "mem": {
+     "pct": -1.12,
+     "ci_pct": [
+      0.34,
+      -2.62
+     ],
+     "p": 0.137
+    }
+   },
+   "stage": "L5",
+   "usd_per_mreq": {
+    "baseline": 0.4112,
+    "candidate": 0.3957
+   }
+  },
+  {
+   "id": "e1e9a1e6ba2ea663",
+   "island": "svc.code",
+   "generation": 4,
+   "operator": "crossover",
+   "status": "elite",
+   "genes": [
+    "db.idx_orders_customer_placed = True [knob_perturb]",
+    "Executor.fetchrow: code rewrite (gi_edit) copy line 3 before line 3"
+   ],
+   "gains_pct": {
+    "cost": {
+     "pct": 3.64,
+     "ci_pct": [
+      9.86,
+      -1.79
+     ],
+     "p": 0.2314
+    },
+    "cpu": {
+     "pct": 3.73,
+     "ci_pct": [
+      10.09,
+      -1.75
+     ],
+     "p": 0.2278
+    },
+    "p50": {
+     "pct": 16.69,
+     "ci_pct": [
+      35.08,
+      3.04
+     ],
+     "p": 0.0744
+    },
+    "p95": {
+     "pct": -4.25,
+     "ci_pct": [
+      9.7,
+      -10.13
+     ],
+     "p": 0.4111
+    },
+    "mem": {
+     "pct": -0.55,
+     "ci_pct": [
+      2.14,
+      -0.8
+     ],
+     "p": 0.4646
+    }
+   },
+   "stage": "L5",
+   "usd_per_mreq": {
+    "baseline": 0.4377,
+    "candidate": 0.4217
+   }
+  },
+  {
+   "id": "77ccc42bbf66fedb",
+   "island": "db.index",
+   "generation": 9,
+   "operator": "knob_sample",
+   "status": "elite",
+   "genes": [
+    "db.idx_orders_customer_placed = True [knob_perturb]",
+    "db.idx_products_category = True [knob_sample]",
+    "find_candidates: code rewrite (py_rewrite/dedupe_seen_set) list-membership dedupe of 'candidates' at line 12 uses a shadow set"
+   ],
+   "gains_pct": {
+    "cost": {
+     "pct": 3.51,
+     "ci_pct": [
+      10.55,
+      -2.95
+     ],
+     "p": 0.3194
+    },
+    "cpu": {
+     "pct": 3.6,
+     "ci_pct": [
+      10.86,
+      -3.03
+     ],
+     "p": 0.3204
+    },
+    "p50": {
+     "pct": 14.36,
+     "ci_pct": [
+      30.76,
+      -0.06
+     ],
+     "p": 0.0989
+    },
+    "p95": {
+     "pct": -0.4,
+     "ci_pct": [
+      10.71,
+      -9.88
+     ],
+     "p": 0.949
+    },
+    "mem": {
+     "pct": -0.63,
+     "ci_pct": [
+      1.52,
+      -1.52
+     ],
+     "p": 0.4174
+    }
+   },
+   "stage": "L5",
+   "usd_per_mreq": {
+    "baseline": 0.4905,
+    "candidate": 0.4733
+   }
+  },
+  {
+   "id": "7681102dff149a21",
+   "island": "db.index",
+   "generation": 1,
+   "operator": "knob_perturb",
+   "status": "elite",
+   "genes": [
+    "db.idx_orders_customer_placed = True [knob_perturb]"
+   ],
+   "gains_pct": {
+    "cost": {
+     "pct": 2.5,
+     "ci_pct": [
+      8.62,
+      -3.26
+     ],
+     "p": 0.4165
+    },
+    "cpu": {
+     "pct": 2.53,
+     "ci_pct": [
+      8.74,
+      -3.33
+     ],
+     "p": 0.4188
+    },
+    "p50": {
+     "pct": 14.37,
+     "ci_pct": [
+      29.41,
+      -6.92
+     ],
+     "p": 0.1431
+    },
+    "p95": {
+     "pct": -2.6,
+     "ci_pct": [
+      11.88,
+      -8.75
+     ],
+     "p": 0.6328
+    },
+    "mem": {
+     "pct": -0.22,
+     "ci_pct": [
+      0.52,
+      -2.37
+     ],
+     "p": 0.7618
+    }
+   },
+   "stage": "L6",
+   "usd_per_mreq": {
+    "baseline": 0.8925,
+    "candidate": 0.8701
+   }
+  },
+  {
+   "id": "e58e89920c0c02bb",
+   "island": "native.code",
+   "generation": 2,
+   "operator": "llm_rewrite",
+   "status": "elite",
+   "genes": [
+    "shop_score_batch: code rewrite (llm_rewrite/optimize) optimize"
+   ],
+   "gains_pct": {
+    "cost": {
+     "pct": 1.78,
+     "ci_pct": [
+      8.33,
+      -5.66
+     ],
+     "p": 0.6202
+    },
+    "cpu": {
+     "pct": 1.81,
+     "ci_pct": [
+      8.56,
+      -5.47
+     ],
+     "p": 0.6157
+    },
+    "p50": {
+     "pct": 1.19,
+     "ci_pct": [
+      17.19,
+      -16.96
+     ],
+     "p": 0.8917
+    },
+    "p95": {
+     "pct": 1.77,
+     "ci_pct": [
+      13.17,
+      -10.39
+     ],
+     "p": 0.7706
+    },
+    "mem": {
+     "pct": 0.16,
+     "ci_pct": [
+      1.31,
+      -1.55
+     ],
+     "p": 0.8269
+    }
+   },
+   "stage": "L5",
+   "usd_per_mreq": {
+    "baseline": 0.4301,
+    "candidate": 0.4224
+   }
+  },
+  {
+   "id": "24db5651b08769e7",
+   "island": "native.code",
+   "generation": 8,
+   "operator": "llm_rewrite",
+   "status": "elite",
+   "genes": [
+    "shop_tokenize: code rewrite (llm_rewrite/sql_batching) sql_batching",
+    "levenshtein: code rewrite (llm_rewrite/optimize) optimize",
+    "Executor.fetchrow: code rewrite (gi_edit) copy line 3 before line 3"
+   ],
+   "gains_pct": {
+    "cost": {
+     "pct": 0.94,
+     "ci_pct": [
+      9.05,
+      -7.04
+     ],
+     "p": 0.8198
+    },
+    "cpu": {
+     "pct": 0.98,
+     "ci_pct": [
+      8.97,
+      -7.32
+     ],
+     "p": 0.8155
+    },
+    "p50": {
+     "pct": -0.11,
+     "ci_pct": [
+      12.95,
+      -20.22
+     ],
+     "p": 0.9893
+    },
+    "p95": {
+     "pct": 1.9,
+     "ci_pct": [
+      20.14,
+      -9.2
+     ],
+     "p": 0.8395
+    },
+    "mem": {
+     "pct": 0.78,
+     "ci_pct": [
+      1.9,
+      -0.93
+     ],
+     "p": 0.2793
+    }
+   },
+   "stage": "L5",
+   "usd_per_mreq": {
+    "baseline": 0.4837,
+    "candidate": 0.4791
+   }
+  },
+  {
+   "id": "0803204221044e0a",
+   "island": "native.code",
+   "generation": 4,
+   "operator": "llm_rewrite",
+   "status": "elite",
+   "genes": [
+    "levenshtein: code rewrite (llm_rewrite/optimize) optimize",
+    "Executor.fetchrow: code rewrite (gi_edit) copy line 3 before line 3"
+   ],
+   "gains_pct": {
+    "cost": {
+     "pct": 0.33,
+     "ci_pct": [
+      6.67,
+      -5.98
+     ],
+     "p": 0.9194
+    },
+    "cpu": {
+     "pct": 0.33,
+     "ci_pct": [
+      6.72,
+      -6.18
+     ],
+     "p": 0.9203
+    },
+    "p50": {
+     "pct": -2.47,
+     "ci_pct": [
+      21.62,
+      -15.46
+     ],
+     "p": 0.8047
+    },
+    "p95": {
+     "pct": 1.19,
+     "ci_pct": [
+      13.68,
+      -10.84
+     ],
+     "p": 0.8516
+    },
+    "mem": {
+     "pct": 0.69,
+     "ci_pct": [
+      0.94,
+      -1.95
+     ],
+     "p": 0.3416
+    }
+   },
+   "stage": "L5",
+   "usd_per_mreq": {
+    "baseline": 0.4784,
+    "candidate": 0.4768
+   }
+  },
+  {
+   "id": "ede77ee62ab88e4f",
+   "island": "svc.code",
+   "generation": 7,
+   "operator": "gi_edit",
+   "status": "elite",
+   "genes": [
+    "levenshtein: code rewrite (llm_rewrite/optimize) optimize",
+    "parse_timestamp: code rewrite (gi_edit) delete statement at line 5",
+    "Executor.fetchrow: code rewrite (gi_edit) copy line 3 before line 3"
+   ],
+   "gains_pct": {
+    "cost": {
+     "pct": 0.31,
+     "ci_pct": [
+      6.73,
+      -6.75
+     ],
+     "p": 0.9271
+    },
+    "cpu": {
+     "pct": 0.33,
+     "ci_pct": [
+      7.06,
+      -6.71
+     ],
+     "p": 0.9254
+    },
+    "p50": {
+     "pct": -2.97,
+     "ci_pct": [
+      16.95,
+      -24.57
+     ],
+     "p": 0.7774
+    },
+    "p95": {
+     "pct": -3.03,
+     "ci_pct": [
+      6.59,
+      -22.13
+     ],
+     "p": 0.6629
+    },
+    "mem": {
+     "pct": -0.88,
+     "ci_pct": [
+      1.88,
+      -1.49
+     ],
+     "p": 0.3075
+    }
+   },
+   "stage": "L5",
+   "usd_per_mreq": {
+    "baseline": 0.4912,
+    "candidate": 0.4897
+   }
+  },
+  {
+   "id": "8f20faeca2dde359",
+   "island": "db.index",
+   "generation": 2,
+   "operator": "knob_sample",
+   "status": "elite",
+   "genes": [
+    "db.idx_products_name_trgm = True [knob_sample]"
+   ],
+   "gains_pct": {
+    "cost": {
+     "pct": -0.82,
+     "ci_pct": [
+      5.02,
+      -7.62
+     ],
+     "p": 0.7989
+    },
+    "cpu": {
+     "pct": -0.81,
+     "ci_pct": [
+      5.19,
+      -7.66
+     ],
+     "p": 0.803
+    },
+    "p50": {
+     "pct": -4.33,
+     "ci_pct": [
+      12.0,
+      -19.54
+     ],
+     "p": 0.5871
+    },
+    "p95": {
+     "pct": 0.18,
+     "ci_pct": [
+      12.46,
+      -13.07
+     ],
+     "p": 0.9786
+    },
+    "mem": {
+     "pct": -1.35,
+     "ci_pct": [
+      -0.64,
+      -3.51
+     ],
+     "p": 0.0605
+    }
+   },
+   "stage": "L5",
+   "usd_per_mreq": {
+    "baseline": 0.4085,
+    "candidate": 0.4119
+   }
+  },
+  {
+   "id": "be3a9d49b7811b78",
+   "island": "db.index",
+   "generation": 5,
+   "operator": "knob_sample",
+   "status": "elite",
+   "genes": [
+    "db.jit = False [knob_perturb]",
+    "db.idx_products_desc_trgm = True [knob_sample]"
+   ],
+   "gains_pct": {
+    "cost": {
+     "pct": -0.83,
+     "ci_pct": [
+      4.97,
+      -8.0
+     ],
+     "p": 0.8008
+    },
+    "cpu": {
+     "pct": -0.81,
+     "ci_pct": [
+      5.26,
+      -7.96
+     ],
+     "p": 0.8078
+    },
+    "p50": {
+     "pct": 4.74,
+     "ci_pct": [
+      17.65,
+      -12.7
+     ],
+     "p": 0.5435
+    },
+    "p95": {
+     "pct": 2.79,
+     "ci_pct": [
+      9.79,
+      -11.41
+     ],
+     "p": 0.5991
+    },
+    "mem": {
+     "pct": -2.22,
+     "ci_pct": [
+      -0.3,
+      -3.14
+     ],
+     "p": 0.002
+    }
+   },
+   "stage": "L5",
+   "usd_per_mreq": {
+    "baseline": 0.4786,
+    "candidate": 0.4825
+   }
+  },
+  {
+   "id": "1677fc734ad16fad",
+   "island": "svc.code",
+   "generation": 2,
+   "operator": "llm_rewrite",
+   "status": "elite",
+   "genes": [
+    "score: code rewrite (llm_rewrite/optimize) optimize",
+    "Executor.fetchrow: code rewrite (gi_edit) copy line 3 before line 3"
+   ],
+   "gains_pct": {
+    "cost": {
+     "pct": -0.93,
+     "ci_pct": [
+      4.93,
+      -8.23
+     ],
+     "p": 0.7802
+    },
+    "cpu": {
+     "pct": -0.97,
+     "ci_pct": [
+      5.09,
+      -8.42
+     ],
+     "p": 0.7757
+    },
+    "p50": {
+     "pct": -2.03,
+     "ci_pct": [
+      14.07,
+      -15.25
+     ],
+     "p": 0.7888
+    },
+    "p95": {
+     "pct": 1.56,
+     "ci_pct": [
+      10.9,
+      -12.32
+     ],
+     "p": 0.7907
+    },
+    "mem": {
+     "pct": 0.16,
+     "ci_pct": [
+      2.8,
+      -0.31
+     ],
+     "p": 0.9915
+    }
+   },
+   "stage": "L5",
+   "usd_per_mreq": {
+    "baseline": 0.412,
+    "candidate": 0.4158
+   }
+  },
+  {
+   "id": "f374cc14ca5a6a9a",
+   "island": "db.index",
+   "generation": 7,
+   "operator": "knob_reset",
+   "status": "elite",
+   "genes": [
+    "find_candidates: code rewrite (py_rewrite/dedupe_seen_set) list-membership dedupe of 'candidates' at line 12 uses a shadow set"
+   ],
+   "gains_pct": {
+    "cost": {
+     "pct": -1.68,
+     "ci_pct": [
+      4.79,
+      -8.49
+     ],
+     "p": 0.6159
+    },
+    "cpu": {
+     "pct": -1.75,
+     "ci_pct": [
+      4.97,
+      -8.6
+     ],
+     "p": 0.61
+    },
+    "p50": {
+     "pct": -4.0,
+     "ci_pct": [
+      12.72,
+      -16.62
+     ],
+     "p": 0.5955
+    },
+    "p95": {
+     "pct": -1.45,
+     "ci_pct": [
+      13.08,
+      -10.62
+     ],
+     "p": 0.8151
+    },
+    "mem": {
+     "pct": 0.34,
+     "ci_pct": [
+      2.67,
+      -1.51
+     ],
+     "p": 0.7492
+    }
+   },
+   "stage": "L5",
+   "usd_per_mreq": {
+    "baseline": 0.4285,
+    "candidate": 0.4358
+   }
+  },
+  {
+   "id": "d24351016725de46",
+   "island": "db.config",
+   "generation": 8,
+   "operator": "knob_perturb",
+   "status": "elite",
+   "genes": [
+    "levenshtein: code rewrite (llm_rewrite/optimize) optimize",
+    "db.random_page_cost = 4.51336845129871 [knob_perturb]",
+    "Executor.fetchrow: code rewrite (gi_edit) copy line 3 before line 3"
+   ],
+   "gains_pct": {
+    "cost": {
+     "pct": -2.27,
+     "ci_pct": [
+      4.45,
+      -8.88
+     ],
+     "p": 0.5004
+    },
+    "cpu": {
+     "pct": -2.34,
+     "ci_pct": [
+      4.57,
+      -8.99
+     ],
+     "p": 0.4945
+    },
+    "p50": {
+     "pct": 0.47,
+     "ci_pct": [
+      11.64,
+      -19.33
+     ],
+     "p": 0.9505
+    },
+    "p95": {
+     "pct": -1.21,
+     "ci_pct": [
+      10.36,
+      -13.2
+     ],
+     "p": 0.8395
+    },
+    "mem": {
+     "pct": -0.2,
+     "ci_pct": [
+      2.14,
+      -1.88
+     ],
+     "p": 0.8473
+    }
+   },
+   "stage": "L5",
+   "usd_per_mreq": {
+    "baseline": 0.3935,
+    "candidate": 0.4024
+   }
+  },
+  {
+   "id": "cb65fc40730070c8",
+   "island": "svc.code",
+   "generation": 9,
+   "operator": "py_rewrite",
+   "status": "elite",
+   "genes": [
+    "category_top: code rewrite (py_rewrite/append_to_listcomp) append loop at line 12 becomes a list comprehension"
+   ],
+   "gains_pct": {
+    "cost": {
+     "pct": -2.96,
+     "ci_pct": [
+      7.6,
+      -18.15
+     ],
+     "p": 0.6421
+    },
+    "cpu": {
+     "pct": -3.01,
+     "ci_pct": [
+      8.26,
+      -19.61
+     ],
+     "p": 0.6612
+    },
+    "p50": {
+     "pct": -1.26,
+     "ci_pct": [
+      11.72,
+      -19.14
+     ],
+     "p": 0.8701
+    },
+    "p95": {
+     "pct": -7.47,
+     "ci_pct": [
+      7.98,
+      -19.73
+     ],
+     "p": 0.2833
+    },
+    "mem": {
+     "pct": -0.71,
+     "ci_pct": [
+      0.81,
+      -2.1
+     ],
+     "p": 0.3344
+    }
+   },
+   "stage": "L5",
+   "usd_per_mreq": {
+    "baseline": 0.4221,
+    "candidate": 0.4346
+   }
+  },
+  {
+   "id": "deb25ce53ae19bad",
+   "island": "db.config",
+   "generation": 1,
+   "operator": "knob_perturb",
+   "status": "elite",
+   "genes": [
+    "db.jit = False [knob_perturb]"
+   ],
+   "gains_pct": {
+    "cost": {
+     "pct": -4.53,
+     "ci_pct": [
+      2.08,
+      -11.27
+     ],
+     "p": 0.1741
+    },
+    "cpu": {
+     "pct": -4.64,
+     "ci_pct": [
+      1.93,
+      -11.69
+     ],
+     "p": 0.1713
+    },
+    "p50": {
+     "pct": -3.34,
+     "ci_pct": [
+      8.97,
+      -26.19
+     ],
+     "p": 0.6933
+    },
+    "p95": {
+     "pct": -0.44,
+     "ci_pct": [
+      13.75,
+      -12.33
+     ],
+     "p": 0.9715
+    },
+    "mem": {
+     "pct": 0.02,
+     "ci_pct": [
+      0.72,
+      -2.39
+     ],
+     "p": 0.9841
+    }
+   },
+   "stage": "L5",
+   "usd_per_mreq": {
+    "baseline": 0.4389,
+    "candidate": 0.4588
+   }
+  },
+  {
+   "id": "cdb71c1f4db1b42c",
+   "island": "svc.code",
+   "generation": 1,
+   "operator": "gi_edit",
+   "status": "elite",
+   "genes": [
+    "Executor.fetchrow: code rewrite (gi_edit) copy line 3 before line 3"
+   ],
+   "gains_pct": {
+    "cost": {
+     "pct": -4.73,
+     "ci_pct": [
+      2.19,
+      -10.26
+     ],
+     "p": 0.1307
+    },
+    "cpu": {
+     "pct": -4.79,
+     "ci_pct": [
+      1.94,
+      -10.72
+     ],
+     "p": 0.1306
+    },
+    "p50": {
+     "pct": -8.85,
+     "ci_pct": [
+      19.01,
+      -29.53
+     ],
+     "p": 0.479
+    },
+    "p95": {
+     "pct": -19.1,
+     "ci_pct": [
+      -4.02,
+      -44.9
+     ],
+     "p": 0.0387
+    },
+    "mem": {
+     "pct": 0.63,
+     "ci_pct": [
+      1.75,
+      -1.08
+     ],
+     "p": 0.3815
+    }
+   },
+   "stage": "L6",
+   "usd_per_mreq": {
+    "baseline": 0.8901,
+    "candidate": 0.9321
+   }
+  },
+  {
+   "id": "f697c1c198db9f81",
+   "island": "native.code",
+   "generation": 3,
+   "operator": "llm_rewrite",
+   "status": "elite",
+   "genes": [
+    "shop_score_batch: code rewrite (llm_rewrite/optimize) optimize",
+    "shop_free_tokens: code rewrite (llm_rewrite/sql_batching) sql_batching"
+   ],
+   "gains_pct": {
+    "cost": {
+     "pct": -5.16,
+     "ci_pct": [
+      2.96,
+      -14.74
+     ],
+     "p": 0.2389
+    },
+    "cpu": {
+     "pct": -5.28,
+     "ci_pct": [
+      3.15,
+      -14.68
+     ],
+     "p": 0.2322
+    },
+    "p50": {
+     "pct": -6.12,
+     "ci_pct": [
+      7.49,
+      -29.27
+     ],
+     "p": 0.4863
+    },
+    "p95": {
+     "pct": -11.65,
+     "ci_pct": [
+      6.19,
+      -22.73
+     ],
+     "p": 0.1079
+    },
+    "mem": {
+     "pct": -0.11,
+     "ci_pct": [
+      1.81,
+      -1.16
+     ],
+     "p": 0.8902
+    }
+   },
+   "stage": "L5",
+   "usd_per_mreq": {
+    "baseline": 0.4629,
+    "candidate": 0.4868
+   }
+  }
+ ],
+ "promoted": [
+  "803f6d1d23d93cce",
+  "58c5d609e82eef78",
+  "8de55aa0a396750a",
+  "cc73042ecce1bcda"
+ ],
+ "verified": [],
+ "epistasis": [
+  {
+   "gene_a": "5e2ac9da",
+   "gene_b": "63156cc4",
+   "epsilon": 0.0682,
+   "ci": [
+    -0.0554,
+    0.1919
+   ],
+   "kind": "synergy",
+   "a_explain": "db.jit = False [knob_perturb]",
+   "b_explain": "db.idx_products_desc_trgm = True [knob_sample]"
+  },
+  {
+   "gene_a": "02eef39e",
+   "gene_b": "a56339c7",
+   "epsilon": -0.0273,
+   "ci": [
+    -0.1506,
+    0.096
+   ],
+   "kind": "interference",
+   "a_explain": "db.idx_orders_customer_placed = True [knob_perturb]",
+   "b_explain": "find_candidates: code rewrite (py_rewrite/dedupe_seen_set) list-membership dedupe of 'candidates' at line 12 uses a shadow set"
+  },
+  {
+   "gene_a": "6bf4043c",
+   "gene_b": "f2a2817e",
+   "epsilon": 0.0001,
+   "ci": [
+    -0.1389,
+    0.1391
+   ],
+   "kind": "synergy",
+   "a_explain": "levenshtein: code rewrite (llm_rewrite/optimize) optimize",
+   "b_explain": "Executor.fetchrow: code rewrite (gi_edit) copy line 3 before line 3"
+  },
+  {
+   "gene_a": "6bf4043c",
+   "gene_b": "c4bb6a9a",
+   "epsilon": 0.0286,
+   "ci": [
+    -0.1273,
+    0.1846
+   ],
+   "kind": "synergy",
+   "a_explain": "levenshtein: code rewrite (llm_rewrite/optimize) optimize",
+   "b_explain": "db.random_page_cost = 4.51336845129871 [knob_perturb]"
+  },
+  {
+   "gene_a": "c4bb6a9a",
+   "gene_b": "f2a2817e",
+   "epsilon": -0.042,
+   "ci": [
+    -0.1843,
+    0.1002
+   ],
+   "kind": "interference",
+   "a_explain": "db.random_page_cost = 4.51336845129871 [knob_perturb]",
+   "b_explain": "Executor.fetchrow: code rewrite (gi_edit) copy line 3 before line 3"
+  },
+  {
+   "gene_a": "6bf4043c",
+   "gene_b": "770e4340",
+   "epsilon": 0.038,
+   "ci": [
+    -0.1119,
+    0.1878
+   ],
+   "kind": "synergy",
+   "a_explain": "levenshtein: code rewrite (llm_rewrite/optimize) optimize",
+   "b_explain": "db.idx_products_category = True [knob_sample]"
+  },
+  {
+   "gene_a": "6bf4043c",
+   "gene_b": "e99d1ebf",
+   "epsilon": -0.0469,
+   "ci": [
+    -0.2391,
+    0.1452
+   ],
+   "kind": "interference",
+   "a_explain": "levenshtein: code rewrite (llm_rewrite/optimize) optimize",
+   "b_explain": "db.idx_reviews_product = True [knob_sample]"
+  },
+  {
+   "gene_a": "770e4340",
+   "gene_b": "e99d1ebf",
+   "epsilon": -0.0513,
+   "ci": [
+    -0.2322,
+    0.1295
+   ],
+   "kind": "interference",
+   "a_explain": "db.idx_products_category = True [knob_sample]",
+   "b_explain": "db.idx_reviews_product = True [knob_sample]"
+  },
+  {
+   "gene_a": "770e4340",
+   "gene_b": "f2a2817e",
+   "epsilon": -0.0651,
+   "ci": [
+    -0.202,
+    0.0718
+   ],
+   "kind": "interference",
+   "a_explain": "db.idx_products_category = True [knob_sample]",
+   "b_explain": "Executor.fetchrow: code rewrite (gi_edit) copy line 3 before line 3"
+  },
+  {
+   "gene_a": "e99d1ebf",
+   "gene_b": "f2a2817e",
+   "epsilon": 0.0831,
+   "ci": [
+    -0.1325,
+    0.2987
+   ],
+   "kind": "synergy",
+   "a_explain": "db.idx_reviews_product = True [knob_sample]",
+   "b_explain": "Executor.fetchrow: code rewrite (gi_edit) copy line 3 before line 3"
+  }
+ ],
+ "shapley": [
+  {
+   "program": "be3a9d49b7811b78",
+   "gene": "5e2ac9da",
+   "explain": "db.jit = False [knob_perturb]",
+   "value": -0.0102,
+   "ci": [
+    -0.072,
+    0.0516
+   ]
+  },
+  {
+   "program": "be3a9d49b7811b78",
+   "gene": "63156cc4",
+   "explain": "db.idx_products_desc_trgm = True [knob_sample]",
+   "value": 0.002,
+   "ci": [
+    -0.0598,
+    0.0638
+   ]
+  },
+  {
+   "program": "b7d4942627fb3d64",
+   "gene": "02eef39e",
+   "explain": "db.idx_orders_customer_placed = True [knob_perturb]",
+   "value": 0.0274,
+   "ci": [
+    -0.0343,
+    0.089
+   ]
+  },
+  {
+   "program": "b7d4942627fb3d64",
+   "gene": "a56339c7",
+   "explain": "find_candidates: code rewrite (py_rewrite/dedupe_seen_set) list-membership dedupe of 'candidates' at line 12 uses a shadow set",
+   "value": 0.0321,
+   "ci": [
+    -0.0296,
+    0.0937
+   ]
+  },
+  {
+   "program": "49e143d7542de035",
+   "gene": "6bf4043c",
+   "explain": "levenshtein: code rewrite (llm_rewrite/optimize) optimize",
+   "value": 0.0004,
+   "ci": [
+    -0.068,
+    0.0688
+   ]
+  },
+  {
+   "program": "49e143d7542de035",
+   "gene": "f2a2817e",
+   "explain": "Executor.fetchrow: code rewrite (gi_edit) copy line 3 before line 3",
+   "value": 0.0546,
+   "ci": [
+    -0.0138,
+    0.1231
+   ]
+  },
+  {
+   "program": "d24351016725de46",
+   "gene": "6bf4043c",
+   "explain": "levenshtein: code rewrite (llm_rewrite/optimize) optimize",
+   "value": -0.0067,
+   "ci": [
+    -0.0623,
+    0.0488
+   ]
+  },
+  {
+   "program": "d24351016725de46",
+   "gene": "c4bb6a9a",
+   "explain": "db.random_page_cost = 4.51336845129871 [knob_perturb]",
+   "value": -0.0298,
+   "ci": [
+    -0.0841,
+    0.0244
+   ]
+  },
+  {
+   "program": "d24351016725de46",
+   "gene": "f2a2817e",
+   "explain": "Executor.fetchrow: code rewrite (gi_edit) copy line 3 before line 3",
+   "value": 0.0141,
+   "ci": [
+    -0.0379,
+    0.0661
+   ]
+  },
+  {
+   "program": "f281a4a575d4f4c9",
+   "gene": "6bf4043c",
+   "explain": "levenshtein: code rewrite (llm_rewrite/optimize) optimize",
+   "value": 0.0021,
+   "ci": [
+    -0.0449,
+    0.049
+   ]
+  },
+  {
+   "program": "f281a4a575d4f4c9",
+   "gene": "770e4340",
+   "explain": "db.idx_products_category = True [knob_sample]",
+   "value": -0.0263,
+   "ci": [
+    -0.0713,
+    0.0188
+   ]
+  },
+  {
+   "program": "f281a4a575d4f4c9",
+   "gene": "e99d1ebf",
+   "explain": "db.idx_reviews_product = True [knob_sample]",
+   "value": 0.3233,
+   "ci": [
+    0.2758,
+    0.3709
+   ]
+  },
+  {
+   "program": "f281a4a575d4f4c9",
+   "gene": "f2a2817e",
+   "explain": "Executor.fetchrow: code rewrite (gi_edit) copy line 3 before line 3",
+   "value": -0.0158,
+   "ci": [
+    -0.0609,
+    0.0292
+   ]
+  },
+  {
+   "program": "803f6d1d23d93cce",
+   "gene": "6bf4043c",
+   "explain": "levenshtein: code rewrite (llm_rewrite/optimize) optimize",
+   "value": -0.0317,
+   "ci": [
+    -0.1021,
+    0.0387
+   ]
+  },
+  {
+   "program": "803f6d1d23d93cce",
+   "gene": "e99d1ebf",
+   "explain": "db.idx_reviews_product = True [knob_sample]",
+   "value": 0.2724,
+   "ci": [
+    0.2023,
+    0.3425
+   ]
+  },
+  {
+   "program": "803f6d1d23d93cce",
+   "gene": "f2a2817e",
+   "explain": "Executor.fetchrow: code rewrite (gi_edit) copy line 3 before line 3",
+   "value": 0.0373,
+   "ci": [
+    -0.0222,
+    0.0967
+   ]
+  }
+ ],
+ "llm": {
+  "calls": 85,
+  "tokens_in": 81164,
+  "tokens_out": 29624,
+  "cost_usd": 0.2479,
+  "by_model": {
+   "qwen2.5-coder-3b": 74,
+   "qwen2.5-coder-1.5b": 11
+  }
+ },
+ "alerts": [
+  {
+   "id": "breach-a1fc8c05b3b9",
+   "kind": "redteam_breach",
+   "severity": "critical",
+   "message": "red-team program a1fc8c05b3b9af1f passed L2 (oracle breach): red-team attack",
+   "program_id": "a1fc8c05b3b9af1f",
+   "created_at": 1790928058.796439
+  },
+  {
+   "id": "breach-6975330ff3c3",
+   "kind": "redteam_breach",
+   "severity": "critical",
+   "message": "red-team program 6975330ff3c322e6 passed L2 (oracle breach): red-team attack",
+   "program_id": "6975330ff3c322e6",
+   "created_at": 1790926098.2896302
+  },
+  {
+   "id": "susp-7681102dff14",
+   "kind": "suspicion",
+   "severity": "warning",
+   "message": "7681102dff149a21 failed deep review: holdout: cost gain does not persist on the hidden holdout workload (CI lower bound <= 0)",
+   "program_id": "7681102dff149a21",
+   "created_at": 1790925468.7581732
+  },
+  {
+   "id": "susp-cdb71c1f4db1",
+   "kind": "suspicion",
+   "severity": "warning",
+   "message": "cdb71c1f4db1b42c failed deep review: holdout: cost gain does not persist on the hidden holdout workload (CI lower bound <= 0)",
+   "program_id": "cdb71c1f4db1b42c",
+   "created_at": 1790925343.5394056
+  }
+ ],
+ "aa_test": {
+  "alpha": 0.05,
+  "failed_runs": 0,
+  "gate": "cost: 1/20 calibrated false positives (raw 7/20), binomial p=0.642 vs alpha=0.05",
+  "noise_floor_per_cycle": {
+   "cost": 0.04181338503169909,
+   "cpu": 0.04250223706098771,
+   "mem": 0.010029574210769351,
+   "p50": 0.09670061049118474,
+   "p95": 0.05681009637332726
+  },
+  "objectives": {
+   "cost": {
+    "binomial_p": 0.6415140775914573,
+    "calibrated_false_positive_rate": 0.05,
+    "calibrated_false_positives": 1,
+    "ci_coverage_of_zero": 0.55,
+    "effect_sd": 0.033633750803711004,
+    "false_positive_rate": 0.35,
+    "false_positives": 7,
+    "mean_effect": 0.002835741773783779,
+    "median_within_se": 0.01433252841798991,
+    "tau": 0.029566528100278506
+   },
+   "cpu": {
+    "binomial_p": 0.6415140775914573,
+    "calibrated_false_positive_rate": 0.05,
+    "calibrated_false_positives": 1,
+    "ci_coverage_of_zero": 0.55,
+    "effect_sd": 0.03420773123726123,
+    "false_positive_rate": 0.35,
+    "false_positives": 7,
+    "mean_effect": 0.002854070682988364,
+    "median_within_se": 0.01462904569630424,
+    "tau": 0.030053620041422608
+   },
+   "mem": {
+    "binomial_p": 0.6415140775914573,
+    "calibrated_false_positive_rate": 0.05,
+    "calibrated_false_positives": 1,
+    "ci_coverage_of_zero": 0.7,
+    "effect_sd": 0.00810588594802675,
+    "false_positive_rate": 0.3,
+    "false_positives": 6,
+    "mean_effect": 0.0007300444064244737,
+    "median_within_se": 0.003140920123349775,
+    "tau": 0.007091979936848723
+   },
+   "p50": {
+    "binomial_p": 0.26416047505615,
+    "calibrated_false_positive_rate": 0.1,
+    "calibrated_false_positives": 2,
+    "ci_coverage_of_zero": 0.75,
+    "effect_sd": 0.08175064452759637,
+    "false_positive_rate": 0.25,
+    "false_positives": 5,
+    "mean_effect": -0.007391567120190455,
+    "median_within_se": 0.043703882622970515,
+    "tau": 0.06837765742319572
+   },
+   "p95": {
+    "binomial_p": 0.6415140775914573,
+    "calibrated_false_positive_rate": 0.05,
+    "calibrated_false_positives": 1,
+    "ci_coverage_of_zero": 0.75,
+    "effect_sd": 0.058581588586527074,
+    "false_positive_rate": 0.2,
+    "false_positives": 4,
+    "mean_effect": 0.002238168079665756,
+    "median_within_se": 0.03753129546755769,
+    "tau": 0.040170804385440996
+   }
+  },
+  "promotions_allowed": true,
+  "protocol": "L5",
+  "runs": 20
+ },
+ "verification": {
+  "alpha": 0.05,
+  "cycles": 6,
+  "elapsed_min": 17.3,
+  "gate_passed": true,
+  "noise_floor_per_cycle": {
+   "cost": 0.04181338503169909,
+   "cpu": 0.04250223706098771,
+   "mem": 0.010029574210769351,
+   "p50": 0.09670061049118474,
+   "p95": 0.05681009637332726
+  },
+  "programs": [
+   {
+    "decision": "promoted",
+    "genes": 5,
+    "holdout": {
+     "ci_pct": [
+      21.28,
+      30.97
+     ],
+     "gain_pct": 26.6,
+     "p": 0.001953125
+    },
+    "holm_survives": true,
+    "island": "composition",
+    "l5_cost_gain_pct": 29.52,
+    "l6": "pass",
+    "l6_reasons": [],
+    "operator": "splice",
+    "program": "58c5d609e82eef78",
+    "replicate": {
+     "cost": {
+      "ci_pct": [
+       27.27,
+       34.45
+      ],
+      "gain_pct": 30.95,
+      "p": 5e-05
+     },
+     "cpu": {
+      "ci_pct": [
+       27.85,
+       35.11
+      ],
+      "gain_pct": 31.5,
+      "p": 5e-05
+     },
+     "mem": {
+      "ci_pct": [
+       -1.06,
+       0.73
+      ],
+      "gain_pct": -0.03,
+      "p": 0.95168
+     },
+     "p50": {
+      "ci_pct": [
+       39.66,
+       51.35
+      ],
+      "gain_pct": 46.93,
+      "p": 0.0005
+     },
+     "p95": {
+      "ci_pct": [
+       32.26,
+       43.58
+      ],
+      "gain_pct": 40.43,
+      "p": 0.0005
+     }
+    },
+    "replicate_confirms": true,
+    "replicate_verdict": "pass",
+    "usd_per_mreq": {
+     "baseline": 0.4572,
+     "candidate": 0.3157
+    }
+   },
+   {
+    "decision": "promoted",
+    "genes": 4,
+    "holdout": {
+     "ci_pct": [
+      23.41,
+      34.94
+     ],
+     "gain_pct": 29.57,
+     "p": 0.001953125
+    },
+    "holm_survives": true,
+    "island": "composition",
+    "l5_cost_gain_pct": 28.62,
+    "l6": "pass",
+    "l6_reasons": [],
+    "operator": "splice",
+    "program": "cc73042ecce1bcda",
+    "replicate": {
+     "cost": {
+      "ci_pct": [
+       27.33,
+       33.18
+      ],
+      "gain_pct": 30.23,
+      "p": 5e-05
+     },
+     "cpu": {
+      "ci_pct": [
+       27.91,
+       33.9
+      ],
+      "gain_pct": 30.86,
+      "p": 5e-05
+     },
+     "mem": {
+      "ci_pct": [
+       0.27,
+       2.17
+      ],
+      "gain_pct": 1.39,
+      "p": 0.00441
+     },
+     "p50": {
+      "ci_pct": [
+       45.33,
+       56.43
+      ],
+      "gain_pct": 52.28,
+      "p": 0.0005
+     },
+     "p95": {
+      "ci_pct": [
+       31.45,
+       43.42
+      ],
+      "gain_pct": 40.28,
+      "p": 0.0005
+     }
+    },
+    "replicate_confirms": true,
+    "replicate_verdict": "pass",
+    "usd_per_mreq": {
+     "baseline": 0.4493,
+     "candidate": 0.3135
+    }
+   },
+   {
+    "decision": "promoted",
+    "genes": 6,
+    "holdout": {
+     "ci_pct": [
+      22.7,
+      32.58
+     ],
+     "gain_pct": 27.65,
+     "p": 0.001953125
+    },
+    "holm_survives": true,
+    "island": "composition",
+    "l5_cost_gain_pct": 27.12,
+    "l6": "pass",
+    "l6_reasons": [],
+    "operator": "splice",
+    "program": "8de55aa0a396750a",
+    "replicate": {
+     "cost": {
+      "ci_pct": [
+       24.41,
+       31.12
+      ],
+      "gain_pct": 27.92,
+      "p": 5e-05
+     },
+     "cpu": {
+      "ci_pct": [
+       25.03,
+       31.83
+      ],
+      "gain_pct": 28.5,
+      "p": 5e-05
+     },
+     "mem": {
+      "ci_pct": [
+       1.21,
+       3.07
+      ],
+      "gain_pct": 2.59,
+      "p": 0.00025
+     },
+     "p50": {
+      "ci_pct": [
+       38.94,
+       52.08
+      ],
+      "gain_pct": 48.73,
+      "p": 0.0005
+     },
+     "p95": {
+      "ci_pct": [
+       26.87,
+       38.76
+      ],
+      "gain_pct": 32.63,
+      "p": 0.0005
+     }
+    },
+    "replicate_confirms": true,
+    "replicate_verdict": "pass",
+    "usd_per_mreq": {
+     "baseline": 0.4789,
+     "candidate": 0.3452
+    }
+   },
+   {
+    "decision": "not promoted (L6 fail)",
+    "genes": 4,
+    "holdout": {
+     "ci_pct": [
+      17.01,
+      27.41
+     ],
+     "gain_pct": 22.31,
+     "p": 0.001953125
+    },
+    "holm_survives": true,
+    "island": "db.index",
+    "l5_cost_gain_pct": 24.67,
+    "l6": "fail",
+    "l6_reasons": [
+     "soak: memory grows 0.89 MB/s under sustained load (leak suspected)"
+    ],
+    "operator": "knob_sample",
+    "program": "f281a4a575d4f4c9",
+    "replicate_confirms": false
+   },
+   {
+    "decision": "promoted",
+    "genes": 3,
+    "holdout": {
+     "ci_pct": [
+      9.47,
+      21.0
+     ],
+     "gain_pct": 15.39,
+     "p": 0.001953125
+    },
+    "holm_survives": true,
+    "island": "db.index",
+    "l5_cost_gain_pct": 24.27,
+    "l6": "pass",
+    "l6_reasons": [],
+    "operator": "knob_sample",
+    "program": "803f6d1d23d93cce",
+    "replicate": {
+     "cost": {
+      "ci_pct": [
+       18.42,
+       25.44
+      ],
+      "gain_pct": 21.97,
+      "p": 5e-05
+     },
+     "cpu": {
+      "ci_pct": [
+       18.96,
+       26.08
+      ],
+      "gain_pct": 22.51,
+      "p": 5e-05
+     },
+     "mem": {
+      "ci_pct": [
+       1.04,
+       2.66
+      ],
+      "gain_pct": 1.8,
+      "p": 0.00025
+     },
+     "p50": {
+      "ci_pct": [
+       1.79,
+       17.56
+      ],
+      "gain_pct": 10.46,
+      "p": 0.01333
+     },
+     "p95": {
+      "ci_pct": [
+       22.74,
+       35.34
+      ],
+      "gain_pct": 30.64,
+      "p": 0.0005
+     }
+    },
+    "replicate_confirms": true,
+    "replicate_verdict": "pass",
+    "usd_per_mreq": {
+     "baseline": 0.4317,
+     "candidate": 0.3368
+    }
+   },
+   {
+    "decision": "not promoted (L6 fail)",
+    "genes": 3,
+    "holdout": {
+     "ci_pct": [
+      -4.85,
+      26.44
+     ],
+     "gain_pct": 15.67,
+     "p": 0.059450371783809415
+    },
+    "holm_survives": false,
+    "island": "db.index",
+    "l5_cost_gain_pct": 22.79,
+    "l6": "fail",
+    "l6_reasons": [
+     "holdout: cost gain does not persist on the hidden holdout workload (CI lower bound <= 0)"
+    ],
+    "operator": "knob_sample",
+    "program": "1abc381f85cfa309",
+    "replicate_confirms": false
+   }
+  ],
+  "run": "runs/stackzero",
+  "tau_per_replicate": {
+   "cost": 0.017070242957698434,
+   "cpu": 0.01735146562103808,
+   "mem": 0.004094556525627036,
+   "p50": 0.03947785891983807,
+   "p95": 0.02319262472549816
+  }
+ },
+ "redteam_recheck": [
+  {
+   "detail": "the maximal variant also passes the oracle: the tampering never reaches a response",
+   "hack": "truncate",
+   "on_request_path": false,
+   "program": "a1fc8c05b3b9af1f",
+   "unit": "_bool",
+   "verdict": "inert"
+  },
+  {
+   "detail": "the maximal variant also passes the oracle: the tampering never reaches a response",
+   "hack": "round_floats",
+   "on_request_path": false,
+   "program": "6975330ff3c322e6",
+   "unit": "lifespan",
+   "verdict": "inert"
+  }
+ ],
+ "ablation": {
+  "cycles": 6,
+  "full": {
+   "ci_pct": [
+    27.27,
+    34.45
+   ],
+   "gain_pct": 30.95,
+   "label": "full program",
+   "log_ratio": 0.3703393061327902,
+   "se": 0.026515982935589766,
+   "status": "ok (from verify)"
+  },
+  "genes": [
+   {
+    "carries_gain": true,
+    "contribution_ci_log": [
+     0.0112,
+     0.1443
+    ],
+    "contribution_log": 0.0777,
+    "explain": "db.idx_orders_customer_placed = True [knob_perturb]",
+    "gene": "02eef39e",
+    "without": {
+     "ci_pct": [
+      22.28,
+      28.48
+     ],
+     "gain_pct": 25.37,
+     "label": "without 02eef39e",
+     "log_ratio": 0.29261822636591106,
+     "se": 0.021222878528121946,
+     "status": "ok"
+    }
+   },
+   {
+    "carries_gain": false,
+    "contribution_ci_log": [
+     -0.0322,
+     0.1047
+    ],
+    "contribution_log": 0.0362,
+    "explain": "shop_score_batch: code rewrite (llm_rewrite/optimize) optimize",
+    "gene": "1b1f86e5",
+    "without": {
+     "ci_pct": [
+      25.16,
+      31.54
+     ],
+     "gain_pct": 28.4,
+     "label": "without 1b1f86e5",
+     "log_ratio": 0.334092512893387,
+     "se": 0.022737816382986824,
+     "status": "ok"
+    }
+   },
+   {
+    "carries_gain": false,
+    "contribution_ci_log": [
+     -0.0728,
+     0.066
+    ],
+    "contribution_log": -0.0034,
+    "explain": "score: code rewrite (llm_rewrite/optimize) optimize",
+    "gene": "524556fc",
+    "without": {
+     "ci_pct": [
+      28.01,
+      34.34
+     ],
+     "gain_pct": 31.19,
+     "label": "without 524556fc",
+     "log_ratio": 0.37376628240093374,
+     "se": 0.02346968945497708,
+     "status": "ok"
+    }
+   },
+   {
+    "carries_gain": true,
+    "contribution_ci_log": [
+     0.267,
+     0.4007
+    ],
+    "contribution_log": 0.3339,
+    "explain": "db.idx_reviews_product = True [knob_sample]",
+    "gene": "e99d1ebf",
+    "without": {
+     "ci_pct": [
+      -0.51,
+      7.6
+     ],
+     "gain_pct": 3.58,
+     "label": "without e99d1ebf",
+     "log_ratio": 0.03648456902093675,
+     "se": 0.0214783214259243,
+     "status": "ok"
+    }
+   },
+   {
+    "carries_gain": false,
+    "contribution_ci_log": [
+     -0.0697,
+     0.0696
+    ],
+    "contribution_log": -0.0,
+    "explain": "Executor.fetchrow: code rewrite (gi_edit) copy line 3 before line 3",
+    "gene": "f2a2817e",
+    "without": {
+     "ci_pct": [
+      27.66,
+      34.07
+     ],
+     "gain_pct": 30.95,
+     "label": "without f2a2817e",
+     "log_ratio": 0.37037710877740543,
+     "se": 0.02367795443794066,
+     "status": "ok"
+    }
+   }
+  ],
+  "minimal": {
+   "ci_pct": [
+    28.15,
+    34.11
+   ],
+   "gain_pct": 31.33,
+   "label": "minimal (2 genes)",
+   "log_ratio": 0.3758391401168223,
+   "se": 0.02208879834364003,
+   "status": "ok"
+  },
+  "minimal_genes": [
+   "db.idx_orders_customer_placed = True [knob_perturb]",
+   "db.idx_reviews_product = True [knob_sample]"
+  ],
+  "program": "58c5d609e82eef78"
+ },
+ "profile": {
+  "latency_share": {
+   "GET /categories/{id}/top": 0.0377567300119151,
+   "GET /customers/{id}/recommendations": 0.07285796175672381,
+   "GET /customers/{id}/summary": 0.06796018772107792,
+   "GET /products/search": 0.6950104160032063,
+   "GET /products/{id}": 0.07944684110041464,
+   "GET /reports/daily": 0.015957379050862096,
+   "POST /orders": 0.031010484355800106
+  },
+  "leverage": {
+   "find_candidates": 0.2230034137656679,
+   "rating_summary": 0.07700616403479632,
+   "search_products": 0.648016342935911
+  }
+ },
+ "result": {
+  "alerts": [
+   {
+    "created_at": 1790928058.796439,
+    "id": "breach-a1fc8c05b3b9",
+    "kind": "redteam_breach",
+    "message": "red-team program a1fc8c05b3b9af1f passed L2 (oracle breach): red-team attack",
+    "program_id": "a1fc8c05b3b9af1f",
+    "severity": "critical"
+   },
+   {
+    "created_at": 1790926098.2896302,
+    "id": "breach-6975330ff3c3",
+    "kind": "redteam_breach",
+    "message": "red-team program 6975330ff3c322e6 passed L2 (oracle breach): red-team attack",
+    "program_id": "6975330ff3c322e6",
+    "severity": "critical"
+   },
+   {
+    "created_at": 1790925468.7581732,
+    "id": "susp-7681102dff14",
+    "kind": "suspicion",
+    "message": "7681102dff149a21 failed deep review: holdout: cost gain does not persist on the hidden holdout workload (CI lower bound <= 0)",
+    "program_id": "7681102dff149a21",
+    "severity": "warning"
+   },
+   {
+    "created_at": 1790925343.5394056,
+    "id": "susp-cdb71c1f4db1",
+    "kind": "suspicion",
+    "message": "cdb71c1f4db1b42c failed deep review: holdout: cost gain does not persist on the hidden holdout workload (CI lower bound <= 0)",
+    "program_id": "cdb71c1f4db1b42c",
+    "severity": "warning"
+   }
+  ],
+  "arms": [
+   {
+    "mean_cost_s": 60.781651237285914,
+    "mean_reward": 0.09595933949107772,
+    "model": null,
+    "operator": "knob_sample",
+    "posterior_mean": 0.06378405193445445,
+    "posterior_sd": 0.047293408893063826,
+    "pulls": 7,
+    "template": null
+   },
+   {
+    "mean_cost_s": 52.714898910250156,
+    "mean_reward": 0.027719400498698532,
+    "model": null,
+    "operator": "knob_perturb",
+    "posterior_mean": 0.029144775187011945,
+    "posterior_sd": 0.024308763421815646,
+    "pulls": 4,
+    "template": null
+   },
+   {
+    "mean_cost_s": 67.59915679999995,
+    "mean_reward": 0.0,
+    "model": null,
+    "operator": "knob_reset",
+    "posterior_mean": 0.026086956521739132,
+    "posterior_sd": 0.031457303282547006,
+    "pulls": 1,
+    "template": null
+   },
+   {
+    "mean_cost_s": 38.68852233066658,
+    "mean_reward": 0.00765903957569462,
+    "model": null,
+    "operator": "py_rewrite",
+    "posterior_mean": 0.023066598489008674,
+    "posterior_sd": 0.02537562589101861,
+    "pulls": 3,
+    "template": null
+   },
+   {
+    "mean_cost_s": 27.769153113000037,
+    "mean_reward": 0.008067066263901763,
+    "model": null,
+    "operator": "gi_edit",
+    "posterior_mean": 0.020600171255957898,
+    "posterior_sd": 0.02140064051497004,
+    "pulls": 5,
+    "template": null
+   },
+   {
+    "mean_cost_s": 41.318258998499914,
+    "mean_reward": 0.0,
+    "model": null,
+    "operator": "crossover",
+    "posterior_mean": 0.023076923076923075,
+    "posterior_sd": 0.02830357572331692,
+    "pulls": 2,
+    "template": null
+   },
+   {
+    "mean_cost_s": 24.08075317399997,
+    "mean_reward": 0.0035957494297093238,
+    "model": "qwen2.5-coder-3b",
+    "operator": "llm_rewrite",
+    "posterior_mean": 0.01647587165911941,
+    "posterior_sd": 0.01857401558984316,
+    "pulls": 7,
+    "template": "optimize"
+   },
+   {
+    "mean_cost_s": 17.47911513250017,
+    "mean_reward": 0.0,
+    "model": "qwen2.5-coder-3b",
+    "operator": "llm_rewrite",
+    "posterior_mean": 0.012,
+    "posterior_sd": 0.015594870951694342,
+    "pulls": 10,
+    "template": "sql_batching"
+   },
+   {
+    "mean_cost_s": 3.9136426445714583,
+    "mean_reward": 0.0008283124618558293,
+    "model": "qwen2.5-coder-3b",
+    "operator": "llm_rewrite",
+    "posterior_mean": 0.00785763476020382,
+    "posterior_sd": 0.009622206855195886,
+    "pulls": 21,
+    "template": "algorithmic"
+   },
+   {
+    "mean_cost_s": 30.277045723333533,
+    "mean_reward": 0.007334315547924385,
+    "model": "qwen2.5-coder-1.5b",
+    "operator": "llm_rewrite",
+    "posterior_mean": 0.02296582206659722,
+    "posterior_sd": 0.02537634645136629,
+    "pulls": 3,
+    "template": "optimize"
+   },
+   {
+    "mean_cost_s": 0.0013667278751086087,
+    "mean_reward": 0.02,
+    "model": null,
+    "operator": "redteam",
+    "posterior_mean": 0.024,
+    "posterior_sd": 0.019919839356781974,
+    "pulls": 10,
+    "template": null
+   },
+   {
+    "mean_cost_s": 44.138506620833596,
+    "mean_reward": 0.2063025098746428,
+    "model": null,
+    "operator": "splice",
+    "posterior_mean": 0.11351171520377816,
+    "posterior_sd": 0.06684772637061599,
+    "pulls": 6,
+    "template": null
+   }
+  ],
+  "best_fitness_pct": {
+   "cost": 29.52,
+   "cpu": 30.21,
+   "mem": 0.53,
+   "p50": 46.44,
+   "p95": 38.82
+  },
+  "best_genes": [
+   "02eef39eb2b1b249",
+   "1b1f86e58f6a5b52",
+   "524556fc15848f1b",
+   "e99d1ebf7376dcb2",
+   "f2a2817ee286d10c"
+  ],
+  "best_program": "58c5d609e82eef78",
+  "best_score": 0.33979615507262,
+  "elapsed_min": 164.38430774598334,
+  "generations": 10,
+  "name": "stackzero",
+  "programs_evaluated": 30,
+  "programs_total": 80,
+  "promoted": [],
+  "promotion_gate": "cost: 1/20 calibrated false positives (raw 7/20), binomial p=0.642 vs alpha=0.05",
+  "promotions_allowed": true,
+  "rate_rps": 30.0,
+  "verified": []
+ },
+ "event_kinds": {}
+}
