@@ -1,16 +1,19 @@
 """Selection, islands/MAP-Elites, bandit, attribution, splicing: the search machinery (T06,T08,T10,T11)."""
 
-import math
 import random
-
-import numpy as np
 
 from colloid.core.archive import Axis, Elite, Island, IslandModel, MapElitesGrid
 from colloid.core.attribution import Measured, prune, shapley_exact, shapley_plan
 from colloid.core.bandit import ThompsonBandit
 from colloid.core.objectives import Fitness
-from colloid.core.selection import confident_dominates, nsga2_select, nsga3_select, pareto_front
-from colloid.core.splicing import best_unions, design_subsets, fit_splice_model, hypervolume_2d, screening_design
+from colloid.core.selection import confident_dominates, nsga2_select, nsga3_select
+from colloid.core.splicing import (
+    best_unions,
+    design_subsets,
+    fit_splice_model,
+    hypervolume_2d,
+    screening_design,
+)
 
 
 def fit(cost, mem, ci=0.01):
@@ -28,7 +31,7 @@ def test_confidence_aware_dominance_ignores_overlap():
 def test_nsga2_keeps_pareto_and_spreads():
     fits = [fit(0.1, 0.0), fit(0.0, 0.1), fit(0.05, 0.05), fit(-0.1, -0.1)]
     chosen = nsga2_select(list(range(4)), fits, ["cost", "mem"], 3)
-    assert 3 == len(chosen)
+    assert len(chosen) == 3
     assert 3 not in chosen  # the dominated point is dropped
 
 

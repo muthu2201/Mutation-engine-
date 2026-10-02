@@ -35,7 +35,14 @@ class JsonlTelemetry:
         self.counters: Counter[str] = Counter()
         self._fh = open(self.path, "a", buffering=1, encoding="utf-8")  # noqa: SIM115 - long-lived handle
 
-    def emit(self, kind: str, **fields: Any) -> None:
+    # Envelope keys every record owns. A caller field with one of these names (e.g. an
+    # ``epistasis`` event wanting ``kind="synergy"``) is kept under ``field_<name>`` rather than
+    # clobbering the envelope or raising: telemetry must never be able to crash the engine.
+    RESERVED = frozenset({"t", "run", "seq", "kind"})
+
+    def emit(self, kind: str, /, **fields: Any) -> None:
+        if not self.RESERVED.isdisjoint(fields):
+            fields = {(f"field_{k}" if k in self.RESERVED else k): v for k, v in fields.items()}
         with self._lock:
             self._seq += 1
             rec = {"t": time.time(), "run": self.run_id, "seq": self._seq, "kind": kind, **fields}

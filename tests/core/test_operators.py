@@ -8,7 +8,12 @@ import pytest
 
 from colloid.core.knobs import KnobSpec, from_unit, perturb_value, sample_value, to_unit, validate_value
 from colloid.core.operators.gi_edit import gi_edit
-from colloid.core.operators.llm_rewrite import build_request, parse_c_response, parse_python_response, MutationContext
+from colloid.core.operators.llm_rewrite import (
+    MutationContext,
+    build_request,
+    parse_c_response,
+    parse_python_response,
+)
 from colloid.core.operators.py_rewrite import find_rewrites
 from colloid.core.operators.redteam import HACKS, redteam_variant
 
@@ -37,8 +42,8 @@ def test_rewrite_applies_and_parses(rule, src, cases):
 def test_rewrite_preserves_behaviour(rule, src, cases):
     site = next(s for s in find_rewrites(src) if s.rule == rule)
     ns_old, ns_new = {}, {}
-    exec(compile(src, "old", "exec"), ns_old)  # noqa: S102 - test fixture code is trusted
-    exec(compile(site.apply(), "new", "exec"), ns_new)  # noqa: S102
+    exec(compile(src, "old", "exec"), ns_old)
+    exec(compile(site.apply(), "new", "exec"), ns_new)
     for args, expect in cases:
         assert ns_old["f"](*args) == ns_new["f"](*args) == expect
 
@@ -47,8 +52,8 @@ def test_dedupe_seen_set_preserves_order():
     src = "def f(xs):\n    seen = []\n    for x in xs:\n        if x not in seen:\n            seen.append(x)\n    return seen\n"
     site = next(s for s in find_rewrites(src) if s.rule == "dedupe_seen_set")
     ns_o, ns_n = {}, {}
-    exec(compile(src, "o", "exec"), ns_o)  # noqa: S102
-    exec(compile(site.apply(), "n", "exec"), ns_n)  # noqa: S102
+    exec(compile(src, "o", "exec"), ns_o)
+    exec(compile(site.apply(), "n", "exec"), ns_n)
     data = [3, 1, 3, 2, 1, 4]
     assert ns_o["f"](data) == ns_n["f"](data) == [3, 1, 2, 4]
 

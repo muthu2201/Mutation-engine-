@@ -3,7 +3,6 @@ genes apply byte-exactly, builds are cached and content-addressed, the different
 passes the baseline against itself, and a known-good index mutation measures a real gain.
 Integration (needs Postgres, sandbox, loadgen as root)."""
 
-import os
 
 import pytest
 
@@ -33,7 +32,6 @@ def _knob_gene(ev, name, value):
 
 
 def test_baseline_builds_and_oracle_self_consistent(evaluator):
-    from colloid.core.genome import Genome
 
     ws = evaluator.baseline_ws
     build = evaluator.target.build(ws)
@@ -43,7 +41,6 @@ def test_baseline_builds_and_oracle_self_consistent(evaluator):
 
 
 def test_build_cache_hits(evaluator):
-    from colloid.core.genome import Genome
 
     ws = evaluator.baseline_ws
     b1 = evaluator.target.build(ws)

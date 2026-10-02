@@ -1,9 +1,8 @@
 """Differential-oracle comparison semantics: the evaluator-owned float tolerance and the
 exact matching of structure, status and ordering."""
 
-import json
 
-from colloid_evaluator.oracles import FLOAT_REL_TOL, compare_spot_checks, json_equal, response_diff
+from colloid_evaluator.oracles import compare_spot_checks, json_equal, response_diff
 
 
 def test_int_exact():

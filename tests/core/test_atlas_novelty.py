@@ -1,8 +1,8 @@
 """Stack Atlas queries + opportunity scoring, and MinHash novelty / tabu basins."""
 
 from colloid.core.atlas import Region, StackAtlas
-from colloid.core.models import Edge, EdgeKind, Layer, Mutability, Surface, Unit, UnitKind
-from colloid.core.novelty import MinHash, NoveltyFilter, TabuBasins, code_tokens, shingles
+from colloid.core.models import Edge, EdgeKind, Layer, Surface, Unit, UnitKind
+from colloid.core.novelty import MinHash, NoveltyFilter, TabuBasins, code_tokens
 
 
 def _unit(path, kind, layer, parent=None, tags=None):

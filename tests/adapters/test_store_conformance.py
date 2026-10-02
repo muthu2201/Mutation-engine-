@@ -7,7 +7,6 @@ import os
 
 import pytest
 
-from colloid.core.ids import content_hash
 from colloid.core.models import (
     Alert,
     AttributionRecord,

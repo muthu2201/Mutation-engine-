@@ -116,4 +116,4 @@ class ShapleyRunner:
             self.e.epistasis[tuple(sorted((a, b)))] = rec
             if eps.significant:
                 self.e.tele.emit("epistasis", gene_a=a[:8], gene_b=b[:8], epsilon=round(eps.epsilon, 4),
-                                 kind="synergy" if eps.epsilon > 0 else "interference")
+                                 relation="synergy" if eps.epsilon > 0 else "interference")

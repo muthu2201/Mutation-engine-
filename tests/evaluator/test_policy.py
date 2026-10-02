@@ -1,7 +1,6 @@
 """L0 policy scanner: the evaluator's independent re-check that blocks reward-hacking and
 out-of-locus edits. These are the patterns the canary suite exercises end-to-end."""
 
-import pytest
 
 from colloid_evaluator.policy import diff_size, scan_c, scan_python
 

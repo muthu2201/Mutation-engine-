@@ -1,7 +1,6 @@
 """Statistics: A/A false-positive control, paired estimators, FDR, warm-up, bootstrap CIs."""
 
 import numpy as np
-import pytest
 
 from colloid.core import stats
 
