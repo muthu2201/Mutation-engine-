@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import argparse
 import concurrent.futures
+import contextlib
 import os
 import sys
 import time
@@ -27,7 +28,13 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from colloid.adapters.sandbox.linux import CGROUP_ROOT, CONTROLLERS, LinuxSandbox, cleanup_stale_cgroups
+from colloid.adapters.sandbox.linux import (
+    CGROUP_ROOT,
+    CONTROLLERS,
+    PARENT,
+    LinuxSandbox,
+    cleanup_stale_cgroups,
+)
 from colloid.ports import SandboxSpec
 
 PY = sys.executable
@@ -51,7 +58,7 @@ SHOULD_FAIL = {"mem_grow", "sig_ignore", "egress", "escalate", "escape_write"}
 def count_cgroups() -> int:
     total = 0
     for ctrl in CONTROLLERS:
-        base = CGROUP_ROOT / ctrl / "colloid"
+        base = CGROUP_ROOT / ctrl / PARENT
         if base.exists():
             total += sum(1 for d in base.iterdir() if d.is_dir())
     return total
@@ -63,10 +70,42 @@ def run_one(sandbox: LinuxSandbox, name: str) -> dict:
                        memory_limit_mb=256 if name == "mem_grow" else 1024, pids_limit=64)
     t0 = time.monotonic()
     r = sandbox.run(spec)
+    wall = time.monotonic() - t0
     contained = (r.returncode != 0 or r.timed_out) if name in SHOULD_FAIL else True
     escaped = name == "escape_write" and Path("/opt/colloid/ESCAPE").exists()
-    return {"name": name, "rc": r.returncode, "timed_out": r.timed_out, "wall": round(time.monotonic() - t0, 1),
-            "contained": contained and not escaped}
+    # a hostile payload must not hold a worker past its wall-clock budget (+ kill/cleanup slack)
+    prompt = wall <= spec.wall_seconds + 3.0
+    return {"name": name, "rc": r.returncode, "timed_out": r.timed_out, "wall": round(wall, 2),
+            "contained": contained and not escaped and prompt, "prompt": prompt}
+
+
+class PeakMonitor:
+    """Samples live sandbox cgroups every 10 ms while the rounds run, so the reported peak is
+    the real concurrency the cleanup path had to handle (sampling only between rounds, after
+    every worker has cleaned up, would always read zero)."""
+
+    def __init__(self) -> None:
+        import threading
+
+        self.peak = 0
+        self.samples = 0
+        self._stop = threading.Event()
+        self._t = threading.Thread(target=self._run, daemon=True)
+
+    def _run(self) -> None:
+        while not self._stop.is_set():
+            with contextlib.suppress(OSError):  # a cgroup vanishing mid-iteration is expected
+                self.peak = max(self.peak, count_cgroups())
+            self.samples += 1
+            self._stop.wait(0.01)
+
+    def __enter__(self) -> PeakMonitor:
+        self._t.start()
+        return self
+
+    def __exit__(self, *exc: object) -> None:
+        self._stop.set()
+        self._t.join()
 
 
 def main() -> int:
@@ -82,16 +121,17 @@ def main() -> int:
     before_fd = len(os.listdir(f"/proc/{os.getpid()}/fd"))
     names = list(PAYLOADS)
     results = []
-    peak_cg = before_cg
     t0 = time.monotonic()
-    for rnd in range(args.rounds):
-        batch = [names[(rnd * args.workers + i) % len(names)] for i in range(args.workers)]
-        with concurrent.futures.ThreadPoolExecutor(max_workers=args.workers) as ex:
-            futs = [ex.submit(run_one, sandbox, n) for n in batch]
-            for f in concurrent.futures.as_completed(futs):
-                results.append(f.result())
-        peak_cg = max(peak_cg, count_cgroups())
-        print(f"round {rnd + 1}/{args.rounds}: {sum(r['contained'] for r in results)}/{len(results)} contained so far, live cgroups={count_cgroups()}")
+    with PeakMonitor() as mon:
+        for rnd in range(args.rounds):
+            batch = [names[(rnd * args.workers + i) % len(names)] for i in range(args.workers)]
+            with concurrent.futures.ThreadPoolExecutor(max_workers=args.workers) as ex:
+                futs = [ex.submit(run_one, sandbox, n) for n in batch]
+                for f in concurrent.futures.as_completed(futs):
+                    results.append(f.result())
+            print(f"round {rnd + 1}/{args.rounds}: {sum(r['contained'] for r in results)}/{len(results)} contained so far, "
+                  f"peak live cgroups so far={mon.peak}, now={count_cgroups()}")
+    peak_cg = mon.peak
     # allow async cleanup timers to finish
     deadline = time.monotonic() + 10
     while count_cgroups() > before_cg and time.monotonic() < deadline:
@@ -106,12 +146,14 @@ def main() -> int:
         "total_runs": len(results),
         "contained": sum(r["contained"] for r in results),
         "breaches": breaches,
-        "cgroups_before": before_cg, "cgroups_peak": peak_cg, "cgroups_after": after_cg,
+        "cgroups_before": before_cg, "cgroups_peak": peak_cg, "peak_samples": mon.samples, "cgroups_after": after_cg,
+        "max_wall_s": max(r["wall"] for r in results), "all_prompt": all(r["prompt"] for r in results),
         "cgroup_leak": after_cg - before_cg,
         "fd_before": before_fd, "fd_after": after_fd, "fd_leak": after_fd - before_fd,
         "escaped_filesystem": escaped,
         "elapsed_s": round(time.monotonic() - t0, 1),
-        "ok": not breaches and (after_cg - before_cg) == 0 and not escaped and (after_fd - before_fd) <= 2,
+        # peak_cg > 0 proves the monitor saw the concurrent cgroups it is vouching were cleaned up
+        "ok": not breaches and (after_cg - before_cg) == 0 and not escaped and (after_fd - before_fd) <= 2 and peak_cg > 0,
     }
     import json
 

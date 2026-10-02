@@ -92,11 +92,42 @@ def run_block(run: str) -> str:
             out.append(f"| `{r['program'][:10]}` | {r['island']} | {r['l5_cost_gain_pct']:+.1f}% | {r.get('l6')} | {hold_s} | "
                        f"{_g(rep_.get('cost'))} | {_g(rep_.get('p50'))} | {_g(rep_.get('mem'))} | {r.get('decision', '—')} |")
         out.append("")
+    abl = rep.get("ablation")
+    if abl and abl.get("genes"):
+        f = abl["full"]
+        out.append(f"**What the headline gain is made of** (`colloid verify --ablate {abl['program'][:10]}`: each gene removed in turn, "
+                   f"the rest checked by the oracle and measured vs baseline over {abl['cycles']} cycles; contribution = gain(full) − "
+                   f"gain(without the gene), as a log-ratio with a 95% CI). Full program: cost {f['gain_pct']:+.1f}% "
+                   f"[{f['ci_pct'][0]:+.1f}, {f['ci_pct'][1]:+.1f}].\n")
+        out.append("| gene | cost without it | contribution (log-ratio) | carries gain? |")
+        out.append("|---|---|---|---|")
+        for r in abl["genes"]:
+            w = r["without"]
+            wo = f"{w['gain_pct']:+.1f}% [{w['ci_pct'][0]:+.1f}, {w['ci_pct'][1]:+.1f}]" if w.get("status", "").startswith("ok") else w.get("status", "—")
+            c = (f"{r['contribution_log']:+.3f} [{r['contribution_ci_log'][0]:+.3f}, {r['contribution_ci_log'][1]:+.3f}]"
+                 if "contribution_log" in r else "—")
+            out.append(f"| {r['explain']} | {wo} | {c} | {'**yes**' if r.get('carries_gain') else 'no (hitchhiker)'} |")
+        m = abl.get("minimal")
+        if m and m.get("status", "").startswith("ok"):
+            out.append(f"\n**Minimal program** ({len(abl['minimal_genes'])} gene(s): {'; '.join(abl['minimal_genes'])}): "
+                       f"cost {m['gain_pct']:+.1f}% [{m['ci_pct'][0]:+.1f}, {m['ci_pct'][1]:+.1f}] vs baseline.\n")
+        out.append("")
     # attribution / epistasis
     if rep.get("epistasis"):
         out.append("**Measured epistasis** (ε = gain(a+b) − gain(a) − gain(b); + synergy, − interference):\n")
-        for e in rep["epistasis"][:8]:
-            out.append(f"- `{e['gene_a']}` + `{e['gene_b']}`: ε = {e['epsilon']:+.4f} ({e['kind']})")
+        for e in rep["epistasis"][:10]:
+            sig = "significant" if e["ci"][0] > 0 or e["ci"][1] < 0 else "CI spans 0"
+            out.append(f"- {e.get('a_explain', e['gene_a'])} **+** {e.get('b_explain', e['gene_b'])}: ε = {e['epsilon']:+.3f} "
+                       f"[{e['ci'][0]:+.3f}, {e['ci'][1]:+.3f}] ({e['kind']}, {sig})")
+        out.append("")
+    shap = rep.get("shapley") or []
+    if shap:
+        out.append("**Shapley attribution** (exact Shapley value of each gene's cost contribution within the program, log-ratio, 95% CI; "
+                   "a CI spanning 0 marks a gene the pruning step drops):\n")
+        out.append("| program | gene | Shapley value |")
+        out.append("|---|---|---|")
+        for r in shap:
+            out.append(f"| `{r['program'][:10]}` | {r['explain']} | {r['value']:+.3f} [{r['ci'][0]:+.3f}, {r['ci'][1]:+.3f}] |")
         out.append("")
     # bandit arm credit
     arms = sorted([a for a in res.get("arms", []) if a.get("pulls", 0) > 0], key=lambda a: -(a.get("mean_reward") or 0))
@@ -144,9 +175,10 @@ def stress_block() -> str:
     ev = Path("/opt/colloid/state/stress_evaluator.json")
     if sb.exists():
         d = json.loads(sb.read_text())
-        out.append(f"**Concurrent sandbox stress** ({d['total_runs']} adversarial payloads across rounds, "
-                   f"{d['elapsed_s']}s): {d['contained']}/{d['total_runs']} contained, "
-                   f"cgroup leak {d['cgroup_leak']}, fd leak {d['fd_leak']}, filesystem escape {d['escaped_filesystem']}. "
+        out.append(f"**Concurrent sandbox stress** ({d['total_runs']} adversarial payloads, 8 concurrent workers, {d['elapsed_s']}s): "
+                   f"{d['contained']}/{d['total_runs']} contained (incl. killed within wall-clock + 3 s; slowest {d.get('max_wall_s', '?')}s), "
+                   f"peak {d['cgroups_peak']} live sandbox cgroups → {d['cgroups_after']} after (leak {d['cgroup_leak']}), "
+                   f"fd leak {d['fd_leak']}, filesystem escape {d['escaped_filesystem']}. "
                    f"**Overall: {'PASS' if d['ok'] else 'FAIL'}.**\n")
     if ev.exists():
         d = json.loads(ev.read_text())

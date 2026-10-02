@@ -70,6 +70,12 @@ def cmd_run(args: argparse.Namespace) -> int:
 def cmd_verify(args: argparse.Namespace) -> int:
     from colloid.services.verify import verify_run
 
+    if args.ablate:
+        from colloid.services.verify import ablate
+
+        out = ablate(args.run, args.ablate, cycles=args.cycles)
+        print(json.dumps(out, indent=2, default=str))
+        return 0
     out = verify_run(args.run, top=args.top, cycles=args.cycles, program_ids=args.program or None)
     print(json.dumps(out, indent=2, default=str))
     return 0
@@ -212,7 +218,9 @@ def main(argv: list[str] | None = None) -> int:
     b = sub.add_parser("baseline"); b.add_argument("--rate", type=float, default=45.0); b.set_defaults(fn=cmd_baseline)
     rp = sub.add_parser("report"); rp.add_argument("run"); rp.set_defaults(fn=cmd_report)
     v = sub.add_parser("verify"); v.add_argument("run"); v.add_argument("--top", type=int, default=5); v.add_argument("--cycles", type=int, default=6)
-    v.add_argument("--program", action="append", help="verify only these program ids (repeatable)"); v.set_defaults(fn=cmd_verify)
+    v.add_argument("--program", action="append", help="verify only these program ids (repeatable)")
+    v.add_argument("--ablate", metavar="PROGRAM_ID", help="leave-one-gene-out ablation of a verified program instead")
+    v.set_defaults(fn=cmd_verify)
     rr = sub.add_parser("redteam-recheck"); rr.add_argument("run"); rr.set_defaults(fn=cmd_redteam_recheck)
     d = sub.add_parser("dashboard"); d.add_argument("run"); d.add_argument("--port", type=int, default=8080); d.set_defaults(fn=cmd_dashboard)
     args = p.parse_args(argv)

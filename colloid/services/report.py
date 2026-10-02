@@ -100,7 +100,10 @@ def _build(store: Any, run: str) -> dict[str, Any]:
     best_programs.sort(key=lambda r: (rank.get(r["status"], 2), -_cost_gain(r)))
 
     epistasis = [{"gene_a": r.gene_a[:8], "gene_b": r.gene_b[:8], "epsilon": round(r.epsilon, 4), "ci": [round(r.ci_lo, 4), round(r.ci_hi, 4)],
-                  "kind": "synergy" if r.epsilon > 0 else "interference"} for r in store.epistasis()]
+                  "kind": "synergy" if r.epsilon > 0 else "interference",
+                  "a_explain": explain_gene(store, r.gene_a, atlas), "b_explain": explain_gene(store, r.gene_b, atlas)} for r in store.epistasis()]
+    shapley = [{"program": r.program_id, "gene": r.gene_id[:8], "explain": explain_gene(store, r.gene_id, atlas), "value": round(r.value, 4),
+                "ci": [round(r.ci_lo, 4), round(r.ci_hi, 4)]} for r in store.attributions() if r.method.startswith("shapley")]
     llm = store.llm_calls()
     llm_summary = {"calls": len(llm), "tokens_in": sum(c.tokens_in for c in llm), "tokens_out": sum(c.tokens_out for c in llm),
                    "cost_usd": round(sum(c.cost_usd for c in llm), 4), "by_model": dict(Counter(c.model for c in llm))}
@@ -120,11 +123,13 @@ def _build(store: Any, run: str) -> dict[str, Any]:
         "promoted": [p.id for p in promoted],
         "verified": [p.id for p in verified],
         "epistasis": epistasis,
+        "shapley": shapley,
         "llm": llm_summary,
         "alerts": [a.model_dump() for a in store.alerts()],
         "aa_test": aa,
         "verification": store.kv_get("verification"),
         "redteam_recheck": store.kv_get("redteam_recheck"),
+        "ablation": store.kv_get("ablation"),
         "profile": profile,
         "result": result,
         "event_kinds": event_kinds,

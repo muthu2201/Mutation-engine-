@@ -244,3 +244,86 @@ def recheck_breaches(run: str, log: Callable[[str], None] = print) -> list[dict[
         if ev is not None:
             ev.shutdown()
         store.close()
+
+
+def ablate(run: str, program_id: str, *, cycles: int = 6, log: Callable[[str], None] = print) -> dict[str, Any]:
+    """Leave-one-gene-out ablation of a verified program: what is its gain made of?
+
+    For each gene g, the program without g is checked for correctness (L1 build + L2 oracle;
+    removing a gene must not make the program wrong) and measured against baseline with the
+    same replicate protocol and noise floor as ``verify``. The contribution of g *in context* is
+    gain(full) - gain(full without g), with independent-measurement SEs combined. A gene whose
+    contribution CI includes zero is a hitchhiker: it costs review effort and risk and buys
+    nothing measurable. The minimal program keeps only the genes with a positive contribution
+    CI, and it is measured too, so the claim "these genes carry the gain" is tested directly
+    rather than inferred."""
+    from colloid.core.stats import combine_effects_se
+
+    store = open_store(_store_url(run))
+    ev: Evaluator | None = None
+    try:
+        setup = store.kv_get("setup") or {}
+        aa = store.kv_get("aa_test") or {}
+        ver = {r["program"]: r for r in (store.kv_get("verification") or {}).get("programs", [])}
+        baseline = next(p for p in store.programs(island="baseline"))
+        prog = store.get_program(program_id)
+        if prog is None:
+            raise SystemExit(f"unknown program {program_id}")
+        ev = evr = Evaluator(StackZeroTarget(), StaticPriceCostModel(), rate=setup.get("rate_rps"), log=log)
+        evr.setup(baseline.id)
+        evr.noise_floor = {k: float(v) for k, v in (aa.get("noise_floor_per_cycle") or {}).items()}
+        replicate = Protocol(f"replicate-x{cycles}", cycles=cycles, measure_s=5.0, chunks=5)
+        genes = store.genes(prog.gene_ids)
+        atlas = store.get_atlas()
+        from colloid.services.report import explain_gene
+
+        def measure(genome: Genome, label: str) -> dict[str, Any]:
+            pid = genome.program_id(baseline.id)
+            r1 = evr.l1(pid, genome)
+            if not r1.passed or r1.ws is None:
+                return {"label": label, "status": "build failed"}
+            r2 = evr.l2(pid, genome, r1.ws)
+            if not r2.passed:
+                return {"label": label, "status": "incorrect without this gene", "reason": (r2.evaluation.reasons or ("",))[0][:160]}
+            log(f"[ablate] measuring {label} ({len(genome)} genes), {cycles} cycles")
+            rr = evr._comparison_stage(Stage.L6, replicate, pid, genome, r1.ws, [("baseline", baseline.id, Genome())], None)
+            est = rr.evaluation.objective("cost", "baseline")
+            if est is None:
+                return {"label": label, "status": "measurement failed", "reason": (rr.evaluation.reasons or ("",))[0][:160]}
+            return {"label": label, "status": "ok", "log_ratio": est.log_ratio, "se": combine_effects_se(est.ci_lo, est.ci_hi),
+                    "gain_pct": round(gain_percent(est.log_ratio), 2),
+                    "ci_pct": [round(gain_percent(est.ci_lo), 2), round(gain_percent(est.ci_hi), 2)]}
+
+        full_rep = (ver.get(program_id) or {}).get("replicate", {}).get("cost")
+        full = measure(Genome.of(genes, evr.atlas), "full program") if not full_rep else None
+        if full_rep:  # reuse the verify replicate (same protocol, same noise floor)
+            lo, hi = (math.log(1 / (1 - c / 100)) for c in full_rep["ci_pct"])
+            lr = math.log(1 / (1 - full_rep["gain_pct"] / 100))
+            full = {"label": "full program", "status": "ok (from verify)", "log_ratio": lr, "se": combine_effects_se(lo, hi),
+                    "gain_pct": full_rep["gain_pct"], "ci_pct": full_rep["ci_pct"]}
+        assert full is not None
+        rows = []
+        for g in genes:
+            rest = Genome.of([x for x in genes if x.id != g.id], evr.atlas)
+            m = measure(rest, f"without {g.id[:8]}")
+            row: dict[str, Any] = {"gene": g.id[:8], "explain": explain_gene(store, g.id, atlas), "without": m}
+            if m["status"] == "ok" and "log_ratio" in full:
+                d = full["log_ratio"] - m["log_ratio"]
+                se = math.sqrt(full["se"] ** 2 + m["se"] ** 2)
+                row["contribution_log"] = round(d, 4)
+                row["contribution_ci_log"] = [round(d - 1.959964 * se, 4), round(d + 1.959964 * se, 4)]
+                row["carries_gain"] = d - 1.959964 * se > 0
+            elif m["status"].startswith("incorrect"):
+                row["carries_gain"] = True  # load-bearing for correctness: cannot be dropped
+            rows.append(row)
+            log(f"[ablate] {row}")
+        keep = [g for g, r in zip(genes, rows, strict=True) if r.get("carries_gain")]
+        minimal = measure(Genome.of(keep, evr.atlas), f"minimal ({len(keep)} genes)") if keep and len(keep) < len(genes) else None
+        out = {"program": program_id, "cycles": cycles, "full": full, "genes": rows, "minimal": minimal,
+               "minimal_genes": [explain_gene(store, g.id, atlas) for g in keep]}
+        store.kv_set("ablation", out)
+        return out
+    finally:
+        if ev is not None:
+            ev.shutdown()
+        store.close()
