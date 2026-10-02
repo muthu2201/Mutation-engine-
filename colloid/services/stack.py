@@ -1,0 +1,172 @@
+"""Materialise verified mutations as a deployable stack, and publish it on its own branch.
+
+The data lake holds *knowledge* (what changed, and the evidence that it helps). A materialised
+stack is the *artifact*: the target with a verified program applied, laid out for deployment,
+with a manifest that points every change back to its lake record and evidence:
+
+    MANIFEST.json                 lake location + head, record ids, genes, effects with CIs,
+                                  attribution, what was verified how, engine commit
+    README.md                     the same, for people: what changed, why, how much, how proven
+    service/ native/              the application code with every source gene applied
+    db/migrations/0001_colloid.sql  index DDL (idempotent) for index genes
+    db/postgresql.colloid.conf    server settings changed by database genes
+    db/session.colloid.sql        per-database settings (ALTER DATABASE ... SET ...)
+    runtime/launch.json           the full launch configuration (runtime, allocator, compiler,
+                                  CPU layout) and runtime/launch.diff.json, only what changed
+
+``carrying_only`` keeps only the genes whose measured contribution CI lies above zero (from the
+record's attribution), dropping hitchhikers. The manifest says precisely what that subset's
+evidence is (the ablation measurement), and that it was not separately put through L6.
+
+Publishing writes the directory as a commit on a dedicated branch (``stack/<target>-verified``
+by default) through git plumbing. The branch holds only the artifact, every commit is a new
+materialisation with its manifest, and the checkout is never touched.
+"""
+
+from __future__ import annotations
+
+import datetime
+import json
+import re
+import shutil
+import tempfile
+from pathlib import Path
+from typing import Any
+
+from colloid.adapters.gitref import branch_tip, commit_files
+from colloid.adapters.target.stackzero.adapter import StackZeroTarget
+from colloid.core.genome import Genome
+from colloid.core.lake import head, verify_chain
+from colloid.ports import LakeStore
+from colloid.services.lake import TARGET, applicable_gene, engine_commit
+
+
+def _diff(new: Any, old: Any) -> Any:
+    if isinstance(new, dict) and isinstance(old, dict):
+        out = {k: _diff(v, old.get(k)) for k, v in new.items() if v != old.get(k)}
+        return {k: v for k, v in out.items() if v != {}}
+    return new
+
+
+def _sql_literal(v: str) -> str:
+    return "'" + str(v).replace("'", "''") + "'"
+
+
+def materialize(lake: LakeStore, record_prefix: str, out_dir: Path, *, carrying_only: bool = False, database: str = "shop") -> dict[str, Any]:
+    records, entries = lake.records(), lake.entries()
+    verify_chain(entries, records)
+    matches = [rid for rid in records if rid.startswith(record_prefix) and records[rid].kind == "program"]
+    if len(matches) != 1:
+        raise SystemExit(f"record prefix {record_prefix!r} matches {len(matches)} program records")
+    rid = matches[0]
+    prog = records[rid].content
+    if prog.get("target") != TARGET:
+        raise SystemExit(f"record targets {prog.get('target')!r}; this materialiser builds {TARGET!r}")
+    gene_ids: list[str] = list(prog["genes"])
+    carrying = {a["gene"] for a in prog.get("attribution", []) if a.get("ci") and a["ci"][0] is not None and a["ci"][0] > 0}
+    if carrying_only:
+        if not carrying:
+            raise SystemExit("the record has no attribution with a CI above zero; cannot tell which genes carry the gain")
+        gene_ids = [g for g in gene_ids if g in carrying]
+    target = StackZeroTarget(observe_system=False)
+    atlas = target.atlas_seed()
+    knob_of_locus = target.knob_name_of_locus(atlas)
+    genes = []
+    for gid in gene_ids:
+        g, why = applicable_gene(records[gid].content, atlas, knob_of_locus)
+        if g is None:
+            raise SystemExit(f"gene {gid[:12]} does not apply to the current stack: {why}")
+        genes.append(g)
+    genome = Genome.of(genes, atlas)
+    out_dir = Path(out_dir)
+    if out_dir.exists():
+        shutil.rmtree(out_dir)
+    out_dir.mkdir(parents=True)
+    with tempfile.TemporaryDirectory(prefix="colloid-stack-") as tmp:
+        ws = target.materialize(genome, Path(tmp) / "ws")
+        for part in ("service", "native"):
+            shutil.copytree(ws.root / part, out_dir / part, ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "build"))
+        launch = ws.launch
+    base_launch = target.launch_for(Genome())
+    diff = _diff(launch, base_launch)
+    (out_dir / "runtime").mkdir()
+    (out_dir / "runtime" / "launch.json").write_text(json.dumps(launch, indent=1, sort_keys=True, default=str))
+    (out_dir / "runtime" / "launch.diff.json").write_text(json.dumps(diff, indent=1, sort_keys=True, default=str))
+    (out_dir / "db" / "migrations").mkdir(parents=True)
+    ddl = [re.sub(r"^CREATE INDEX (?!IF NOT EXISTS)", "CREATE INDEX IF NOT EXISTS ", d) + ";" for d in (diff.get("indexes") or {}).values()]
+    header = f"-- Generated by Colloid from lake record {rid} (program {prog.get('program_id')}).\n-- Idempotent: safe to re-run.\n"
+    (out_dir / "db" / "migrations" / "0001_colloid.sql").write_text(header + ("\n".join(ddl) or "-- no index changes") + "\n")
+    pm = diff.get("pg_postmaster") or {}
+    (out_dir / "db" / "postgresql.colloid.conf").write_text(
+        "# Server settings changed by verified Colloid genes (include from postgresql.conf).\n"
+        + "".join(f"{k} = {_sql_literal(v)}\n" for k, v in sorted(pm.items())))
+    sess = diff.get("pg_session") or {}
+    (out_dir / "db" / "session.colloid.sql").write_text(
+        "-- Per-database settings changed by verified Colloid genes.\n"
+        + "".join(f"ALTER DATABASE {database} SET {k} = {_sql_literal(v)};\n" for k, v in sorted(sess.items())))
+    gene_rows = [{"record": gid, "explain": records[gid].content["explain"], "carries_gain": gid in carrying,
+                  "provenance": records[gid].content["provenance"]} for gid in gene_ids]
+    dropped = [{"record": gid, "explain": records[gid].content["explain"]} for gid in prog["genes"] if gid not in gene_ids]
+    ablation = next((a for a in prog.get("attribution", []) if a.get("method") == "leave_one_out"), None)
+    minimal = (prog.get("ablation") or {}).get("minimal")
+    own = (f" Measured on its own: cost {minimal['gain_pct']}% lower, 95% CI {minimal['ci_pct']} ({minimal['check']}, "
+           f"{prog['ablation'].get('cycles')} cycles)." if carrying_only and minimal and sorted(minimal["genes"]) == sorted(gene_ids) else "")
+    evidence = {
+        "verified_program": {"status": prog["status"], "protocol": prog.get("protocol"), "effects": prog["effects"],
+                             "holdout": prog.get("holdout"), "noise_floor": prog.get("noise_floor")},
+        "this_artifact": ("the full verified program (L6 deep assurance + hidden holdout + soak + replicate)." if not carrying_only else
+                          "the genes whose measured contribution CI lies above zero. The full program they come from was "
+                          "L6-verified; this subset's own measurement is the leave-one-gene-out ablation (oracle-checked, "
+                          "replicate-measured), not a separate L6 run" + ("" if ablation else " (attribution: Shapley)") + "." + own),
+    }
+    manifest = {
+        "schema": "colloid.stack/1", "target": TARGET, "lake": {"location": lake.location, "head": head(entries)},
+        "record": rid, "program_id": prog.get("program_id"), "carrying_only": carrying_only, "ablation": prog.get("ablation"),
+        "genes": gene_rows, "dropped_hitchhikers": dropped, "evidence": evidence, "attribution": prog.get("attribution", []),
+        "platform_measured_on": prog.get("platform"), "run": prog.get("run"), "engine_commit": engine_commit(),
+        "generated_at": datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "reproduce": f"colloid stack materialize {rid[:16]} --lake {lake.location}" + (" --carrying-only" if carrying_only else ""),
+    }
+    (out_dir / "MANIFEST.json").write_text(json.dumps(manifest, indent=1, sort_keys=True, default=str))
+    (out_dir / "README.md").write_text(_readme(manifest, ddl, pm, sess))
+    return manifest
+
+
+def _readme(m: dict[str, Any], ddl: list[str], pm: dict[str, Any], sess: dict[str, Any]) -> str:
+    eff = m["evidence"]["verified_program"]["effects"]
+    cost = eff.get("cost") or {}
+    lines = [f"# {m['target']}: verified by Colloid", "",
+             f"Materialised from lake record `{m['record'][:16]}` (program `{m['program_id']}`, run `{m['run']}`), "
+             f"lake head `{m['lake']['head'][:16]}`. Regenerate with `{m['reproduce']}`.", "",
+             "## What changed", ""]
+    for g in m["genes"]:
+        lines.append(f"- {g['explain']}" + (" (carries measured gain)" if g["carries_gain"] else ""))
+    if m["dropped_hitchhikers"]:
+        lines += ["", "Left out (measured contribution indistinguishable from zero):", ""]
+        lines += [f"- {g['explain']}" for g in m["dropped_hitchhikers"]]
+    lines += ["", "## Evidence", "",
+              f"- Verified program: cost per request **{cost.get('gain_pct')}%** lower, 95% CI {cost.get('ci_pct')} "
+              f"({m['evidence']['verified_program']['protocol']}), p50 {(eff.get('p50') or {}).get('gain_pct')}%, "
+              f"p95 {(eff.get('p95') or {}).get('gain_pct')}%, memory {(eff.get('mem') or {}).get('gain_pct')}%.",
+              f"- This artifact: {m['evidence']['this_artifact']}",
+              "- Per-gene attribution (log-ratio, 95% CI) is in MANIFEST.json.", "",
+              "## Deploy", "",
+              "1. `db/migrations/0001_colloid.sql`: index DDL, idempotent." + ("" if ddl else " (no index changes)"),
+              "2. `db/postgresql.colloid.conf`: server settings." + ("" if pm else " (none)"),
+              "3. `db/session.colloid.sql`: per-database settings." + ("" if sess else " (none)"),
+              "4. `service/`, `native/`: application code with the verified source changes applied; "
+              "`runtime/launch.diff.json` lists every runtime/allocator/compiler setting that differs from the baseline.", "",
+              "Measured on the platform recorded in MANIFEST.json. Re-verify on your own hardware "
+              "(`colloid run` with `lake:` pointing at the lake re-evaluates these genes from scratch).", ""]
+    return "\n".join(lines)
+
+
+def publish(out_dir: Path, branch: str, repo: Path = Path(".")) -> str:
+    """Commit the materialised directory as the whole tree of ``branch`` (a data-only branch)."""
+    out_dir = Path(out_dir)
+    manifest = json.loads((out_dir / "MANIFEST.json").read_text())
+    files = {str(p.relative_to(out_dir)).replace("\\", "/"): p.read_bytes() for p in sorted(out_dir.rglob("*")) if p.is_file()}
+    msg = (f"stack: {manifest['target']} from lake record {manifest['record'][:16]}"
+           f"{' (carrying genes only)' if manifest['carrying_only'] else ''}\n\nlake-head: {manifest['lake']['head']}\n"
+           f"program: {manifest['program_id']}\nengine-commit: {manifest['engine_commit']}")
+    return commit_files(repo, branch, files, msg, expected_tip=branch_tip(repo, branch), replace_tree=True)

@@ -29,7 +29,7 @@ from typing import Any
 from colloid.adapters.store.sql_store import open_store
 from colloid.core.atlas import StackAtlas
 from colloid.core.ids import sha256_hex
-from colloid.core.lake import ChainError, LedgerEntry, Record, append, head, verify_chain
+from colloid.core.lake import ChainError, LedgerEntry, Record, append, head, record_id, sanitize, verify_chain
 from colloid.core.models import Gene, PayloadKind, ProgramStatus, Provenance, Stage, Verdict
 from colloid.core.objectives import gain_percent
 from colloid.ports import LakeStore
@@ -139,16 +139,35 @@ def ingest_run(run: str, lake: LakeStore, *, recorded_at: str | None = None, log
                         attribution.append({"gene": by_short[row["gene"]], "method": "leave_one_out", "value": row["contribution_log"],
                                             "ci": row["contribution_ci_log"]})
             gset = set(gene_ids)
-            derived = sorted(rid for rid, r in {**existing, **new}.items()
-                             if r.kind == "program" and r.content.get("target") == TARGET and set(r.content["genes"]) < gset)
+            ablation_summary = None
+            if ablation.get("program") == prog.id and (ablation.get("minimal") or {}).get("status", "").startswith("ok"):
+                by_explain = {explain_gene(store, g.id, atlas): gene_rec_of[g.id] for g in genes}
+                m = ablation["minimal"]
+                ablation_summary = {"cycles": ablation.get("cycles"), "full": {k: ablation["full"].get(k) for k in ("gain_pct", "ci_pct")},
+                                    "minimal": {"gain_pct": m["gain_pct"], "ci_pct": m["ci_pct"], "check": "L2 oracle + replicate",
+                                                "genes": sorted(by_explain[e] for e in ablation.get("minimal_genes", []) if e in by_explain)}}
             content = {
                 "target": TARGET, "baseline_id": baseline.id, "program_id": prog.id, "genes": sorted(gene_ids),
                 "status": prog.status.value, "island": prog.island, "operator": prog.operator,
                 "effects": effects, "protocol": protocol, "holdout": holdout, "attribution": attribution,
                 "noise_floor": {"per_cycle": aa.get("noise_floor_per_cycle"), "gate": aa.get("gate")},
                 "platform": setup.get("fingerprint") or {}, "rate_rps": setup.get("rate_rps"),
-                "run": Path(run).name, "engine_commit_at_ingest": engine_commit(), "derived_from": derived,
+                "run": Path(run).name, "engine_commit_at_ingest": engine_commit(),
             }
+            if ablation_summary:  # only present when measured, so earlier records stay comparable
+                content["ablation"] = ablation_summary
+            # Idempotency is decided on the evidence alone: lineage links (derived_from) depend on
+            # what else is in the lake and must not turn re-ingesting the same evidence into a new record.
+            core_key = record_id("program", sanitize({k: v for k, v in content.items() if k != "engine_commit_at_ingest"}))
+            known_core = {record_id("program", {k: v for k, v in r.content.items() if k not in ("derived_from", "engine_commit_at_ingest")})
+                          for r in {**existing, **new}.values() if r.kind == "program"}
+            if core_key in known_core:
+                rep.programs.append({"record": None, "program": prog.id, "status": prog.status.value,
+                                     "cost_gain_pct": (effects.get("cost") or {}).get("gain_pct"), "new": False})
+                continue
+            # newer knowledge points at what it extends (strict subsets) or supersedes (same genes, newer evidence)
+            content["derived_from"] = sorted(rid for rid, r in {**existing, **new}.items()
+                                             if r.kind == "program" and r.content.get("target") == TARGET and set(r.content["genes"]) <= gset)
             pr = Record.make("program", content)
             rep.programs.append({"record": pr.id, "program": prog.id, "status": prog.status.value,
                                  "cost_gain_pct": (effects.get("cost") or {}).get("gain_pct"), "new": pr.id not in existing})

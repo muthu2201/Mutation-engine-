@@ -4,17 +4,10 @@ The lake lives on its own branch (default ``colloid/datalake``) whose tree conta
 lake files: no code, so it can be shared and mirrored without the engine. Every ingest is one
 commit, so ``git log colloid/datalake`` is the day-by-day history of what Colloid learned.
 
-Only git plumbing is used, so the caller's checkout is never touched:
-
-1. ``hash-object -w`` writes each record, the new ledger, ``LAKE`` and ``README.md`` as blobs;
-2. a *temporary* index (``GIT_INDEX_FILE``) is loaded from the branch tip (``read-tree``),
-   updated (``update-index --index-info``) and written to a tree (``write-tree``);
-3. ``commit-tree`` creates the commit (parent = old tip; the first commit has no parent, so
-   the branch shares no history with the code);
-4. ``update-ref <ref> <new> <old>`` moves the branch with compare-and-swap: if anyone else
-   moved it in between, git refuses and we raise :class:`LakeConflict`.
-
-The working tree, the real index, HEAD and every other branch are left as they were.
+Only git plumbing is used (``colloid.adapters.gitref``), so the caller's checkout is never
+touched: blobs, a temporary index, ``commit-tree`` and a compare-and-swap ``update-ref``.
+The first commit has no parent, so the branch shares no history with the code. If anyone
+else moved the branch in between, git refuses and we raise :class:`LakeConflict`.
 """
 
 from __future__ import annotations
@@ -22,15 +15,13 @@ from __future__ import annotations
 import json
 import os
 import subprocess
-import tempfile
 from collections.abc import Sequence
 from pathlib import Path
 
+from colloid.adapters.gitref import RefMoved, commit_files, push
 from colloid.adapters.lake import LAKE_README
 from colloid.core.lake import SCHEMA, ChainError, LedgerEntry, Record, head
 from colloid.ports import LakeConflict
-
-ZERO_OID = "0" * 40
 
 
 class GitBranchLake:
@@ -111,30 +102,11 @@ class GitBranchLake:
         files["ledger.jsonl"] = "".join(json.dumps(e.to_json(), sort_keys=True, separators=(",", ":")) + "\n" for e in all_entries).encode()
         files["LAKE"] = json.dumps({"schema": SCHEMA, "head": new_head, "entries": len(all_entries), "last_message": message}, indent=1).encode()
         files["README.md"] = LAKE_README.encode()
-        index_lines = []
-        for path, data in files.items():
-            oid = self._git("hash-object", "-w", "--stdin", data=data).decode().strip()
-            index_lines.append(f"100644 {oid}\t{path}\n")
-        with tempfile.TemporaryDirectory(prefix="colloid-lake-") as tmp:
-            env = {"GIT_INDEX_FILE": str(Path(tmp) / "index")}
-            if tip:
-                self._git("read-tree", tip, env=env)
-            self._git("update-index", "--add", "--index-info", data="".join(index_lines).encode(), env=env)
-            tree = self._git("write-tree", env=env).decode().strip()
-        ident = {} if self._has_identity() else {"GIT_AUTHOR_NAME": "Colloid lake", "GIT_AUTHOR_EMAIL": "lake@colloid.invalid",
-                                                 "GIT_COMMITTER_NAME": "Colloid lake", "GIT_COMMITTER_EMAIL": "lake@colloid.invalid"}
-        parent = ["-p", tip] if tip else []
-        commit = self._git("commit-tree", tree, *parent, "-m", f"{message}\n\nlake-head: {new_head}\nentries: {len(all_entries)}",
-                           env=ident).decode().strip()
-        res = subprocess.run(["git", "-C", str(self.repo), "update-ref", "-m", "colloid lake ingest", self.ref, commit, tip or ZERO_OID],
-                             capture_output=True, check=False)
-        if res.returncode != 0:
-            raise LakeConflict(f"branch {self.branch} moved during the commit: {res.stderr.decode(errors='replace').strip()[:200]}")
+        try:
+            commit_files(self.repo, self.branch, files, f"{message}\n\nlake-head: {new_head}\nentries: {len(all_entries)}", expected_tip=tip)
+        except RefMoved as exc:
+            raise LakeConflict(str(exc)) from exc
         return new_head
 
-    def _has_identity(self) -> bool:
-        res = subprocess.run(["git", "-C", str(self.repo), "config", "user.email"], capture_output=True, check=False)
-        return bool(res.stdout.strip())
-
     def push(self, remote: str = "origin") -> str:
-        return self._git("push", "-u", remote, f"{self.ref}:{self.ref}").decode() or "pushed"
+        return push(self.repo, self.branch, remote)

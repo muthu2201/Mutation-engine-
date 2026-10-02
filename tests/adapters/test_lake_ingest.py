@@ -174,3 +174,18 @@ def test_lake_evidence_seeds_the_engine_bandit(tmp_path, target, monkeypatch):
     ctx = ("db",)
     assert eng.bandit.posterior(ctx, ("knob_sample", None, None))[0] > eng.bandit.posterior(ctx, ("llm_rewrite", "m", "optimize"))[0]
     eng.tele.close()
+
+
+def test_reingest_is_idempotent_even_after_the_lake_grew(tmp_path, target):
+    """Lineage links depend on what else is in the lake; re-ingesting the same evidence later
+    must still be a no-op (idempotency is decided on the evidence, not on derived_from)."""
+    _, atlas = target
+    kg = knob_gene(atlas, "db.idx_reviews_product", True)
+    cg = code_gene(atlas, RATING, lambda s: s.replace("async def", "async  def", 1))
+    lake = DirectoryLake(tmp_path / "lake")
+    big, _ = make_run(tmp_path, "big", atlas, [[kg, cg]])
+    svc.ingest_run(big, lake, recorded_at="2026-10-01T00:00:00.000000Z", log=lambda m: None)
+    small, _ = make_run(tmp_path, "small", atlas, [[kg]])
+    svc.ingest_run(small, lake, recorded_at="2026-10-02T00:00:00.000000Z", log=lambda m: None)
+    again = svc.ingest_run(big, lake, recorded_at="2026-10-03T00:00:00.000000Z", log=lambda m: None)
+    assert again.new_entries == 0 and again.programs[0]["new"] is False

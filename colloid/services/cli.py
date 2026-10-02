@@ -13,6 +13,8 @@
     colloid lake ingest RUN [--lake LOC] add a run's verified mutations to the data lake (hash-chained)
     colloid lake verify|list [--lake LOC] verify the lake's chain / list it oldest -> newest
     colloid lake push [--lake git:BRANCH] push the data-lake branch to origin
+    colloid stack materialize RECORD --out DIR [--carrying-only]   deployable stack from a lake record
+    colloid stack publish DIR [--branch stack/stackzero-verified] [--push]   commit it on its own branch
 
 Experiments are YAML files under experiments/ (data, never code).
 """
@@ -112,6 +114,22 @@ def cmd_lake(args: argparse.Namespace) -> int:
         if not isinstance(lake, GitBranchLake):
             raise SystemExit("push needs a git lake (--lake git:<branch>)")
         print(lake.push(args.remote))
+    return 0
+
+
+def cmd_stack(args: argparse.Namespace) -> int:
+    from colloid.adapters.gitref import push
+    from colloid.adapters.lake import open_lake
+    from colloid.services import stack
+
+    if args.action == "materialize":
+        m = stack.materialize(open_lake(args.lake), args.arg, Path(args.out), carrying_only=args.carrying_only)
+        print(json.dumps({k: m[k] for k in ("record", "program_id", "carrying_only", "genes", "dropped_hitchhikers")}, indent=2))
+    else:
+        commit = stack.publish(Path(args.arg), args.branch)
+        print(f"{args.branch} -> {commit}")
+        if args.push:
+            print(push(Path("."), args.branch, args.remote))
     return 0
 
 
@@ -251,6 +269,10 @@ def main(argv: list[str] | None = None) -> int:
     lk = sub.add_parser("lake"); lk.add_argument("action", choices=["ingest", "verify", "list", "push"]); lk.add_argument("run", nargs="?")
     lk.add_argument("--lake", default="git:colloid/datalake", help="directory, git:<branch> or git:<repo>#<branch>")
     lk.add_argument("--remote", default="origin"); lk.set_defaults(fn=cmd_lake)
+    sk = sub.add_parser("stack"); sk.add_argument("action", choices=["materialize", "publish"]); sk.add_argument("arg", help="lake record id prefix | stack dir")
+    sk.add_argument("--lake", default="git:colloid/datalake"); sk.add_argument("--out", default="stack-out"); sk.add_argument("--carrying-only", action="store_true")
+    sk.add_argument("--branch", default="stack/stackzero-verified"); sk.add_argument("--push", action="store_true"); sk.add_argument("--remote", default="origin")
+    sk.set_defaults(fn=cmd_stack)
     d = sub.add_parser("dashboard"); d.add_argument("run"); d.add_argument("--port", type=int, default=8080); d.set_defaults(fn=cmd_dashboard)
     args = p.parse_args(argv)
     return int(args.fn(args))

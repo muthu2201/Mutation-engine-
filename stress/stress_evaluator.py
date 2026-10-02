@@ -94,7 +94,10 @@ def main() -> int:
         out["infinite_loop_killed_fast"] = next(r["wall"] for r in out["pathologies"] if r["name"] == "infinite_loop") < 120
 
         print("\n[canaries] running full suite under stress...")
-        out["canaries"] = {k: v for k, v in run_canaries(ev, dynamic_only=False).items() if k != "canaries"}
+        can = run_canaries(ev, dynamic_only=False)
+        out["canaries"] = {k: v for k, v in can.items() if k != "canaries"}
+        # keep where and why each canary was rejected, so an unexpected stage is diagnosable
+        out["canary_rows"] = [{"canary": r["canary"], **{k: r["full"][k] for k in ("stage", "reason")}} for r in can["canaries"] if "full" in r]
 
         print(f"\n[aa] {args.aa_runs} A/A runs...")
         out["aa"] = ev.aa_test(args.aa_runs)
