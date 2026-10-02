@@ -1,0 +1,708 @@
+{
+ "run": "runs/stackzero-attempt1-crashed-gen5",
+ "setup": {
+  "rate_rps": 45.0,
+  "calibration_knee": 90,
+  "fingerprint": {
+   "kernel": "6.18.44-fc-v51",
+   "cpu_model": "Intel(R) Xeon(R) Processor @ 2.10GHz",
+   "cpu_count": 4,
+   "gcc": "gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+   "python": "3.12.3",
+   "postgres": "postgres (PostgreSQL) 16.14 (Ubuntu 16.14-0ubuntu0.24.04.1)"
+  }
+ },
+ "program_counts": {
+  "elite": 8,
+  "evaluated": 1,
+  "promoted": 1,
+  "rejected": 26
+ },
+ "cascade_funnel": {
+  "L0": {
+   "pass": 31,
+   "fail": 4
+  },
+  "L1": {
+   "pass": 26,
+   "fail": 5
+  },
+  "L2": {
+   "pass": 9,
+   "fail": 17
+  },
+  "L4": {
+   "pass": 9
+  },
+  "L5": {
+   "pass": 9
+  },
+  "L6": {
+   "fail": 2,
+   "pass": 1
+  }
+ },
+ "best_programs": [
+  {
+   "id": "7681102dff149a21",
+   "island": "db.index",
+   "generation": 1,
+   "operator": "knob_perturb",
+   "status": "promoted",
+   "genes": [
+    "db.idx_orders_customer_placed = True [knob_perturb]"
+   ],
+   "gains_pct": {
+    "cost": {
+     "pct": 5.32,
+     "ci_pct": [
+      7.4,
+      3.16
+     ],
+     "p": 0.002
+    },
+    "cpu": {
+     "pct": 5.37,
+     "ci_pct": [
+      7.43,
+      3.18
+     ],
+     "p": 0.002
+    },
+    "p50": {
+     "pct": 19.44,
+     "ci_pct": [
+      36.23,
+      7.66
+     ],
+     "p": 0.023
+    },
+    "p95": {
+     "pct": 21.49,
+     "ci_pct": [
+      28.11,
+      8.85
+     ],
+     "p": 0.0005
+    },
+    "mem": {
+     "pct": -0.14,
+     "ci_pct": [
+      0.7,
+      -0.99
+     ],
+     "p": 0.6295
+    }
+   },
+   "stage": "L6",
+   "usd_per_mreq": {
+    "baseline": 0.7895,
+    "candidate": 0.7475
+   }
+  },
+  {
+   "id": "1eda29cc8d7cf701",
+   "island": "composition",
+   "generation": 5,
+   "operator": "py_rewrite",
+   "status": "elite",
+   "genes": [
+    "db.idx_orders_customer_placed = True [knob_perturb]",
+    "category_top: code rewrite (py_rewrite/append_to_listcomp) append loop at line 12 becomes a list comprehension",
+    "db.idx_products_name_trgm = True [knob_sample]"
+   ],
+   "gains_pct": {
+    "cost": {
+     "pct": 2.9,
+     "ci_pct": [
+      6.11,
+      -0.39
+     ],
+     "p": 0.0723
+    },
+    "cpu": {
+     "pct": 2.96,
+     "ci_pct": [
+      6.22,
+      -0.5
+     ],
+     "p": 0.0742
+    },
+    "p50": {
+     "pct": 14.72,
+     "ci_pct": [
+      23.0,
+      1.49
+     ],
+     "p": 0.014
+    },
+    "p95": {
+     "pct": -0.8,
+     "ci_pct": [
+      5.65,
+      -9.16
+     ],
+     "p": 0.7695
+    },
+    "mem": {
+     "pct": 0.51,
+     "ci_pct": [
+      1.62,
+      -0.05
+     ],
+     "p": 0.118
+    }
+   },
+   "stage": "L5",
+   "usd_per_mreq": {
+    "baseline": 0.3891,
+    "candidate": 0.3778
+   }
+  },
+  {
+   "id": "3f6b9ef9fcdba9a5",
+   "island": "svc.code",
+   "generation": 4,
+   "operator": "llm_rewrite",
+   "status": "elite",
+   "genes": [
+    "db.idx_orders_customer_placed = True [knob_perturb]",
+    "rating_summary: code rewrite (llm_rewrite/algorithmic) algorithmic",
+    "db.idx_products_name_trgm = True [knob_sample]"
+   ],
+   "gains_pct": {
+    "cost": {
+     "pct": 2.69,
+     "ci_pct": [
+      5.47,
+      0.05
+     ],
+     "p": 0.0762
+    },
+    "cpu": {
+     "pct": 2.73,
+     "ci_pct": [
+      5.59,
+      0.09
+     ],
+     "p": 0.0762
+    },
+    "p50": {
+     "pct": 22.77,
+     "ci_pct": [
+      30.67,
+      8.13
+     ],
+     "p": 0.001
+    },
+    "p95": {
+     "pct": 3.13,
+     "ci_pct": [
+      11.36,
+      -2.23
+     ],
+     "p": 0.36
+    },
+    "mem": {
+     "pct": 0.13,
+     "ci_pct": [
+      1.22,
+      -0.49
+     ],
+     "p": 0.7438
+    }
+   },
+   "stage": "L5",
+   "usd_per_mreq": {
+    "baseline": 0.4473,
+    "candidate": 0.4353
+   }
+  },
+  {
+   "id": "e928c285d81b9f3f",
+   "island": "db.index",
+   "generation": 3,
+   "operator": "crossover",
+   "status": "elite",
+   "genes": [
+    "db.idx_orders_customer_placed = True [knob_perturb]",
+    "db.idx_products_name_trgm = True [knob_sample]"
+   ],
+   "gains_pct": {
+    "cost": {
+     "pct": 2.11,
+     "ci_pct": [
+      4.77,
+      -0.8
+     ],
+     "p": 0.209
+    },
+    "cpu": {
+     "pct": 2.13,
+     "ci_pct": [
+      4.73,
+      -0.69
+     ],
+     "p": 0.207
+    },
+    "p50": {
+     "pct": 21.54,
+     "ci_pct": [
+      32.54,
+      -1.36
+     ],
+     "p": 0.0175
+    },
+    "p95": {
+     "pct": 4.69,
+     "ci_pct": [
+      11.44,
+      -2.07
+     ],
+     "p": 0.183
+    },
+    "mem": {
+     "pct": -0.35,
+     "ci_pct": [
+      0.3,
+      -0.89
+     ],
+     "p": 0.2338
+    }
+   },
+   "stage": "L6",
+   "usd_per_mreq": {
+    "baseline": 0.7941,
+    "candidate": 0.7774
+   }
+  },
+  {
+   "id": "8f20faeca2dde359",
+   "island": "db.index",
+   "generation": 2,
+   "operator": "knob_sample",
+   "status": "elite",
+   "genes": [
+    "db.idx_products_name_trgm = True [knob_sample]"
+   ],
+   "gains_pct": {
+    "cost": {
+     "pct": -1.17,
+     "ci_pct": [
+      1.2,
+      -3.4
+     ],
+     "p": 0.3359
+    },
+    "cpu": {
+     "pct": -1.16,
+     "ci_pct": [
+      1.23,
+      -3.48
+     ],
+     "p": 0.3457
+    },
+    "p50": {
+     "pct": -0.98,
+     "ci_pct": [
+      6.07,
+      -12.06
+     ],
+     "p": 0.812
+    },
+    "p95": {
+     "pct": -1.74,
+     "ci_pct": [
+      4.6,
+      -7.32
+     ],
+     "p": 0.5035
+    },
+    "mem": {
+     "pct": -1.86,
+     "ci_pct": [
+      -1.29,
+      -2.04
+     ],
+     "p": 0.0002
+    }
+   },
+   "stage": "L5",
+   "usd_per_mreq": {
+    "baseline": 0.4116,
+    "candidate": 0.4164
+   }
+  },
+  {
+   "id": "cdb71c1f4db1b42c",
+   "island": "svc.code",
+   "generation": 1,
+   "operator": "gi_edit",
+   "status": "elite",
+   "genes": [
+    "Executor.fetchrow: code rewrite (gi_edit) copy line 3 before line 3"
+   ],
+   "gains_pct": {
+    "cost": {
+     "pct": -1.94,
+     "ci_pct": [
+      0.88,
+      -4.86
+     ],
+     "p": 0.2656
+    },
+    "cpu": {
+     "pct": -1.96,
+     "ci_pct": [
+      0.78,
+      -4.84
+     ],
+     "p": 0.2637
+    },
+    "p50": {
+     "pct": -6.96,
+     "ci_pct": [
+      10.7,
+      -23.82
+     ],
+     "p": 0.4135
+    },
+    "p95": {
+     "pct": -10.98,
+     "ci_pct": [
+      -2.97,
+      -17.73
+     ],
+     "p": 0.006
+    },
+    "mem": {
+     "pct": 0.17,
+     "ci_pct": [
+      0.65,
+      -0.81
+     ],
+     "p": 0.7935
+    }
+   },
+   "stage": "L6",
+   "usd_per_mreq": {
+    "baseline": 0.7702,
+    "candidate": 0.7852
+   }
+  },
+  {
+   "id": "ac857c4b2ae2222b",
+   "island": "native.code",
+   "generation": 5,
+   "operator": "llm_rewrite",
+   "status": "elite",
+   "genes": [
+    "shop_tokenize: code rewrite (llm_rewrite/optimize) optimize"
+   ],
+   "gains_pct": {
+    "cost": {
+     "pct": -2.8,
+     "ci_pct": [
+      -0.23,
+      -5.39
+     ],
+     "p": 0.0703
+    },
+    "cpu": {
+     "pct": -2.85,
+     "ci_pct": [
+      -0.23,
+      -5.42
+     ],
+     "p": 0.0703
+    },
+    "p50": {
+     "pct": -0.06,
+     "ci_pct": [
+      8.24,
+      -10.9
+     ],
+     "p": 0.994
+    },
+    "p95": {
+     "pct": -1.16,
+     "ci_pct": [
+      3.54,
+      -9.65
+     ],
+     "p": 0.7515
+    },
+    "mem": {
+     "pct": -0.61,
+     "ci_pct": [
+      0.14,
+      -1.41
+     ],
+     "p": 0.1003
+    }
+   },
+   "stage": "L5",
+   "usd_per_mreq": {
+    "baseline": 0.393,
+    "candidate": 0.404
+   }
+  },
+  {
+   "id": "deb25ce53ae19bad",
+   "island": "db.config",
+   "generation": 1,
+   "operator": "knob_perturb",
+   "status": "elite",
+   "genes": [
+    "db.jit = False [knob_perturb]"
+   ],
+   "gains_pct": {
+    "cost": {
+     "pct": -3.54,
+     "ci_pct": [
+      -1.24,
+      -5.77
+     ],
+     "p": 0.0195
+    },
+    "cpu": {
+     "pct": -3.61,
+     "ci_pct": [
+      -1.27,
+      -5.89
+     ],
+     "p": 0.0195
+    },
+    "p50": {
+     "pct": -3.94,
+     "ci_pct": [
+      4.26,
+      -15.23
+     ],
+     "p": 0.4355
+    },
+    "p95": {
+     "pct": -5.54,
+     "ci_pct": [
+      0.03,
+      -12.65
+     ],
+     "p": 0.068
+    },
+    "mem": {
+     "pct": 0.1,
+     "ci_pct": [
+      0.77,
+      -0.06
+     ],
+     "p": 0.8173
+    }
+   },
+   "stage": "L5",
+   "usd_per_mreq": {
+    "baseline": 0.4291,
+    "candidate": 0.4444
+   }
+  },
+  {
+   "id": "0c7eb4e46afa3e2b",
+   "island": "db.index",
+   "generation": 4,
+   "operator": "knob_sample",
+   "status": "elite",
+   "genes": [
+    "db.idx_products_category = True [knob_sample]",
+    "db.idx_products_name_trgm = True [knob_sample]"
+   ],
+   "gains_pct": {
+    "cost": {
+     "pct": -5.45,
+     "ci_pct": [
+      -1.83,
+      -9.11
+     ],
+     "p": 0.0391
+    },
+    "cpu": {
+     "pct": -5.52,
+     "ci_pct": [
+      -1.72,
+      -9.52
+     ],
+     "p": 0.0391
+    },
+    "p50": {
+     "pct": -5.36,
+     "ci_pct": [
+      6.75,
+      -16.97
+     ],
+     "p": 0.3785
+    },
+    "p95": {
+     "pct": -9.64,
+     "ci_pct": [
+      -1.06,
+      -23.89
+     ],
+     "p": 0.073
+    },
+    "mem": {
+     "pct": -0.7,
+     "ci_pct": [
+      -0.14,
+      -0.94
+     ],
+     "p": 0.0035
+    }
+   },
+   "stage": "L5",
+   "usd_per_mreq": {
+    "baseline": 0.4745,
+    "candidate": 0.5004
+   }
+  }
+ ],
+ "promoted": [
+  "7681102dff149a21"
+ ],
+ "verified": [],
+ "epistasis": [
+  {
+   "gene_a": "02eef39e",
+   "gene_b": "e85c7b21",
+   "epsilon": 0.0293,
+   "ci": [
+    -0.0218,
+    0.0803
+   ],
+   "kind": "synergy"
+  },
+  {
+   "gene_a": "a373bb04",
+   "gene_b": "e85c7b21",
+   "epsilon": 0.0762,
+   "ci": [
+    -0.0022,
+    0.1546
+   ],
+   "kind": "synergy"
+  },
+  {
+   "gene_a": "02eef39e",
+   "gene_b": "a373bb04",
+   "epsilon": 0.0216,
+   "ci": [
+    -0.0312,
+    0.0744
+   ],
+   "kind": "synergy"
+  },
+  {
+   "gene_a": "8ae7ac6a",
+   "gene_b": "e85c7b21",
+   "epsilon": 0.0961,
+   "ci": [
+    0.05,
+    0.1423
+   ],
+   "kind": "synergy"
+  }
+ ],
+ "llm": {
+  "calls": 42,
+  "tokens_in": 40285,
+  "tokens_out": 12906,
+  "cost_usd": 0.1108,
+  "by_model": {
+   "qwen2.5-coder-3b": 41,
+   "qwen2.5-coder-1.5b": 1
+  }
+ },
+ "alerts": [
+  {
+   "id": "susp-e928c285d81b",
+   "kind": "suspicion",
+   "severity": "warning",
+   "message": "e928c285d81b9f3f failed deep review: holdout: cost gain does not persist on the hidden holdout workload (CI lower bound <= 0)",
+   "program_id": "e928c285d81b9f3f",
+   "created_at": 1790912457.46726
+  },
+  {
+   "id": "susp-cdb71c1f4db1",
+   "kind": "suspicion",
+   "severity": "warning",
+   "message": "cdb71c1f4db1b42c failed deep review: holdout: cost gain does not persist on the hidden holdout workload (CI lower bound <= 0)",
+   "program_id": "cdb71c1f4db1b42c",
+   "created_at": 1790910720.113653
+  },
+  {
+   "id": "aa-179091025164",
+   "kind": "aa_test",
+   "severity": "critical",
+   "message": "A/A false-positive rate 30.00% exceeds alpha; promotions halted",
+   "program_id": null,
+   "created_at": 1790910251.6485043
+  }
+ ],
+ "aa_test": {
+  "alpha": 0.05,
+  "objectives": {
+   "cost": {
+    "ci_coverage_of_zero": 0.7,
+    "effect_sd": 0.024918535730253495,
+    "false_positive_rate": 0.3,
+    "false_positives": 3,
+    "mean_effect": -0.004275053886529892
+   },
+   "cpu": {
+    "ci_coverage_of_zero": 0.7,
+    "effect_sd": 0.025267592492601982,
+    "false_positive_rate": 0.3,
+    "false_positives": 3,
+    "mean_effect": -0.004326745532624041
+   },
+   "mem": {
+    "ci_coverage_of_zero": 0.6,
+    "effect_sd": 0.006765866440087949,
+    "false_positive_rate": 0.2,
+    "false_positives": 2,
+    "mean_effect": -0.00077714097151069
+   },
+   "p50": {
+    "ci_coverage_of_zero": 0.8,
+    "effect_sd": 0.1028507960956647,
+    "false_positive_rate": 0.3,
+    "false_positives": 3,
+    "mean_effect": -0.004820780521630342
+   },
+   "p95": {
+    "ci_coverage_of_zero": 1.0,
+    "effect_sd": 0.034833232341207394,
+    "false_positive_rate": 0.0,
+    "false_positives": 0,
+    "mean_effect": 0.012719939148738197
+   }
+  },
+  "promotions_allowed": false,
+  "runs": 10
+ },
+ "profile": {
+  "latency_share": {
+   "GET /categories/{id}/top": 0.03810110869000767,
+   "GET /customers/{id}/recommendations": 0.07309324215230618,
+   "GET /customers/{id}/summary": 0.08936352349631904,
+   "GET /products/search": 0.6652175482932242,
+   "GET /products/{id}": 0.08517946595657286,
+   "GET /reports/daily": 0.01612154167090873,
+   "POST /orders": 0.032923569740661414
+  },
+  "leverage": {
+   "find_candidates": 0.531600719818667,
+   "rating_summary": 0.25656425517646847,
+   "search_products": 0.8345201326941807
+  }
+ },
+ "result": {},
+ "event_kinds": {}
+}
