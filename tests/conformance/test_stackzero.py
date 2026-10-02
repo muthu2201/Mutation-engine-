@@ -138,3 +138,26 @@ def test_redteam_liveness_probe_has_both_controls(evaluator):
     assert on_path and not live.passed, live.evaluation.reasons
     on_path, inert = l2("py:service/shop/app.py::lifespan")
     assert not on_path and inert.passed, inert.evaluation.reasons
+
+
+def test_hung_candidate_is_rejected_fast(evaluator):
+    """Regression: a candidate whose event loop spins forever made every oracle request wait the
+    full client timeout in turn (5 x 30 s). The oracle now gives each request max(10 s, 50x the
+    reference's latency) and stops at the first hang."""
+    import time
+
+    from colloid.core.genome import Genome
+    from colloid.core.ids import sha256_hex
+    from colloid.core.models import Gene, PayloadKind, Provenance, Surface
+
+    u = evaluator.atlas.unit_by_path("py:service/shop/search.py::rating_summary")
+    loc = evaluator.atlas.locus_for(u.id, Surface.CODE_REGION)
+    body = "async def rating_summary(db, product_id):\n    while True:\n        pass\n"
+    g = Genome.of([Gene.make(loc.id, PayloadKind.SOURCE, {"source": body, "base_hash": sha256_hex(str(u.tags["baseline_source"]))[:16],
+                                                          "language": "python"}, Provenance(operator="test"))], evaluator.atlas)
+    pid = g.program_id("baseline")
+    r1 = evaluator.l1(pid, g)
+    t0 = time.monotonic()
+    r2 = evaluator.l2(pid, g, r1.ws)
+    assert not r2.passed and any("hung" in r for r in r2.evaluation.reasons), r2.evaluation.reasons
+    assert time.monotonic() - t0 < 60

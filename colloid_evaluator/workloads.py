@@ -198,7 +198,10 @@ def oracle_sequence(universe: Universe, rng: random.Random, *, size: str = "quic
     write-then-read chains. ``size`` = quick (L2) or deep (L6)."""
     g = Generator(universe, rng)
     seq: list[Request] = []
-    reps = 3 if size == "quick" else 12
+    # Per-endpoint samples. A defect that fires on a fraction f of inputs survives n samples with
+    # probability (1-f)^n: with f = 1/3 that is 30% at n = 3 but 4% at n = 8 (quick, L2) and 0.8%
+    # at n = 12 (deep, L6). The L4/L5 under-load spot checks are the next layer behind it.
+    reps = 8 if size == "quick" else 12
     for _ in range(reps):
         for kind in ("search", "product", "summary", "reco", "category_top", "daily"):
             seq.append(g.make(kind))

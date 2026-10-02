@@ -89,12 +89,20 @@ def response_diff(status_a: int, body_a: bytes, status_b: int, body_b: bytes) ->
     return json_equal(ja, jb)
 
 
-def send(client: httpx.Client, req: Request) -> tuple[int, bytes]:
+# A candidate may be this many times slower than the reference on one request (or take
+# HUNG_FLOOR_S, whichever is longer) before it is declared hung. The oracle checks correctness;
+# a 50x slowdown on a single request is not a performance question any more.
+HUNG_FACTOR = 50.0
+HUNG_FLOOR_S = 10.0
+
+
+def send(client: httpx.Client, req: Request, timeout: float | None = None) -> tuple[int, bytes]:
     try:
+        kw = {} if timeout is None else {"timeout": timeout}
         if req.method == "POST":
-            r = client.post(req.path, content=req.body.encode(), headers={"content-type": "application/json"})
+            r = client.post(req.path, content=req.body.encode(), headers={"content-type": "application/json"}, **kw)
         else:
-            r = client.get(req.path)
+            r = client.get(req.path, **kw)
         return r.status_code, r.content
     except httpx.TimeoutException:
         return -1, b"timeout"
@@ -136,10 +144,19 @@ class DifferentialOracle:
                 return OracleResult(False, 0, [f"candidate failed to start: {str(exc)[:500]}"], time.monotonic() - t0)
             with ref.client(timeout=30.0) as rc, cand.client(timeout=30.0) as cc:
                 for i, req in enumerate(seq):
+                    t_ref = time.monotonic()
                     sa, ba = send(rc, req)
-                    sb, bb = send(cc, req)
+                    t_ref = time.monotonic() - t_ref
                     if sa < 0:
                         raise RuntimeError(f"reference service failed on {req.method} {req.path}: {ba[:200]!r}")
+                    budget = max(HUNG_FLOOR_S, HUNG_FACTOR * t_ref)
+                    sb, bb = send(cc, req, timeout=budget)
+                    if sb == -1:
+                        # A server that cannot answer within the budget is wedged (e.g. a spinning
+                        # event loop); every later request would time out too, so stop now.
+                        mismatches.append(f"#{i} {req.method} {req.path} [{req.kind}]: candidate hung "
+                                          f"(no response in {budget:.0f}s; reference answered in {t_ref * 1000:.0f} ms)")
+                        break
                     diff = response_diff(sa, ba, sb, bb)
                     if diff:
                         mismatches.append(f"#{i} {req.method} {req.path} [{req.kind}]: {diff}")
