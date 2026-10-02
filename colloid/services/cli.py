@@ -35,6 +35,13 @@ import sys
 from pathlib import Path
 from typing import Any
 
+MODEL_FILES = {
+    "qwen2.5-coder-7b": "/opt/colloid/models/qwen2.5-coder-7b-instruct-q4_k_m.gguf",
+    "qwen2.5-coder-3b": "/opt/colloid/models/qwen2.5-coder-3b-instruct-q4_k_m.gguf",
+    "qwen2.5-coder-1.5b": "/opt/colloid/models/qwen2.5-coder-1.5b-instruct-q4_k_m.gguf",
+}
+SWEBENCH = Path("/opt/colloid/state/swebench")
+
 
 def _providers(cfg: Any) -> dict[str, Any]:
     from colloid.adapters.llm.anthropic_provider import AnthropicProvider
@@ -44,11 +51,7 @@ def _providers(cfg: Any) -> dict[str, Any]:
     providers: dict[str, Any] = {}
     local_models = [a.model for a in cfg.llm_arms if a.provider == "local"]
     if local_models:
-        model_files = {
-            "qwen2.5-coder-3b": "/opt/colloid/models/qwen2.5-coder-3b-instruct-q4_k_m.gguf",
-            "qwen2.5-coder-1.5b": "/opt/colloid/models/qwen2.5-coder-1.5b-instruct-q4_k_m.gguf",
-        }
-        wanted = {m: model_files[m] for m in local_models if m in model_files}
+        wanted = {m: MODEL_FILES[m] for m in local_models if m in MODEL_FILES}
         server = LlamaServer(wanted)
         server.start()
         providers["local"] = OpenAICompatProvider(server.base_url, list(wanted), name="local")
@@ -100,6 +103,38 @@ def cmd_redteam_recheck(args: argparse.Namespace) -> int:
     out = recheck_breaches(args.run)
     print(json.dumps(out, indent=2, default=str))
     return 1 if any(r.get("verdict") == "genuine breach" for r in out) else 0
+
+
+def cmd_swebench(args: argparse.Namespace) -> int:
+    import subprocess
+
+    from colloid.services import swebench as swe
+    from colloid_evaluator.swebench.judge import GRADER
+
+    data = Path(args.data)
+    if args.action == "prepare":
+        return subprocess.run([args.grader_python, str(GRADER), "prepare", "--parquet", args.parquet, "--out", str(data)], check=False).returncode
+    if args.action == "ingest":
+        from colloid.adapters.lake import open_lake
+
+        swe.ingest(Path(args.out), open_lake(args.lake))
+        return 0
+    from colloid.adapters.llm.llama_server import LlamaServer
+    from colloid.adapters.llm.openai_compat import OpenAICompatProvider
+
+    tasks = swe.load_tasks(data / "tasks.jsonl")
+    sample = args.instance or json.loads((data / "sample.json").read_text())["instances"]
+    models = [m for m in (args.model or list(MODEL_FILES)) if Path(MODEL_FILES[m]).exists()]
+    server = LlamaServer({m: MODEL_FILES[m] for m in models})
+    server.start()
+    try:
+        llm = OpenAICompatProvider(server.base_url, models, name="local")
+        budget = swe.Budget(search_s=args.search_minutes * 60, llm_calls=args.llm_calls)
+        swe.run(sample, tasks, Path(args.out), llm, models, gold=data / "gold.jsonl", grader_python=args.grader_python, budget=budget,
+                keep_images=args.keep_images)
+    finally:
+        server.stop()
+    return 0
 
 
 def cmd_lake(args: argparse.Namespace) -> int:
@@ -360,6 +395,19 @@ def main(argv: list[str] | None = None) -> int:
     bo = sub.add_parser("bakeoff"); bo.add_argument("--impl", action="append"); bo.add_argument("--rate", type=float)
     bo.add_argument("--cycles", type=int, default=4); bo.add_argument("--no-capacity", action="store_true"); bo.add_argument("--out")
     bo.set_defaults(fn=cmd_bakeoff)
+    sw = sub.add_parser("swebench", help="repair real issues (SWE-bench Verified, ADR 0011)")
+    sw.add_argument("action", choices=["prepare", "run", "ingest"])
+    sw.add_argument("--data", default=str(SWEBENCH / "data"))
+    sw.add_argument("--parquet", default=str(SWEBENCH / "verified.parquet"))
+    sw.add_argument("--grader-python", default=str(SWEBENCH / "venv/bin/python"))
+    sw.add_argument("--out", default="runs/swebench")
+    sw.add_argument("--instance", action="append", help="run these instances instead of the pre-registered sample (pilot)")
+    sw.add_argument("--model", action="append", choices=list(MODEL_FILES))
+    sw.add_argument("--search-minutes", type=float, default=20.0)
+    sw.add_argument("--llm-calls", type=int, default=16)
+    sw.add_argument("--keep-images", action="store_true")
+    sw.add_argument("--lake", default="git:colloid/datalake")
+    sw.set_defaults(fn=cmd_swebench)
     d = sub.add_parser("dashboard"); d.add_argument("run"); d.add_argument("--port", type=int, default=8080); d.set_defaults(fn=cmd_dashboard)
     from colloid.adapters.target import DEFAULT_TARGET, TARGETS
 
