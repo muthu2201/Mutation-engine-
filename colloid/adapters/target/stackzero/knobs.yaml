@@ -1,0 +1,189 @@
+# StackZero knob catalogue: typed, range-limited configuration genes for every layer.
+#
+# Each entry becomes a KNOB unit in the Stack Atlas and a knob locus. Fields:
+#   type/low/high/scale/choices/default  - the safe search space (defaults = baseline)
+#   mechanism/key                        - how the target applies the value
+#   requires                             - other knobs that must hold given values (else inert)
+#   mutability                           - allowed | review-only | frozen (frozen = never mutated)
+#   resources                            - shared resources (Atlas epistasis prior)
+#   affects                              - symbol paths of units the knob configures
+#
+# Mechanisms: sysctl, thp, affinity (cpu layout), sched (service policy), nice, env (service
+# environment), uvicorn (server flag), app (shop service setting), guc_session (per-connection
+# Postgres setting), guc_postmaster (needs a Postgres restart), index (CREATE INDEX), cflag
+# (C compiler flags for libshopnative).
+
+knobs:
+  # ------------------------------------------------------------------ OS (kernel)
+  - {name: os.thp_enabled, layer: os, type: enum, choices: [always, madvise, never], default: madvise,
+     mechanism: thp, key: enabled, resources: [memory], affects: [component:alloc.malloc, component:db.postgres],
+     description: "Transparent huge pages policy (/sys/kernel/mm/transparent_hugepage/enabled)"}
+  - {name: os.thp_defrag, layer: os, type: enum, choices: [always, defer, "defer+madvise", madvise, never], default: madvise,
+     mechanism: thp, key: defrag, resources: [memory], requires: {os.thp_enabled: [always, madvise]}, affects: [component:alloc.malloc],
+     description: "THP defragmentation policy"}
+  - {name: os.sched_autogroup, layer: os, type: enum, choices: [0, 1], default: 1,
+     mechanism: sysctl, key: kernel/sched_autogroup_enabled, resources: [cpu], affects: [component:runtime.python, component:db.postgres],
+     description: "Group tasks by session for CFS fairness"}
+  - {name: os.timer_migration, layer: os, type: enum, choices: [0, 1], default: 1,
+     mechanism: sysctl, key: kernel/timer_migration, resources: [cpu], affects: [component:runtime.python],
+     description: "Allow timers to migrate between CPUs"}
+  - {name: os.somaxconn, layer: os, type: int, low: 128, high: 65535, scale: log, default: 4096,
+     mechanism: sysctl, key: net/core/somaxconn, resources: [net], affects: [component:runtime.uvicorn],
+     description: "Listen backlog cap (applies to Unix stream sockets too)"}
+  - {name: os.cpu_layout, layer: os, type: enum, choices: [shared, split_1_2, split_2_1], default: shared,
+     mechanism: affinity, key: layout, resources: [cpu], affects: [component:runtime.python, component:db.postgres],
+     description: "CPU placement of service and database on cores 1-3 (core 0 is reserved for the load generator): shared = both on 1-3; split_1_2 = service on 1, db on 2-3; split_2_1 = service on 1-2, db on 3"}
+  - {name: os.service_sched, layer: os, type: enum, choices: [other, batch], default: other,
+     mechanism: sched, key: policy, resources: [cpu], affects: [component:runtime.python],
+     description: "Scheduling policy of the service processes (SCHED_BATCH = fewer preemptions)"}
+  - {name: os.service_nice, layer: os, type: int, low: -10, high: 10, default: 0,
+     mechanism: nice, key: nice, resources: [cpu], affects: [component:runtime.python],
+     description: "Nice value of the service processes relative to the database"}
+
+  # ------------------------------------------------------------------ allocator
+  - {name: alloc.impl, layer: alloc, type: enum, choices: [glibc, jemalloc, tcmalloc, mimalloc], default: glibc,
+     mechanism: env, key: LD_PRELOAD, resources: [memory, cpu], affects: [component:alloc.malloc, component:native.libshopnative, component:runtime.python],
+     description: "malloc implementation preloaded into the service (Python + libshopnative)"}
+  - {name: alloc.glibc_arena_max, layer: alloc, type: int, low: 1, high: 64, default: 32,
+     mechanism: env, key: glibc.malloc.arena_max, requires: {alloc.impl: [glibc]}, resources: [memory],
+     affects: [component:alloc.malloc], description: "GLIBC_TUNABLES glibc.malloc.arena_max"}
+  - {name: alloc.glibc_tcache_count, layer: alloc, type: int, low: 0, high: 1024, scale: linear, default: 7,
+     mechanism: env, key: glibc.malloc.tcache_count, requires: {alloc.impl: [glibc]}, resources: [memory, cpu],
+     affects: [component:alloc.malloc], description: "GLIBC_TUNABLES glibc.malloc.tcache_count (per-thread cache bins)"}
+  - {name: alloc.glibc_trim_threshold, layer: alloc, type: int, low: 131072, high: 268435456, scale: log, default: 131072,
+     mechanism: env, key: glibc.malloc.trim_threshold, requires: {alloc.impl: [glibc]}, resources: [memory],
+     affects: [component:alloc.malloc], description: "GLIBC_TUNABLES glibc.malloc.trim_threshold (bytes)"}
+  - {name: alloc.glibc_mmap_threshold, layer: alloc, type: int, low: 131072, high: 33554432, scale: log, default: 131072,
+     mechanism: env, key: glibc.malloc.mmap_threshold, requires: {alloc.impl: [glibc]}, resources: [memory],
+     affects: [component:alloc.malloc], description: "GLIBC_TUNABLES glibc.malloc.mmap_threshold (bytes)"}
+  - {name: alloc.jemalloc_background_thread, layer: alloc, type: bool, default: false,
+     mechanism: env, key: background_thread, requires: {alloc.impl: [jemalloc]}, resources: [memory, cpu],
+     affects: [component:alloc.malloc], description: "MALLOC_CONF background_thread"}
+  - {name: alloc.jemalloc_dirty_decay_ms, layer: alloc, type: int, low: 0, high: 30000, default: 10000,
+     mechanism: env, key: dirty_decay_ms, requires: {alloc.impl: [jemalloc]}, resources: [memory],
+     affects: [component:alloc.malloc], description: "MALLOC_CONF dirty_decay_ms"}
+  - {name: alloc.jemalloc_narenas, layer: alloc, type: int, low: 1, high: 16, default: 16,
+     mechanism: env, key: narenas, requires: {alloc.impl: [jemalloc]}, resources: [memory],
+     affects: [component:alloc.malloc], description: "MALLOC_CONF narenas"}
+  - {name: alloc.tcmalloc_release_rate, layer: alloc, type: float, low: 0.0, high: 10.0, default: 1.0,
+     mechanism: env, key: TCMALLOC_RELEASE_RATE, requires: {alloc.impl: [tcmalloc]}, resources: [memory],
+     affects: [component:alloc.malloc], description: "Rate at which tcmalloc returns memory to the OS"}
+  - {name: alloc.mimalloc_purge_delay, layer: alloc, type: int, low: 0, high: 1000, default: 10,
+     mechanism: env, key: MIMALLOC_PURGE_DELAY, requires: {alloc.impl: [mimalloc]}, resources: [memory],
+     affects: [component:alloc.malloc], description: "mimalloc purge delay in ms"}
+  - {name: alloc.python_malloc, layer: alloc, type: enum, choices: [pymalloc, malloc], default: pymalloc,
+     mechanism: env, key: PYTHONMALLOC, resources: [memory, cpu], affects: [component:runtime.python, component:alloc.malloc],
+     description: "CPython small-object allocator (malloc routes every object through the system allocator)"}
+
+  # ------------------------------------------------------------------ compiler (libshopnative)
+  - {name: cc.compiler, layer: compiler, type: enum, choices: [gcc, clang], default: gcc,
+     mechanism: cflag, key: CC, resources: [cpu], affects: [component:native.libshopnative], description: "C compiler"}
+  - {name: cc.opt, layer: compiler, type: enum, choices: [O1, O2, O3, Os], default: O2,
+     mechanism: cflag, key: opt, resources: [cpu], affects: [component:native.libshopnative], description: "Optimisation level"}
+  - {name: cc.march, layer: compiler, type: enum, choices: [default, x86-64-v2, x86-64-v3, native], default: default,
+     mechanism: cflag, key: march, resources: [cpu], affects: [component:native.libshopnative], description: "Target ISA (-march)"}
+  - {name: cc.lto, layer: compiler, type: bool, default: false,
+     mechanism: cflag, key: lto, resources: [cpu], affects: [component:native.libshopnative], description: "Link-time optimisation (-flto)"}
+  - {name: cc.unroll, layer: compiler, type: bool, default: false,
+     mechanism: cflag, key: unroll, resources: [cpu], affects: [component:native.libshopnative], description: "-funroll-loops"}
+  - {name: cc.no_plt, layer: compiler, type: bool, default: false,
+     mechanism: cflag, key: no_plt, resources: [cpu], affects: [component:native.libshopnative], description: "-fno-plt (direct GOT calls for malloc/strlen)"}
+  - {name: cc.semantic_interposition, layer: compiler, type: bool, default: true,
+     mechanism: cflag, key: semantic_interposition, resources: [cpu], affects: [component:native.libshopnative],
+     description: "false = -fno-semantic-interposition (lets the compiler inline exported functions inside the library)"}
+  - {name: cc.fast_math, layer: compiler, type: bool, default: false, mutability: review-only,
+     mechanism: cflag, key: fast_math, resources: [cpu], affects: [component:native.libshopnative],
+     description: "-ffast-math (changes floating-point semantics; the oracles decide whether results still match)"}
+
+  # ------------------------------------------------------------------ runtime (Python service)
+  - {name: py.workers, layer: runtime, type: int, low: 1, high: 3, default: 1,
+     mechanism: uvicorn, key: workers, resources: [cpu, memory], affects: [component:runtime.uvicorn], description: "uvicorn worker processes"}
+  - {name: py.loop, layer: runtime, type: enum, choices: [asyncio, uvloop], default: asyncio,
+     mechanism: uvicorn, key: loop, resources: [cpu], affects: [component:runtime.uvicorn], description: "Event loop implementation"}
+  - {name: py.http, layer: runtime, type: enum, choices: [h11, httptools], default: h11,
+     mechanism: uvicorn, key: http, resources: [cpu], affects: [component:runtime.uvicorn], description: "HTTP/1.1 parser"}
+  - {name: py.access_log, layer: runtime, type: bool, default: true,
+     mechanism: uvicorn, key: access_log, resources: [cpu, io], affects: [component:runtime.uvicorn], description: "Per-request access logging"}
+  - {name: py.pool_max, layer: runtime, type: int, low: 2, high: 32, default: 10,
+     mechanism: app, key: SHOP_POOL_MAX, resources: [memory, cpu], affects: [component:runtime.python, component:db.postgres],
+     description: "Max Postgres connections per worker"}
+  - {name: py.prepare_threshold, layer: runtime, type: enum, choices: ["off", "0", "1", "5", "20"], default: "5",
+     mechanism: app, key: SHOP_PREPARE_THRESHOLD, resources: [cpu], affects: [component:runtime.python, component:db.planner],
+     description: "psycopg server-side prepared statements: executions before a query is prepared"}
+  - {name: py.gc_gen0, layer: runtime, type: int, low: 700, high: 200000, scale: log, default: 700,
+     mechanism: app, key: SHOP_GC_GEN0, resources: [cpu, memory], affects: [component:runtime.python], description: "gc generation-0 threshold"}
+  - {name: py.gc_freeze, layer: runtime, type: bool, default: false,
+     mechanism: app, key: SHOP_GC_FREEZE, resources: [cpu, memory], affects: [component:runtime.python],
+     description: "gc.freeze() after startup (startup objects skip future collections)"}
+  - {name: py.json_compact, layer: runtime, type: bool, default: false,
+     mechanism: app, key: SHOP_JSON_COMPACT, resources: [cpu, net], affects: [component:runtime.python],
+     description: "Compact JSON separators (identical JSON values, fewer bytes)"}
+
+  # ------------------------------------------------------------------ database configuration
+  - {name: db.shared_buffers_mb, layer: db, type: int, low: 16, high: 2048, scale: log, default: 128,
+     mechanism: guc_postmaster, key: shared_buffers, unit: MB, resources: [memory, io], affects: [component:db.storage],
+     description: "Postgres buffer cache"}
+  - {name: db.work_mem_kb, layer: db, type: int, low: 1024, high: 262144, scale: log, default: 4096,
+     mechanism: guc_session, key: work_mem, unit: kB, resources: [memory, cpu], affects: [component:db.planner],
+     description: "Memory per sort/hash node before spilling"}
+  - {name: db.random_page_cost, layer: db, type: float, low: 1.0, high: 8.0, default: 4.0,
+     mechanism: guc_session, key: random_page_cost, resources: [cpu], affects: [component:db.planner], description: "Planner cost of a random page read"}
+  - {name: db.effective_cache_size_mb, layer: db, type: int, low: 64, high: 8192, scale: log, default: 4096,
+     mechanism: guc_session, key: effective_cache_size, unit: MB, resources: [memory], affects: [component:db.planner],
+     description: "Planner assumption about OS + Postgres cache"}
+  - {name: db.jit, layer: db, type: bool, default: true,
+     mechanism: guc_session, key: jit, resources: [cpu], affects: [component:db.planner], description: "LLVM JIT for expensive queries"}
+  - {name: db.jit_above_cost, layer: db, type: float, low: 10000.0, high: 10000000.0, scale: log, default: 100000.0,
+     mechanism: guc_session, key: jit_above_cost, requires: {db.jit: [true]}, resources: [cpu], affects: [component:db.planner],
+     description: "Plan cost above which JIT compiles a query"}
+  - {name: db.max_parallel_workers_per_gather, layer: db, type: int, low: 0, high: 3, default: 2,
+     mechanism: guc_session, key: max_parallel_workers_per_gather, resources: [cpu], affects: [component:db.planner],
+     description: "Parallel workers per Gather node"}
+  - {name: db.parallel_setup_cost, layer: db, type: float, low: 10.0, high: 100000.0, scale: log, default: 1000.0,
+     mechanism: guc_session, key: parallel_setup_cost, resources: [cpu], affects: [component:db.planner],
+     description: "Planner cost of launching parallel workers"}
+  - {name: db.cpu_tuple_cost, layer: db, type: float, low: 0.001, high: 0.1, scale: log, default: 0.01,
+     mechanism: guc_session, key: cpu_tuple_cost, resources: [cpu], affects: [component:db.planner], description: "Planner per-row CPU cost"}
+  - {name: db.plan_cache_mode, layer: db, type: enum, choices: [auto, force_custom_plan, force_generic_plan], default: auto,
+     mechanism: guc_session, key: plan_cache_mode, resources: [cpu], affects: [component:db.planner], description: "Prepared statement plan caching"}
+  - {name: db.synchronous_commit, layer: db, type: enum, choices: ["on", "off"], default: "on", mutability: frozen,
+     mechanism: guc_session, key: synchronous_commit, resources: [io], affects: [component:db.storage],
+     description: "FROZEN: trading durability for speed is a product decision, never a mutation"}
+  - {name: db.fsync, layer: db, type: enum, choices: ["on", "off"], default: "on", mutability: frozen,
+     mechanism: guc_postmaster, key: fsync, resources: [io], affects: [component:db.storage],
+     description: "FROZEN: disabling fsync risks data corruption"}
+
+  # ------------------------------------------------------------------ database indexes
+  - {name: db.idx_orders_customer, layer: db, type: bool, default: false, mechanism: index, key: colloid_idx_orders_customer,
+     resources: [io, memory], affects: [table:orders], extra: {ddl: "CREATE INDEX colloid_idx_orders_customer ON orders (customer_id)"},
+     description: "orders(customer_id)"}
+  - {name: db.idx_orders_customer_placed, layer: db, type: bool, default: false, mechanism: index, key: colloid_idx_orders_customer_placed,
+     resources: [io, memory], affects: [table:orders], extra: {ddl: "CREATE INDEX colloid_idx_orders_customer_placed ON orders (customer_id, placed_at DESC, id DESC)"},
+     description: "orders(customer_id, placed_at desc, id desc)"}
+  - {name: db.idx_orders_placed, layer: db, type: bool, default: false, mechanism: index, key: colloid_idx_orders_placed,
+     resources: [io, memory], affects: [table:orders], extra: {ddl: "CREATE INDEX colloid_idx_orders_placed ON orders (placed_at)"},
+     description: "orders(placed_at)"}
+  - {name: db.idx_items_product, layer: db, type: bool, default: false, mechanism: index, key: colloid_idx_items_product,
+     resources: [io, memory], affects: [table:order_items], extra: {ddl: "CREATE INDEX colloid_idx_items_product ON order_items (product_id)"},
+     description: "order_items(product_id)"}
+  - {name: db.idx_items_product_cover, layer: db, type: bool, default: false, mechanism: index, key: colloid_idx_items_product_cover,
+     resources: [io, memory], affects: [table:order_items],
+     extra: {ddl: "CREATE INDEX colloid_idx_items_product_cover ON order_items (product_id) INCLUDE (order_id, quantity, unit_price_cents)"},
+     description: "order_items(product_id) INCLUDE (order_id, quantity, unit_price_cents)"}
+  - {name: db.idx_reviews_product, layer: db, type: bool, default: false, mechanism: index, key: colloid_idx_reviews_product,
+     resources: [io, memory], affects: [table:reviews], extra: {ddl: "CREATE INDEX colloid_idx_reviews_product ON reviews (product_id)"},
+     description: "reviews(product_id)"}
+  - {name: db.idx_reviews_product_created, layer: db, type: bool, default: false, mechanism: index, key: colloid_idx_reviews_product_created,
+     resources: [io, memory], affects: [table:reviews],
+     extra: {ddl: "CREATE INDEX colloid_idx_reviews_product_created ON reviews (product_id, created_at DESC, id DESC)"},
+     description: "reviews(product_id, created_at desc, id desc)"}
+  - {name: db.idx_products_category, layer: db, type: bool, default: false, mechanism: index, key: colloid_idx_products_category,
+     resources: [io, memory], affects: [table:products], extra: {ddl: "CREATE INDEX colloid_idx_products_category ON products (category_id, id)"},
+     description: "products(category_id, id)"}
+  - {name: db.idx_products_name_trgm, layer: db, type: bool, default: false, mechanism: index, key: colloid_idx_products_name_trgm,
+     resources: [io, memory], affects: [table:products], extra: {ddl: "CREATE INDEX colloid_idx_products_name_trgm ON products USING gin (name gin_trgm_ops)"},
+     description: "trigram GIN index on products.name (accelerates ILIKE '%term%')"}
+  - {name: db.idx_products_desc_trgm, layer: db, type: bool, default: false, mechanism: index, key: colloid_idx_products_desc_trgm,
+     resources: [io, memory], affects: [table:products],
+     extra: {ddl: "CREATE INDEX colloid_idx_products_desc_trgm ON products USING gin (description gin_trgm_ops)"},
+     description: "trigram GIN index on products.description"}

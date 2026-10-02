@@ -1,0 +1,100 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "colloid"
+version = "0.1.0"
+description = "Colloid: an AI-driven, cross-layer mutation engine for software stacks"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "Apache-2.0" }
+dependencies = [
+  "numpy>=2.0",
+  "scipy>=1.13",
+  "pydantic>=2.7",
+  "pyyaml>=6.0",
+  "httpx>=0.27",
+  "psycopg[binary]>=3.2",
+  "psycopg_pool>=3.2",
+  "fastapi>=0.110",
+  "uvicorn[standard]>=0.30",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "pytest-timeout>=2.3", "hypothesis>=6.100", "mypy>=1.10", "ruff>=0.5", "import-linter>=2.0", "types-PyYAML"]
+llm-local = ["llama-cpp-python[server]>=0.3.16"]
+anthropic = ["anthropic>=1.11"]
+
+[project.scripts]
+colloid = "colloid.services.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["colloid*", "colloid_evaluator*"]
+
+[tool.setuptools.package-data]
+"colloid.adapters.target.stackzero" = ["*.yaml"]
+"colloid.adapters.sandbox" = ["*.c"]
+"colloid.adapters.bench" = ["loadgen/*.go", "loadgen/go.mod"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+timeout = 900
+markers = [
+  "integration: needs the real StackZero stack (Postgres, sandbox helper, Go loadgen)",
+  "slow: long-running",
+]
+
+[tool.ruff]
+line-length = 110
+target-version = "py312"
+extend-exclude = ["targets/stackzero/frontend/node_modules"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF"]
+ignore = ["E501", "RUF001", "RUF002", "RUF003", "SIM108", "B905"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_unused_ignores = true
+plugins = ["pydantic.mypy"]
+files = ["colloid/core", "colloid/ports"]
+
+[[tool.mypy.overrides]]
+module = ["scipy.*", "sklearn.*", "yaml.*"]
+ignore_missing_imports = true
+
+[tool.importlinter]
+root_packages = ["colloid", "colloid_evaluator"]
+
+[[tool.importlinter.contracts]]
+name = "Domain core is pure: no adapters, services, evaluator or I/O libraries"
+type = "forbidden"
+source_modules = ["colloid.core"]
+forbidden_modules = [
+  "colloid.adapters", "colloid.services", "colloid_evaluator",
+  "subprocess", "socket", "sqlite3", "httpx", "psycopg", "fastapi", "uvicorn", "shutil", "tempfile",
+]
+
+[[tool.importlinter.contracts]]
+name = "Evaluator is independent of the search machinery"
+type = "forbidden"
+source_modules = ["colloid_evaluator"]
+forbidden_modules = [
+  "colloid.core.operators", "colloid.core.archive", "colloid.core.bandit", "colloid.core.selection",
+  "colloid.core.attribution", "colloid.core.splicing", "colloid.core.budget", "colloid.core.surrogate",
+  "colloid.services",
+]
+
+[[tool.importlinter.contracts]]
+name = "Ports depend only on the core"
+type = "forbidden"
+source_modules = ["colloid.ports"]
+forbidden_modules = ["colloid.adapters", "colloid.services", "colloid_evaluator"]
+
+[[tool.importlinter.contracts]]
+name = "Adapters never import services"
+type = "forbidden"
+source_modules = ["colloid.adapters"]
+forbidden_modules = ["colloid.services"]

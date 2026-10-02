@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+*.egg-info/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.hypothesis/
+targets/stackzero/native/build/
+targets/stackzero/frontend/node_modules/
+colloid/adapters/bench/loadgen/colloid-loadgen
+runs/
+*.db
+*.db-wal
+*.db-shm
