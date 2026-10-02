@@ -151,6 +151,40 @@ def rules_block() -> str:
     return "\n".join(out)
 
 
+def soak_block() -> str:
+    rep = _load("soak_calibration.json")
+    if not rep:
+        return "_not measured yet_"
+    out = [f"`{rep['target']}`, {rep['reps']} soaks per program, threshold {rep['threshold_mb_per_s']} MB/s.\n",
+           "| rule | honest soaks rejected | leak soaks caught |", "|---|---|---|"]
+    names = {"legacy": "legacy: one slope of service + database PSS", "current": "current: the service's growth, persisting into the second half"}
+    for rule, s in rep["summary"].items():
+        h, lk = s["honest_false_rejections"], s["leaks_caught"]
+        out.append(f"| {names.get(rule, rule)} | {h['rejected_soaks']}/{h['soaks']} | {lk['rejected_soaks']}/{lk['soaks']} |")
+    out += ["", "| program | group | holdout cost CI (log) | soak verdict in the run | legacy rejects | current rejects | service MB/s | database MB/s |",
+            "|---|---|---|---|---|---|---|---|"]
+
+    def med(xs: list[float]) -> str:
+        xs = sorted(xs)
+        return f"{xs[len(xs) // 2]:.2f}" if xs else "—"
+
+    def label(name: str) -> str:
+        return name[:12] if all(c in "0123456789abcdef" for c in name) else name
+
+    for r in rep["programs"]:
+        if "reps" not in r:
+            out.append(f"| `{label(r['program'])}` | {r['group']} | — | — | build failed | | | |")
+            continue
+        ci = r.get("holdout_cost_ci")
+        cis = f"[{ci[0]:+.3f}, {ci[1]:+.3f}]" if ci else "—"
+        rec = ("leak" if r.get("recorded_soak_reason") else "pass") if "recorded_soak_slope" in r else "—"
+        svc = [x["service"]["slope_mb_per_s"] for x in r["reps"] if x.get("service")]
+        db = [x["db"]["slope_mb_per_s"] for x in r["reps"] if x.get("db")]
+        n = len(r["reps"])
+        out.append(f"| `{label(r['program'])}` | {r['group']} | {cis} | {rec} | {r['legacy_rejections']}/{n} | {r['current_rejections']}/{n} | {med(svc)} | {med(db)} |")
+    return "\n".join(out)
+
+
 def ladder_block() -> str:
     gates = _load("ladder.json")
     if not gates:
@@ -173,6 +207,7 @@ def main() -> int:
         "M1_TRANSFER": transfer_block(args.cold, args.primed),
         "RULES": rules_block(),
         "LADDER": ladder_block(),
+        "SOAK": soak_block(),
         **bakeoff_blocks(),
     }
     for label, run in (("COLD", args.cold), ("PRIMED", args.primed)):

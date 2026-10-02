@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# After scripts/run-m1.sh: verify both arms, the transfer A/B, ablation of the best Go program,
-# lake ingest, rule mining, the Python canary re-run, the bake-off, the ladder, the results doc.
+# After scripts/run-m1.sh, with the judge the runs used: verify both arms, the transfer A/B,
+# ablation of the best Go program, lake ingest, rule mining. scripts/post-m1b.sh follows.
 # Every step is one Colloid process at a time (the evaluation cluster has a single owner).
 set -eu
 cd "$(dirname "$0")/.."
@@ -62,8 +62,4 @@ for name in ("stackzero", "stackzero-go", "stackzero-node"):
 json.dump(rows, open("docs/results/rules_applied.json", "w"), indent=2)
 EOF
 
-$C canaries --out $R/canaries.json > runs/canaries_py.log 2>&1 || true
-$C bakeoff --out $R/bakeoff.json > runs/bakeoff.log 2>&1
-$C ladder --cold runs/stackzero-go --primed runs/stackzero-go-primed --out $R/ladder.json
-$PY stress/render_polyglot.py --write docs/POLYGLOT_RESULTS.md
-echo "post-M1 done" > runs/post-m1.done
+echo "post-M1 A done" > runs/post-m1a.done

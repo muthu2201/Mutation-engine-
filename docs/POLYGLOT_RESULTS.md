@@ -88,6 +88,34 @@ bypassed, by the audit. The Python suite gained the same canary:
 <!-- RESULTS:CANARIES_PY -->
 <!-- /RESULTS:CANARIES_PY -->
 
+### 2.1 A flaw the judge's own evidence exposed: the soak
+
+L6 ends with a 20-second soak at 1.3× the benchmark rate. Through this experiment's runs, a
+program failed the soak when one least-squares slope of the stack's memory exceeded 0.5 MB/s.
+The stack's memory is the PSS of the service *plus* the database cluster.
+
+The cold Go run showed that threshold sat inside the spread of honest programs. Three index
+programs failed the soak as "leaks", and their holdout cost gains had CIs well above zero.
+Two of them had gene sets contained in promoted programs; one is a promoted program minus a
+one-line `toLower` rewrite. The suspected cause is the cluster's shared buffers filling as each
+new index is first read; every backend that touches a buffer page adds it to its PSS. The
+calibration below measures the service and the database separately, which tests that.
+
+The fix (ADR 0010, `colloid_evaluator/memory.py`) is a reviewed code change, not a
+self-applied one (ADR 0006):
+
+- the leak test applies to the service, the process tree a gene changes. The cluster's memory
+  is bounded by range-limited configuration, so its growth is recorded but does not decide;
+- the growth must persist into the second half of the soak, because warm-up flattens.
+
+It was applied only after both M1 arms and their verification had finished, so that the A/B
+was judged by one judge throughout. The calibration below scores both rules on the same
+samples. It runs honest programs (the baseline, and every cold-run program whose holdout gain
+was real) against builds that leak a parked goroutine on every rating lookup:
+
+<!-- RESULTS:SOAK -->
+<!-- /RESULTS:SOAK -->
+
 ---
 
 ## 3. Optimising the Go implementation, and the transfer A/B (M1b)
