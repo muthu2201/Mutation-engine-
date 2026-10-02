@@ -25,6 +25,26 @@ class RefMoved(RuntimeError):
     """The branch moved between reading its tip and updating it (another writer won)."""
 
 
+class CodeBranchRefused(RuntimeError):
+    """A data writer was pointed at a code branch (main, or any branch holding the engine)."""
+
+
+CODE_BRANCHES = frozenset({"main", "master"})
+CODE_MARKER = "pyproject.toml"  # a tree holding the engine has this at its root; data branches never do
+
+
+def is_code_branch(repo: Path, branch: str) -> bool:
+    """Data branches (the lake, materialised stacks) and code branches never mix: ``main``, and
+    any branch whose tip holds the engine, is code."""
+    if branch in CODE_BRANCHES:
+        return True
+    tip = branch_tip(repo, branch)
+    if tip is None:
+        return False
+    res = subprocess.run(["git", "-C", str(repo), "cat-file", "-e", f"{tip}:{CODE_MARKER}"], capture_output=True, check=False)
+    return res.returncode == 0
+
+
 def git(repo: Path, *args: str, data: bytes | None = None, env: Mapping[str, str] | None = None) -> bytes:
     res = subprocess.run(["git", "-C", str(repo), *args], input=data, capture_output=True, env={**os.environ, **(env or {})}, check=False)
     if res.returncode != 0:
@@ -54,6 +74,8 @@ def commit_files(repo: Path, branch: str, files: Mapping[str, bytes], message: s
     With ``replace_tree`` the commit's tree is exactly ``files``; otherwise ``files`` are
     added to / overwrite the tip's tree."""
     repo = Path(repo).resolve()
+    if is_code_branch(repo, branch):
+        raise CodeBranchRefused(f"refusing to write data to code branch {branch!r}: the lake and stacks live on their own branches")
     ref = f"refs/heads/{branch}"
     tip = branch_tip(repo, branch)
     if tip != expected_tip:
