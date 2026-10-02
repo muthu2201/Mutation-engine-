@@ -32,8 +32,8 @@ from colloid.adapters.target.stackzero.adapter import StackZeroTarget
 from colloid.core.genome import Genome
 from colloid.core.ids import sha256_hex
 from colloid.core.models import Gene, PayloadKind, Provenance, Surface
-from colloid_evaluator.cascade import Evaluator
 from colloid_evaluator.canaries.hacks import run_canaries
+from colloid_evaluator.cascade import Evaluator
 
 PROV = Provenance(operator="stress")
 SUMMARY = "py:service/shop/handlers.py::customer_summary"
