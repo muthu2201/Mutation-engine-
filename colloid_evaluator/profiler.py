@@ -34,8 +34,8 @@ from colloid.adapters.target.stackzero.adapter import StackZeroTarget
 from colloid.core.atlas import StackAtlas
 from colloid.core.genome import Genome
 from colloid.core.ids import sha256_hex
-from colloid.core.models import Gene, LeverageCurve, PayloadKind, Provenance, Surface, UnitKind
-from colloid_evaluator.protocol import Bench, run_loadgen
+from colloid.core.models import Gene, LeverageCurve, PayloadKind, Provenance, Surface, Unit, UnitKind
+from colloid_evaluator.protocol import Bench, LoadgenTimeout, run_loadgen
 from colloid_evaluator.workloads import Generator, poisson_schedule
 
 KIND_TO_ENDPOINT = {
@@ -48,10 +48,10 @@ KIND_TO_ENDPOINT = {
 
 @dataclass
 class ProfileConfig:
-    delays: tuple[float, ...] = (0.0, 0.5, 1.0)
-    measure_s: float = 5.0
+    delays: tuple[float, ...] = (0.0, 0.3, 0.6)
+    measure_s: float = 3.0
     repeats: int = 2
-    top_units: int = 10
+    top_units: int = 8
 
 
 @dataclass
@@ -173,9 +173,14 @@ class CausalProfiler:
         baseline_ws = self.bench_ws()
         rng = random.Random(4242)
         gen = Generator(self.universe, random.Random(999))
-        n = int(self.bench.rate * self.cfg.measure_s)
+        # CPU-per-request is rate-independent, so profile at LOW concurrency: a busy-wait
+        # delay serialises the async event loop, and only a near-serial load avoids the
+        # open-loop pile-up that would otherwise swamp the load generator.
+        probe_rate = 12.0
+        probe_conns = 3
+        n = int(probe_rate * self.cfg.measure_s)
         reqs = gen.mixed(n)
-        sched = poisson_schedule(n, self.bench.rate, rng)
+        sched = poisson_schedule(n, probe_rate, rng)
 
         def measure(genome: Genome, tag: str) -> float:
             ws = baseline_ws if len(genome) == 0 else self.target.materialize(genome, self.target.work / f"ws-prof-{tag}")
@@ -187,14 +192,16 @@ class CausalProfiler:
             self.target.apply_shared_state(ws.launch, db)
             svc = self.target.start_service(ws, db)
             try:
-                run_loadgen(svc.socket, gen.mixed(60), poisson_schedule(60, 40, rng), set(), [svc.cpuacct_path()], window_ms=10000, conns=32, work=self.target.work)
+                run_loadgen(svc.socket, gen.mixed(24), poisson_schedule(24, probe_rate, rng), set(), [svc.cpuacct_path()], window_ms=10000, conns=probe_conns, work=self.target.work)
                 vals = []
                 for _ in range(self.cfg.repeats):
-                    run = run_loadgen(svc.socket, reqs, sched, set(), [svc.cpuacct_path(), self.target.pg.cpuacct_path()], window_ms=10000, conns=32, work=self.target.work)
+                    run = run_loadgen(svc.socket, reqs, sched, set(), [svc.cpuacct_path(), self.target.pg.cpuacct_path()], window_ms=10000, conns=probe_conns, work=self.target.work)
                     if run.errors:
                         return float("nan")
                     vals.append(run.total_cpu_us_per_req)
                 return float(np.median(vals))
+            except (LoadgenTimeout, RuntimeError):
+                return float("nan")  # injected delay caused pile-up; skip this delay point
             finally:
                 self.target.stop_service(svc)
                 self.target.drop_db(db)
@@ -239,16 +246,27 @@ class CausalProfiler:
 
 def decorate_atlas(atlas: StackAtlas, latency: ProfileResult, leverage: ProfileResult) -> None:
     """Write measured leverage / latency share / hotness onto the Atlas as dynamic tags, and
-    propagate endpoint latency share down the request paths to the functions on them."""
-    for ep_id, share in latency.latency_share.items():
-        atlas.set_dynamic(ep_id, "latency_share", share)
-    # propagate: each function's latency share = sum of shares of endpoints whose path includes it
+    propagate endpoint latency share down the request paths to the functions on them.
+
+    ``latency.latency_share`` and ``endpoint_cpu_us`` are keyed by endpoint *symbol path*
+    (e.g. ``endpoint:GET /products/search``); the Atlas keys by unit id, so we resolve each
+    symbol path to its unit id first."""
+    def ep_uid(symbol_path: str) -> str | None:
+        uid = Unit.make_id(symbol_path)
+        return uid if uid in atlas.units else None
+
+    share_by_uid: dict[str, float] = {}
+    for ep_symbol, share in latency.latency_share.items():
+        uid = ep_uid(ep_symbol)
+        if uid is not None:
+            atlas.set_dynamic(uid, "latency_share", share)
+            share_by_uid[uid] = share
+    # propagate: each function's latency share is the max share of any endpoint path it sits on
     func_share: dict[str, float] = defaultdict(float)
     for path in atlas.paths:
         if not path.unit_ids:
             continue
-        ep = path.unit_ids[0]
-        share = latency.latency_share.get(ep, 0.0)
+        share = share_by_uid.get(path.unit_ids[0], 0.0)
         for uid in path.unit_ids[1:]:
             if atlas.units[uid].kind in (UnitKind.FUNCTION, UnitKind.QUERY):
                 func_share[uid] = max(func_share[uid], share)
@@ -258,7 +276,8 @@ def decorate_atlas(atlas: StackAtlas, latency: ProfileResult, leverage: ProfileR
     for uid, curve in leverage.leverage.items():
         atlas.leverage[uid] = curve
         atlas.set_dynamic(uid, "causal_leverage", curve.slope)
-    # dollar share ~ endpoint cpu share
     tot = sum(latency.endpoint_cpu_us.values()) or 1.0
-    for ep_id, cpu in latency.endpoint_cpu_us.items():
-        atlas.set_dynamic(ep_id, "dollar_share", cpu / tot)
+    for ep_symbol, cpu in latency.endpoint_cpu_us.items():
+        uid = ep_uid(ep_symbol)
+        if uid is not None:
+            atlas.set_dynamic(uid, "dollar_share", cpu / tot)

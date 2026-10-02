@@ -122,7 +122,10 @@ class Engine:
         self.store.put_program(Program(id=self.baseline_id, baseline_id=self.baseline_id, gene_ids=(), island="baseline", generation=0, status=ProgramStatus.EVALUATED))
         self.programs[self.baseline_id] = ProgramState(self.store.get_program(self.baseline_id), Genome(), Fitness.zero(OBJECTIVES), 0.0, self._descriptor(Genome(), Fitness.zero(OBJECTIVES), 0))
         if self.cfg.profile:
-            self._profile()
+            try:
+                self._profile()
+            except Exception as exc:  # profiling is optional; static opportunity still works
+                self.tele.emit("profile.failed", error=repr(exc)[:300])
         if self.cfg.aa_runs:
             self._aa_test()
         self._build_islands()

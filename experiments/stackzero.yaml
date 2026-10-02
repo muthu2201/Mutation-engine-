@@ -1,0 +1,41 @@
+# Full StackZero optimisation run: all layers, local LLM code arms, profiling, A/A noise floor.
+#
+# Local Qwen2.5-Coder models serve the LLM arms (no external API needed). Every other
+# mechanism is on: causal profiling seeds the budget, the A/A test establishes the noise
+# floor before any promotion, all per-region islands plus the Composition and red-team
+# islands run, Shapley pruning and splicing fire periodically, and new global-best elites
+# go through L6 deep assurance + the hidden holdout workload + a soak test.
+name: stackzero
+seed: 7
+generations: 10
+proposals_per_generation: 8
+rate_rps: null            # calibrate on the baseline
+
+pool_capacity: 10
+migration_interval: 3
+stagnation_limit: 4
+budget_epsilon: 0.2
+
+code_operators: [py_rewrite, gi_edit, llm_rewrite]
+knob_operators: [knob_sample, knob_perturb, knob_reset]
+llm_arms:
+  - {provider: local, model: qwen2.5-coder-3b, templates: [optimize, sql_batching, algorithmic]}
+  - {provider: local, model: qwen2.5-coder-1.5b, templates: [optimize]}
+redteam_island: true
+bandit_prior_mean: 0.03
+
+surrogate_keep_fraction: 0.6
+run_l5_top_k: 3
+promote: true
+
+shapley_every: 5
+shapley_max_genes: 8
+shapley_budget_subsets: 40
+splice_every: 5
+splice_pool: 10
+splice_top_k: 3
+
+profile: true
+profile_delays: [0.0, 0.5, 1.0]
+aa_runs: 12
+max_runtime_minutes: 150

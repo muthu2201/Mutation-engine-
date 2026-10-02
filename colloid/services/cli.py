@@ -119,7 +119,8 @@ def cmd_profile(args: argparse.Namespace) -> int:
     decorate_atlas(atlas, latency, lev)
     print("\nlatency share by endpoint:")
     for ep, share in sorted(latency.latency_share.items(), key=lambda kv: -kv[1]):
-        print(f"  {atlas.units[ep].name:40} {share:6.1%}")
+        name = ep.split(":", 1)[1] if ":" in ep else ep
+        print(f"  {name:40} {share:6.1%}")
     print("\ncausal leverage by unit (end-to-end gain per unit local speedup):")
     for uid, curve in sorted(lev.leverage.items(), key=lambda kv: -kv[1].slope):
         print(f"  {atlas.units[uid].name:45} {curve.slope:+.2f}  CI[{curve.slope_ci[0]:+.2f},{curve.slope_ci[1]:+.2f}]")

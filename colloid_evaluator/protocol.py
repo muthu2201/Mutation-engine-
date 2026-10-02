@@ -74,6 +74,11 @@ LOADGEN = "/opt/colloid/bin/colloid-loadgen"
 OK_STATUSES = (200, 201)
 
 
+class LoadgenTimeout(RuntimeError):
+    """The load generator could not finish in time: the candidate served requests slower
+    than they arrived (open-loop pile-up). Treated as a measurement failure, not a crash."""
+
+
 @dataclass(frozen=True)
 class Protocol:
     name: str
@@ -288,8 +293,11 @@ def run_loadgen(socket: Path, requests: Sequence[Request], schedule: Sequence[in
         def pin() -> None:
             os.sched_setaffinity(0, {int(LOADGEN_CPUS)})
 
-        span = (schedule[-1] / 1e6 if schedule else 0) + timeout_s + 30
-        proc = subprocess.run(argv, preexec_fn=pin, capture_output=True, text=True, timeout=span, check=False)
+        span = (schedule[-1] / 1e6 if schedule else 0) + timeout_s * 4 + 30
+        try:
+            proc = subprocess.run(argv, preexec_fn=pin, capture_output=True, text=True, timeout=span, check=False)
+        except subprocess.TimeoutExpired as exc:
+            raise LoadgenTimeout(f"loadgen exceeded {span:.0f}s (requests queued faster than served)") from exc
         if proc.returncode != 0:
             raise RuntimeError(f"loadgen failed: {proc.stderr[-500:]}")
         rows, cpu_t, cpu_v, bodies, summary = [], [], [], {}, {}
