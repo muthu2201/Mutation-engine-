@@ -13,6 +13,14 @@
  *                             there is no network at all; Unix sockets on the filesystem
  *                             still work, which is how the candidate reaches Postgres and how
  *                             the load generator reaches the candidate
+ *   3b. a filesystem jail (--fs-jail, candidates only): a private mount namespace in which
+ *                             the declared writable paths (--rw) are bind-mounted onto
+ *                             themselves and every other mount is remounted read-only, and
+ *                             /tmp, /var/tmp, /dev/shm are fresh private tmpfs. Nothing a
+ *                             candidate writes outside its workspace outlives it or is seen
+ *                             by another candidate (no cross-evaluation cache through /tmp),
+ *                             whatever the host's directory permissions. Connecting to Unix
+ *                             sockets needs no writable mount, so Postgres stays reachable.
  *   4. resource limits      - address space, processes, file size, open files, CPU seconds
  *   5. credential drop      - setgroups(0), setgid, setuid to an unprivileged sandbox user,
  *                             then verify root cannot be regained
@@ -29,6 +37,8 @@
  *   --uid N --gid N        drop to this user/group (required unless --no-drop)
  *   --no-drop              keep root (only used for trusted tooling, never for candidates)
  *   --netns                new, empty network namespace
+ *   --fs-jail              read-only filesystem except --rw paths; private /tmp /var/tmp /dev/shm
+ *   --rw DIR               writable path inside the jail (repeatable, absolute, resolved)
  *   --cgroup DIR           join cgroup DIR (repeatable)
  *   --cpus LIST            CPU affinity, e.g. "1-2" or "1,3"
  *   --nice N               nice value (-20..19)
@@ -52,12 +62,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/prctl.h>
+#include <sys/mount.h>
 #include <sys/resource.h>
 #include <sys/socket.h>
+#include <sys/statvfs.h>
 #include <sys/syscall.h>
 #include <unistd.h>
 
 #define MAX_CGROUPS 8
+#define MAX_RW 16
 #define MAX_FILTER 256
 
 static void die(const char *what) {
@@ -102,6 +115,83 @@ static void set_cpus(const char *list) {
 static void limit(int resource, rlim_t value, const char *name) {
     struct rlimit rl = {value, value};
     if (setrlimit(resource, &rl) != 0) die(name);
+}
+
+/* ---------------------------------------------------------------- filesystem jail */
+
+/* path == dir, or path is inside dir */
+static int is_under(const char *path, const char *dir) {
+    size_t n = strlen(dir);
+    if (n == 1 && dir[0] == '/') return 1;
+    return strncmp(path, dir, n) == 0 && (path[n] == '\0' || path[n] == '/');
+}
+
+/* /proc/self/mountinfo escapes space, tab, newline and backslash as \ooo (octal) */
+static void unescape_octal(char *s) {
+    char *r = s, *w = s;
+    while (*r) {
+        if (r[0] == '\\' && r[1] >= '0' && r[1] <= '7' && r[2] >= '0' && r[2] <= '7' && r[3] >= '0' && r[3] <= '7') {
+            *w++ = (char)(((r[1] - '0') << 6) | ((r[2] - '0') << 3) | (r[3] - '0'));
+            r += 4;
+        } else {
+            *w++ = *r++;
+        }
+    }
+    *w = '\0';
+}
+
+/* the per-mount flags a read-only bind remount must keep (it may not silently drop nosuid etc.) */
+static unsigned long kept_flags(const char *mp) {
+    struct statvfs sv;
+    unsigned long f = 0;
+    if (statvfs(mp, &sv) != 0) return 0;
+    if (sv.f_flag & ST_NOSUID) f |= MS_NOSUID;
+    if (sv.f_flag & ST_NODEV) f |= MS_NODEV;
+    if (sv.f_flag & ST_NOEXEC) f |= MS_NOEXEC;
+    if (sv.f_flag & ST_NOATIME) f |= MS_NOATIME;
+    if (sv.f_flag & ST_NODIRATIME) f |= MS_NODIRATIME;
+    if (sv.f_flag & ST_RELATIME) f |= MS_RELATIME;
+    return f;
+}
+
+static void fs_jail(const char **rw, int nrw) {
+    if (unshare(CLONE_NEWNS) != 0) die("unshare(CLONE_NEWNS)");
+    /* nothing we do below may propagate back to the host */
+    if (mount(NULL, "/", NULL, MS_REC | MS_PRIVATE, NULL) != 0) die("make mounts private");
+    /* 1. each writable path becomes its own mount, so step 2 leaves it writable */
+    for (int k = 0; k < nrw; k++)
+        if (mount(rw[k], rw[k], NULL, MS_BIND | MS_REC, NULL) != 0) die(rw[k]);
+    /* 2. every other mount read-only; /proc, /sys and /dev keep their own semantics */
+    FILE *mi = fopen("/proc/self/mountinfo", "re");
+    if (!mi) die("/proc/self/mountinfo");
+    char line[8192];
+    while (fgets(line, sizeof line, mi)) {
+        char *save = NULL, *mp = NULL;
+        int field = 0;
+        for (char *tok = strtok_r(line, " ", &save); tok; tok = strtok_r(NULL, " ", &save), field++) {
+            if (field == 4) { mp = tok; break; }  /* id parent maj:min root MOUNTPOINT ... */
+        }
+        if (!mp) continue;
+        unescape_octal(mp);
+        if (is_under(mp, "/proc") || is_under(mp, "/sys") || is_under(mp, "/dev")) continue;
+        int writable = 0;
+        for (int k = 0; k < nrw; k++) if (is_under(mp, rw[k])) writable = 1;
+        if (writable) continue;
+        if (mount(NULL, mp, NULL, MS_REMOUNT | MS_BIND | MS_RDONLY | kept_flags(mp), NULL) != 0) {
+            if (errno == ENOENT) continue;  /* shadowed by a later mount: that one is handled itself */
+            die(mp);                        /* fail closed: never run a candidate half-jailed */
+        }
+    }
+    fclose(mi);
+    /* 3. private scratch space, unless a writable path lives there (it would be hidden) */
+    static const char *const scratch[] = {"/tmp", "/var/tmp", "/dev/shm"};
+    for (size_t t = 0; t < sizeof scratch / sizeof scratch[0]; t++) {
+        if (access(scratch[t], F_OK) != 0) continue;
+        int holds_rw = 0;
+        for (int k = 0; k < nrw; k++) if (is_under(rw[k], scratch[t])) holds_rw = 1;
+        if (holds_rw) continue;
+        if (mount("tmpfs", scratch[t], "tmpfs", MS_NOSUID | MS_NODEV, "size=256m,mode=1777") != 0) die(scratch[t]);
+    }
 }
 
 /* ---------------------------------------------------------------- seccomp */
@@ -174,9 +264,10 @@ static void install_seccomp(void) {
 
 int main(int argc, char **argv) {
     long uid = -1, gid = -1, nice_v = 0, as_mb = 0, nproc = 0, fsize_mb = 0, nofile = 0, cpu_s = 0;
-    int netns = 0, seccomp = 0, no_drop = 0, have_nice = 0;
+    int netns = 0, seccomp = 0, no_drop = 0, have_nice = 0, jail = 0;
     const char *cgroups[MAX_CGROUPS];
-    int ncg = 0;
+    const char *rw[MAX_RW];
+    int ncg = 0, nrw = 0;
     const char *cpus = NULL, *sched = NULL, *dir = NULL;
     int i = 1;
     for (; i < argc; i++) {
@@ -187,6 +278,9 @@ int main(int argc, char **argv) {
         else if (strcmp(a, "--gid") == 0) { NEED_ARG(); gid = atol(argv[++i]); }
         else if (strcmp(a, "--no-drop") == 0) { no_drop = 1; }
         else if (strcmp(a, "--netns") == 0) { netns = 1; }
+        else if (strcmp(a, "--fs-jail") == 0) { jail = 1; }
+        else if (strcmp(a, "--rw") == 0) { NEED_ARG(); if (nrw >= MAX_RW) die_msg("too many --rw paths"); rw[nrw++] = argv[++i];
+                                           if (rw[nrw - 1][0] != '/') die_msg("--rw paths must be absolute"); }
         else if (strcmp(a, "--seccomp") == 0) { seccomp = 1; }
         else if (strcmp(a, "--cgroup") == 0) { NEED_ARG(); if (ncg >= MAX_CGROUPS) die_msg("too many cgroups"); cgroups[ncg++] = argv[++i]; }
         else if (strcmp(a, "--cpus") == 0) { NEED_ARG(); cpus = argv[++i]; }
@@ -215,6 +309,7 @@ int main(int argc, char **argv) {
         if (sched_setscheduler(0, pol, &sp) != 0) die("sched_setscheduler");
     }
     if (netns && unshare(CLONE_NEWNET) != 0) die("unshare(CLONE_NEWNET)");
+    if (jail) fs_jail(rw, nrw);
     if (as_mb > 0) limit(RLIMIT_AS, (rlim_t)as_mb << 20, "RLIMIT_AS");
     if (fsize_mb > 0) limit(RLIMIT_FSIZE, (rlim_t)fsize_mb << 20, "RLIMIT_FSIZE");
     if (nofile > 0) limit(RLIMIT_NOFILE, (rlim_t)nofile, "RLIMIT_NOFILE");

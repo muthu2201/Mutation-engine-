@@ -115,10 +115,15 @@ def test_portable_cpu_accounting_matches_cgroup_ground_truth(tmp_path):
             "def burn():\n    t = time.process_time()\n    while time.process_time() - t < 0.6: pass\n"
             "if __name__ == '__main__':\n    ps = [mp.Process(target=burn) for _ in range(3)]\n"
             "    [p.start() for p in ps]; [p.join() for p in ps]\n")
-    work = tmp_path / "w"
-    work.mkdir()
+    import uuid
+    from pathlib import Path
+
+    # the sandbox user must be able to traverse to its workdir (pytest's tmp_path is 0700)
+    work = Path(f"/opt/colloid/state/sbxtest/cpu-{uuid.uuid4().hex[:8]}")
+    work.mkdir(parents=True)
     os.chmod(work, 0o777)
     (work / "burn.py").write_text(code)
+    os.chmod(work / "burn.py", 0o644)
     lsb = LinuxSandbox()
     proc = lsb.spawn(SandboxSpec(argv=(PY, str(work / "burn.py")), cwd=str(work), env={}, wall_seconds=30, writable_paths=(str(work),)))
     counter = plat.CpuCounterFile(proc.pid, tmp_path / "cpu_ns", interval=0.01).start()
@@ -126,6 +131,8 @@ def test_portable_cpu_accounting_matches_cgroup_ground_truth(tmp_path):
         cgroup_ns = proc.cpu_usage_ns()  # read while the cgroup exists
         time.sleep(0.01)
     portable_ns = counter.stop()
+    rc = proc.wait(timeout=5)
     proc.kill()
+    assert rc == 0, proc.logs()
     assert cgroup_ns > 1.5e9
     assert abs(portable_ns - cgroup_ns) / cgroup_ns < 0.05, (portable_ns, cgroup_ns)

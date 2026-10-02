@@ -388,7 +388,9 @@ class LinuxSandbox:
             pw = pwd.getpwnam(spec.user)
             args += ["--uid", str(pw.pw_uid), "--gid", str(pw.pw_gid)]
         elif spec.run_as_sandbox_user:
-            args += ["--uid", str(self.uid), "--gid", str(self.gid), "--seccomp"]
+            args += ["--uid", str(self.uid), "--gid", str(self.gid), "--seccomp", "--fs-jail"]
+            for wp in spec.writable_paths:  # mountinfo shows resolved paths
+                args += ["--rw", os.path.realpath(wp)]
         else:
             args += ["--no-drop"]
         return [*args, "--", *spec.argv]

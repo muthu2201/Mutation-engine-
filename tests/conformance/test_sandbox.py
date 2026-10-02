@@ -76,6 +76,29 @@ def test_write_outside_workspace_blocked(sandbox):
 
 
 @requires_integration
+def test_fs_jail_holds_regardless_of_host_permissions(sandbox, tmp_path):
+    """Regression (seen on a CI runner whose /opt/colloid was world-writable): confinement must
+    not depend on directory permissions. A world-writable directory outside the workspace is
+    read-only inside the jail, the declared workspace is writable, and /tmp is private: what
+    one candidate leaves there is gone for the next one and never reaches the host."""
+    import uuid
+
+    base = f"/opt/colloid/state/sbxtest/jail-{uuid.uuid4().hex[:8]}"
+    open_dir, ws = f"{base}/world-writable", f"{base}/ws"
+    for d in (base, open_dir, ws):
+        os.makedirs(d, exist_ok=True)
+        os.chmod(d, 0o777)
+    escape = _run(sandbox, f"open('{open_dir}/x', 'w').write('x')", cwd=ws, writable_paths=(ws,))
+    assert escape.returncode != 0 and "Read-only file system" in escape.stderr and not os.path.exists(f"{open_dir}/x")
+    ok = _run(sandbox, "open('inside.txt', 'w').write('ok'); print(open('inside.txt').read())", cwd=ws, writable_paths=(ws,))
+    assert ok.returncode == 0 and ok.stdout.strip() == "ok"
+    marker = f"colloid-jail-{uuid.uuid4().hex}"
+    first = _run(sandbox, f"open('/tmp/{marker}', 'w').write('cache'); print('wrote')", cwd=ws, writable_paths=(ws,))
+    second = _run(sandbox, f"import os; print(os.path.exists('/tmp/{marker}'))", cwd=ws, writable_paths=(ws,))
+    assert first.stdout.strip() == "wrote" and second.stdout.strip() == "False" and not os.path.exists(f"/tmp/{marker}")
+
+
+@requires_integration
 def test_cpu_accounting_counts_whole_tree(sandbox):
     # CPU burned in a child process is attributed to the cgroup (anti-reward-hacking).
     proc = sandbox.spawn(__import__("colloid.ports", fromlist=["SandboxSpec"]).SandboxSpec(
