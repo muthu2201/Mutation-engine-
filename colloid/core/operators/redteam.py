@@ -15,6 +15,19 @@ short-circuits its result:
 
 Randomised parameters (cache key coarsening, truncation ratio, rounding digits) probe the
 *thresholds* of the oracles rather than only their existence.
+
+**Ground truth for "breach".** An attack that passes the oracle is only a breach if it could
+have changed an observable output. Wrapping a function whose result never carries the
+tampered kind of value into a response (a startup hook returning ``None``, a config parser
+returning ``bool``) is *inert*: the oracle is right to see no difference. Two defences:
+
+* targeting (:func:`attack_reachable`): attack only functions that return a value; the
+  caller also requires the unit to lie on an Atlas request path;
+* liveness confirmation (``maximal=True``): the same hack on the same unit at its extreme
+  setting (floats shifted instead of rounded, lists cut to one element, a cache that ignores
+  its key, every call replaying the previous result). If even the maximal variant passes the
+  oracle, the channel does not reach any response and the subtle variant was inert. If the
+  maximal variant is caught, the subtle one slipping through is a genuine threshold breach.
 """
 
 from __future__ import annotations
@@ -36,7 +49,30 @@ def _forward_args(args: ast.arguments) -> str:
     return ", ".join(parts)
 
 
-def redteam_variant(source: str, hack: str, rng: random.Random) -> str | None:
+def attack_reachable(source: str) -> bool:
+    """The function returns a value somewhere, so a post-processing attack can reach callers."""
+    try:
+        tree = ast.parse(textwrap.dedent(source))
+    except SyntaxError:
+        return False
+    fn = tree.body[0] if tree.body else None
+    if not isinstance(fn, (ast.FunctionDef, ast.AsyncFunctionDef)):
+        return False
+    for node in ast.walk(fn):
+        if isinstance(node, ast.Return) and node.value is not None and not (isinstance(node.value, ast.Constant) and node.value.value is None):
+            return True
+    return False
+
+
+def infer_hack(variant_source: str) -> str | None:
+    """Which hack produced a red-team variant (for re-adjudicating stored attacks)."""
+    for marker, hack in (("_rt_cache", "stale_cache"), ("_rt_last", "skip_some"), ("_rt_round", "round_floats"), ("isinstance(_rt_r, list)", "truncate")):
+        if marker in variant_source:
+            return hack
+    return None
+
+
+def redteam_variant(source: str, hack: str, rng: random.Random, *, maximal: bool = False) -> str | None:
     try:
         tree = ast.parse(textwrap.dedent(source))
     except SyntaxError:
@@ -66,7 +102,7 @@ def redteam_variant(source: str, hack: str, rng: random.Random) -> str | None:
     call = f"{aw}_rt_inner({_forward_args(fn.args)})"
     key = f"repr(({_forward_args(fn.args)},))"
     if hack == "stale_cache":
-        coarse = rng.choice(["", "[:12]", "[:24]"])
+        coarse = "[:0]" if maximal else rng.choice(["", "[:12]", "[:24]"])
         post = (
             f"    _rt_store = {fn.name}.__dict__.setdefault('_rt_cache', {{}})\n"
             f"    _rt_key = {key}{coarse}\n"
@@ -77,7 +113,7 @@ def redteam_variant(source: str, hack: str, rng: random.Random) -> str | None:
             f"    return _rt_r\n"
         )
     elif hack == "truncate":
-        ratio = rng.choice([0.5, 0.8, 0.95])
+        ratio = 0.0 if maximal else rng.choice([0.5, 0.8, 0.95])
         post = (
             f"    _rt_r = {call}\n"
             f"    if isinstance(_rt_r, dict):\n"
@@ -90,11 +126,12 @@ def redteam_variant(source: str, hack: str, rng: random.Random) -> str | None:
         )
     elif hack == "round_floats":
         digits = rng.choice([1, 2, 4])
+        tamper = "x + 1.0" if maximal else f"round(x, {digits})"
         post = (
             f"    _rt_r = {call}\n"
             f"    def _rt_round(x):\n"
             f"        if isinstance(x, float):\n"
-            f"            return round(x, {digits})\n"
+            f"            return {tamper}\n"
             f"        if isinstance(x, dict):\n"
             f"            return {{k: _rt_round(v) for k, v in x.items()}}\n"
             f"        if isinstance(x, list):\n"
@@ -105,7 +142,7 @@ def redteam_variant(source: str, hack: str, rng: random.Random) -> str | None:
     elif hack == "skip_some":
         post = (
             f"    _rt_state = {fn.name}.__dict__.setdefault('_rt_last', {{}})\n"
-            f"    if 'r' in _rt_state and hash({key}) % 3 == 0:\n"
+            f"    if 'r' in _rt_state and hash({key}) % {1 if maximal else 3} == 0:\n"
             f"        return _rt_state['r']\n"
             f"    _rt_r = {call}\n"
             f"    _rt_state['r'] = _rt_r\n"

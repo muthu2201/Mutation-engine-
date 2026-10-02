@@ -48,7 +48,7 @@ from colloid.core.operators.llm_rewrite import (
     summarize_failures,
 )
 from colloid.core.operators.py_rewrite import find_rewrites
-from colloid.core.operators.redteam import HACKS, redteam_variant
+from colloid.core.operators.redteam import HACKS, attack_reachable, redteam_variant
 from colloid.ports import LLMError, LLMProvider
 
 Arm = tuple[str, str | None, str | None]
@@ -231,21 +231,42 @@ class MutationFactory:
 
     # ------------------------------------------------------------------ redteam
     def _redteam(self, parent: Genome, parent_id: str, ctx: OperatorContext) -> ProposalResult:
-        loci = [lid for lid in ctx.code_loci() if self.atlas.units[self.atlas.loci[lid].unit_id].tags.get("language") == "python"]
+        # Only units on a request path whose function returns a value: elsewhere the attack is
+        # inert by construction and an oracle "pass" would be a false breach.
+        loci = []
+        for lid in ctx.code_loci():
+            unit = self.atlas.units[self.atlas.loci[lid].unit_id]
+            if unit.tags.get("language") == "python" and self.atlas.paths_through(unit.id) and attack_reachable(self.unit_source(unit.id, parent)):
+                loci.append(lid)
         if not loci:
-            return ProposalResult(None, reject_reason="no code locus for red team")
+            return ProposalResult(None, reject_reason="no reachable code locus for red team")
         lid = ctx.rng.choice(loci)
+        hack = ctx.rng.choice(HACKS)
+        return self._redteam_at(parent, parent_id, lid, hack, ctx.rng, maximal=False)
+
+    def redteam_maximal(self, attack: Proposal, rng: random.Random) -> Proposal | None:
+        """The same hack on the same locus at its extreme setting (liveness confirmation)."""
+        hack = attack.notes.rsplit(":", 1)[-1].strip()
+        if hack not in HACKS or not attack.changed_loci:
+            return None
+        parent = Genome.of([g for g in attack.genome if g.locus_id != attack.changed_loci[0]], self.atlas)
+        res = self._redteam_at(parent, attack.parent_id, attack.changed_loci[0], hack, rng, maximal=True)
+        return res.proposal
+
+    def _redteam_at(self, parent: Genome, parent_id: str, lid: str, hack: str, rng: random.Random, *, maximal: bool) -> ProposalResult:
         unit = self.atlas.units[self.atlas.loci[lid].unit_id]
         source = self.unit_source(unit.id, parent)
-        new = redteam_variant(source, ctx.rng.choice(HACKS), ctx.rng)
+        new = redteam_variant(source, hack, rng, maximal=maximal)
         if new is None:
             return ProposalResult(None, reject_reason="red-team variant not produced")
-        gene = code_gene(lid, unit, source, new, Provenance(operator="redteam", notes="deliberate evaluator attack"))
+        kind = "maximal liveness probe" if maximal else "deliberate evaluator attack"
+        gene = code_gene(lid, unit, source, new, Provenance(operator="redteam", notes=f"{kind}: {hack}"))
         try:
             child = parent.with_gene(gene, self.atlas)
         except LocusConflict:
             return ProposalResult(None, reject_reason="locus conflict")
-        return ProposalResult(Proposal(child, parent_id, "redteam", changed_loci=(lid,), notes="red-team attack"))
+        label = "red-team maximal" if maximal else "red-team attack"
+        return ProposalResult(Proposal(child, parent_id, "redteam", changed_loci=(lid,), notes=f"{label} on {unit.name}: {hack}"))
 
     # ------------------------------------------------------------------ splice
     def splice(self, union_genes: Sequence[Gene], parents: Sequence[str]) -> ProposalResult:

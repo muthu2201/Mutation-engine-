@@ -172,3 +172,75 @@ def _verify(store: Any, run: str, top: int, cycles: int, program_ids: list[str] 
            "programs": list(records.values())}
     store.kv_set("verification", out)
     return out
+
+
+def recheck_breaches(run: str, log: Callable[[str], None] = print) -> list[dict[str, Any]]:
+    """Re-adjudicate a finished run's red-team breach alerts with the liveness probe.
+
+    For each flagged program the hack is identified from its gene, the *maximal* version of the
+    same hack is built on the same unit's baseline source, and it is sent through L0-L2. Caught
+    means the channel is live and the breach is genuine. Passing means the attack was inert.
+    The verdicts are stored under ``redteam_recheck``. The original alerts are left as they
+    were, because the store is an audit log."""
+    import random
+
+    from colloid.core.models import Provenance
+    from colloid.core.operators.base import code_gene
+    from colloid.core.operators.redteam import infer_hack, redteam_variant
+
+    store = open_store(_store_url(run))
+    out: list[dict[str, Any]] = []
+    ev: Evaluator | None = None
+    try:
+        flagged = [a.program_id for a in store.alerts() if a.kind == "redteam_breach" and a.program_id]
+        if not flagged:
+            log("no red-team breach alerts in this run")
+            return out
+        setup = store.kv_get("setup") or {}
+        baseline = next(p for p in store.programs(island="baseline"))
+        ev = Evaluator(StackZeroTarget(), StaticPriceCostModel(), rate=setup.get("rate_rps"), log=log)
+        ev.setup(baseline.id)
+        rng = random.Random(0)
+        for pid in flagged:
+            prog = store.get_program(pid)
+            attack = [g for g in store.genes(prog.gene_ids) if g.provenance.operator == "redteam"]
+            rec: dict[str, Any] = {"program": pid}
+            if not attack:
+                rec["verdict"] = "unknown (no red-team gene)"
+                out.append(rec)
+                continue
+            gene = attack[0]
+            unit = ev.atlas.units[ev.atlas.loci[gene.locus_id].unit_id]
+            hack = infer_hack(str(gene.payload.get("source", "")))
+            base_src = str(unit.tags["baseline_source"])
+            rec.update(unit=unit.name, hack=hack, on_request_path=bool(ev.atlas.paths_through(unit.id)))
+            maximal = redteam_variant(base_src, hack, rng, maximal=True) if hack else None
+            if maximal is None:
+                rec["verdict"] = "unknown (could not build the maximal variant)"
+                out.append(rec)
+                continue
+            g = code_gene(gene.locus_id, unit, base_src, maximal, Provenance(operator="redteam", notes=f"maximal liveness probe: {hack}"))
+            genome = Genome.of([g], ev.atlas)
+            mpid = genome.program_id(baseline.id)
+            r0 = ev.l0(mpid, genome)
+            r1 = ev.l1(mpid, genome) if r0.passed else None
+            if r1 is None or not r1.passed or r1.ws is None:
+                rec["verdict"] = "unknown (maximal variant stopped before the oracle)"
+            else:
+                r2 = ev.l2(mpid, genome, r1.ws)
+                if r2.evaluation.verdict == Verdict.ERROR:
+                    rec["verdict"] = "unknown (oracle infrastructure error)"
+                elif r2.passed:
+                    rec["verdict"] = "inert"
+                    rec["detail"] = "the maximal variant also passes the oracle: the tampering never reaches a response"
+                else:
+                    rec["verdict"] = "genuine breach"
+                    rec["detail"] = "maximal variant caught: " + (r2.evaluation.reasons or ("",))[0][:200]
+            log(f"[{pid[:10]}] {rec}")
+            out.append(rec)
+        store.kv_set("redteam_recheck", out)
+        return out
+    finally:
+        if ev is not None:
+            ev.shutdown()
+        store.close()

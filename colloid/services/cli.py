@@ -9,6 +9,7 @@
     colloid dashboard RUN [--port 8080]  serve the live dashboard for a run
     colloid baseline                     measure the baseline and print the SLO/cost
     colloid verify RUN [--top 5]         post-run L6 + high-replication re-measure of the best programs
+    colloid redteam-recheck RUN          re-adjudicate a run's red-team breach alerts (live vs inert attack)
 
 Experiments are YAML files under experiments/ (data, never code).
 """
@@ -72,6 +73,14 @@ def cmd_verify(args: argparse.Namespace) -> int:
     out = verify_run(args.run, top=args.top, cycles=args.cycles, program_ids=args.program or None)
     print(json.dumps(out, indent=2, default=str))
     return 0
+
+
+def cmd_redteam_recheck(args: argparse.Namespace) -> int:
+    from colloid.services.verify import recheck_breaches
+
+    out = recheck_breaches(args.run)
+    print(json.dumps(out, indent=2, default=str))
+    return 1 if any(r.get("verdict") == "genuine breach" for r in out) else 0
 
 
 def cmd_canaries(args: argparse.Namespace) -> int:
@@ -204,6 +213,7 @@ def main(argv: list[str] | None = None) -> int:
     rp = sub.add_parser("report"); rp.add_argument("run"); rp.set_defaults(fn=cmd_report)
     v = sub.add_parser("verify"); v.add_argument("run"); v.add_argument("--top", type=int, default=5); v.add_argument("--cycles", type=int, default=6)
     v.add_argument("--program", action="append", help="verify only these program ids (repeatable)"); v.set_defaults(fn=cmd_verify)
+    rr = sub.add_parser("redteam-recheck"); rr.add_argument("run"); rr.set_defaults(fn=cmd_redteam_recheck)
     d = sub.add_parser("dashboard"); d.add_argument("run"); d.add_argument("--port", type=int, default=8080); d.set_defaults(fn=cmd_dashboard)
     args = p.parse_args(argv)
     return int(args.fn(args))

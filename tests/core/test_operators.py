@@ -142,3 +142,61 @@ def test_redteam_variants_build():
     for v in built:
         if v is not None:
             ast.parse(v)
+
+
+# ---------------------------------------------------------------- red team: targeting + liveness
+LIFESPAN_LIKE = """async def lifespan(receive, send):
+    while True:
+        message = await receive()
+        if message["type"] == "lifespan.shutdown":
+            await send({"type": "done"})
+            return
+"""
+LIST_FN = """def top(xs, n):
+    out = []
+    for x in sorted(xs)[:n]:
+        out.append(x * 1.5)
+    return out
+"""
+
+
+def _compile(src, name):
+    ns = {}
+    exec(compile(src, "<redteam>", "exec"), ns)
+    return ns[name]
+
+
+def test_redteam_targets_only_value_returning_functions():
+    from colloid.core.operators.redteam import attack_reachable
+
+    assert not attack_reachable(LIFESPAN_LIKE)  # the run's first false breach: returns None
+    assert attack_reachable(LIST_FN)
+    assert attack_reachable("def _bool(v, d):\n    return d if v is None else v == '1'\n")  # reachable; path filter excludes config
+
+
+def test_redteam_maximal_variants_are_extreme():
+    import random
+
+    from colloid.core.operators.redteam import redteam_variant
+
+    rng = random.Random(0)
+    base = _compile(LIST_FN, "top")
+    xs = [5.0, 1.0, 3.0, 2.0, 4.0]
+    assert base(xs, 4) == [1.5, 3.0, 4.5, 6.0]
+    trunc = _compile(redteam_variant(LIST_FN, "truncate", rng, maximal=True), "top")
+    assert trunc(xs, 4) == [1.5]  # cut to one element
+    shifted = _compile(redteam_variant(LIST_FN, "round_floats", rng, maximal=True), "top")
+    assert shifted(xs, 4) == [2.5, 4.0, 5.5, 7.0]  # every float moved, not just coarsened
+    for _ in range(20):  # the subtle variants stay subtle: same length, values within rounding
+        sub = _compile(redteam_variant(LIST_FN, "round_floats", rng), "top")(xs, 4)
+        assert len(sub) == 4 and all(abs(a - b) <= 0.05 for a, b in zip(sub, base(xs, 4), strict=True))
+
+
+def test_infer_hack_roundtrip():
+    import random
+
+    from colloid.core.operators.redteam import HACKS, infer_hack, redteam_variant
+
+    for hack in HACKS:
+        assert infer_hack(redteam_variant(LIST_FN, hack, random.Random(1))) == hack
+    assert infer_hack(LIST_FN) is None

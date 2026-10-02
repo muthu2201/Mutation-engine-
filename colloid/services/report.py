@@ -124,6 +124,7 @@ def _build(store: Any, run: str) -> dict[str, Any]:
         "alerts": [a.model_dump() for a in store.alerts()],
         "aa_test": aa,
         "verification": store.kv_get("verification"),
+        "redteam_recheck": store.kv_get("redteam_recheck"),
         "profile": profile,
         "result": result,
         "event_kinds": event_kinds,

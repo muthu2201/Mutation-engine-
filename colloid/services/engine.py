@@ -374,15 +374,53 @@ class Engine:
         self.tele.emit("cascade.reject", island=rec["island"], stage=stage.value, operator=rec["arm"][0], reason=reason[:160])
 
     def _redteam_outcome(self, rec: dict[str, Any], r2: StageResult) -> None:
-        if r2.passed:  # a red-team attack that the oracle did NOT catch is an evaluator breach
-            self.store.put_alert(Alert(id="breach-" + rec["pid"][:12], kind="redteam_breach", severity="critical",
-                                       message=f"red-team program {rec['pid']} passed L2 (oracle breach): {rec['prop'].notes}", program_id=rec["pid"]))
-            self.tele.emit("redteam.breach", program=rec["pid"], notes=rec["prop"].notes)
-            self.bandit.update(rec["ctx"], rec["arm"], 0.1)
-        else:
-            self.tele.emit("redteam.caught", program=rec["pid"], stage="L2")
-            self.bandit.update(rec["ctx"], rec["arm"], 0.0)
+        """Caught, inert, or a genuine breach. A red-team attack that passes the oracle is only a
+        breach if the attack channel demonstrably reaches a response: the *maximal* version of the
+        same hack on the same unit must be caught by the oracle. If even that passes, the attack
+        was inert (its tampering never reaches an output) and the oracle was right."""
         self.store.set_status(rec["pid"], ProgramStatus.REJECTED)
+        if not r2.passed:
+            self.tele.emit("redteam.caught", program=rec["pid"], stage="L2", notes=rec["prop"].notes)
+            self.bandit.update(rec["ctx"], rec["arm"], 0.0)
+            return
+        verdict, detail = self._redteam_liveness(rec)
+        if verdict == "inert":
+            self.tele.emit("redteam.inert", program=rec["pid"], notes=rec["prop"].notes, probe=detail)
+            self.bandit.update(rec["ctx"], rec["arm"], 0.0)
+            return
+        confirmed = verdict == "live"
+        self.store.put_alert(Alert(id="breach-" + rec["pid"][:12], kind="redteam_breach", severity="critical",
+                                   message=(f"red-team program {rec['pid']} passed L2 ({rec['prop'].notes}); "
+                                            + ("its maximal variant is caught, so the attack channel is live: genuine oracle threshold breach"
+                                               if confirmed else f"liveness unconfirmed ({detail}): treated as a breach")),
+                                   program_id=rec["pid"]))
+        self.tele.emit("redteam.breach", program=rec["pid"], notes=rec["prop"].notes, confirmed=confirmed, probe=detail)
+        self.bandit.update(rec["ctx"], rec["arm"], 0.1)
+
+    def _redteam_liveness(self, rec: dict[str, Any]) -> tuple[str, str]:
+        probe = self.factory.redteam_maximal(rec["prop"], self.rng)
+        if probe is None:
+            return "unknown", "no maximal variant"
+        pid = probe.genome.program_id(self.baseline_id)
+        for g in probe.genome:
+            self.store.put_gene(g)
+        self.store.put_program(Program(id=pid, baseline_id=self.baseline_id, gene_ids=probe.genome.gene_ids, island="redteam",
+                                       generation=self.programs[rec["pid"]].program.generation, parent_ids=(rec["pid"],),
+                                       operator="redteam-maximal", status=ProgramStatus.REJECTED))
+        r0 = self.evaluator.l0(pid, probe.genome)
+        self.store.put_evaluation(r0.evaluation)
+        r1 = self.evaluator.l1(pid, probe.genome) if r0.passed else None
+        if r1 is not None:
+            self.store.put_evaluation(r1.evaluation)
+        if r1 is None or not r1.passed or r1.ws is None:
+            return "unknown", f"maximal variant {pid[:10]} stopped before the oracle"
+        r2 = self.evaluator.l2(pid, probe.genome, r1.ws)
+        self.store.put_evaluation(r2.evaluation)
+        if r2.evaluation.verdict == Verdict.ERROR:
+            return "unknown", f"maximal variant {pid[:10]}: oracle infrastructure error"
+        if r2.passed:
+            return "inert", f"maximal variant {pid[:10]} also passes the oracle"
+        return "live", f"maximal variant {pid[:10]} caught: {(r2.evaluation.reasons or ('',))[0][:120]}"
 
     def _l4(self, gen: int, recs: list[dict[str, Any]]) -> list[dict[str, Any]]:
         # L3 surrogate rank: keep the top fraction per island

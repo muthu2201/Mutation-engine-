@@ -82,13 +82,13 @@ def run_block(run: str) -> str:
         out.append("| program | island | L5 cost (in-run) | L6 | holdout cost | replicate cost | replicate p50 | replicate mem | decision |")
         out.append("|---|---|---|---|---|---|---|---|---|")
 
-        def _g(d: dict | None) -> str:
-            return f"{d['gain_pct']:+.1f}% [{d['ci_pct'][1]:+.1f}, {d['ci_pct'][0]:+.1f}]" if d else "—"
+        def _g(d: dict | None) -> str:  # verify stores ci_pct ascending: [lower, upper]
+            return f"{d['gain_pct']:+.1f}% [{d['ci_pct'][0]:+.1f}, {d['ci_pct'][1]:+.1f}]" if d else "—"
 
         for r in ver["programs"]:
             rep_ = r.get("replicate", {})
             hold = r.get("holdout")
-            hold_s = f"{hold['gain_pct']:+.1f}% [{hold['ci_pct'][1]:+.1f}, {hold['ci_pct'][0]:+.1f}] p={hold['p']:.3f}" if hold else "—"
+            hold_s = f"{hold['gain_pct']:+.1f}% [{hold['ci_pct'][0]:+.1f}, {hold['ci_pct'][1]:+.1f}] p={hold['p']:.3f}" if hold else "—"
             out.append(f"| `{r['program'][:10]}` | {r['island']} | {r['l5_cost_gain_pct']:+.1f}% | {r.get('l6')} | {hold_s} | "
                        f"{_g(rep_.get('cost'))} | {_g(rep_.get('p50'))} | {_g(rep_.get('mem'))} | {r.get('decision', '—')} |")
         out.append("")
@@ -119,8 +119,19 @@ def run_block(run: str) -> str:
         out.append(aa_block(aa, "A/A noise floor"))
     # alerts / red-team
     breaches = [a for a in rep.get("alerts", []) if a["kind"] == "redteam_breach"]
-    out.append(f"**Red-team island**: {kinds.get('redteam.caught', 0)} attacks generated and caught by the oracle, "
-               f"**{len(breaches)} evaluator breaches** (a breach would be a candidate that fooled the evaluator).\n")
+    rt_l0 = sum(1 for e in events if e.get("kind") == "cascade.reject" and e.get("island") == "redteam")
+    out.append(f"**Red-team island**: {rt_l0} attacks rejected at L0/L1, {kinds.get('redteam.caught', 0)} caught by the L2 oracle, "
+               f"{kinds.get('redteam.inert', 0)} classified inert in-run, **{len(breaches)} breach alert(s)** raised in-run.\n")
+    recheck = rep.get("redteam_recheck") or []
+    if recheck:
+        out.append("Re-adjudication of the breach alerts (`colloid redteam-recheck`: the maximal version of the same hack on the "
+                   "same unit is sent through the oracle; caught = live channel = genuine breach, passes = inert attack):\n")
+        out.append("| flagged program | unit | on a request path | hack | verdict |")
+        out.append("|---|---|---|---|---|")
+        for r in recheck:
+            out.append(f"| `{r['program'][:10]}` | {r.get('unit', '—')} | {r.get('on_request_path', '—')} | {r.get('hack', '—')} | **{r.get('verdict')}** |")
+        genuine = sum(1 for r in recheck if r.get("verdict") == "genuine breach")
+        out.append(f"\n**Genuine evaluator breaches after re-adjudication: {genuine}.**\n")
     susp = [a for a in rep.get("alerts", []) if a["kind"] == "suspicion"]
     if susp:
         out.append(f"**Suspicion triggers**: {len(susp)} gains exceeded the 2× threshold and were sent to mandatory deep review.\n")
