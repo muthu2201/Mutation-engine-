@@ -30,7 +30,6 @@ from __future__ import annotations
 
 import contextlib
 import math
-import os
 import secrets
 import shutil
 import time
@@ -41,6 +40,7 @@ from typing import Any
 
 import numpy as np
 
+from colloid.adapters.platform import pin_cpus
 from colloid.adapters.target.stackzero.adapter import GeneApplyError, StackZeroTarget
 from colloid.core.genome import Genome
 from colloid.core.ids import content_hash
@@ -111,6 +111,7 @@ class Evaluator:
         self._ws_cache: OrderedDict[str, Workspace] = OrderedDict()
         self.max_workspaces = max_workspaces
         self.calibration: dict[str, Any] | None = None
+        self.pinned = False  # whether the OS let us pin the evaluator/loadgen CPU (recorded in the fingerprint)
         atlas = target.atlas_seed()
         self.atlas = atlas
         self.knobs = {k.name: k for k in target.knobs()}
@@ -122,7 +123,8 @@ class Evaluator:
 
     # ------------------------------------------------------------------ setup
     def setup(self, baseline_program_id: str) -> dict[str, Any]:
-        os.sched_setaffinity(0, {0})  # the evaluator and load generator share CPU 0; the target owns 1-3
+        # the evaluator and load generator share CPU 0; the target owns 1-3 (recorded if the OS cannot pin)
+        self.pinned = pin_cpus({0})
         self.target.prepare()
         with self.target.pg.superuser("shop_template") as conn:
             self.universe = Universe.load(conn)
@@ -137,7 +139,7 @@ class Evaluator:
             self.rate = float(self.calibration["rate_rps"])
             self.bench.rate = self.rate
         self.oracle = oracles.DifferentialOracle(self.target, self.universe, self._baseline_ws)
-        return {"rate_rps": self.rate, "calibration": self.calibration, "fingerprint": fingerprint()}
+        return {"rate_rps": self.rate, "calibration": self.calibration, "fingerprint": {**fingerprint(), "evaluator_pinned": self.pinned}}
 
     @property
     def baseline_ws(self) -> Workspace:

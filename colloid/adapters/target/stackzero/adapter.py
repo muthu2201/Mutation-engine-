@@ -39,6 +39,7 @@ import httpx
 
 from colloid.adapters.code.c_clang import ClangCCode
 from colloid.adapters.code.python_ast import PythonAstCode
+from colloid.adapters.sandbox import select_sandbox
 from colloid.adapters.sandbox.linux import LinuxProcess, LinuxSandbox
 from colloid.adapters.target.stackzero.atlas_builder import C_FILES, PY_FILES, build_static_atlas
 from colloid.adapters.target.stackzero.catalog import launch_config, load_knobs, pg_options
@@ -53,7 +54,9 @@ from colloid.ports import BuildResult, CodeUnit, SandboxSpec, Workspace
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
 TARGET_ROOT = REPO_ROOT / "targets" / "stackzero"
-STATE = Path("/opt/colloid/state")
+# Engine state (Postgres cluster, build cache, sandbox logs). /opt/colloid/state on Linux bench
+# hosts; a per-user directory elsewhere; COLLOID_STATE overrides both.
+STATE = Path(os.environ.get("COLLOID_STATE") or ("/opt/colloid/state" if sys.platform.startswith("linux") else Path.home() / ".colloid" / "state"))
 
 
 class GeneApplyError(RuntimeError):
@@ -120,7 +123,7 @@ class StackZeroTarget:
         self.root = root
         self.state = state
         self.python = python
-        self.sandbox = sandbox or LinuxSandbox()
+        self.sandbox = sandbox or select_sandbox()
         self._knobs = load_knobs(observe_system=observe_system)
         self._knob_by_name = {k.name: k for k in self._knobs}
         self.pg = PostgresCluster(self.sandbox, root=state / "pg")

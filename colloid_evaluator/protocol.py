@@ -56,6 +56,7 @@ from typing import Any
 
 import numpy as np
 
+from colloid.adapters.platform import capabilities, pin_cpus, pss_mb
 from colloid.adapters.target.stackzero.adapter import StackZeroTarget
 from colloid.adapters.target.stackzero.catalog import LOADGEN_CPUS
 from colloid.core.stats import (
@@ -232,17 +233,7 @@ def summary(cmp: Comparison, label: str, usd_cpu_s: float, usd_gb_s: float) -> d
 
 
 def _pss_mb(pids: Sequence[int]) -> float:
-    total_kb = 0
-    for pid in pids:
-        try:
-            with open(f"/proc/{pid}/smaps_rollup") as fh:
-                for line in fh:
-                    if line.startswith("Pss:"):
-                        total_kb += int(line.split()[1])
-                        break
-        except (FileNotFoundError, ProcessLookupError, PermissionError):
-            continue
-    return total_kb / 1024.0
+    return pss_mb(pids)  # smaps_rollup PSS on Linux; psutil PSS/USS elsewhere (colloid.adapters.platform)
 
 
 def _read_cpu(files: Sequence[str]) -> int:
@@ -290,14 +281,22 @@ def run_loadgen(socket: Path, requests: Sequence[Request], schedule: Sequence[in
         argv = [LOADGEN, "-socket", str(socket), "-requests", req_path, "-conns", str(conns), "-timeout", f"{timeout_s}s",
                 "-window-ms", str(window_ms), "-cpu-files", ",".join(cpu_files), "-out", out_path]
 
-        def pin() -> None:
-            os.sched_setaffinity(0, {int(LOADGEN_CPUS)})
-
         span = (schedule[-1] / 1e6 if schedule else 0) + timeout_s * 4 + 30
+        exact_pin = capabilities().cpu_affinity == "sched"  # pin before exec; elsewhere pin right after spawn
+
+        def pin() -> None:
+            pin_cpus({int(LOADGEN_CPUS)})
+
+        popen = subprocess.Popen(argv, preexec_fn=pin if exact_pin else None, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        if not exact_pin:
+            pin_cpus({int(LOADGEN_CPUS)}, popen.pid)
         try:
-            proc = subprocess.run(argv, preexec_fn=pin, capture_output=True, text=True, timeout=span, check=False)
+            stdout, stderr = popen.communicate(timeout=span)
         except subprocess.TimeoutExpired as exc:
+            popen.kill()
+            popen.communicate()
             raise LoadgenTimeout(f"loadgen exceeded {span:.0f}s (requests queued faster than served)") from exc
+        proc = subprocess.CompletedProcess(argv, popen.returncode, stdout, stderr)
         if proc.returncode != 0:
             raise RuntimeError(f"loadgen failed: {proc.stderr[-500:]}")
         rows, cpu_t, cpu_v, bodies, summary = [], [], [], {}, {}

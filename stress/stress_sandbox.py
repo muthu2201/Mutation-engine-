@@ -28,13 +28,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from colloid.adapters.sandbox.linux import (
-    CGROUP_ROOT,
-    CONTROLLERS,
-    PARENT,
-    LinuxSandbox,
-    cleanup_stale_cgroups,
-)
+from colloid.adapters.sandbox.linux import LinuxSandbox, cleanup_stale_cgroups, sandbox_cgroup_parents
 from colloid.ports import SandboxSpec
 
 PY = sys.executable
@@ -57,8 +51,7 @@ SHOULD_FAIL = {"mem_grow", "sig_ignore", "egress", "escalate", "escape_write"}
 
 def count_cgroups() -> int:
     total = 0
-    for ctrl in CONTROLLERS:
-        base = CGROUP_ROOT / ctrl / PARENT
+    for base in sandbox_cgroup_parents():  # v1: one parent per controller; v2: one unified parent
         if base.exists():
             total += sum(1 for d in base.iterdir() if d.is_dir())
     return total

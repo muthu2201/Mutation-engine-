@@ -19,6 +19,8 @@ the machine's own configuration rather than what the catalogue author assumed.
 
 from __future__ import annotations
 
+import platform
+import sysconfig
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
@@ -29,10 +31,13 @@ from colloid.core.knobs import KnobSpec
 
 CATALOG = Path(__file__).with_name("knobs.yaml")
 
+# Debian/Ubuntu multiarch directory of this machine (x86_64-linux-gnu, aarch64-linux-gnu, ...),
+# so the allocator knobs work on arm64 hosts and containers too.
+MULTIARCH = sysconfig.get_config_var("MULTIARCH") or f"{platform.machine()}-linux-gnu"
 ALLOCATOR_LIBS = {
-    "jemalloc": "/usr/lib/x86_64-linux-gnu/libjemalloc.so.2",
-    "tcmalloc": "/usr/lib/x86_64-linux-gnu/libtcmalloc_minimal.so.4",
-    "mimalloc": "/usr/lib/x86_64-linux-gnu/libmimalloc.so.2",
+    "jemalloc": f"/usr/lib/{MULTIARCH}/libjemalloc.so.2",
+    "tcmalloc": f"/usr/lib/{MULTIARCH}/libtcmalloc_minimal.so.4",
+    "mimalloc": f"/usr/lib/{MULTIARCH}/libmimalloc.so.2",
 }
 CPU_LAYOUTS = {"shared": ("1-3", "1-3"), "split_1_2": ("1", "2-3"), "split_2_1": ("1-2", "3")}
 LOADGEN_CPUS = "0"

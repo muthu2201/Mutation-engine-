@@ -18,6 +18,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from colloid.adapters.platform import fingerprint_extras
 from colloid.ports import PORT_APIS
 
 
@@ -71,9 +72,11 @@ def fingerprint(repo: str = str(Path(__file__).resolve().parents[1])) -> dict[st
         "sbx_exec_sha": _file_hash("/opt/colloid/bin/sbx-exec"),
         "repo_commit": _cmd("git", "-C", repo, "rev-parse", "--short", "HEAD"),
         "port_apis": dict(PORT_APIS),
+        **fingerprint_extras(),
     }
 
 
 def comparable(a: dict[str, Any], b: dict[str, Any]) -> bool:
-    keys = ("kernel", "cpu_model", "microcode", "hypervisor", "cpu_count", "gcc", "python", "postgres", "loadgen_sha")
-    return all(a.get(k) == b.get(k) for k in keys)
+    keys = ("kernel", "cpu_model", "microcode", "hypervisor", "cpu_count", "gcc", "python", "postgres", "loadgen_sha", "memory_metric")
+    backend = [(x.get("capabilities") or {}).get("sandbox_backend") for x in (a, b)]
+    return all(a.get(k) == b.get(k) for k in keys) and backend[0] == backend[1]

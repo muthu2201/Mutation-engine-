@@ -38,6 +38,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
@@ -59,6 +60,32 @@ type result struct {
 	body              []byte
 }
 
+// parseCPU returns cumulative CPU nanoseconds from one counter file. Three formats:
+// a cgroup v1 cpuacct.usage (a single integer, ns), a cgroup v2 cpu.stat ("usage_usec N"
+// among other lines, microseconds), or a portable counter file written by the engine's
+// psutil sampler (a single integer, ns). Unreadable or malformed input returns -1.
+func parseCPU(name string, data []byte) int64 {
+	text := strings.TrimSpace(string(data))
+	if filepath.Base(name) == "cpu.stat" {
+		for _, line := range strings.Split(text, "\n") {
+			fields := strings.Fields(line)
+			if len(fields) == 2 && fields[0] == "usage_usec" {
+				v, err := strconv.ParseInt(fields[1], 10, 64)
+				if err != nil {
+					return -1
+				}
+				return v * 1000
+			}
+		}
+		return -1
+	}
+	v, err := strconv.ParseInt(text, 10, 64)
+	if err != nil {
+		return -1
+	}
+	return v
+}
+
 func readCPU(files []string) []int64 {
 	out := make([]int64, len(files))
 	for i, f := range files {
@@ -67,11 +94,7 @@ func readCPU(files []string) []int64 {
 			out[i] = -1
 			continue
 		}
-		v, err := strconv.ParseInt(strings.TrimSpace(string(data)), 10, 64)
-		if err != nil {
-			v = -1
-		}
-		out[i] = v
+		out[i] = parseCPU(f, data)
 	}
 	return out
 }

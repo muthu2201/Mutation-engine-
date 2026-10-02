@@ -1,4 +1,4 @@
-"""Linux sandbox adapter: cgroups v1 + network namespace + rlimits + uid drop + seccomp.
+"""Linux sandbox adapter: cgroups (v1 or unified v2) + network namespace + rlimits + uid drop + seccomp.
 
 Isolation levels (blueprint D4) map onto this adapter as follows:
 
@@ -11,7 +11,9 @@ Isolation levels (blueprint D4) map onto this adapter as follows:
 * **D** (kernel)       - not offered by this adapter; it refuses risk class D. Kernel genes
                          need full VMs (QEMU/KVM), see docs/adr/0004.
 
-Every sandboxed process tree lives in its own cgroups (cpuacct, memory, pids, freezer).
+Every sandboxed process tree lives in its own cgroups: cpuacct, memory, pids and freezer on
+cgroup v1 hosts, or one unified-hierarchy cgroup with cpu, memory and pids on v2 hosts
+(:class:`CgroupSet` hides the difference).
 That gives exact CPU accounting for the *whole* tree (the anti-reward-hacking rule "measure
 CPU time across the process tree" - a candidate cannot hide work in a child process or a
 background thread) and lets :meth:`LinuxProcess.kill` freeze-then-kill the tree atomically,
@@ -62,8 +64,9 @@ def ensure_helper(path: Path = DEFAULT_HELPER) -> Path:
 
 
 def ensure_user(name: str = SANDBOX_USER) -> tuple[int, int]:
+    import pwd  # POSIX-only: imported where used, so this module imports on every OS
+
     try:
-        import pwd  # POSIX-only: imported where used
         pw = pwd.getpwnam(name)
     except KeyError:
         subprocess.run(
@@ -71,7 +74,6 @@ def ensure_user(name: str = SANDBOX_USER) -> tuple[int, int]:
             check=True,
             capture_output=True,
         )
-        import pwd  # POSIX-only: imported where used
         pw = pwd.getpwnam(name)
     return pw.pw_uid, pw.pw_gid
 
@@ -98,73 +100,159 @@ def _cgroup_gone(exc: OSError) -> bool:
     return exc.errno in (errno.ENOENT, errno.ENODEV)
 
 
+def cgroup_mode() -> str:
+    """``"v1"`` when the controllers we need are mounted as v1 hierarchies (including hybrid
+    hosts, where the v2 mount at /sys/fs/cgroup/unified has no controllers), ``"v2"`` on a
+    unified hierarchy (Ubuntu 22.04+, Fedora, Debian 12, Docker Desktop's VM, GitHub runners)."""
+    if all((CGROUP_ROOT / c).is_dir() for c in CONTROLLERS):
+        return "v1"
+    if (CGROUP_ROOT / "cgroup.controllers").exists():
+        return "v2"
+    raise SandboxError("no usable cgroup hierarchy (need v1 cpuacct/memory/pids/freezer or a v2 unified mount)")
+
+
+V2_CONTROLLERS = ("cpu", "memory", "pids")
+_V2_READY = False
+_V2_LOCK = threading.Lock()
+
+
+def _v2_prepare() -> Path:
+    """Create /sys/fs/cgroup/colloid with cpu, memory and pids delegated to its children.
+
+    v2's "no internal processes" rule forbids enabling controllers for the children of a
+    cgroup that itself holds processes, except at the real root. Inside a container the
+    namespace root does hold processes (the container's own), so they are moved to a leaf
+    ``init`` cgroup first: the same thing docker-in-docker entrypoints do."""
+    global _V2_READY
+    base = CGROUP_ROOT / PARENT
+    with _V2_LOCK:
+        if _V2_READY:
+            return base
+        wanted = " ".join(f"+{c}" for c in V2_CONTROLLERS)
+        available = (CGROUP_ROOT / "cgroup.controllers").read_text().split()
+        missing = [c for c in V2_CONTROLLERS if c not in available]
+        if missing:
+            raise SandboxError(f"cgroup v2 controllers {missing} are not available (delegate them to this cgroup)")
+        try:
+            _write(CGROUP_ROOT / "cgroup.subtree_control", wanted)
+        except OSError as exc:
+            if exc.errno != errno.EBUSY:
+                raise
+            leaf = CGROUP_ROOT / "init"
+            leaf.mkdir(exist_ok=True)
+            for pid in (CGROUP_ROOT / "cgroup.procs").read_text().split():
+                with contextlib.suppress(OSError):  # a process may exit meanwhile
+                    _write(leaf / "cgroup.procs", pid)
+            _write(CGROUP_ROOT / "cgroup.subtree_control", wanted)
+        base.mkdir(exist_ok=True)
+        _write(base / "cgroup.subtree_control", wanted)
+        _V2_READY = True
+        return base
+
+
+def _kv(text: str, key: str) -> int | None:
+    for line in text.splitlines():
+        parts = line.split()
+        if len(parts) == 2 and parts[0] == key:
+            return int(parts[1])
+    return None
+
+
 class CgroupSet:
-    """One cgroup per controller for a process tree."""
+    """The cgroups of one sandboxed process tree.
+
+    On v1, one cgroup per controller (cpuacct, memory, pids, freezer); on v2, one cgroup in
+    the unified hierarchy with cpu, memory and pids enabled. Both give the same guarantees:
+    exact whole-tree CPU (``cpuacct.usage`` / ``cpu.stat usage_usec``), a memory limit with OOM
+    reporting, a pids limit, and an atomic kill (freeze-then-kill on v1; ``cgroup.kill`` or
+    ``cgroup.freeze`` on v2)."""
 
     def __init__(self, label: str, memory_limit_mb: int | None = None, pids_limit: int | None = None) -> None:
         self.name = f"{label}-{uuid.uuid4().hex[:8]}"
+        self.mode = cgroup_mode()
         self.dirs: dict[str, Path] = {}
-        for ctrl in CONTROLLERS:
-            base = CGROUP_ROOT / ctrl / PARENT
-            base.mkdir(exist_ok=True)
-            d = base / self.name
+        if self.mode == "v1":
+            for ctrl in CONTROLLERS:
+                base = CGROUP_ROOT / ctrl / PARENT
+                base.mkdir(exist_ok=True)
+                d = base / self.name
+                d.mkdir()
+                self.dirs[ctrl] = d
+            if memory_limit_mb:
+                _write(self.dirs["memory"] / "memory.limit_in_bytes", str(memory_limit_mb * 1024 * 1024))
+                with contextlib.suppress(OSError):
+                    _write(self.dirs["memory"] / "memory.oom_control", "0")
+            if pids_limit:
+                _write(self.dirs["pids"] / "pids.max", str(pids_limit))
+        else:
+            d = _v2_prepare() / self.name
             d.mkdir()
-            self.dirs[ctrl] = d
-        if memory_limit_mb:
-            _write(self.dirs["memory"] / "memory.limit_in_bytes", str(memory_limit_mb * 1024 * 1024))
-            with contextlib.suppress(OSError):
-                _write(self.dirs["memory"] / "memory.oom_control", "0")
-        if pids_limit:
-            _write(self.dirs["pids"] / "pids.max", str(pids_limit))
+            self.dirs = dict.fromkeys(CONTROLLERS, d)  # one unified directory serves every role
+            if memory_limit_mb:
+                _write(d / "memory.max", str(memory_limit_mb * 1024 * 1024))
+                with contextlib.suppress(OSError):  # no swap escape hatch around the limit
+                    _write(d / "memory.swap.max", "0")
+            if pids_limit:
+                _write(d / "pids.max", str(pids_limit))
+
+    def _read(self, role: str, name: str) -> str | None:
+        try:
+            return (self.dirs[role] / name).read_text()
+        except OSError as exc:
+            if _cgroup_gone(exc):
+                return None
+            raise
 
     def pids(self) -> list[int]:
-        try:
-            text = (self.dirs["pids"] / "cgroup.procs").read_text()
-        except OSError as exc:
-            if _cgroup_gone(exc):
-                return []
-            raise
-        return [int(x) for x in text.split()]
+        text = self._read("pids", "cgroup.procs")
+        return [int(x) for x in text.split()] if text else []
+
+    def cpu_counter_path(self) -> Path:
+        """The file the load generator reads at chunk boundaries for whole-tree CPU."""
+        return self.dirs["cpuacct"] / ("cpuacct.usage" if self.mode == "v1" else "cpu.stat")
 
     def cpu_usage_ns(self) -> int:
-        return int((self.dirs["cpuacct"] / "cpuacct.usage").read_text())
+        if self.mode == "v1":
+            return int((self.dirs["cpuacct"] / "cpuacct.usage").read_text())
+        usec = _kv((self.dirs["cpuacct"] / "cpu.stat").read_text(), "usage_usec")
+        return (usec or 0) * 1000
 
     def memory_peak_bytes(self) -> int:
-        return int((self.dirs["memory"] / "memory.max_usage_in_bytes").read_text())
+        if self.mode == "v1":
+            return int((self.dirs["memory"] / "memory.max_usage_in_bytes").read_text())
+        peak = self._read("memory", "memory.peak") or self._read("memory", "memory.current")  # memory.peak needs Linux 5.19+
+        return int(peak or 0)
 
     def oom_killed(self) -> bool:
-        try:
-            text = (self.dirs["memory"] / "memory.oom_control").read_text()
-        except OSError as exc:
-            if _cgroup_gone(exc):
-                return False
-            raise
-        for line in text.splitlines():
-            if line.startswith("oom_kill "):
-                return int(line.split()[1]) > 0
-        return False
+        text = self._read("memory", "memory.oom_control" if self.mode == "v1" else "memory.events")
+        n = _kv(text, "oom_kill") if text else None
+        return bool(n and n > 0)
 
     def kill_all(self, timeout: float = 5.0) -> None:
-        freezer = self.dirs["freezer"] / "freezer.state"
         deadline = time.monotonic() + timeout
+        if self.mode == "v2" and (self.dirs["pids"] / "cgroup.kill").exists():
+            with contextlib.suppress(OSError):
+                _write(self.dirs["pids"] / "cgroup.kill", "1")  # Linux 5.14+: kernel kills the whole tree atomically
+        freezer = self.dirs["freezer"] / ("freezer.state" if self.mode == "v1" else "cgroup.freeze")
+        frozen, thawed = ("FROZEN", "THAWED") if self.mode == "v1" else ("1", "0")
         while True:
             pids = self.pids()
             if not pids:
                 break
             with contextlib.suppress(OSError):
-                _write(freezer, "FROZEN")
+                _write(freezer, frozen)
             for pid in pids:
                 with contextlib.suppress(ProcessLookupError, PermissionError):
                     os.kill(pid, signal.SIGKILL)
             with contextlib.suppress(OSError):
-                _write(freezer, "THAWED")
+                _write(freezer, thawed)
             if time.monotonic() > deadline:
                 raise SandboxError(f"could not kill process tree in {self.name}: {pids}")
             time.sleep(0.02)
 
     def remove(self) -> None:
         self.kill_all()
-        for d in self.dirs.values():
+        for d in dict.fromkeys(self.dirs.values()):  # v2: the same directory appears once
             for _ in range(50):
                 try:
                     d.rmdir()
@@ -175,7 +263,16 @@ class CgroupSet:
                     time.sleep(0.02)
 
     def paths(self) -> list[str]:
-        return [str(p) for p in self.dirs.values()]
+        return [str(p) for p in dict.fromkeys(self.dirs.values())]
+
+
+def sandbox_cgroup_parents() -> list[Path]:
+    """Where this adapter creates per-tree cgroups (for cleanup and leak accounting)."""
+    try:
+        mode = cgroup_mode()
+    except SandboxError:
+        return []
+    return [CGROUP_ROOT / c / PARENT for c in CONTROLLERS] if mode == "v1" else [CGROUP_ROOT / PARENT]
 
 
 class LinuxProcess:
@@ -201,7 +298,7 @@ class LinuxProcess:
         return self.cgroups.cpu_usage_ns()
 
     def cpuacct_path(self) -> str:
-        return str(self.cgroups.dirs["cpuacct"] / "cpuacct.usage")
+        return str(self.cgroups.cpu_counter_path())
 
     def wait(self, timeout: float | None = None) -> int | None:
         try:
@@ -343,8 +440,7 @@ class LinuxSandbox:
 def cleanup_stale_cgroups() -> int:
     """Remove leftover cgroups from crashed runs (kills any processes still inside)."""
     removed = 0
-    for ctrl in CONTROLLERS:
-        base = CGROUP_ROOT / ctrl / PARENT
+    for base in sandbox_cgroup_parents():
         if not base.exists():
             continue
         for d in base.iterdir():
