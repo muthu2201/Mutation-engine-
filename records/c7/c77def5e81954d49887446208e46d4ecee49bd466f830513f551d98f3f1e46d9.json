@@ -1,0 +1,33 @@
+{
+ "content": {
+  "explain": "score: code rewrite (llm_rewrite/optimize) optimize",
+  "locus": {
+   "kind": "function",
+   "language": "python",
+   "layer": "svc",
+   "surface": "code_region",
+   "symbol_path": "py:service/shop/native.py::score",
+   "unit": "score",
+   "unit_id": "460ec449c4b78ca7"
+  },
+  "payload": {
+   "base_hash": "69b3dbc5179aeb2d",
+   "diff_lines": 4,
+   "language": "python",
+   "source": "def score(terms, docs):\n    \"\"\"BM25 relevance of each document for the query terms, with typo-tolerant matching.\"\"\"\n    lib = _load()\n    n = len(docs)\n    if n == 0:\n        return []\n    term_array = (ctypes.c_char_p * len(terms))(*[t.encode() for t in terms])\n    doc_array = (ctypes.c_char_p * n)(*[d.encode() for d in docs])\n    out = (ctypes.c_double * n)()\n    rc = lib.shop_score_batch(term_array, len(terms), doc_array, n, out)\n    if rc != 0:\n        raise RuntimeError(f\"shop_score_batch failed with code {rc}\")\n\n    # Convert the output to a list of floats\n    return [float(out[i]) for i in range(n)]\n"
+  },
+  "payload_kind": "source",
+  "provenance": {
+   "model": "qwen2.5-coder-3b",
+   "notes": "",
+   "operator": "llm_rewrite",
+   "prompt_hash": "ef4f06d50c3fde6c",
+   "response_hash": "340e8b2cd636ade2",
+   "template": "optimize"
+  },
+  "target": "stackzero"
+ },
+ "id": "c77def5e81954d49887446208e46d4ecee49bd466f830513f551d98f3f1e46d9",
+ "kind": "gene",
+ "schema": "colloid.mutation/1"
+}

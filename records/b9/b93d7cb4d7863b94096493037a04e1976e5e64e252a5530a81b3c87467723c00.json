@@ -1,0 +1,142 @@
+{
+ "content": {
+  "attribution": [
+   {
+    "ci": [
+     -0.10209714427857519,
+     0.0387480770056422
+    ],
+    "gene": "5c1d6616b43e5cfd7bbe85e1f7606b8399fb8e46e7b461809a145b852736b1a1",
+    "method": "shapley_exact",
+    "value": -0.031674533636466495
+   },
+   {
+    "ci": [
+     0.2023374799754244,
+     0.34245299784765104
+    ],
+    "gene": "4b656b902d1bf5ec9432c502edd8fc7a1640564c3b93fb831ff37cd5cd47d281",
+    "method": "shapley_exact",
+    "value": 0.2723952389115377
+   },
+   {
+    "ci": [
+     -0.02217278638208832,
+     0.09667522714182165
+    ],
+    "gene": "aab91a2f6ff7f542a1d6db8ce471ba9b2c1a8bff94545ed11d63b85dc4e09a66",
+    "method": "shapley_exact",
+    "value": 0.03725122037986667
+   }
+  ],
+  "baseline_id": "base-5bafab85bc79",
+  "derived_from": [],
+  "effects": {
+   "cost": {
+    "ci_pct": [
+     18.42,
+     25.44
+    ],
+    "gain_pct": 21.97,
+    "p": 5e-05
+   },
+   "cpu": {
+    "ci_pct": [
+     18.96,
+     26.08
+    ],
+    "gain_pct": 22.51,
+    "p": 5e-05
+   },
+   "mem": {
+    "ci_pct": [
+     1.04,
+     2.66
+    ],
+    "gain_pct": 1.8,
+    "p": 0.00025
+   },
+   "p50": {
+    "ci_pct": [
+     1.79,
+     17.56
+    ],
+    "gain_pct": 10.46,
+    "p": 0.01333
+   },
+   "p95": {
+    "ci_pct": [
+     22.74,
+     35.34
+    ],
+    "gain_pct": 30.64,
+    "p": 0.0005
+   }
+  },
+  "engine_commit_at_ingest": "9498a6b6b639eeef2bbb59b00c65c635b8eec169",
+  "genes": [
+   "4b656b902d1bf5ec9432c502edd8fc7a1640564c3b93fb831ff37cd5cd47d281",
+   "5c1d6616b43e5cfd7bbe85e1f7606b8399fb8e46e7b461809a145b852736b1a1",
+   "aab91a2f6ff7f542a1d6db8ce471ba9b2c1a8bff94545ed11d63b85dc4e09a66"
+  ],
+  "holdout": {
+   "ci_pct": [
+    9.47,
+    21.0
+   ],
+   "gain_pct": 15.39,
+   "p": 0.001953125
+  },
+  "island": "db.index",
+  "noise_floor": {
+   "gate": "cost: 1/20 calibrated false positives (raw 7/20), binomial p=0.642 vs alpha=0.05",
+   "per_cycle": {
+    "cost": 0.04181338503169909,
+    "cpu": 0.04250223706098771,
+    "mem": 0.010029574210769351,
+    "p50": 0.09670061049118474,
+    "p95": 0.05681009637332726
+   }
+  },
+  "operator": "knob_sample",
+  "platform": {
+   "clang": "Ubuntu clang version 18.1.3 (1ubuntu1)",
+   "cpu_count": 4,
+   "cpu_model": "Intel(R) Xeon(R) Processor @ 2.10GHz",
+   "gcc": "gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+   "governor": null,
+   "hypervisor": true,
+   "kernel": "6.18.44-fc-v51",
+   "loadgen_sha": "301d857aed18aa4d",
+   "microcode": "0x1",
+   "no_turbo": null,
+   "numa_nodes": 1,
+   "pip_freeze_sha": "0d0c39b7812df052",
+   "port_apis": {
+    "Build": "1.0.0",
+    "CodeRepresentation": "1.0.0",
+    "CostModel": "1.0.0",
+    "LLMProvider": "1.0.0",
+    "ProgramStore": "1.0.0",
+    "Sandbox": "1.0.0",
+    "TargetSystem": "1.0.0",
+    "Telemetry": "1.0.0"
+   },
+   "postgres": "postgres (PostgreSQL) 16.14 (Ubuntu 16.14-0ubuntu0.24.04.1)",
+   "python": "3.12.3",
+   "repo_commit": "9263a7f",
+   "sbx_exec_sha": "b658b94c9e5efed0",
+   "smt": "0",
+   "thp_at_start": "always [madvise] never"
+  },
+  "program_id": "803f6d1d23d93cce",
+  "protocol": "replicate-x6",
+  "rate_rps": 30.0,
+  "run": "stackzero",
+  "status": "promoted",
+  "target": "stackzero"
+ },
+ "id": "b93d7cb4d7863b94096493037a04e1976e5e64e252a5530a81b3c87467723c00",
+ "kind": "program",
+ "schema": "colloid.mutation/1"
+}

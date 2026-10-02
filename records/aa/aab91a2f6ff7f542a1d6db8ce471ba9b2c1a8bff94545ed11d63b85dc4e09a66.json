@@ -1,0 +1,33 @@
+{
+ "content": {
+  "explain": "Executor.fetchrow: code rewrite (gi_edit) copy line 3 before line 3",
+  "locus": {
+   "kind": "function",
+   "language": "python",
+   "layer": "svc",
+   "surface": "code_region",
+   "symbol_path": "py:service/shop/db.py::Executor.fetchrow",
+   "unit": "Executor.fetchrow",
+   "unit_id": "69d441052c6c7f3d"
+  },
+  "payload": {
+   "base_hash": "0cca9c8f5dc4c76f",
+   "diff_lines": 1,
+   "language": "python",
+   "source": "async def fetchrow(self, sql, params=()):\n    cur = await self._run(sql, params)\n    return await cur.fetchone()\n    return await cur.fetchone()\n"
+  },
+  "payload_kind": "source",
+  "provenance": {
+   "model": null,
+   "notes": "copy line 3 before line 3",
+   "operator": "gi_edit",
+   "prompt_hash": null,
+   "response_hash": null,
+   "template": null
+  },
+  "target": "stackzero"
+ },
+ "id": "aab91a2f6ff7f542a1d6db8ce471ba9b2c1a8bff94545ed11d63b85dc4e09a66",
+ "kind": "gene",
+ "schema": "colloid.mutation/1"
+}

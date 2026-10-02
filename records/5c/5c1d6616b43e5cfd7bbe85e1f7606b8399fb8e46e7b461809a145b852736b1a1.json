@@ -1,0 +1,33 @@
+{
+ "content": {
+  "explain": "levenshtein: code rewrite (llm_rewrite/optimize) optimize",
+  "locus": {
+   "kind": "function",
+   "language": "c",
+   "layer": "native",
+   "surface": "code_region",
+   "symbol_path": "c:native/fuzzy.c::levenshtein",
+   "unit": "levenshtein",
+   "unit_id": "c91ada9abad8feaf"
+  },
+  "payload": {
+   "base_hash": "f55f3796dc2c9bdc",
+   "diff_lines": 25,
+   "language": "c",
+   "source": "int levenshtein(const char *a, const char *b) {\n    int n = (int)strlen(a);\n    int m = (int)strlen(b);\n    \n    // Initialize the first row and column with costs\n    int d[n + 1][m + 1];\n    for (int i = 0; i <= n; i++) {\n        d[i][0] = i;\n    }\n    for (int j = 0; j <= m; j++) {\n        d[0][j] = j;\n    }\n\n    // Compute the Levenshtein distance using a single pass\n    for (int i = 1; i <= n; i++) {\n        for (int j = 1; j <= m; j++) {\n            int cost = a[i - 1] == b[j - 1] ? 0 : 1;\n            d[i][j] = fmin(fmin(d[i - 1][j] + 1, d[i][j - 1] + 1), d[i - 1][j - 1] + cost);\n        }\n    }\n\n    // The result is in the bottom-right cell\n    int result = d[n][m];\n    \n    return result;\n}\n"
+  },
+  "payload_kind": "source",
+  "provenance": {
+   "model": "qwen2.5-coder-3b",
+   "notes": "",
+   "operator": "llm_rewrite",
+   "prompt_hash": "e6ba24d80a22e491",
+   "response_hash": "e85aec26c7ab1266",
+   "template": "optimize"
+  },
+  "target": "stackzero"
+ },
+ "id": "5c1d6616b43e5cfd7bbe85e1f7606b8399fb8e46e7b461809a145b852736b1a1",
+ "kind": "gene",
+ "schema": "colloid.mutation/1"
+}

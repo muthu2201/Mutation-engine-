@@ -1,0 +1,33 @@
+{
+ "content": {
+  "explain": "shop_score_batch: code rewrite (llm_rewrite/optimize) optimize",
+  "locus": {
+   "kind": "function",
+   "language": "c",
+   "layer": "native",
+   "surface": "code_region",
+   "symbol_path": "c:native/score.c::shop_score_batch",
+   "unit": "shop_score_batch",
+   "unit_id": "e02b3fe2649199af"
+  },
+  "payload": {
+   "base_hash": "b4aca2609668bd28",
+   "diff_lines": 93,
+   "language": "c",
+   "source": "int shop_score_batch(const char **terms, int nterms, const char **docs, int ndocs, double *out) {\n    if (ndocs <= 0 || nterms <= 0) {\n        return 0;\n    }\n    \n    // Allocate arrays once and reuse them\n    char ***doc_tokens = malloc(sizeof(char **) * ndocs);\n    int *doc_lengths = malloc(sizeof(int) * ndocs);\n    double *tf = calloc((size_t)ndocs * nterms, sizeof(double));\n    int *df = calloc(nterms, sizeof(int));\n    \n    if (doc_tokens == NULL || doc_lengths == NULL || tf == NULL || df == NULL) {\n        free(doc_tokens);\n        free(doc_lengths);\n        free(tf);\n        free(df);\n        return -1;\n    }\n    \n    // Tokenize all documents in one pass\n    for (int d = 0; d < ndocs; d++) {\n        int count = shop_tokenize(docs[d], &doc_tokens[d]);\n        if (count < 0) {\n            free(doc_tokens);\n            free(doc_lengths);\n            free(tf);\n            free(df);\n            return -1;\n        }\n        doc_lengths[d] = count;\n    }\n\n    // Calculate tf and df once\n    double total_length = 0.0;\n    for (int d = 0; d < ndocs; d++) {\n        total_length += doc_lengths[d];\n    }\n    double average_length = total_length / ndocs;\n\n    for (int d = 0; d < ndocs; d++) {\n        for (int t = 0; t < nterms; t++) {\n            double frequency = 0.0;\n            int token_count = doc_lengths[d];\n            for (int k = 0; k < token_count; k++) {\n                double similarity = fuzzy_similarity(terms[t], doc_tokens[d][k]);\n                if (similarity >= MATCH_THRESHOLD) {\n                    frequency += similarity;\n                }\n            }\n            tf[d * nterms + t] = frequency;\n            if (frequency > 0.0) {\n                df[t]++;\n            }\n        }\n    }\n\n    // Calculate scores in one pass\n    for (int d = 0; d < ndocs; d++) {\n        double score = 0.0;\n        double norm = BM25_K1 * (1.0 - BM25_B + BM25_B * doc_lengths[d] / average_length);\n        for (int t = 0; t < nterms; t++) {\n            double frequency = tf[d * nterms + t];\n            if (frequency <= 0.0) {\n                continue;\n            }\n            double idf = log(1.0 + (ndocs - df[t] + 0.5) / (df[t] + 0.5));\n            score += idf * frequency * (BM25_K1 + 1.0) / (frequency + norm);\n        }\n        out[d] = score;\n    }\n\n    // Free allocated memory\n    for (int d = 0; d < ndocs; d++) {\n        shop_free_tokens(doc_tokens[d], doc_lengths[d]);\n    }\n    free(doc_tokens);\n    free(doc_lengths);\n    free(tf);\n    free(df);\n\n    return 0;\n}\n"
+  },
+  "payload_kind": "source",
+  "provenance": {
+   "model": "qwen2.5-coder-3b",
+   "notes": "",
+   "operator": "llm_rewrite",
+   "prompt_hash": "cd1569f179135c92",
+   "response_hash": "0d0b815183d8ebed",
+   "template": "optimize"
+  },
+  "target": "stackzero"
+ },
+ "id": "05efcd06e03891a6acb86a0dbe66b676030cd5709919f7ba7d6455ce1990f2a9",
+ "kind": "gene",
+ "schema": "colloid.mutation/1"
+}

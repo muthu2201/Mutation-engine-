@@ -1,0 +1,30 @@
+{
+ "content": {
+  "explain": "db.idx_orders_customer_placed = True [knob_perturb]",
+  "locus": {
+   "kind": "knob",
+   "language": null,
+   "layer": "db",
+   "surface": "index_set",
+   "symbol_path": "knob:db.idx_orders_customer_placed",
+   "unit": "db.idx_orders_customer_placed",
+   "unit_id": "ac1b86c14ee89bb0"
+  },
+  "payload": {
+   "value": true
+  },
+  "payload_kind": "value",
+  "provenance": {
+   "model": null,
+   "notes": "",
+   "operator": "knob_perturb",
+   "prompt_hash": null,
+   "response_hash": null,
+   "template": null
+  },
+  "target": "stackzero"
+ },
+ "id": "f214c2958bd2a8f2b78b8795d72bc3506d6c09ba1c35b5581a92d188ead9ff62",
+ "kind": "gene",
+ "schema": "colloid.mutation/1"
+}
