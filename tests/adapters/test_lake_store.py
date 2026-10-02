@@ -93,3 +93,21 @@ def test_git_backend_detects_a_moved_branch(repo):
     g8 = gene(8)
     with pytest.raises(LakeConflict):
         lake.commit([g8], append(entries, [g8], T1), head(entries), "loser")
+
+
+def test_data_writers_never_touch_a_code_branch(repo):
+    """main, and any branch that holds the engine, is code: the lake and stack writers refuse it."""
+    from colloid.adapters.gitref import CodeBranchRefused, commit_files
+
+    with pytest.raises(CodeBranchRefused):
+        commit_files(repo, "main", {"x.json": b"{}"}, "nope", expected_tip=None)
+    git(repo, "branch", "feature-work")  # a code branch under any name: its tree holds the engine
+    (repo / "pyproject.toml").write_text("[project]\nname='x'\n")
+    git(repo, "add", "pyproject.toml")
+    git(repo, "commit", "-q", "-m", "engine")
+    git(repo, "branch", "-f", "feature-work", "HEAD")
+    with pytest.raises(CodeBranchRefused):
+        commit_files(repo, "feature-work", {"x.json": b"{}"}, "nope", expected_tip=git(repo, "rev-parse", "feature-work"))
+    lake = GitBranchLake(repo, "main")
+    with pytest.raises(CodeBranchRefused):
+        commit_two_batches(lake)

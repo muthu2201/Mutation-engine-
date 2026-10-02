@@ -61,6 +61,18 @@ The full-fidelity judge needs Linux (cgroup v1 or v2, as root). On macOS and Win
 the Colloid container (`docker build -t colloid .`, see [docker/README.md](docker/README.md)).
 `scripts/provision-linux.sh` provisions a bench host from scratch.
 
+## Branches
+
+| branch | job |
+|---|---|
+| **`main`** | the project: engine, evaluator, targets, tests, docs, CI (changes arrive by pull request) |
+| `ccr-00675f8e-w4745o` | the branch the project was built on; development continues here and merges into `main` |
+| `colloid/datalake` | data only: the hash-chained mutation lake (`colloid lake`) |
+| `stack/stackzero-verified` | data only: the deployable verified stack (`colloid stack`) |
+
+Code and data never share a branch, and the lake and stack writers refuse to write to a code
+branch (see `docs/ARCHITECTURE.md` §16).
+
 ## Documentation
 
 - **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** — the full architecture in plain English:

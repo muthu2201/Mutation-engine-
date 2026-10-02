@@ -461,14 +461,23 @@ exposes one. An optimiser that can edit its grader will.
 
 ## 16. Branches
 
-| branch | holds | written by |
-|---|---|---|
-| the engine branch | code, tests, docs | people + reviewed commits |
-| `colloid/datalake` | the mutation lake (records, ledger, README) and nothing else | `colloid lake ingest` (plumbing, CAS) |
-| `stack/stackzero-verified` | a deployable verified stack + MANIFEST | `colloid stack publish` |
+Each branch has exactly one job. Code and data never share a branch.
 
-A branch is created when there is a real artifact for it. ADR 0007 records the milestones
-(a second-language target, mined cross-target rules) that would justify more.
+| branch | kind | holds | how it changes |
+|---|---|---|---|
+| **`main`** | code (default) | the engine, evaluator, targets, tests, docs, CI | merges of reviewed pull requests |
+| `ccr-00675f8e-w4745o` | code | the branch the project was built on, now its development branch | commits, merged into `main` by pull request |
+| `colloid/datalake` | data | the mutation lake: records, hash-chained ledger, README. No code. | only `colloid lake ingest` (append-only, plumbing, CAS) |
+| `stack/stackzero-verified` | data | the deployable verified stack + MANIFEST. No engine code. | only `colloid stack publish` (one commit per materialisation) |
+
+**Separation is enforced, not just documented.**
+- The data branches are parentless and share no history with the code. They are never merged
+  into `main`, and they carry no workflow files, so CI never runs on them.
+- The lake and stack writers (`adapters/gitref.py`) refuse to write to a code branch: `main`,
+  `master`, or any branch whose tip holds the engine (`pyproject.toml` at its root). A
+  mis-typed `--lake git:main` fails instead of mixing data into the code history.
+- A new data branch is created only when there is a real artifact for it. ADR 0007 records
+  the milestones that would justify more.
 
 ## 17. Repository map
 
