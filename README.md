@@ -41,6 +41,8 @@ colloid canaries                        # reward-hacking gate — must reject 10
 colloid baseline                        # the target's SLO and $ / 1M requests
 colloid profile                         # causal-leverage curves per unit
 colloid run experiments/stackzero.yaml  # a full cross-layer optimisation run
+colloid verify runs/stackzero           # post-run L6 + replicate; promotes what survives Holm + A/A gate
+colloid redteam-recheck runs/stackzero  # re-adjudicate red-team breach alerts (live vs inert)
 colloid report runs/stackzero           # summarise the run
 colloid dashboard runs/stackzero        # live dashboard (FastAPI)
 ```

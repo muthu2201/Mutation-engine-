@@ -222,7 +222,10 @@ colloid canaries --out canary.json      # §2.1 (exits non-zero if any hack surv
 colloid aa --runs 20 --out aa.json      # §2.2
 colloid profile                         # §3
 colloid run experiments/stackzero.yaml  # §4
+colloid verify runs/stackzero --top 6   # §4.3 post-run L6 + 6-cycle replicate
+colloid redteam-recheck runs/stackzero  # §4.4 re-adjudicate red-team alerts
 colloid report runs/stackzero           # the numbers in §4, from the run's own store
+python stress/render_results.py runs/stackzero --write docs/INITIAL_RESULTS.md --evidence docs/results
 python stress/stress_sandbox.py         # §5 (as root)
 python stress/stress_evaluator.py       # §5 (as root)
 ```

@@ -198,11 +198,31 @@ Every candidate passes through stages, cheapest first; each stage passes only su
 |---|---|---|
 | **L0** | static policy & validity (`policy.py`): locus validity, knob ranges/requirements, locus confinement, diff cap, and an AST/semantic scan that blocks forbidden imports/calls, introspection, cross-call state, caching, background tasks, timer patching, evaluator-path strings | ms |
 | **L1** | hermetic, content-addressed, sandboxed build (apply genes → compile libshopnative with the genome's flags → byte-compile Python) | <1 s cached |
-| **L2** | unit tests (the baseline copy) + the **differential oracle** (baseline and candidate run side-by-side on throwaway database clones, lock-step; every response must match in status and JSON value within an evaluator-owned float tolerance) + **native differential fuzzing** when C code or flags change | ~10 s |
+| **L2** | unit tests (the baseline copy) + the **differential oracle** (baseline and candidate run side-by-side on throwaway database clones, lock-step; every response must match in status and JSON value within an evaluator-owned float tolerance) + **native differential fuzzing** when C code or flags change, with a **ptrace-free leak check** (below) | ~10 s |
 | **L3** | **surrogate** rank (`core/surrogate.py`): a learned model predicts each candidate's gain; the top fraction per island proceed. The surrogate is **prequentially audited** (every prediction is scored against the later truth) and is *distrusted* — the cascade stops filtering with it — when its rank correlation falls below a threshold | ms |
 | **L4** | micro-benchmark on the touched paths only, candidate vs parent, paired | ~25 s |
 | **L5** | macro-benchmark, full workload, candidate vs baseline *and* parent | ~60 s |
-| **L6** | deep assurance for elites: the deep oracle with sanitizer fuzzing, the **hidden holdout workload** (gains must persist on traffic search never saw), and a **soak test** (memory-leak detection under sustained load) | ~2 min |
+| **L6** | deep assurance for elites: the deep oracle with ASan/UBSan fuzzing, the **hidden holdout workload** (gains must persist on traffic search never saw), and a **soak test** (memory-leak detection under sustained load) | ~2 min |
+
+**Leak checking without LeakSanitizer.** LSan's end-of-process scan stops the world through
+a ptrace-attaching tracer thread. The sandbox's seccomp policy rightly forbids ptrace, so
+inside the sandbox LSan can only abort with "LeakSanitizer has encountered a fatal error". The
+first full run lost every native-code L6 to exactly that. The fuzz driver (`native_fuzz.c`)
+checks leaks itself instead: every *candidate* call is bracketed by the heap's in-use byte
+count (ASan's allocator statistics, or glibc `mallinfo2()` with the tcache disabled, because
+`mallinfo2` does not see tcache-parked frees). After a warm-up, net growth means a leak (exit 4).
+This is exact: 0 bytes of growth for leak-free code, and about 2 KB per call caught for the
+`native_leak` canary, which drops a `free()`, keeps its output bit-identical and gets
+cheaper. A sanitizer *runtime* that crashes is classified **ERROR** (an evaluator fault),
+never **FAIL**.
+
+**Post-run verification (`colloid verify`).** During a run L6 only fires on a new global best,
+measured by a two-cycle L5. After the run, the top programs of the archive get L6 and a
+many-cycle replicate against baseline; the between-run noise floor shrinks as 1/√cycles.
+Only programs whose L6 never ran, or failed through an evaluator fault, are eligible:
+re-testing a candidate that already failed L6 on its merits until it passes would be
+p-hacking. Promotion requires an L6 pass, a holdout p-value that survives a **Holm–Bonferroni**
+correction across the batch, a replicate cost CI that excludes zero, and the A/A gate.
 
 Verdicts: **PASS**; **FAIL** (the candidate's fault, never retried); **ERROR** (an
 infrastructure problem — e.g. the *baseline* arm failed — which may be retried); and
@@ -224,14 +244,24 @@ This is section D2 of the blueprint, made concrete:
    background thread; measurement chunks are *drained* (the load generator returns only when
    every request has completed) so no in-flight work leaks across a timing boundary.
 4. **The AST/semantic policy scanner** at L0 (above).
-5. **A canary suite** of 15 known reward hacks (`canaries/`) that the evaluator must reject 100%
+5. **A canary suite** of 16 known reward hacks (`canaries/`) that the evaluator must reject 100%
    before any run starts — stale caches, truncation, lazy skipping, float-tolerance abuse, fake
    writes, background writes, timer patching, load-sensitive cheating, out-of-range knobs,
-   durability trading, C static caches, C early-exit bugs, test editing.
+   durability trading, C static caches, C early-exit bugs, C memory leaks, test editing.
 6. **Holdout persistence** required for promotion (the benchmark-overfitting check).
 7. **Suspicion triggers** → automatic deep review (above).
 8. **A red-team island** whose fitness is "fool the evaluator"; a survivor is a breach, raises a
-   critical alert, and becomes a new canary.
+   critical alert, and becomes a new canary. An attack that passes the oracle counts as a
+   breach only if it could have changed an output. The first full run raised two alerts, and
+   both were inert: a float-rounding wrapper on the ASGI startup hook, which returns `None`,
+   and a list-truncating wrapper on a config parser, which returns a `bool`. Attacks now
+   target only value-returning functions on an Atlas request path. When one passes L2, the
+   engine sends the **maximal** version of the same hack on the same unit through the oracle
+   (floats shifted instead of rounded, lists cut to one element, a key-less cache,
+   replay-always). If that is caught, the channel reaches responses and the subtle attack
+   slipping through is a genuine threshold breach. If it also passes, the attack was inert
+   (`redteam.inert`). `colloid redteam-recheck RUN` re-adjudicates a finished run's alerts the
+   same way.
 
 ### Benchmark methodology (`protocol.py`)
 
@@ -386,6 +416,8 @@ colloid aa --runs 20               # the benchmark noise floor (A/A false-positi
 colloid baseline                   # the baseline's SLO and $ / 1M requests
 colloid profile                    # causal-leverage curves per unit
 colloid run experiments/stackzero.yaml
+colloid verify runs/stackzero      # post-run L6 + many-cycle replicate of the top programs
+colloid redteam-recheck runs/stackzero  # re-adjudicate red-team breach alerts (live vs inert)
 colloid report runs/stackzero      # summarise a run
 colloid dashboard runs/stackzero   # live FastAPI dashboard
 ```
