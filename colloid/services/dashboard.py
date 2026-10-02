@@ -14,7 +14,6 @@ No build step; the page is a single self-contained HTML string with vanilla JS p
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 from typing import Any
 

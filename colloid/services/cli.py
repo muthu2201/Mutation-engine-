@@ -101,8 +101,8 @@ def cmd_aa(args: argparse.Namespace) -> int:
 def cmd_profile(args: argparse.Namespace) -> int:
     from colloid.adapters.cost.static_prices import StaticPriceCostModel
     from colloid.adapters.target.stackzero.adapter import StackZeroTarget
-    from colloid_evaluator.profiler import Bench, CausalProfiler, ProfileConfig, decorate_atlas
     from colloid.core.models import UnitKind
+    from colloid_evaluator.profiler import Bench, CausalProfiler, ProfileConfig, decorate_atlas
     from colloid_evaluator.workloads import Universe
 
     target = StackZeroTarget()
@@ -156,8 +156,7 @@ def cmd_baseline(args: argparse.Namespace) -> int:
 
     ev = Evaluator(StackZeroTarget(), StaticPriceCostModel(), rate=args.rate)
     info = ev.setup("baseline")
-    from colloid.core.genome import Genome
-    from colloid_evaluator.protocol import Arm, L5, summary
+    from colloid_evaluator.protocol import L5, Arm, summary
 
     cmp = ev.bench.compare([Arm("baseline", "baseline", ev.baseline_ws)], L5, seed=1)
     s = summary(cmp, "baseline", ev.bench.usd_cpu_s, ev.bench.usd_gb_s)

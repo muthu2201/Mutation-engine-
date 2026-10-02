@@ -9,7 +9,6 @@ built from this.
 
 from __future__ import annotations
 
-import math
 from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any
@@ -103,7 +102,6 @@ def _build(store: Any, run: str) -> dict[str, Any]:
     llm = store.llm_calls()
     llm_summary = {"calls": len(llm), "tokens_in": sum(c.tokens_in for c in llm), "tokens_out": sum(c.tokens_out for c in llm),
                    "cost_usd": round(sum(c.cost_usd for c in llm), 4), "by_model": dict(Counter(c.model for c in llm))}
-    arm_credit = store.kv_get("bandit")
     result = store.kv_get("result") or {}
     setup = store.kv_get("setup") or {}
     aa = store.kv_get("aa_test")

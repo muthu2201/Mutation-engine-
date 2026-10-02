@@ -198,7 +198,8 @@ def prune(credits: Mapping[str, GeneCredit], *, min_effect: float = 0.0) -> tupl
     """Blueprint T10 pruning rule: drop genes whose Shapley CI includes values ≤ 0
     (``ci_lo <= min_effect``). Returns ``(keep, drop)``. The caller must re-verify the
     pruned genome, because a noisy CI can hide a small real effect."""
-    keep, drop = [], []
+    keep: list[str] = []
+    drop: list[str] = []
     for g, c in credits.items():
         (drop if c.ci_lo <= min_effect else keep).append(g)
     return sorted(keep), sorted(drop)

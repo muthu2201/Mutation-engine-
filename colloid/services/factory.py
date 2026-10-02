@@ -33,13 +33,20 @@ from colloid.core.atlas import StackAtlas
 from colloid.core.genome import Genome, LocusConflict
 from colloid.core.ids import sha256_hex
 from colloid.core.knobs import KnobSpec
-from colloid.core.models import Gene, LLMCallRecord, PayloadKind, Provenance, Surface
+from colloid.core.models import Gene, LLMCallRecord, PayloadKind, Provenance
 from colloid.core.novelty import MinHash
 from colloid.core.operators.base import OperatorContext, Proposal, code_gene, diff_lines
 from colloid.core.operators.crossover import gene_crossover
 from colloid.core.operators.gi_edit import gi_edit
 from colloid.core.operators.knob_ops import knob_perturb, knob_reset, knob_sample
-from colloid.core.operators.llm_rewrite import MutationContext, Neighbour, build_request, parse_c_response, parse_python_response, summarize_failures
+from colloid.core.operators.llm_rewrite import (
+    MutationContext,
+    Neighbour,
+    build_request,
+    parse_c_response,
+    parse_python_response,
+    summarize_failures,
+)
 from colloid.core.operators.py_rewrite import find_rewrites
 from colloid.core.operators.redteam import HACKS, redteam_variant
 from colloid.ports import LLMError, LLMProvider

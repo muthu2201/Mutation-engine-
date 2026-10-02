@@ -32,7 +32,6 @@ import random
 import time
 from collections.abc import Sequence
 from dataclasses import dataclass, field
-from pathlib import Path
 from typing import Any
 
 from colloid.adapters.cost.static_prices import StaticPriceCostModel
@@ -60,8 +59,8 @@ from colloid.core.objectives import Fitness, gain_percent, scalar_score
 from colloid.core.surrogate import GeneFeature, Surrogate, vectorise
 from colloid.services.config import EngineConfig
 from colloid.services.factory import Arm, MutationFactory, signature_of
-from colloid.services.splice_runner import SpliceRunner
 from colloid.services.shapley_runner import ShapleyRunner
+from colloid.services.splice_runner import SpliceRunner
 from colloid_evaluator.cascade import OBJECTIVES, Evaluator, StageResult
 from colloid_evaluator.profiler import Bench, CausalProfiler, ProfileConfig, decorate_atlas
 
@@ -136,7 +135,6 @@ class Engine:
             prof = CausalProfiler(self.target, bench, ProfileConfig(delays=tuple(self.cfg.profile_delays)))
             latency = prof.latency_share(None)
             # profile the highest-latency-share code units on request paths
-            share = sorted(latency.latency_share.items(), key=lambda kv: -kv[1])
             code_units = []
             for path in self.atlas.paths:
                 for uid in path.unit_ids:
@@ -269,7 +267,6 @@ class Engine:
         region_loci = [lc.id for lc in self.atlas.loci_in(self._region(island))] if island not in ("composition", "redteam") else [lc.id for lc in self.atlas.loci.values() if lc.mutability != Mutability.FROZEN]
         opp = {lid: self.atlas.opportunity(lid) for lid in region_loci}
         arms = self._island_arms(island)
-        root = self.programs[self.baseline_id]
         attempts = 0
         while len(results) < slots and attempts < slots * 4:
             attempts += 1
@@ -409,7 +406,6 @@ class Engine:
     def _features(self, genome: Genome):
         gfs = []
         for g in genome:
-            loc = self.atlas.loci[g.locus_id]
             if g.locus_id in self.knob_of_locus:
                 from colloid.core.knobs import knob_features
 

@@ -24,6 +24,7 @@ Key ideas, in the order the engine uses them:
 from __future__ import annotations
 
 import time
+from dataclasses import dataclass
 from enum import StrEnum
 from typing import Any
 
@@ -385,10 +386,12 @@ class ObjectiveSpec(Frozen):
     primary: bool = False
 
 
-class Measured(Frozen):
+@dataclass(frozen=True, slots=True)
+class Measured:
     """A measured effect: a log-ratio gain versus a reference (positive = better) with its
     standard error. The evaluator produces these; attribution combines them. Lives in the
-    core model layer so the evaluator need not depend on the search machinery."""
+    core model layer (a plain dataclass, accepting positional args) so the evaluator need
+    not depend on the search machinery."""
 
     value: float
     se: float

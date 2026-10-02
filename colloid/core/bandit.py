@@ -131,11 +131,11 @@ class ThompsonBandit:
     @staticmethod
     def from_dict(data: dict[str, Any], **kwargs: Any) -> ThompsonBandit:
         b = ThompsonBandit(**kwargs)
-        b.arms = [tuple(a) for a in data.get("arms", [])]  # type: ignore[misc]
+        b.arms = [tuple(a) for a in data.get("arms", [])]
         for ctx, arm, st in data.get("ctx", []):
-            b._ctx[(tuple(ctx), tuple(arm))] = _Stats(**st)  # type: ignore[index]
+            b._ctx[(tuple(ctx), tuple(arm))] = _Stats(**st)
         for arm, st in data.get("global", []):
-            b._global[tuple(arm)] = _Stats(**st)  # type: ignore[index]
+            b._global[tuple(arm)] = _Stats(**st)
         return b
 
     def table(self, context: Context | None = None) -> list[dict[str, Any]]:

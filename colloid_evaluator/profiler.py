@@ -23,13 +23,9 @@ onto the Atlas as dynamic tags (``causal_leverage``, ``latency_share``, ``hotnes
 
 from __future__ import annotations
 
-import os
 import random
-import re
-import time
 from collections import defaultdict
 from dataclasses import dataclass, field
-from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -40,7 +36,7 @@ from colloid.core.genome import Genome
 from colloid.core.ids import sha256_hex
 from colloid.core.models import Gene, LeverageCurve, PayloadKind, Provenance, Surface, UnitKind
 from colloid_evaluator.protocol import Bench, run_loadgen
-from colloid_evaluator.workloads import Generator, Universe, poisson_schedule
+from colloid_evaluator.workloads import Generator, poisson_schedule
 
 KIND_TO_ENDPOINT = {
     "search": "endpoint:GET /products/search", "product": "endpoint:GET /products/{id}",
@@ -48,17 +44,6 @@ KIND_TO_ENDPOINT = {
     "category_top": "endpoint:GET /categories/{id}/top", "daily": "endpoint:GET /reports/daily",
     "order": "endpoint:POST /orders",
 }
-# A busy-wait helper is prepended to the injected unit; it spins for ``d`` times the elapsed
-# time of the original body, so the injected delay is proportional to the unit's own cost.
-DELAY_PY = (
-    "    import time as _t\n"
-    "    _t0 = _t.perf_counter()\n"
-)
-DELAY_TAIL = (
-    "    _spin_until = _t0 + (_t.perf_counter() - _t0) * {d}\n"
-    "    while _t.perf_counter() < _spin_until:\n"
-    "        pass\n"
-)
 
 
 @dataclass
@@ -102,16 +87,15 @@ def _inject_delay_source(source: str, d: float) -> str | None:
     def reindent(block: str) -> str:
         return "".join(indent + ln if ln.strip() else ln for ln in block.splitlines(keepends=True))
 
-    head = "".join(lines[:start])
-    body = "".join(lines[start:])
     # Return statements must set the spin deadline first; simplest robust approach: wrap the
     # whole body in an inner function and time it.
+    head = "".join(lines[:start])
     inner = "async def _inner():\n" + textwrap.indent("".join(lines[start:]), "    ")
     wrapped = (
         head
         + reindent("import time as _t\n")
         + reindent(inner)
-        + reindent(f"_t0 = _t.perf_counter()\n")
+        + reindent("_t0 = _t.perf_counter()\n")
         + reindent("_r = await _inner()\n")
         + reindent(f"_spin = (_t.perf_counter() - _t0) * {d}\n")
         + reindent("_d = _t.perf_counter() + _spin\n")
@@ -120,7 +104,7 @@ def _inject_delay_source(source: str, d: float) -> str | None:
         + reindent("return _r\n")
     )
     try:
-        ast.parse(textwrap.dedent(wrapped) if False else wrapped)
+        ast.parse(wrapped)
     except SyntaxError:
         return None
     return wrapped

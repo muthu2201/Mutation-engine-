@@ -182,7 +182,7 @@ _FENCE = re.compile(r"```[ \t]*([A-Za-z0-9_+-]*)[ \t]*\n(.*?)```", re.S)
 
 def extract_code_block(text: str, language: str) -> str | None:
     wanted = {"python": {"python", "py", "python3", ""}, "c": {"c", "cpp", "c++", ""}}[language]
-    blocks = [(lang.lower(), body) for lang, body in _FENCE.findall(text)]
+    blocks: list[tuple[str, str]] = [(str(lang).lower(), str(body)) for lang, body in _FENCE.findall(text)]
     for lang, body in blocks:
         if lang in wanted:
             return body
@@ -249,7 +249,8 @@ def _c_signature(src: str, name: str) -> str | None:
     if f"{name}" not in head or "(" not in head:
         return None
     head = re.sub(r"/\*.*?\*/|//[^\n]*", " ", head, flags=re.S)
-    return " ".join(head.replace("(", " ( ").replace(")", " ) ").replace(",", " , ").replace("*", " * ").split())
+    normalized: str = " ".join(head.replace("(", " ( ").replace(")", " ) ").replace(",", " , ").replace("*", " * ").split())
+    return normalized
 
 
 def parse_c_response(text: str, original: str, name: str) -> ParseResult:

@@ -21,16 +21,22 @@ from typing import TYPE_CHECKING
 
 from colloid.core.attribution import Measured, Subset
 from colloid.core.genome import Genome
-from colloid.core.models import Stage, Verdict
+from colloid.core.models import Verdict
 from colloid.core.objectives import gain_percent
-from colloid.core.splicing import design_subsets, expected_union_value, fit_splice_model, screening_design, best_unions
+from colloid.core.splicing import (
+    best_unions,
+    design_subsets,
+    expected_union_value,
+    fit_splice_model,
+    screening_design,
+)
 
 if TYPE_CHECKING:
     from colloid.services.engine import Engine
 
 
 class SpliceRunner:
-    def __init__(self, engine: "Engine") -> None:
+    def __init__(self, engine: Engine) -> None:
         self.e = engine
 
     def _pool(self) -> list:

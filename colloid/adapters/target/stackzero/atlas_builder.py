@@ -31,7 +31,17 @@ from colloid.adapters.code.python_ast import PythonAstCode, normalize_sql
 from colloid.core.atlas import StackAtlas
 from colloid.core.ids import content_hash, sha256_hex
 from colloid.core.knobs import KnobSpec
-from colloid.core.models import AtlasPath, Edge, EdgeKind, EdgeSource, Layer, PathKind, Surface, Unit, UnitKind
+from colloid.core.models import (
+    AtlasPath,
+    Edge,
+    EdgeKind,
+    EdgeSource,
+    Layer,
+    PathKind,
+    Surface,
+    Unit,
+    UnitKind,
+)
 
 PY_FILES = ("service/shop/handlers.py", "service/shop/search.py", "service/shop/util.py", "service/shop/native.py",
             "service/shop/app.py", "service/shop/db.py", "service/shop/config.py")
@@ -196,7 +206,7 @@ def build_static_atlas(root: Path, knobs: Sequence[KnobSpec]) -> StackAtlas:
                 atlas.add_edge(Edge(src=u.id, dst=queries[qpath], kind=EdgeKind.QUERIES))
 
     # Resolve Python calls.
-    for spath, info in py_units.items():
+    for info in py_units.values():
         src_id = info["unit"].id  # type: ignore[attr-defined]
         rel = str(info["rel"])
         imports: dict[str, str] = info["imports"]  # type: ignore[assignment]

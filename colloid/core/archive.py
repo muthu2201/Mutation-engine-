@@ -214,7 +214,7 @@ class IslandModel:
         ring every ``migration_interval`` generations. Returns (from, to, program) moves."""
         if generation == 0 or generation % self.migration_interval != 0 or len(self.ring) < 2:
             return []
-        moves = []
+        moves: list[tuple[str, str, str]] = []
         outgoing = {name: self.islands[name].grid.elites()[: self.migrants_per_step] for name in self.ring}
         for i, name in enumerate(self.ring):
             dst = self.ring[(i + 1) % len(self.ring)]

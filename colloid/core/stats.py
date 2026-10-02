@@ -48,12 +48,12 @@ def _as_groups(groups: Sequence[Sequence[float]]) -> list[np.ndarray]:
 
 def _stat(values: np.ndarray, statistic: str, axis: int | None = None) -> np.ndarray:
     if statistic == "median":
-        return np.median(values, axis=axis)
+        return np.asarray(np.median(values, axis=axis))
     if statistic == "mean":
-        return np.mean(values, axis=axis)
+        return np.asarray(np.mean(values, axis=axis))
     if statistic.startswith("p"):
         q = float(statistic[1:]) / 100.0
-        return np.quantile(values, q, axis=axis)
+        return np.asarray(np.quantile(values, q, axis=axis))
     raise ValueError(f"unknown statistic {statistic}")
 
 

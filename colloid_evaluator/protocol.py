@@ -436,7 +436,7 @@ class Bench:
                 res.reason = "incomplete measurement"
             return res
         finally:
-            out, err = self.target.stop_service(svc)
+            _out, err = self.target.stop_service(svc)
             res.log_tail = err[-1500:]
             res.duration_s = time.monotonic() - t0
 

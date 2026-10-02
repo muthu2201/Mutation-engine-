@@ -335,6 +335,10 @@ RULES: dict[str, Callable[[ast.AST, _Src], list[tuple[str, list[Edit]]]]] = {
 }
 
 
+def _const(value: str) -> Callable[[], str]:
+    return lambda: value
+
+
 def find_rewrites(source: str) -> list[RewriteSite]:
     """All applicable rewrite sites in a function's source. Each site's ``apply()``
     returns the rewritten source; results that no longer parse are filtered out."""
@@ -352,5 +356,5 @@ def find_rewrites(source: str) -> list[RewriteSite]:
             except SyntaxError:
                 continue
             if new != source:
-                sites.append(RewriteSite(rule, desc, (lambda s=new: s)))
+                sites.append(RewriteSite(rule, desc, _const(new)))
     return sites

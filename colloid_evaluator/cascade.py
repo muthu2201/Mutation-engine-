@@ -37,17 +37,16 @@ import time
 from collections import OrderedDict
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Any
 
 import numpy as np
 
 from colloid.adapters.target.stackzero.adapter import GeneApplyError, StackZeroTarget
-from colloid.core.models import Measured
 from colloid.core.genome import Genome
 from colloid.core.ids import content_hash
 from colloid.core.models import (
     Evaluation,
+    Measured,
     MetricSummary,
     ObjectiveEstimate,
     PayloadKind,
@@ -59,7 +58,20 @@ from colloid.core.stats import combine_effects_se
 from colloid.ports import CostModel, Workspace
 from colloid_evaluator import oracles, policy
 from colloid_evaluator.fingerprint import fingerprint
-from colloid_evaluator.protocol import HOLDOUT, L4, L5, SHAPLEY, SOAK, Arm, Bench, Comparison, Protocol, calibrate, effect, summary
+from colloid_evaluator.protocol import (
+    HOLDOUT,
+    L4,
+    L5,
+    SHAPLEY,
+    SOAK,
+    Arm,
+    Bench,
+    Comparison,
+    Protocol,
+    calibrate,
+    effect,
+    summary,
+)
 from colloid_evaluator.workloads import Universe
 
 OBJECTIVES = ("cost", "cpu", "p50", "p95", "mem")

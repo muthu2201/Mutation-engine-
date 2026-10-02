@@ -31,7 +31,8 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from colloid.core.attribution import Measured, Subset
+from colloid.core.attribution import Subset
+from colloid.core.models import Measured
 
 # ------------------------------------------------------------------------ designs
 
@@ -74,8 +75,8 @@ def plackett_burman(k: int) -> np.ndarray:
             h = hadamard(n)
             # normalise so the first column is all +1, then drop it
             h = h * h[:, [0]]
-            design = h[:, 1 : k + 1]
-            return design
+            pb: np.ndarray = h[:, 1 : k + 1]
+            return pb
     raise ValueError(f"too many factors for screening: {k}")
 
 

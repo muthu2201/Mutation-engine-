@@ -12,12 +12,19 @@ graph-ordered so likely-interacting pairs (shared Atlas path/resource) are teste
 
 from __future__ import annotations
 
-import time
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
-from colloid.core.attribution import Measured, Subset, epistasis, epistasis_pairs_to_test, prune, shapley_exact, shapley_permutation, shapley_plan
-from colloid.core.genome import Genome
-from colloid.core.models import AttributionRecord, EpistasisRecord, ProgramStatus
+from colloid.core.attribution import (
+    Measured,
+    Subset,
+    epistasis,
+    epistasis_pairs_to_test,
+    prune,
+    shapley_exact,
+    shapley_permutation,
+    shapley_plan,
+)
+from colloid.core.models import AttributionRecord, EpistasisRecord
 from colloid.core.objectives import gain_percent
 
 if TYPE_CHECKING:
@@ -25,7 +32,7 @@ if TYPE_CHECKING:
 
 
 class ShapleyRunner:
-    def __init__(self, engine: "Engine") -> None:
+    def __init__(self, engine: Engine) -> None:
         self.e = engine
 
     def run(self, gen: int) -> None:
