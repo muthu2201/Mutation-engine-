@@ -36,6 +36,6 @@ splice_pool: 10
 splice_top_k: 3
 
 profile: true
-profile_delays: [0.0, 0.5, 1.0]
-aa_runs: 12
+profile_delays: [0.0, 0.4]
+aa_runs: 10
 max_runtime_minutes: 150

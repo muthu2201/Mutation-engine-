@@ -146,8 +146,9 @@ class Engine:
                         code_units.append(uid)
             lev = prof.causal_leverage(code_units[: prof.cfg.top_units], log=lambda m: self.tele.emit("log", msg=m))
             decorate_atlas(self.atlas, latency, lev)
-            self.store.kv_set("profile", {"latency_share": {self.atlas.units[k].name: v for k, v in latency.latency_share.items()},
-                                          "leverage": {self.atlas.units[k].name: c.slope for k, c in lev.leverage.items()}})
+            # latency_share is keyed by endpoint symbol path; leverage by unit id.
+            self.store.kv_set("profile", {"latency_share": {k.split(":", 1)[-1]: v for k, v in latency.latency_share.items()},
+                                          "leverage": {self.atlas.units[k].name: c.slope for k, c in lev.leverage.items() if k in self.atlas.units}})
             self.tele.emit("profile.done", endpoints=len(latency.latency_share), leverage_units=len(lev.leverage))
 
     def _aa_test(self) -> None:
