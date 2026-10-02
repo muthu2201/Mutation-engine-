@@ -127,7 +127,7 @@ class StackZeroTarget:
         self.sandbox = sandbox or select_sandbox()
         self._knobs = load_knobs(observe_system=observe_system)
         self._knob_by_name = {k.name: k for k in self._knobs}
-        self.pg = PostgresCluster(self.sandbox, root=state / "pg")
+        self.pg = PostgresCluster.shared(self.sandbox, state / "pg")
         self.os_layer = OsLayer(state / "os_journal.json")
         self.py_code = PythonAstCode()
         self.c_code = ClangCCode(include_dirs=[str(root / "native")])

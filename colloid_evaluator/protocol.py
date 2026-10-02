@@ -109,6 +109,9 @@ class Arm:
     label: str
     program_id: str
     ws: Workspace
+    # Another implementation of the same contract (same database, workloads and oracle) can serve
+    # an arm; None = the bench's own target. Used by the language bake-off.
+    target: Any = None
 
 
 @dataclass
@@ -376,13 +379,14 @@ class Bench:
                warm: list[list[Request]], warm_sched: list[int], rng: random.Random) -> PhaseResult:
         t0 = time.monotonic()
         res = PhaseResult(arm=arm.label, cycle=cycle, ok=False)
-        build = self.target.build(arm.ws, link_seed=rng.randrange(1_000_000))
+        target = arm.target or self.target
+        build = target.build(arm.ws, link_seed=rng.randrange(1_000_000))
         if not build.ok:
             res.reason = f"build failed: {build.log[-500:]}"
             return res
-        res.shared_changes = self.target.apply_shared_state(arm.ws.launch, db)
+        res.shared_changes = target.apply_shared_state(arm.ws.launch, db)
         try:
-            svc = self.target.start_service(arm.ws, db, env_pad=rng.randrange(4097), hash_seed=rng.randrange(1 << 16))
+            svc = target.start_service(arm.ws, db, env_pad=rng.randrange(4097), hash_seed=rng.randrange(1 << 16))
         except RuntimeError as exc:
             res.reason = f"service failed to start: {str(exc)[:600]}"
             return res
@@ -443,7 +447,7 @@ class Bench:
                 res.reason = "incomplete measurement"
             return res
         finally:
-            _out, err = self.target.stop_service(svc)
+            _out, err = target.stop_service(svc)
             res.log_tail = err[-1500:]
             res.duration_s = time.monotonic() - t0
 

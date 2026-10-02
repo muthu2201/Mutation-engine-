@@ -18,6 +18,9 @@ if TYPE_CHECKING:
 TARGETS: dict[str, tuple[str, str]] = {
     "stackzero": ("colloid.adapters.target.stackzero.adapter", "StackZeroTarget"),
     "stackzero-go": ("colloid.adapters.target.stackzero_go.adapter", "StackZeroGoTarget"),
+    # measurable, not yet mutable (no TypeScript code representation): bake-off participants
+    "stackzero-node": ("colloid.adapters.target.stackzero_ts.adapter", "StackZeroNodeTarget"),
+    "stackzero-bun": ("colloid.adapters.target.stackzero_ts.adapter", "StackZeroBunTarget"),
 }
 DEFAULT_TARGET = "stackzero"
 

@@ -109,7 +109,7 @@ class StackZeroGoTarget(StackZeroTarget):
         self.sandbox = sandbox or select_sandbox()
         self._knobs = load_go_knobs(observe_system=observe_system)
         self._knob_by_name = {k.name: k for k in self._knobs}
-        self.pg = PostgresCluster(self.sandbox, root=state / "pg")
+        self.pg = PostgresCluster.shared(self.sandbox, state / "pg")
         self.os_layer = OsLayer(state / "os_journal.json")
         self.go_state = state / "go"
         self.go_code = GoAstCode(self.go_state / "tools")

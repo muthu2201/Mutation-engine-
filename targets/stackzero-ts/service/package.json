@@ -1,0 +1,13 @@
+{
+  "name": "stackzero-shop-ts",
+  "private": true,
+  "type": "module",
+  "description": "The StackZero shop contract in TypeScript: one codebase, run on Node and on Bun",
+  "scripts": {
+    "start": "node --experimental-strip-types src/main.ts",
+    "test": "node --experimental-strip-types --test src/util.test.ts"
+  },
+  "dependencies": {
+    "pg": "8.23.1"
+  }
+}

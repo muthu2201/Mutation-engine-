@@ -20,6 +20,7 @@
     colloid rules check FILE                     parse + validate a CRL file
     colloid compare COLD PRIMED                  the transfer A/B (verified gain per hour) of two runs
     colloid ladder [--cold RUN --primed RUN]     which milestones the evidence has earned (gates)
+    colloid bakeoff [--impl NAME ...]            one contract, every implementation, one judge: measured
 
 Most commands take --target (stackzero | stackzero-go): which implementation to work on.
 
@@ -181,6 +182,16 @@ def cmd_compare(args: argparse.Namespace) -> int:
     out = {"cold": arm_result(args.cold).__dict__, "primed": arm_result(args.primed).__dict__, "config_differences_besides_the_lake": diff}
     print(json.dumps(out, indent=2))
     Path(args.out).write_text(json.dumps(out, indent=2)) if args.out else None
+    return 0
+
+
+def cmd_bakeoff(args: argparse.Namespace) -> int:
+    from colloid.services.bakeoff import IMPLEMENTATIONS, run, scale_projection
+
+    report = run(args.impl or IMPLEMENTATIONS, rate=args.rate, cycles=args.cycles, capacity=not args.no_capacity)
+    report["scale_projection"] = scale_projection(report)
+    text = json.dumps(report, indent=2, default=str)
+    Path(args.out).write_text(text) if args.out else print(text)
     return 0
 
 
@@ -346,6 +357,9 @@ def main(argv: list[str] | None = None) -> int:
     cp = sub.add_parser("compare"); cp.add_argument("cold"); cp.add_argument("primed"); cp.add_argument("--out"); cp.set_defaults(fn=cmd_compare)
     ld = sub.add_parser("ladder"); ld.add_argument("--lake", default="git:colloid/datalake"); ld.add_argument("--cold"); ld.add_argument("--primed")
     ld.add_argument("--out"); ld.set_defaults(fn=cmd_ladder)
+    bo = sub.add_parser("bakeoff"); bo.add_argument("--impl", action="append"); bo.add_argument("--rate", type=float)
+    bo.add_argument("--cycles", type=int, default=4); bo.add_argument("--no-capacity", action="store_true"); bo.add_argument("--out")
+    bo.set_defaults(fn=cmd_bakeoff)
     d = sub.add_parser("dashboard"); d.add_argument("run"); d.add_argument("--port", type=int, default=8080); d.set_defaults(fn=cmd_dashboard)
     from colloid.adapters.target import DEFAULT_TARGET, TARGETS
 
