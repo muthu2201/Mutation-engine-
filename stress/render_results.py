@@ -1,13 +1,21 @@
-"""Render the measured results of a run (and the stress JSON) into the markdown blocks that
-replace the RESULTS placeholders in docs/INITIAL_RESULTS.md. Pure projection of the run's own
-store + telemetry + stress reports — no hand-entered numbers.
+"""Render the measured results of a run (and the stress JSON) into docs/INITIAL_RESULTS.md.
 
-    python stress/render_results.py runs/stackzero > /tmp/blocks.md
+A pure projection of the run's own store + telemetry + stress reports — no hand-entered
+numbers. Each generated block lives between ``<!-- RESULTS:NAME -->`` and
+``<!-- /RESULTS:NAME -->`` markers and is replaced in place, so re-rendering is idempotent.
+With ``--evidence DIR`` the full machine-readable reports are also written next to the doc
+(``runs/`` is not committed; the evidence is).
+
+    python stress/render_results.py runs/stackzero                       # print the blocks
+    python stress/render_results.py runs/stackzero --write docs/INITIAL_RESULTS.md --evidence docs/results
 """
 
 from __future__ import annotations
 
+import argparse
 import json
+import re
+import shutil
 import sys
 from collections import Counter
 from pathlib import Path
@@ -132,12 +140,40 @@ def stress_block() -> str:
     return "\n".join(out) if out else "_(stress reports not yet generated — run the harnesses in `stress/`.)_"
 
 
+def replace_block(doc: str, name: str, body: str) -> str:
+    pat = re.compile(rf"(<!-- RESULTS:{name} -->\n).*?(\n<!-- /RESULTS:{name} -->)", re.S)
+    if not pat.search(doc):
+        raise SystemExit(f"marker pair for RESULTS:{name} not found")
+    return pat.sub(lambda m: m.group(1) + "\n" + body.strip() + "\n" + m.group(2), doc)
+
+
+def write_evidence(run: str, out_dir: Path) -> None:
+    out_dir.mkdir(parents=True, exist_ok=True)
+    name = Path(run).name
+    (out_dir / f"{name}.report.json").write_text(json.dumps(build_report(run), indent=1, default=str))
+    for f in ("stress_sandbox.json", "stress_evaluator.json"):
+        src = Path("/opt/colloid/state") / f
+        if src.exists():
+            shutil.copy(src, out_dir / f)
+
+
 def main() -> int:
-    run = sys.argv[1] if len(sys.argv) > 1 else "runs/stackzero"
-    print("<!-- RESULTS:RUN -->\n")
-    print(run_block(run))
-    print("\n<!-- RESULTS:STRESS -->\n")
-    print(stress_block())
+    ap = argparse.ArgumentParser()
+    ap.add_argument("run", nargs="?", default="runs/stackzero")
+    ap.add_argument("--write", help="markdown file whose RESULTS blocks are replaced in place")
+    ap.add_argument("--evidence", help="directory for the machine-readable reports")
+    args = ap.parse_args()
+    blocks = {"RUN": run_block(args.run), "STRESS": stress_block()}
+    if args.write:
+        doc = Path(args.write).read_text()
+        for name, body in blocks.items():
+            doc = replace_block(doc, name, body)
+        Path(args.write).write_text(doc)
+    else:
+        for name, body in blocks.items():
+            print(f"<!-- RESULTS:{name} -->\n\n{body}\n\n<!-- /RESULTS:{name} -->\n")
+    if args.evidence:
+        write_evidence(args.run, Path(args.evidence))
     return 0
 
 

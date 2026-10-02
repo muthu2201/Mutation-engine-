@@ -244,8 +244,28 @@ hash seed) so a gain must survive layout noise; effects are **paired** — chunk
 replays the same requests, so CPU/cost compare chunk-by-chunk (ratio of totals, pair-bootstrap
 CI, exact sign-flip permutation p-value) and latency quantiles use a paired bootstrap over
 request indices, which removes the dominant noise source (the random mix of cheap and expensive
-requests). An **A/A test** (identical program vs itself, many runs) measures the false-positive
-rate; if it exceeds α, promotions halt.
+requests).
+
+**The A/A noise floor and the promotion gate.** Pairing makes a comparison's CI honest about
+noise *within* one run. It cannot see noise that every chunk of a run shares, such as a noisy
+neighbour for those two minutes, frequency drift, or that run's random link order and padding.
+On the shared development host that component was larger than the within-run noise: the first
+A/A test had a 2.5% run-to-run SD against a ~1.5% within-run SE, and a 30% false-positive rate.
+So before any search, the engine runs an **A/A test** (the identical program against itself,
+N times, under the L5 protocol) and uses it in three ways (`core/stats.py::calibrate_aa`,
+`cascade.py::aa_test`):
+
+- It **estimates the between-run variance** τ² = Var(A/A effects) − mean(within-run SE²), a
+  method-of-moments random-effects component, and stores it per benchmark cycle.
+- It **widens every later CI** to √(SE² + τ²/cycles) (`with_noise_floor`). The p-value can
+  only grow, so a candidate must beat the run-to-run noise, not just the chunk-to-chunk noise.
+- It **checks the calibration out of sample** (leave-one-out over the A/A runs) and gates
+  promotion with an exact binomial test of "calibrated FPR ≤ α". A naive "observed FPR ≤ α" on
+  10 runs rejects a perfectly calibrated harness 40% of the time.
+
+The gate is enforced in the engine. A new best that passes L6 while the gate is closed is
+marked `verified` (and emits `promotion.held`), never `promoted`. A run with no A/A test
+never promotes.
 
 ---
 

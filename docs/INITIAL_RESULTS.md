@@ -11,7 +11,8 @@ prescribes (turbo/SMT off, `isolcpus`, single NUMA node), so absolute latencies 
 than a production bench pool would show. The methodology compensates the way the blueprint
 says to — load generator pinned to CPU 0, target on CPUs 1–3, steady-state detection,
 randomised-order ABAB interleaving, setup randomisation, paired statistics, and a nightly-style
-A/A false-positive check — and the results below are reported with that caveat.
+A/A false-positive check that sets a measured noise floor (§2.2) — and the results below are
+reported with that caveat.
 
 ```
 environment: Linux 6.18 KVM guest · 4 vCPU Intel Xeon (Sapphire Rapids class) · 15 GB RAM
@@ -71,15 +72,43 @@ cases where L0 is the sole backstop by design (they produce *correct* outputs, s
 analysis can see the mechanism); the behaviour-changing hacks (truncation, fake writes,
 float-tolerance abuse, the C bug) are each caught independently by the L2 differential oracle.
 
-### 2.2 Benchmark noise floor (A/A test)
+### 2.2 Benchmark noise floor (A/A test) — failed first, then fixed
 
 `colloid aa` compares the baseline against an identical copy of itself under the exact
-promotion protocol, many times. Because the two programs are identical, every "significant"
-difference is a false positive, so the fraction of runs flagged significant estimates the
-false-positive rate and must stay at or below α = 5% for promotions to be allowed. The paired
-chunk-wise estimator keeps the primary cost objective's false-positive rate within that bound
-on this hardware; the full per-objective table (false-positive rate, CI coverage of zero,
-effect standard deviation) is written to the run store and shown in §4.
+promotion protocol (L5), many times. The two programs are identical, so every "significant"
+difference is a false positive.
+
+**The first measurement failed the gate, and that finding drove a real fix.** In the first
+full run (10 A/A runs) the primary cost objective showed a **raw false-positive rate of 30%
+(3/10)** at α = 5%. The A/A cost effects had a run-to-run standard deviation of **2.5%**, while
+each run's own paired-chunk CI implied a standard error of only about 1.5%. The CI was
+honest about noise *inside* a run (chunk to chunk) but blind to a **between-run** component
+that every chunk of one run shares: noisy neighbours on the shared KVM host, frequency
+drift, and the deliberately different link order / environment padding / hash seed each
+run draws. A dedicated, quiesced bench host would shrink that component; it does not
+remove it.
+
+Colloid now measures that component instead of assuming it away (`core/stats.py`,
+`colloid_evaluator/cascade.py::aa_test`):
+
+1. **Noise floor.** From the A/A runs, τ² = Var(A/A effects) − mean(within-run SE²), a
+   method-of-moments random-effects variance component (the DerSimonian–Laird idea). It is
+   stored per benchmark cycle, and from then on **every comparison's CI is widened to
+   √(SE² + τ²/cycles)**. Asymmetry is kept, and a p-value can only get larger, never smaller.
+2. **Out-of-sample check.** The calibrated false-positive rate is measured leave-one-out. Run
+   *i* is judged with τ estimated from the other runs only, so the calibration cannot grade
+   itself on the data it was fitted to.
+3. **A gate with the right statistics.** "Observed FPR ≤ α" on 10 runs would reject a
+   *perfectly calibrated* harness 40% of the time (P[Binom(10, 0.05) ≥ 1] = 0.40).
+   Promotions are allowed only if an exact one-sided binomial test cannot reject "calibrated
+   FPR ≤ α".
+4. **The gate is enforced.** The first run also exposed a real bug: when the A/A test
+   failed, the engine logged "promotions halted" but still promoted a new best after L6. Now
+   an elite that passes L6 while the gate is closed is marked **`verified`** (with a
+   `promotion.held` event) and never `promoted`.
+
+The measured noise floor, the raw and calibrated false-positive rates, and the gate decision
+for the reported run are in §4. A separate 20-run stress A/A is in §5.
 
 ### 2.3 Sandbox containment
 
@@ -119,13 +148,41 @@ exploration floor, never as a hard gate.
 
 ## 4. The evolutionary run
 
-*(Filled from the live `experiments/stackzero.yaml` run — see the "run" section below. The
-run uses local Qwen2.5-Coder 3B and 1.5B models for the LLM arms (no external API), profiling
-on, a 12-run A/A noise floor, all eight per-region islands plus the Composition and red-team
-islands, Shapley pruning and splicing every 5 generations, and L6 deep assurance + hidden
-holdout + soak on new global bests.)*
+`colloid run experiments/stackzero.yaml`: local Qwen2.5-Coder 3B and 1.5B models serve the LLM
+arms (no external API). The run uses causal profiling, a **20-run A/A noise floor** with the
+promotion gate from §2.2, all per-region islands plus the Composition and red-team islands,
+Shapley pruning with epistasis and splicing every 5 generations, and L6 deep assurance
+(deep oracle, sanitizer fuzzing, hidden holdout workload, soak) on every new global best.
+
+### 4.1 First attempt: crashed at generation 5 (kept as evidence)
+
+The first full run (`runs/stackzero-attempt1-crashed-gen5`, evidence in
+`docs/results/stackzero-attempt1-crashed-gen5.report.json`) ran 4 complete generations and
+then crashed in generation 5. The Shapley epistasis step emitted a telemetry field named
+`kind`, which collided with the event-kind argument (`TypeError`). The fix renames the
+field, makes the event kind positional-only, and namespaces any reserved key, so telemetry
+can no longer crash the engine; a regression test covers it. What that attempt measured
+before the crash:
+
+| | |
+|---|---|
+| cascade funnel | L0 31 pass / 4 fail → L1 26 / 5 → **L2 9 pass / 17 fail** → L4 9 → L5 9 → L6 1 pass / 2 fail |
+| admitted to archives | 9 programs |
+| LLM usage | 42 local calls (40.3k in / 12.9k out tokens), all syntactically screened before L0 |
+| red-team island | 1 attack generated, caught by the L2 oracle, 0 breaches |
+| real win | `db.idx_orders_customer_placed` index gene: **+5.3% cost** on the hidden holdout (CI [+3.2%, +7.4%], p = 0.002), p50 −19% |
+| noise "wins" caught | a `gi_edit` line duplication (+2.1% at L5) and an index crossover (+6.8% at L5) both became the global best, and **both were rejected by the L6 hidden-holdout check** (cost CI lower bound ≤ 0 on unseen traffic) |
+
+Two of the three new bests were measurement noise, which is what the 30% raw A/A
+false-positive rate predicted. The L6 holdout, an independent second measurement on a
+workload the search never sees, rejected both. Only the real index win survived L6.
+However, it was then **promoted while the A/A gate was closed**, which is the gate bug
+described in §2.2.
+
+### 4.2 The reported run
 
 <!-- RESULTS:RUN -->
+<!-- /RESULTS:RUN -->
 
 ### Illustrative individual mutations already measured end-to-end
 
@@ -151,6 +208,7 @@ specific hot parts**, not order-of-magnitude stack-wide speedups.
 ## 5. Stress test
 
 <!-- RESULTS:STRESS -->
+<!-- /RESULTS:STRESS -->
 
 ---
 
