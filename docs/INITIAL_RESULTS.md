@@ -31,11 +31,15 @@ ranking library (`libshopnative`) built with ordinary `-O2` whose fuzzy matcher 
 full Levenshtein matrix on every call.
 
 `colloid baseline` calibrates the offered load to the knee of the latency curve and measures
-the baseline there. The benchmark rate is set to **~45 requests/second** (half the measured
-knee of ~90 rps, so the system is loaded but not saturated). At that rate the baseline costs
-about **0.40–0.43 USD per million requests** (CPU-seconds + memory-GB-seconds priced at a
-c7i-class on-demand snapshot), at roughly **30–35 ms CPU per request**, p50 ≈ 15 ms, with a
-long p99 tail in the hundreds of ms characteristic of the missing indexes and N+1 queries.
+the baseline at half the knee, so the system is loaded but not saturated. The knee depends on
+how busy the shared host is. During evaluator development it measured ~90 rps (benchmark rate
+45 rps). At the start of the reported run (§4) it measured ~60 rps, so that run benchmarks at
+**30 rps**. At those rates the baseline costs about **0.40–0.48 USD per million requests**
+(CPU-seconds + memory-GB-seconds priced at a c7i-class on-demand snapshot), at roughly
+**30–35 ms CPU per request**, p50 ≈ 15 ms, with a long p99 tail in the hundreds of ms that is
+characteristic of the missing indexes and N+1 queries. Every comparison runs the baseline in
+the same session as the candidate, interleaved, so the shifting knee changes the operating
+point but never the comparison.
 
 ---
 
@@ -181,8 +185,88 @@ described in §2.2.
 
 ### 4.2 The reported run
 
+**Headline.** After 10 generations (164 min, 80 programs proposed, 30 evaluated through L5)
+and post-run verification, **four programs were promoted**. The best, `58c5d609` (5 genes,
+spliced on the Composition Island from elites of three regions), cuts **cost per request by
+30.9% (95% CI [+27.3%, +34.5%], 6-cycle replicate, p = 5·10⁻⁵)**, from $0.457 to $0.316 per
+million requests. On the same replicate p50 latency falls 46.9% and p95 40.4%, and memory is
+unchanged. Its gain persists on the hidden holdout workload (+26.6%, CI [+21.3%, +31.0%]). It
+passed the deep oracle, sanitized differential fuzzing and the soak test. Every one of these
+numbers carries the run's measured A/A noise floor.
+
+**What the gain is made of.** Shapley attribution and the leave-one-gene-out ablation below
+agree that one gene carries nearly all of it: **`db.idx_reviews_product`**, an index on
+`reviews(product_id)`. The baseline loads every product's rating with a sequential scan of
+the 60k-row reviews table, inside an N+1 loop over search results. The other genes are
+measured below; most of them are hitchhikers (§4.4).
+
 <!-- RESULTS:RUN -->
 <!-- /RESULTS:RUN -->
+
+### 4.3 What running it at full scale exposed — and the fixes
+
+Running the system end to end on real hardware found six defects that no unit test had
+caught. Each fix has a regression test.
+
+1. **Telemetry could crash the engine** (first attempt, §4.1). A field named `kind` collided
+   with the event-kind argument. Reserved envelope keys are now namespaced.
+2. **The A/A gate was advisory and the CIs miscalibrated** (§2.2). The engine promoted with
+   the gate closed. Within-run CIs ignored between-run variance, giving a 35% raw false-positive
+   rate. Fixed with the random-effects noise floor, leave-one-out calibration, a binomial gate
+   and enforcement (calibrated false-positive rate 5%).
+3. **Every native-code L6 failed because of the evaluator, not the candidate.**
+   LeakSanitizer's stop-the-world needs ptrace, and the sandbox's seccomp policy denies it, so
+   every sanitized fuzz run aborted. Six of the run's eight in-run L6 reviews were lost to it,
+   including those of the eventual best program `58c5d609` and of `803f6d1d`. The other two
+   failed on their merits: their holdout gain did not persist. The fuzz driver now measures leaks itself without ptrace, exactly:
+   0 bytes of growth for leak-free code, and a new `native_leak` canary is caught at ~2 KB per
+   call. A crashed sanitizer runtime is now an infrastructure ERROR. `colloid verify` then gave
+   the affected programs a fair L6, without ever re-testing a program that had failed on its
+   merits.
+4. **Both red-team "breaches" were inert attacks.** A float-rounding wrapper on the ASGI
+   startup hook (returns `None`) and a list-truncating wrapper on a config parser (returns a
+   `bool`) could never change a response. Attacks now target only value-returning functions
+   on a request path. The engine confirms liveness with the *maximal* version of the same
+   attack, and the float attack now recurses into tuples. Re-adjudication confirmed both
+   alerts inert. The probe is tested both ways: caught on `rating_summary`, inert on
+   `lifespan`.
+5. **A sandbox race.** On a wall-clock kill, the timer thread tears down the cgroups while
+   the caller reads `memory.oom_control`. Mid-teardown that read returns ENODEV, which
+   escaped (seen once in the integration suite). The OOM flag is now snapshotted under the
+   process lock before removal, and a deterministic fault-injection test covers it.
+6. **A stress metric that could not fail.** The sandbox stress test's "peak live cgroups" was
+   sampled after each round had already cleaned up, so it always read 0. A 10 ms monitor
+   thread now samples during the rounds.
+
+### 4.4 Limitations this run makes visible
+
+- **Promoted programs are not minimal.** Shapley pruning runs on a schedule over the islands'
+  top programs. The three top splices were assembled late and never pruned before
+  verification, so they carry hitchhiker genes, among them a `gi_edit` that duplicates a line
+  in `Executor.fetchrow` and LLM rewrites of C code that add no measurable gain. Promotion
+  should require a pruning pass. The ablation above shows what that pass would keep.
+- **The L3 surrogate learned nothing at this scale.** Its prequential Spearman ρ was ≈ 0
+  after 10–20 examples, so it was never trusted and cut no candidates (0 `surrogate_cut`
+  events), which is the audit working as designed. A 10-generation run is too short for a
+  learned pre-filter to pay off.
+- **Small local LLMs had low yield.** Of 85 calls to Qwen2.5-Coder 3B/1.5B:
+  - 44 were rejected by the response parser: 23 added imports outside the locus, 11 changed a
+    function's sync/async nature, 8 returned the code unchanged, and 2 added extra top-level
+    code;
+  - 32 were rejected by the cascade: 12 failed to build and 20 failed the oracle;
+  - **7 were admitted**.
+
+  None of the admitted LLM edits that attribution measured has a contribution distinguishable
+  from zero, and the bandit's credit for the LLM arms is near zero. The structural wins came
+  from the knob, index and splice operators. This is a statement about 3B-class models under
+  strict locus confinement, not about LLM operators in general.
+- **The host sets the detection limit.** With τ ≈ 3% between runs, a two-cycle L5 can confirm
+  gains above ≈ 6.5%. Smaller real improvements are found by the search but cannot be
+  certified here without the many-cycle replicate or a quiet bench host.
+- **One L6 rejection may be a soak false alarm.** `f281a4a5` failed the 20-second soak with
+  0.89 MB/s of memory growth. That is above threshold but could be warm-up growth rather than a
+  leak. It was not re-tested, because re-testing L6 failures until they pass is exactly what
+  the verify rules forbid.
 
 ### Illustrative individual mutations already measured end-to-end
 
@@ -222,8 +306,9 @@ colloid canaries --out canary.json      # §2.1 (exits non-zero if any hack surv
 colloid aa --runs 20 --out aa.json      # §2.2
 colloid profile                         # §3
 colloid run experiments/stackzero.yaml  # §4
-colloid verify runs/stackzero --top 6   # §4.3 post-run L6 + 6-cycle replicate
-colloid redteam-recheck runs/stackzero  # §4.4 re-adjudicate red-team alerts
+colloid verify runs/stackzero --top 6   # §4.2 post-run L6 + 6-cycle replicate
+colloid verify runs/stackzero --ablate 58c5d609e82eef78   # §4.2 what the gain is made of
+colloid redteam-recheck runs/stackzero  # §4.3 re-adjudicate red-team alerts
 colloid report runs/stackzero           # the numbers in §4, from the run's own store
 python stress/render_results.py runs/stackzero --write docs/INITIAL_RESULTS.md --evidence docs/results
 python stress/stress_sandbox.py         # §5 (as root)
