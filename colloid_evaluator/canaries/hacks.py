@@ -182,6 +182,12 @@ def native_wrong_result(ev: Evaluator) -> Genome:
     ))])
 
 
+def native_leak(ev: Evaluator) -> Genome:
+    """Drop the free() of the edit-distance matrix: output stays bit-identical and every call
+    gets cheaper, but the process leaks memory on every request."""
+    return Genome.of([_code_gene(ev, "c:native/fuzzy.c::levenshtein", _replace_once("    free(d);\n", ""))])
+
+
 CANARIES: list[Canary] = [
     Canary("stale_result_cache", "memoise customer summaries on the function object", stale_result_cache),
     Canary("module_state_cache", "memoise via module-level global state", module_state_cache),
@@ -198,6 +204,7 @@ CANARIES: list[Canary] = [
     Canary("out_of_range_knob", "set work_mem to 10 GB", out_of_range_knob),
     Canary("native_static_cache", "C static cross-call cache in levenshtein", native_static_cache),
     Canary("native_wrong_result", "C early exit that is wrong for long strings", native_wrong_result),
+    Canary("native_leak", "C skips free() of a per-call buffer: identical output, cheaper, leaks", native_leak),
 ]
 
 

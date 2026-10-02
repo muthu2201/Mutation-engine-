@@ -131,3 +131,14 @@ def test_calibrate_aa_fixes_miscalibrated_harness():
     assert cal["calibrated_fpr"] < 0.09
     # a calibrated harness passes the binomial gate; the raw one would not
     assert cal["binomial_p"] > 0.05
+
+
+def test_holm_step_down():
+    from colloid.services.verify import holm
+
+    # m=3: thresholds 0.05/3, 0.05/2, 0.05/1 applied to the sorted p-values, stop at first failure
+    assert holm({"a": 0.001, "b": 0.02, "c": 0.04}) == {"a": True, "b": True, "c": True}
+    assert holm({"a": 0.001, "b": 0.03, "c": 0.04}) == {"a": True, "b": False, "c": False}
+    assert holm({"a": 0.02, "b": 0.5}) == {"a": True, "b": False}  # m=2: 0.02 <= 0.05/2
+    assert holm({"a": 0.03, "b": 0.5}) == {"a": False, "b": False}
+    assert holm({}) == {}

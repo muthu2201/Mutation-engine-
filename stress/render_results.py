@@ -74,6 +74,24 @@ def run_block(run: str) -> str:
         genes = "<br>".join(p.get("genes", [])) or "—"
         out.append(f"| `{p['id'][:10]}` ({p['status']}) | {p['island']} | {p['operator']} | {cost} | {p50} | {mem} | {genes} |")
     out.append("")
+    ver = rep.get("verification")
+    if ver and ver.get("programs"):
+        out.append(f"**Post-run verification** (`colloid verify`: L6 deep assurance for every eligible top program, then a "
+                   f"{ver['cycles']}-cycle replicate vs baseline; promotion needs L6 pass + holdout surviving Holm at "
+                   f"α={ver['alpha']} + replicate CI > 0 + A/A gate):\n")
+        out.append("| program | island | L5 cost (in-run) | L6 | holdout cost | replicate cost | replicate p50 | replicate mem | decision |")
+        out.append("|---|---|---|---|---|---|---|---|---|")
+
+        def _g(d: dict | None) -> str:
+            return f"{d['gain_pct']:+.1f}% [{d['ci_pct'][1]:+.1f}, {d['ci_pct'][0]:+.1f}]" if d else "—"
+
+        for r in ver["programs"]:
+            rep_ = r.get("replicate", {})
+            hold = r.get("holdout")
+            hold_s = f"{hold['gain_pct']:+.1f}% [{hold['ci_pct'][1]:+.1f}, {hold['ci_pct'][0]:+.1f}] p={hold['p']:.3f}" if hold else "—"
+            out.append(f"| `{r['program'][:10]}` | {r['island']} | {r['l5_cost_gain_pct']:+.1f}% | {r.get('l6')} | {hold_s} | "
+                       f"{_g(rep_.get('cost'))} | {_g(rep_.get('p50'))} | {_g(rep_.get('mem'))} | {r.get('decision', '—')} |")
+        out.append("")
     # attribution / epistasis
     if rep.get("epistasis"):
         out.append("**Measured epistasis** (ε = gain(a+b) − gain(a) − gain(b); + synergy, − interference):\n")

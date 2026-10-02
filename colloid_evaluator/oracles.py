@@ -171,6 +171,21 @@ def compare_spot_checks(reference: dict[int, bytes], candidate: dict[int, bytes]
     return problems
 
 
+# Output of a sanitizer *runtime* that failed to do its job (not a finding about the candidate).
+# These make the run an evaluator-infrastructure ERROR, never a candidate FAIL.
+SANITIZER_INFRA_MARKERS = (
+    "Sanitizer has encountered a fatal error",
+    "Sanitizer CHECK failed",
+    "AddressSanitizer failed to allocate",
+    "Shadow memory range interleaves",
+    "failed to allocate 0x",
+)
+
+
+def sanitizer_infrastructure_failure(output: str) -> bool:
+    return any(m in output for m in SANITIZER_INFRA_MARKERS)
+
+
 def native_fuzz(
     sandbox: LinuxSandbox,
     baseline_ws: Workspace,
@@ -216,14 +231,21 @@ def native_fuzz(
         )
         if build.returncode != 0:
             return False, f"fuzz build failed: {(build.stdout + build.stderr)[-3000:]}"
-        env = {"ASAN_OPTIONS": "detect_leaks=1:abort_on_error=0:exitcode=3", "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1"}
+        # LeakSanitizer is off on purpose: its end-of-process scan stops the world through a
+        # ptrace-attaching tracer thread, which the sandbox's seccomp policy denies, so it can only
+        # ever abort with "LeakSanitizer has encountered a fatal error". The driver checks leaks
+        # itself, ptrace-free, from the allocator's in-use byte count around every candidate call
+        # (native_fuzz.c: heap_in_use), in the quick (L2) pass as well as the sanitized (L6) one.
+        # tcache off: mallinfo2() does not walk it, so parked frees would read as in-use heap.
+        env = {"ASAN_OPTIONS": "detect_leaks=0:abort_on_error=0:exitcode=3", "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1",
+               "GLIBC_TUNABLES": "glibc.malloc.tcache_count=0"}
         res = sandbox.run(
             SandboxSpec(argv=("./native_fuzz", str(seed), str(iterations)), cwd=str(d), env=env, memory_limit_mb=4096 if sanitize else 1024,
                         pids_limit=16, cpu_seconds=600, wall_seconds=600, writable_paths=(str(d),), label="fuzz")
         )
         out = (res.stdout + res.stderr)[-3000:]
         if res.returncode != 0:
-            reason = res.killed_reason or f"exit {res.returncode}"
+            reason = res.killed_reason or ("memory leak" if res.returncode == 4 else f"exit {res.returncode}")
             return False, f"native differential fuzz failed ({reason}): {out}"
         return True, out
     finally:

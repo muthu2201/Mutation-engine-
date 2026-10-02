@@ -68,3 +68,44 @@ def test_out_of_range_knob_rejected_at_l0(evaluator):
 
     g = Genome.of([_knob_gene(evaluator, "db.work_mem_kb", 10**9)], evaluator.atlas)
     assert not evaluator.l0(g.program_id("baseline"), g).passed
+
+
+def _native_fuzz(ev, genome, *, sanitize):
+    from colloid_evaluator import oracles
+    from colloid_evaluator.cascade import fresh_seed
+
+    r1 = ev.l1(genome.program_id("baseline"), genome)
+    assert r1.passed
+    return oracles.native_fuzz(ev.target.sandbox, ev.baseline_ws, r1.ws, ev.target.work, seed=fresh_seed(), iterations=600, sanitize=sanitize)
+
+
+@pytest.mark.parametrize("sanitize", [False, True], ids=["quick", "asan"])
+def test_native_fuzz_leak_check_is_exact_and_ptrace_free(evaluator, sanitize):
+    """Regression: LSan aborted every sanitized fuzz run inside the seccomp sandbox (no ptrace),
+    failing every native candidate at L6. The driver's own heap accounting must (a) report zero
+    net growth for the leak-free baseline and (b) catch a dropped free() in both builds."""
+    from colloid.core.genome import Genome
+    from colloid_evaluator.canaries.hacks import native_leak
+
+    ok, out = _native_fuzz(evaluator, Genome.of([_flag_gene(evaluator)], evaluator.atlas), sanitize=sanitize)
+    assert ok, out
+    assert "no leaks" in out and "Sanitizer has encountered a fatal error" not in out
+    ok, out = _native_fuzz(evaluator, native_leak(evaluator), sanitize=sanitize)
+    assert not ok and "LEAK levenshtein" in out, out
+
+
+def _flag_gene(ev):
+    """A behaviour-neutral native change (compiler flags), so the fuzz compares two real builds."""
+    from colloid.core.models import Gene, PayloadKind, Provenance
+
+    u = ev.atlas.unit_by_path("knob:cc.opt")
+    loc = next(lc for lc in ev.atlas.loci.values() if lc.unit_id == u.id)
+    return Gene.make(loc.id, PayloadKind.VALUE, {"value": "O3"}, Provenance(operator="test"))
+
+
+def test_sanitizer_runtime_crash_is_infrastructure_not_candidate_fault():
+    from colloid_evaluator.oracles import sanitizer_infrastructure_failure
+
+    assert sanitizer_infrastructure_failure("==1==LeakSanitizer has encountered a fatal error.\n==1==HINT: ...ptrace")
+    assert not sanitizer_infrastructure_failure("MISMATCH levenshtein(\"a\", \"b\"): candidate 0, baseline 1")
+    assert not sanitizer_infrastructure_failure("==1==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x60")

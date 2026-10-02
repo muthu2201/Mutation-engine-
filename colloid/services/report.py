@@ -123,6 +123,7 @@ def _build(store: Any, run: str) -> dict[str, Any]:
         "llm": llm_summary,
         "alerts": [a.model_dump() for a in store.alerts()],
         "aa_test": aa,
+        "verification": store.kv_get("verification"),
         "profile": profile,
         "result": result,
         "event_kinds": event_kinds,

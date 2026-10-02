@@ -8,6 +8,7 @@
     colloid report RUN                   summarise a finished run from its store
     colloid dashboard RUN [--port 8080]  serve the live dashboard for a run
     colloid baseline                     measure the baseline and print the SLO/cost
+    colloid verify RUN [--top 5]         post-run L6 + high-replication re-measure of the best programs
 
 Experiments are YAML files under experiments/ (data, never code).
 """
@@ -62,6 +63,14 @@ def cmd_run(args: argparse.Namespace) -> int:
         if srv is not None:
             srv.stop()
     print(json.dumps({k: v for k, v in result.items() if k not in ("arms",)}, indent=2, default=str))
+    return 0
+
+
+def cmd_verify(args: argparse.Namespace) -> int:
+    from colloid.services.verify import verify_run
+
+    out = verify_run(args.run, top=args.top, cycles=args.cycles, program_ids=args.program or None)
+    print(json.dumps(out, indent=2, default=str))
     return 0
 
 
@@ -193,6 +202,8 @@ def main(argv: list[str] | None = None) -> int:
     at = sub.add_parser("atlas"); at.set_defaults(fn=cmd_atlas)
     b = sub.add_parser("baseline"); b.add_argument("--rate", type=float, default=45.0); b.set_defaults(fn=cmd_baseline)
     rp = sub.add_parser("report"); rp.add_argument("run"); rp.set_defaults(fn=cmd_report)
+    v = sub.add_parser("verify"); v.add_argument("run"); v.add_argument("--top", type=int, default=5); v.add_argument("--cycles", type=int, default=6)
+    v.add_argument("--program", action="append", help="verify only these program ids (repeatable)"); v.set_defaults(fn=cmd_verify)
     d = sub.add_parser("dashboard"); d.add_argument("run"); d.add_argument("--port", type=int, default=8080); d.set_defaults(fn=cmd_dashboard)
     args = p.parse_args(argv)
     return int(args.fn(args))

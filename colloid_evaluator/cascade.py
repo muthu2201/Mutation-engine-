@@ -219,6 +219,10 @@ class Evaluator:
             ok, out = oracles.native_fuzz(self.target.sandbox, self.baseline_ws, ws, self.target.work, seed=fresh_seed(),
                                           iterations=3000 if size == "quick" else 20000, sanitize=size != "quick")
             raw["native_fuzz"] = out.strip().splitlines()[-1] if out.strip() else ""
+            if not ok and oracles.sanitizer_infrastructure_failure(out):
+                return StageResult(self._evaluation(program_id, Stage.L2 if size == "quick" else Stage.L6, f"oracle-{size}", Verdict.ERROR,
+                                                    [f"fuzz infrastructure (sanitizer runtime failed, not a finding): {out[-600:]}"],
+                                                    raw=raw, duration=time.monotonic() - t0), ws)
             if not ok:
                 reasons.append(out[-1200:])
         if not reasons:
