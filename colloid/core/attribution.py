@@ -37,15 +37,10 @@ from collections import defaultdict
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
 
+from colloid.core.models import Measured
 from colloid.core.stats import normal_ci
 
 Subset = frozenset[str]
-
-
-@dataclass(frozen=True)
-class Measured:
-    value: float  # log-ratio gain vs baseline (positive = better)
-    se: float
 
 
 @dataclass(frozen=True)

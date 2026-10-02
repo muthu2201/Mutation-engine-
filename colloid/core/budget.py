@@ -26,7 +26,7 @@ from collections.abc import Mapping, Sequence
 
 def largest_remainder(weights: Mapping[str, float], total: int) -> dict[str, int]:
     names = list(weights)
-    w = [max(0.0, weights[n]) for n in names]
+    w = [max(0.0, weights[n]) if math.isfinite(weights[n]) else 0.0 for n in names]
     s = sum(w)
     if total <= 0 or not names:
         return dict.fromkeys(names, 0)

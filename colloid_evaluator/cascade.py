@@ -43,7 +43,7 @@ from typing import Any
 import numpy as np
 
 from colloid.adapters.target.stackzero.adapter import GeneApplyError, StackZeroTarget
-from colloid.core.attribution import Measured
+from colloid.core.models import Measured
 from colloid.core.genome import Genome
 from colloid.core.ids import content_hash
 from colloid.core.models import (

@@ -1,0 +1,19 @@
+# Fast wiring smoke test: knobs + deterministic peephole rewrites, no LLM, few generations.
+name: smoke
+seed: 1
+generations: 3
+proposals_per_generation: 6
+rate_rps: 45
+pool_capacity: 8
+migration_interval: 2
+stagnation_limit: 3
+code_operators: [py_rewrite, gi_edit]
+knob_operators: [knob_sample, knob_perturb, knob_reset]
+llm_arms: []
+redteam_island: true
+profile: false
+aa_runs: 0
+shapley_every: 0
+splice_every: 0
+run_l5_top_k: 2
+promote: false

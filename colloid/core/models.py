@@ -383,3 +383,12 @@ class ObjectiveSpec(Frozen):
     metric: str
     unit: str
     primary: bool = False
+
+
+class Measured(Frozen):
+    """A measured effect: a log-ratio gain versus a reference (positive = better) with its
+    standard error. The evaluator produces these; attribution combines them. Lives in the
+    core model layer so the evaluator need not depend on the search machinery."""
+
+    value: float
+    se: float

@@ -67,6 +67,7 @@ ignore_missing_imports = true
 
 [tool.importlinter]
 root_packages = ["colloid", "colloid_evaluator"]
+include_external_packages = true
 
 [[tool.importlinter.contracts]]
 name = "Domain core is pure: no adapters, services, evaluator or I/O libraries"

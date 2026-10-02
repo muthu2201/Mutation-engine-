@@ -213,7 +213,11 @@ def steady(window_values: Sequence[float], k: int = 3, tol: float = 0.08) -> boo
 def spearman(a: Sequence[float], b: Sequence[float]) -> float:
     if len(a) < 3:
         return float("nan")
-    res = sps.spearmanr(a, b)
+    av, bv = np.asarray(a, float), np.asarray(b, float)
+    # Spearman is undefined when either input is constant (no ranks to correlate).
+    if np.ptp(av) == 0 or np.ptp(bv) == 0:
+        return float("nan")
+    res = sps.spearmanr(av, bv)
     return float(res.statistic) if np.isfinite(res.statistic) else float("nan")
 
 
