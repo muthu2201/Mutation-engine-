@@ -1,0 +1,6 @@
+{
+ "indexes": {
+  "colloid_idx_orders_customer_placed": "CREATE INDEX colloid_idx_orders_customer_placed ON orders (customer_id, placed_at DESC, id DESC)",
+  "colloid_idx_reviews_product": "CREATE INDEX colloid_idx_reviews_product ON reviews (product_id)"
+ }
+}
