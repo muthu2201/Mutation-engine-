@@ -10,6 +10,9 @@
     colloid baseline                     measure the baseline and print the SLO/cost
     colloid verify RUN [--top 5]         post-run L6 + high-replication re-measure of the best programs
     colloid redteam-recheck RUN          re-adjudicate a run's red-team breach alerts (live vs inert attack)
+    colloid lake ingest RUN [--lake LOC] add a run's verified mutations to the data lake (hash-chained)
+    colloid lake verify|list [--lake LOC] verify the lake's chain / list it oldest -> newest
+    colloid lake push [--lake git:BRANCH] push the data-lake branch to origin
 
 Experiments are YAML files under experiments/ (data, never code).
 """
@@ -87,6 +90,29 @@ def cmd_redteam_recheck(args: argparse.Namespace) -> int:
     out = recheck_breaches(args.run)
     print(json.dumps(out, indent=2, default=str))
     return 1 if any(r.get("verdict") == "genuine breach" for r in out) else 0
+
+
+def cmd_lake(args: argparse.Namespace) -> int:
+    from colloid.adapters.lake import open_lake
+    from colloid.adapters.lake.gitbranch import GitBranchLake
+    from colloid.services import lake as lake_svc
+
+    lake = open_lake(args.lake)
+    if args.action == "ingest":
+        if not args.run:
+            raise SystemExit("colloid lake ingest RUN")
+        rep = lake_svc.ingest_run(args.run, lake)
+        print(json.dumps(rep.__dict__, indent=2, default=str))
+    elif args.action == "verify":
+        print(json.dumps(lake_svc.verify(lake), indent=2))
+    elif args.action == "list":
+        for row in lake_svc.listing(lake):
+            print(f"#{row['seq']:<4} {row['recorded_at']}  {row['kind']:<7} {row['id'][:16]}  {row['what']}")
+    elif args.action == "push":
+        if not isinstance(lake, GitBranchLake):
+            raise SystemExit("push needs a git lake (--lake git:<branch>)")
+        print(lake.push(args.remote))
+    return 0
 
 
 def cmd_canaries(args: argparse.Namespace) -> int:
@@ -222,6 +248,9 @@ def main(argv: list[str] | None = None) -> int:
     v.add_argument("--ablate", metavar="PROGRAM_ID", help="leave-one-gene-out ablation of a verified program instead")
     v.set_defaults(fn=cmd_verify)
     rr = sub.add_parser("redteam-recheck"); rr.add_argument("run"); rr.set_defaults(fn=cmd_redteam_recheck)
+    lk = sub.add_parser("lake"); lk.add_argument("action", choices=["ingest", "verify", "list", "push"]); lk.add_argument("run", nargs="?")
+    lk.add_argument("--lake", default="git:colloid/datalake", help="directory, git:<branch> or git:<repo>#<branch>")
+    lk.add_argument("--remote", default="origin"); lk.set_defaults(fn=cmd_lake)
     d = sub.add_parser("dashboard"); d.add_argument("run"); d.add_argument("--port", type=int, default=8080); d.set_defaults(fn=cmd_dashboard)
     args = p.parse_args(argv)
     return int(args.fn(args))

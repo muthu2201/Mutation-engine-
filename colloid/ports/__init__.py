@@ -17,6 +17,8 @@ Telemetry          structured events and spans
 CostModel          price resource usage in USD
 TargetSystem       everything target-specific: Atlas seed, knobs, regions, objectives,
                    workspace materialisation, stack lifecycle, workloads and oracles
+LakeStore          the mutation data lake: append-only, hash-chained ledger of verified
+                   mutations (records + ledger), read and appended atomically
 =================  =========================================================================
 
 Verification and Benchmark/Profiling are implemented by the *evaluator package*
@@ -35,6 +37,7 @@ from typing import Any, Protocol, runtime_checkable
 from colloid.core.atlas import Region, StackAtlas
 from colloid.core.genome import Genome
 from colloid.core.knobs import KnobSpec
+from colloid.core.lake import LedgerEntry, Record
 from colloid.core.models import (
     Alert,
     AttributionRecord,
@@ -56,6 +59,7 @@ PORT_APIS: dict[str, str] = {
     "Telemetry": "1.0.0",
     "CostModel": "1.0.0",
     "TargetSystem": "1.0.0",
+    "LakeStore": "1.0.0",
 }
 
 
@@ -321,3 +325,21 @@ class TargetSystem(Protocol):
 
 def iter_ports() -> Iterator[tuple[str, str]]:
     yield from PORT_APIS.items()
+
+
+@runtime_checkable
+class LakeStore(Protocol):
+    """Storage for the mutation data lake (``colloid.core.lake``). ``commit`` must be atomic:
+    either all new records and ledger entries become visible, or none do; and it must refuse
+    (``LakeConflict``) if the head moved since ``entries()`` was read (another writer won)."""
+
+    PORT_API: str
+    location: str
+
+    def entries(self) -> list[LedgerEntry]: ...
+    def records(self) -> dict[str, Record]: ...
+    def commit(self, records: Sequence[Record], entries: Sequence[LedgerEntry], expected_head: str, message: str) -> str: ...
+
+
+class LakeConflict(RuntimeError):
+    """The lake's head moved between read and commit; re-read and retry."""

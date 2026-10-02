@@ -42,7 +42,7 @@ from colloid.core import budget as budget_mod
 from colloid.core.archive import Axis, Elite, Island, IslandModel
 from colloid.core.attribution import LineageLedger
 from colloid.core.bandit import ThompsonBandit
-from colloid.core.genome import Genome
+from colloid.core.genome import Genome, LocusConflict
 from colloid.core.models import (
     Alert,
     AttributionRecord,
@@ -56,6 +56,7 @@ from colloid.core.models import (
 )
 from colloid.core.novelty import NoveltyFilter
 from colloid.core.objectives import Fitness, gain_percent, scalar_score
+from colloid.core.operators.base import Proposal
 from colloid.core.surrogate import GeneFeature, Surrogate, vectorise
 from colloid.services.config import EngineConfig
 from colloid.services.factory import Arm, MutationFactory, signature_of
@@ -242,6 +243,7 @@ class Engine:
             alloc = self._allocate(gen)
             self.tele.emit("budget", generation=gen, alloc=alloc)
             proposals: list[tuple[str, Any]] = []  # (island, ProposalResult)
+            proposals += self._lake_proposals(gen)
             for island, slots in alloc.items():
                 proposals += [(island, p) for p in self._propose(island, slots, gen)]
             survivors = self._cascade_generation(gen, proposals)
@@ -302,27 +304,64 @@ class Engine:
             if res.proposal is None:
                 self.tele.emit("propose.reject", island=island, arm=list(arm), reason=res.reject_reason[:120])
                 continue
-            prop = res.proposal
-            pid = prop.genome.program_id(self.baseline_id)
-            if pid in self.programs or pid == self.baseline_id or len(prop.genome) == 0:
-                # an empty genome is the baseline; nothing new to evaluate
-                continue
-            sig = signature_of(prop.genome, self.target.unit_source, self.atlas)
-            if island != "redteam" and not self.novelty.is_novel(sig):
-                self.tele.emit("propose.reject", island=island, arm=list(arm), reason="near-duplicate (novelty)")
-                continue
-            self.novelty.add(sig)
-            program = Program(id=pid, baseline_id=self.baseline_id, gene_ids=prop.genome.gene_ids, island=island, generation=gen,
-                              parent_ids=(prop.parent_id,) + ((prop.second_parent_id,) if prop.second_parent_id else ()), operator=prop.operator)
-            self.programs[pid] = ProgramState(program, prop.genome)
-            for g in prop.genome:
-                self.store.put_gene(g)
-            self.store.put_program(program)
-            self.store.put_lineage(pid, prop.parent_id, prop.operator, list(set(prop.genome.gene_ids) - set(pstate.genome.gene_ids)))
-            self.store.put_signature(pid, sig.to_hex())
-            results.append((prop, arm, sig, ctx_tags))
-            self.counts[island] = self.counts.get(island, 0) + 1
+            registered = self._register(island, res.proposal, arm, ctx_tags, gen, pstate.genome)
+            if registered is not None:
+                results.append(registered)
         return results
+
+    def _register(self, island: str, prop: Any, arm: Arm, ctx_tags: tuple, gen: int, parent_genome: Genome) -> tuple[Any, Arm, Any, tuple] | None:
+        """Admit a proposal into the run: dedupe, novelty filter, persist program + genes + lineage."""
+        pid = prop.genome.program_id(self.baseline_id)
+        if pid in self.programs or pid == self.baseline_id or len(prop.genome) == 0:
+            return None  # already known, or the empty genome (= the baseline)
+        sig = signature_of(prop.genome, self.target.unit_source, self.atlas)
+        if island != "redteam" and not self.novelty.is_novel(sig):
+            self.tele.emit("propose.reject", island=island, arm=list(arm), reason="near-duplicate (novelty)")
+            return None
+        self.novelty.add(sig)
+        program = Program(id=pid, baseline_id=self.baseline_id, gene_ids=prop.genome.gene_ids, island=island, generation=gen,
+                          parent_ids=(prop.parent_id,) + ((prop.second_parent_id,) if prop.second_parent_id else ()), operator=prop.operator)
+        self.programs[pid] = ProgramState(program, prop.genome)
+        for g in prop.genome:
+            self.store.put_gene(g)
+        self.store.put_program(program)
+        self.store.put_lineage(pid, prop.parent_id, prop.operator, list(set(prop.genome.gene_ids) - set(parent_genome.gene_ids)))
+        self.store.put_signature(pid, sig.to_hex())
+        self.counts[island] = self.counts.get(island, 0) + 1
+        return (prop, arm, sig, ctx_tags)
+
+    def _lake_proposals(self, gen: int) -> list[tuple[str, Any]]:
+        """Generation-1 warm start from the mutation data lake: the lake's best verified programs
+        that still apply to this stack enter the cascade as ordinary candidates (``lake_seed``).
+        They are re-evaluated from scratch; the lake is a prior, never a verdict."""
+        if gen != 1 or not self.cfg.lake:
+            return []
+        from colloid.adapters.lake import open_lake
+        from colloid.services.lake import seeds
+
+        try:
+            found, skipped = seeds(open_lake(self.cfg.lake), self.atlas, self.knob_of_locus, top=self.cfg.lake_seed_top)
+        except Exception as exc:  # an unreadable or unverifiable lake must not stop a run
+            self.tele.emit("lake.unavailable", location=self.cfg.lake, error=repr(exc)[:300])
+            return []
+        for why in skipped:
+            self.tele.emit("lake.skip", reason=why[:200])
+        out: list[tuple[str, Any]] = []
+        arm: Arm = ("lake_seed", None, None)
+        for seed in found:
+            try:
+                genome = Genome.of(seed.genes, self.atlas)
+            except LocusConflict as exc:
+                self.tele.emit("lake.skip", reason=f"{seed.record[:12]}: {exc.why}"[:200])
+                continue
+            prop = Proposal(genome, self.baseline_id, "lake_seed", changed_loci=tuple(g.locus_id for g in genome),
+                            notes=f"lake record {seed.record[:12]} ({seed.cost_gain_pct}% cost, recorded {seed.recorded_at})")
+            reg = self._register("composition", prop, arm, ("composition",), gen, Genome())
+            if reg is not None:
+                out.append(("composition", reg))
+                self.tele.emit("lake.seed", record=seed.record, program=genome.program_id(self.baseline_id), genes=len(genome),
+                               lake_cost_gain_pct=seed.cost_gain_pct)
+        return out
 
     def _locus_context(self, island: str) -> tuple:
         if island in ("composition", "redteam"):

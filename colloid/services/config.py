@@ -66,6 +66,10 @@ class EngineConfig(BaseModel):
     cost_usd_per_gb_hour: float = 0.0056
     max_runtime_minutes: float | None = None
 
+    # mutation data lake (colloid.services.lake): warm-start from verified mutations of earlier runs
+    lake: str | None = None  # directory path, "git:<branch>" or "git:<repo>#<branch>"
+    lake_seed_top: int = 4
+
     def resolved(self, key: str) -> str:
         return getattr(self, key).replace("{name}", self.name)
 
