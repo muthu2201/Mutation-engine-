@@ -23,7 +23,6 @@ from __future__ import annotations
 
 import contextlib
 import os
-import pwd
 import secrets
 import shutil
 import subprocess
@@ -56,6 +55,7 @@ class PostgresCluster:
         self.proc: LinuxProcess | None = None
         self.current_gucs: dict[str, Any] = {}
         self.current_cpus: str | None = None
+        import pwd  # POSIX-only: imported where used
         pw = pwd.getpwnam("postgres")
         self.uid, self.gid = pw.pw_uid, pw.pw_gid
 

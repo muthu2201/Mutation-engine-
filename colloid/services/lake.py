@@ -107,7 +107,9 @@ def ingest_run(run: str, lake: LakeStore, *, recorded_at: str | None = None, log
         new: dict[str, Record] = {}
         order: list[Record] = []
         programs = [*store.programs(status=ProgramStatus.PROMOTED), *store.programs(status=ProgramStatus.VERIFIED)]
-        for prog in sorted(programs, key=lambda p: p.id):
+        # smallest programs first, so a superset recorded in the same batch can name the subsets it
+        # extends in derived_from (the chain only allows references to earlier records)
+        for prog in sorted(programs, key=lambda p: (len(p.gene_ids), p.id)):
             genes = store.genes(prog.gene_ids)
             v = verification.get(prog.id)
             l6 = [e for e in store.evaluations(prog.id) if e.stage == Stage.L6 and e.verdict == Verdict.PASS]

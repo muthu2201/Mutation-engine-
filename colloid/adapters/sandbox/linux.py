@@ -23,7 +23,6 @@ from __future__ import annotations
 import contextlib
 import errno
 import os
-import pwd
 import shutil
 import signal
 import subprocess
@@ -64,6 +63,7 @@ def ensure_helper(path: Path = DEFAULT_HELPER) -> Path:
 
 def ensure_user(name: str = SANDBOX_USER) -> tuple[int, int]:
     try:
+        import pwd  # POSIX-only: imported where used
         pw = pwd.getpwnam(name)
     except KeyError:
         subprocess.run(
@@ -71,6 +71,7 @@ def ensure_user(name: str = SANDBOX_USER) -> tuple[int, int]:
             check=True,
             capture_output=True,
         )
+        import pwd  # POSIX-only: imported where used
         pw = pwd.getpwnam(name)
     return pw.pw_uid, pw.pw_gid
 
@@ -285,6 +286,7 @@ class LinuxSandbox:
             "--chdir", spec.cwd,
         ]
         if spec.user is not None:
+            import pwd  # POSIX-only: imported where used
             pw = pwd.getpwnam(spec.user)
             args += ["--uid", str(pw.pw_uid), "--gid", str(pw.pw_gid)]
         elif spec.run_as_sandbox_user:
@@ -297,6 +299,7 @@ class LinuxSandbox:
         cg = CgroupSet(spec.label, spec.memory_limit_mb, spec.pids_limit)
         for wp in spec.writable_paths:
             if spec.user is not None:
+                import pwd  # POSIX-only: imported where used
                 pw = pwd.getpwnam(spec.user)
                 os.chown(wp, pw.pw_uid, pw.pw_gid)
             elif spec.run_as_sandbox_user:
