@@ -356,6 +356,11 @@ class StackZeroTarget:
         return changed
 
     def fresh_db(self, tag: str) -> str:
+        if not self.pg.running():
+            # The cluster died under us (OOM killer, an operator, a crash): restart it with the
+            # configuration it had, rather than failing every evaluation that follows.
+            print(f"[{self.name}] evaluation cluster not running; restarting it", file=sys.stderr)
+            self.pg.start(self.pg.current_gucs, self.pg.current_cpus)
         name = f"cz_{tag}_{content_hash(tag, time.time_ns(), length=8)}"
         self.pg.clone(name)
         return name
