@@ -449,14 +449,20 @@ Discoveries feed back as *data*:
 - **bandit priors**: every attribution in the lake scores the arm that produced the gene,
   as a win worth its contribution, or zero for a hitchhiker. These enter
   `ThompsonBandit.seed` as weighted pseudo-observations, so measured credit in the new run
-  still dominates.
+  still dominates;
+- **transfer seeds** (`lake_transfer`): another implementation's carrying genes on shared
+  loci, for example a database index proven on Python and offered to the Go run;
+- **learned rules** (CRL, §17): patterns generalised from verified genes become `rule_apply`
+  arms that propose candidates on any implementation. The rules are data in the lake. Their
+  language is reviewed code.
 
 Lessons about the *method* become reviewed code. The hitchhikers this run found led to
 `verify --ablate` and carrying-only materialisation.
 
 The judge is out of reach by construction. `policy.JUDGE_PATHS` lists the evaluator,
 `tests/`, `stress/`, `core/stats.py`, `core/lake.py`, the sandbox, the load generator and the
-platform layer. L0 rejects any gene there, and the engine refuses to start on an Atlas that
+platform layer. Every language's L0 scanner and fuzz driver (`gopolicy/`, `gofuzz/`,
+`native_fuzz.c`) lives inside the evaluator package, so it is covered by the same rule. L0 rejects any gene there, and the engine refuses to start on an Atlas that
 exposes one. An optimiser that can edit its grader will.
 
 ## 16. Many implementations, one judge (ADR 0008)

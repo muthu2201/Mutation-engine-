@@ -38,6 +38,19 @@ separate package that the search machinery cannot influence.
   target.
 - **StackZero** (`targets/stackzero`): a real Postgres + Python-service + C-library + OS/knobs
   stack with realistic optimisation headroom at every layer.
+- **One contract, many languages** (ADR 0008):
+  - The same StackZero system is implemented in **Go** (`targets/stackzero-go`, a full Colloid
+    target) and in **TypeScript** (`targets/stackzero-ts`, run on Node and on Bun).
+  - Each is certified by the evaluator's differential oracle against the Python reference.
+  - The same judge measures and mutates all of them; per-language parts (L0 scanners, canary
+    suites, deep checks) are written against each language's own parser.
+  - Database knowledge transfers between implementations through shared loci (`lake_transfer`).
+  - `colloid bakeoff` compares the languages under one benchmark protocol.
+- **CRL, the Colloid Rule Language** (ADR 0009): declarative optimisation rules *learned* from
+  the lake's verified evidence. A rule cannot exist without evidence, and its proposals are
+  candidates the judge must verify. `colloid rules mine | apply`.
+- **The evidence ladder** (`colloid ladder`): milestone gates with pre-registered criteria, so
+  the roadmap grows by findings, never ahead of them.
 
 ## Quick start
 
@@ -54,6 +67,13 @@ colloid lake ingest runs/stackzero      # verified mutations -> the hash-chained
 colloid stack materialize <record> --carrying-only --out DIR   # a deployable verified stack
 colloid report runs/stackzero           # summarise the run
 colloid dashboard runs/stackzero        # live dashboard (FastAPI)
+
+# the same system in other languages (ADR 0008)
+colloid canaries --target stackzero-go  # the Go judge's gate (14/14)
+colloid run experiments/stackzero-go-primed.yaml   # optimise the Go implementation, warm-started from Python's evidence
+colloid bakeoff --out docs/results/bakeoff.json    # Python vs Go vs Node vs Bun: one contract, one judge
+colloid rules mine --commit             # CRL rules from the lake; `colloid rules apply --target T`
+colloid ladder                          # which milestones the evidence has earned
 ```
 
 **Platforms.** The engine runs natively on Linux, macOS and Windows (CI covers all three).
@@ -70,7 +90,7 @@ the Colloid container (`docker build -t colloid .`, see [docker/README.md](docke
 | `stack/stackzero-verified` | data only: the deployable verified stack (`colloid stack`) |
 
 Code and data never share a branch, and the lake and stack writers refuse to write to a code
-branch (see `docs/ARCHITECTURE.md` §16).
+branch (see `docs/ARCHITECTURE.md` §20).
 
 ## Documentation
 
@@ -80,9 +100,13 @@ branch (see `docs/ARCHITECTURE.md` §16).
 - **[docs/INITIAL_RESULTS.md](docs/INITIAL_RESULTS.md)** — the first measured results: the
   canary gate, the A/A noise floor, causal-leverage localisation, the evolutionary run, and
   the stress test.
+- **[docs/POLYGLOT_RESULTS.md](docs/POLYGLOT_RESULTS.md)** — the second experiment: Go and
+  TypeScript implementations, the transfer A/B, the language bake-off, the learned rules and
+  the ladder's verdicts.
 - **[docs/adr/](docs/adr/)** — architecture decision records, including platforms and
   isolation (0004), the data lake (0005), why the judge is frozen (0006), and what it would
-  take to go from verified mutations to a larger stack (0007).
+  take to go from verified mutations to a larger stack (0007), polyglot neutrality and the
+  evidence ladder (0008), and the rule language (0009).
 
 ## What to expect
 

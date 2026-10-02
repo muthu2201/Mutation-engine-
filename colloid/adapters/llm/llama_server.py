@@ -48,7 +48,9 @@ class LlamaServer:
         except httpx.HTTPError:
             return False
 
-    def start(self, timeout: float = 180.0) -> None:
+    def start(self, timeout: float = 600.0) -> None:
+        # Generous: loading several GGUF models from a cold page cache (a fresh container) takes
+        # minutes on slow disks, and a timeout here fails a whole run before it starts.
         if self.healthy():
             return
         for alias, path in self.models.items():
