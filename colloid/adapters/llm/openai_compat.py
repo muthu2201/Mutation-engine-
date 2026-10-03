@@ -47,6 +47,7 @@ class OpenAICompatProvider:
         extra_body: Mapping[str, Any] | None = None,
         fixed_sampling: bool = False,
         min_interval_s: float = 0.0,
+        chat_path: str = "/v1/chat/completions",
     ) -> None:
         self.base_url = base_url.rstrip("/")
         self._models = tuple(models)
@@ -60,13 +61,14 @@ class OpenAICompatProvider:
         self.fixed_sampling = fixed_sampling  # the model fixes temperature/top_p itself and wants them omitted
         self.min_interval_s = min_interval_s  # a per-minute request cap, spread evenly
         self._last_request = 0.0
+        self.chat_path = chat_path  # Gemini's OpenAI-compatible surface lives at /v1beta/openai/chat/completions
 
     def models(self) -> Sequence[ModelInfo]:
         return [ModelInfo(m, self.context_tokens, 0.0, 0.0, local=True) for m in self._models]
 
     def available(self) -> bool:
         try:
-            r = httpx.get(f"{self.base_url}/v1/models", timeout=3.0, headers=self.headers)
+            r = httpx.get(f"{self.base_url}{self.chat_path.replace('chat/completions', 'models')}", timeout=3.0, headers=self.headers)
             return r.status_code == 200
         except httpx.HTTPError:
             return False
@@ -97,7 +99,7 @@ class OpenAICompatProvider:
                 time.sleep(wait)
             start = self._last_request = time.monotonic()
             try:
-                r = httpx.post(f"{self.base_url}/v1/chat/completions", json=body, timeout=timeout_s, headers=self.headers)
+                r = httpx.post(f"{self.base_url}{self.chat_path}", json=body, timeout=timeout_s, headers=self.headers)
             except httpx.HTTPError as exc:
                 last = exc
             else:

@@ -151,6 +151,22 @@ commands (`colloid lake push`, `colloid stack ...`), never by hand.
    - **Why not Qwen3.8:** NVIDIA's catalogue does not have it. The switch was recorded before any
      API-arm instance ran.
 
+### More hosted providers (keys added 2026-10-03; visible to a session after its worker restarts)
+
+| provider | variable | endpoint | use |
+|---|---|---|---|
+| Google AI Studio (Gemini), free tier | `GEMINI_API_KEY` (or `GOOGLE_API_KEY`) | OpenAI-compatible, `/v1beta/openai` | a possible third arm; Google's unpaid tier may use submitted content to improve its products, so public code only (verify, research prompt 3) |
+| Groq | `GROQ_API_KEY` | `api.groq.com/openai/v1` | a possible third arm (open-weights models, fast) |
+| xKiro (third-party gateway) | `XKIRO_API_KEY` | `api.xkiro.com/v1` | exploration on public code only: no published data policy, and it cannot prove which model answered, so never a pre-registered arm and never proprietary code |
+
+First steps with a new key:
+
+- **List the models:** `python -m colloid.services.cli llm models --provider gemini|groq|xkiro`.
+- **One tiny request:** `llm smoke --provider P --model M`.
+
+A new arm runs only after its own amendment fixes the model, settings and the effort rule, written
+before any sampled instance.
+
 ## 4. The next session, step by step
 
 All commands run from the repository root on branch `bench/swebench`.

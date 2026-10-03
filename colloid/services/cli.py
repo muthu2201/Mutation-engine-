@@ -108,6 +108,10 @@ def cmd_redteam_recheck(args: argparse.Namespace) -> int:
 HOSTED_DEFAULTS = {  # provider -> (model, reasoning effort, extra max_tokens); ADR 0012 and its amendment 2
     "openrouter": ("qwen/qwen3.8-27b:free", "medium", 6000),
     "nvidia": ("moonshotai/kimi-k3", "high", 16000),
+    # no default model: choose one from `colloid llm models --provider P` and pass --api-model (a new arm needs its own amendment)
+    "gemini": ("", None, 8000),
+    "groq": ("", None, 8000),
+    "xkiro": ("", None, 8000),
 }
 
 
@@ -116,10 +120,16 @@ def _hosted(args: argparse.Namespace) -> tuple[Any, str, Any, int]:
     model_d, effort_d, extra_d = HOSTED_DEFAULTS[args.provider]
     model, effort = args.api_model or model_d, args.reasoning_effort or effort_d
     extra = extra_d if args.max_tokens_extra is None else args.max_tokens_extra
+    if not model:
+        raise SystemExit(f"--api-model is required for --provider {args.provider} (list them: colloid llm models --provider {args.provider})")
     if args.provider == "openrouter":
         from colloid.adapters.llm import openrouter
 
         return openrouter.provider(model, effort), model, openrouter.pace, extra
+    if args.provider in ("gemini", "groq", "xkiro"):
+        from colloid.adapters.llm import hosted
+
+        return hosted.provider(args.provider, model, effort), model, None, extra  # per-minute spacing, no daily pacing
     from colloid.adapters.llm import nvidia
 
     return nvidia.provider(model, effort), model, None, extra  # no daily cap; requests are spaced per minute instead
@@ -201,6 +211,42 @@ def cmd_swebench(args: argparse.Namespace) -> int:
     finally:
         server.stop()
     return 0
+
+
+def cmd_llm(args: argparse.Namespace) -> int:
+    """Hosted providers: list a key's models, or send one tiny request (never a benchmark prompt)."""
+    from colloid.adapters.llm import hosted, nvidia, openrouter
+
+    if args.action == "models":
+        if args.provider in hosted.PROVIDERS:
+            print("\n".join(hosted.list_models(args.provider)))
+        else:
+            base = {"nvidia": nvidia.BASE_URL, "openrouter": openrouter.BASE_URL}[args.provider]
+            key = (nvidia if args.provider == "nvidia" else openrouter).api_key()
+            r = httpx_get(f"{base}/v1/models", key)
+            print("\n".join(sorted(m["id"] for m in r.get("data", []))))
+        return 0
+    if not args.model:
+        raise SystemExit("--model is required for smoke")
+    if args.provider in hosted.PROVIDERS:
+        p = hosted.provider(args.provider, args.model, args.reasoning_effort)
+    elif args.provider == "nvidia":
+        p = nvidia.provider(args.model, args.reasoning_effort)
+    else:
+        p = openrouter.provider(args.model, args.reasoning_effort)
+    c = p.complete(args.model, "You are a helpful assistant.", [{"role": "user", "content": "Reply with the single word OK."}],
+                   max_tokens=2000, temperature=0.0, timeout_s=240.0)
+    print(json.dumps({"provider": args.provider, "model": args.model, "text": c.text[:80], "finish_reason": c.finish_reason,
+                      "tokens_in": c.tokens_in, "tokens_out": c.tokens_out, "latency_s": round(c.latency_s, 2)}))
+    return 0 if c.text.strip() else 1
+
+
+def httpx_get(url: str, key: str) -> dict[str, Any]:
+    import httpx
+
+    r = httpx.get(url, headers={"Authorization": f"Bearer {key}"}, timeout=30.0)
+    r.raise_for_status()
+    return dict(r.json())
 
 
 def cmd_lake(args: argparse.Namespace) -> int:
@@ -461,6 +507,12 @@ def main(argv: list[str] | None = None) -> int:
     bo = sub.add_parser("bakeoff"); bo.add_argument("--impl", action="append"); bo.add_argument("--rate", type=float)
     bo.add_argument("--cycles", type=int, default=4); bo.add_argument("--no-capacity", action="store_true"); bo.add_argument("--out")
     bo.set_defaults(fn=cmd_bakeoff)
+    lm = sub.add_parser("llm", help="hosted model providers: list models, smoke-test a key")
+    lm.add_argument("action", choices=["models", "smoke"])
+    lm.add_argument("--provider", required=True, choices=["nvidia", "openrouter", "gemini", "groq", "xkiro"])
+    lm.add_argument("--model")
+    lm.add_argument("--reasoning-effort")
+    lm.set_defaults(fn=cmd_llm)
     sw = sub.add_parser("swebench", help="repair real issues (SWE-bench Verified, ADR 0011)")
     sw.add_argument("action", choices=["prepare", "run", "ingest", "probe"])
     sw.add_argument("--probe-out", help="default docs/results/swebench/contamination_{local,api}.json")
@@ -474,8 +526,8 @@ def main(argv: list[str] | None = None) -> int:
     sw.add_argument("--llm-calls", type=int, default=16)
     sw.add_argument("--keep-images", action="store_true")
     sw.add_argument("--lake", default="git:colloid/datalake")
-    sw.add_argument("--provider", choices=["local", "openrouter", "nvidia"], default="local",
-                    help="hosted arms read OPENROUTER_API_KEY or NVIDIA_API_KEY from the environment")
+    sw.add_argument("--provider", choices=["local", "openrouter", "nvidia", "gemini", "groq", "xkiro"], default="local",
+                    help="hosted arms read their key (e.g. NVIDIA_API_KEY, GEMINI_API_KEY, GROQ_API_KEY) from the environment")
     sw.add_argument("--api-model", help="default: qwen/qwen3.8-27b:free (openrouter), moonshotai/kimi-k3 (nvidia)")
     sw.add_argument("--reasoning-effort", choices=["low", "medium", "high", "xhigh", "max"], help="default: medium (openrouter), high (nvidia)")
     sw.add_argument("--max-tokens-extra", type=int, help="added to every request's cap for a hosted reasoning model (default 6000 / 16000)")
