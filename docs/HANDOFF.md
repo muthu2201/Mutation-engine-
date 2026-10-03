@@ -25,6 +25,33 @@ judge, the statistics, the lake, the search), it fixes it and records why in an 
 - A fix never changes a pre-registered protocol that is already running. It goes into the next
   pre-registration.
 
+**The full picture** is in `docs/vision/Colloid_Architecture_and_Vision.docx`, built by
+`node docs/vision/build_architecture_doc.js`; update it when the architecture or the evidence
+changes. It covers the architecture and what each part does, and the loop by which findings
+modify the engine that builds the stack. It sets out the mutation scales:
+
+- **micro:** a knob, a line, a function;
+- **meso:** a genome within one region;
+- **macro:** cross-layer splices and implementation swaps;
+- **rule:** CRL rules that apply across systems;
+- **meta:** changes to the searcher itself.
+
+It also covers:
+
+- bare-metal-to-software, silicon-agnostic design;
+- verification today, and the road to proof;
+- the evidence, failures included;
+- resilience;
+- the data moat, and what has to be true for it to be worth billions;
+- the gated roadmap;
+- how the owner and the engineering sessions work together.
+
+In the owner's words, the goal is: *truth and efficiency; continuous self-mutation and
+evolution; our own full stack from bare metal and silicon to software, without bloat and with
+mathematically verified, proof-based evaluation; the findings modify the core engine that builds
+the novel stack; an absolutely resilient architecture that keeps pushing the boundary; and
+proprietary data as the moat.*
+
 **Where we stand against that goal, honestly.**
 
 - **Verification today is empirical, not mathematical.** It is a statistical judge (A/A noise
