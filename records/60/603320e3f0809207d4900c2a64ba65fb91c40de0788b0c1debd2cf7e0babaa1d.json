@@ -1,0 +1,138 @@
+{
+ "content": {
+  "attribution": [],
+  "baseline_id": "base-8fbcb3efb36f",
+  "derived_from": [
+   "512bbcc1a9c17faa27934e145e4d604c1c2d030b53b9c82219e665dd7a2c9f6f"
+  ],
+  "effects": {
+   "cost": {
+    "ci_pct": [
+     22.46,
+     26.38
+    ],
+    "gain_pct": 24.45,
+    "p": 5e-05
+   },
+   "cpu": {
+    "ci_pct": [
+     22.82,
+     26.86
+    ],
+    "gain_pct": 24.84,
+    "p": 5e-05
+   },
+   "mem": {
+    "ci_pct": [
+     0.21,
+     3.01
+    ],
+    "gain_pct": 1.58,
+    "p": 0.02885
+   },
+   "p50": {
+    "ci_pct": [
+     9.72,
+     17.72
+    ],
+    "gain_pct": 13.29,
+    "p": 0.0005
+   },
+   "p95": {
+    "ci_pct": [
+     30.76,
+     40.08
+    ],
+    "gain_pct": 35.91,
+    "p": 0.0005
+   }
+  },
+  "engine_commit_at_ingest": "2a845c7b75c062f395ef60d4ee6cc026711738f6",
+  "genes": [
+   "977eaf4c448f623dbf7a42c26ad5b9c05da2c610c99a99e3cd4aba69afbe634b"
+  ],
+  "holdout": {
+   "ci_pct": [
+    21.83,
+    27.73
+   ],
+   "gain_pct": 24.61,
+   "p": 0.001953125
+  },
+  "island": "composition",
+  "noise_floor": {
+   "gate": "cost: 1/20 calibrated false positives (raw 2/20), binomial p=0.642 vs alpha=0.05",
+   "per_cycle": {
+    "cost": 0.018857391133789488,
+    "cpu": 0.019134631778250765,
+    "mem": 0.0071206644499870525,
+    "p50": 0.023275466241593552,
+    "p95": 0.03970106925989954
+   }
+  },
+  "operator": "lake_seed",
+  "platform": {
+   "capabilities": {
+    "arch": "x86_64",
+    "cgroup_v1": true,
+    "cgroup_v2": false,
+    "container_daemon": false,
+    "container_runtime": "docker",
+    "cpu_affinity": "sched",
+    "os": "linux",
+    "posix": true,
+    "psutil": true,
+    "python": "3.12.3",
+    "root": true,
+    "sandbox_backend": "linux",
+    "seccomp": true,
+    "smaps": true
+   },
+   "clang": "Ubuntu clang version 18.1.3 (1ubuntu1)",
+   "cpu_count": 4,
+   "cpu_model": "Intel(R) Xeon(R) Processor @ 2.10GHz",
+   "evaluator_pinned": true,
+   "gcc": "gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+   "governor": null,
+   "hypervisor": true,
+   "kernel": "6.18.44-fc-v64",
+   "loadgen_sha": "301d857aed18aa4d",
+   "logical_cpus": 4,
+   "memory_gb": 15.7,
+   "memory_metric": "pss(smaps_rollup)",
+   "microcode": "0x1",
+   "no_turbo": null,
+   "numa_nodes": 1,
+   "physical_cpus": 4,
+   "pip_freeze_sha": "6c6c3a07264318e1",
+   "platform": "Linux-6.18.44-fc-v64-x86_64-with-glibc2.39",
+   "port_apis": {
+    "Build": "1.0.0",
+    "CodeRepresentation": "1.0.0",
+    "CostModel": "1.0.0",
+    "LLMProvider": "1.0.0",
+    "LakeStore": "1.0.0",
+    "ProgramStore": "1.0.0",
+    "Sandbox": "1.0.0",
+    "TargetSystem": "1.0.0",
+    "Telemetry": "1.0.0"
+   },
+   "postgres": "postgres (PostgreSQL) 16.14 (Ubuntu 16.14-0ubuntu0.24.04.1)",
+   "python": "3.12.3",
+   "repo_commit": "2a845c7",
+   "sbx_exec_sha": "bbfdd5a1b4aeb0a4",
+   "smt": "0",
+   "thp_at_start": "always [madvise] never",
+   "time_ns_resolution": 1e-09
+  },
+  "program_id": "528b170ba17f6bce",
+  "protocol": "replicate-x6",
+  "rate_rps": 45.0,
+  "run": "stackzero-go-primed",
+  "status": "promoted",
+  "target": "stackzero-go"
+ },
+ "id": "603320e3f0809207d4900c2a64ba65fb91c40de0788b0c1debd2cf7e0babaa1d",
+ "kind": "program",
+ "schema": "colloid.mutation/1"
+}

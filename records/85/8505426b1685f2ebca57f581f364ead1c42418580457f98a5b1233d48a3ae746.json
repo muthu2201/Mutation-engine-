@@ -1,0 +1,33 @@
+{
+ "content": {
+  "explain": "isWordByte: code rewrite (llm_rewrite/optimize) optimize",
+  "locus": {
+   "kind": "function",
+   "language": "go",
+   "layer": "svc",
+   "surface": "code_region",
+   "symbol_path": "go:service/util.go::isWordByte",
+   "unit": "isWordByte",
+   "unit_id": "78e1a3c9f603f553"
+  },
+  "payload": {
+   "base_hash": "04c03d5b7b00d659",
+   "diff_lines": 5,
+   "language": "go",
+   "source": "func isWordByte(c byte) bool {\n\tif c >= 'a' && c <= 'z' || c >= '0' && c <= '9' {\n\t\treturn true\n\t}\n\treturn false\n}\n"
+  },
+  "payload_kind": "source",
+  "provenance": {
+   "model": "qwen2.5-coder-1.5b",
+   "notes": "",
+   "operator": "llm_rewrite",
+   "prompt_hash": "975ab77bb63ed16c",
+   "response_hash": "2c07fa76686db484",
+   "template": "optimize"
+  },
+  "target": "stackzero-go"
+ },
+ "id": "8505426b1685f2ebca57f581f364ead1c42418580457f98a5b1233d48a3ae746",
+ "kind": "gene",
+ "schema": "colloid.mutation/1"
+}

@@ -1,0 +1,30 @@
+{
+ "content": {
+  "explain": "db.jit = False [knob_perturb]",
+  "locus": {
+   "kind": "knob",
+   "language": null,
+   "layer": "db",
+   "surface": "knob",
+   "symbol_path": "knob:db.jit",
+   "unit": "db.jit",
+   "unit_id": "46e0e43baff6e753"
+  },
+  "payload": {
+   "value": false
+  },
+  "payload_kind": "value",
+  "provenance": {
+   "model": null,
+   "notes": "",
+   "operator": "knob_perturb",
+   "prompt_hash": null,
+   "response_hash": null,
+   "template": null
+  },
+  "target": "stackzero-go"
+ },
+ "id": "428aabfb969779ebee9fe8b6befe0f174f108c10ea356367aba82a67e2562744",
+ "kind": "gene",
+ "schema": "colloid.mutation/1"
+}
