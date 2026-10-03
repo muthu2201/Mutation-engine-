@@ -1,0 +1,114 @@
+[
+  {
+    "target": "stackzero",
+    "rule": "equality-filter-index",
+    "index": "order_items (product_id)",
+    "knob": "db.idx_items_product",
+    "exact": true,
+    "queries": 1
+  },
+  {
+    "target": "stackzero",
+    "rule": "equality-filter-index",
+    "index": "orders (customer_id)",
+    "knob": "db.idx_orders_customer",
+    "exact": true,
+    "queries": 2
+  },
+  {
+    "target": "stackzero",
+    "rule": "equality-filter-index",
+    "index": "products (category_id)",
+    "knob": "db.idx_products_category",
+    "exact": false,
+    "queries": 2
+  },
+  {
+    "target": "stackzero",
+    "rule": "equality-filter-index",
+    "index": "reviews (product_id)",
+    "knob": "db.idx_reviews_product",
+    "exact": true,
+    "queries": 2
+  },
+  {
+    "target": "stackzero",
+    "rule": "equality-filter-sorted-index",
+    "index": "orders (customer_id, placed_at desc, id desc)",
+    "knob": "db.idx_orders_customer_placed",
+    "exact": true,
+    "queries": 2
+  },
+  {
+    "target": "stackzero",
+    "rule": "equality-filter-sorted-index",
+    "index": "products (category_id, id)",
+    "knob": "db.idx_products_category",
+    "exact": true,
+    "queries": 1
+  },
+  {
+    "target": "stackzero",
+    "rule": "equality-filter-sorted-index",
+    "index": "reviews (product_id, created_at desc, id desc)",
+    "knob": "db.idx_reviews_product_created",
+    "exact": true,
+    "queries": 1
+  },
+  {
+    "target": "stackzero-go",
+    "rule": "equality-filter-index",
+    "index": "order_items (product_id)",
+    "knob": "db.idx_items_product",
+    "exact": true,
+    "queries": 1
+  },
+  {
+    "target": "stackzero-go",
+    "rule": "equality-filter-index",
+    "index": "orders (customer_id)",
+    "knob": "db.idx_orders_customer",
+    "exact": true,
+    "queries": 2
+  },
+  {
+    "target": "stackzero-go",
+    "rule": "equality-filter-index",
+    "index": "products (category_id)",
+    "knob": "db.idx_products_category",
+    "exact": false,
+    "queries": 2
+  },
+  {
+    "target": "stackzero-go",
+    "rule": "equality-filter-index",
+    "index": "reviews (product_id)",
+    "knob": "db.idx_reviews_product",
+    "exact": true,
+    "queries": 2
+  },
+  {
+    "target": "stackzero-go",
+    "rule": "equality-filter-sorted-index",
+    "index": "orders (customer_id, placed_at desc, id desc)",
+    "knob": "db.idx_orders_customer_placed",
+    "exact": true,
+    "queries": 2
+  },
+  {
+    "target": "stackzero-go",
+    "rule": "equality-filter-sorted-index",
+    "index": "products (category_id, id)",
+    "knob": "db.idx_products_category",
+    "exact": true,
+    "queries": 1
+  },
+  {
+    "target": "stackzero-go",
+    "rule": "equality-filter-sorted-index",
+    "index": "reviews (product_id, created_at desc, id desc)",
+    "knob": "db.idx_reviews_product_created",
+    "exact": true,
+    "queries": 1
+  }
+]
