@@ -36,6 +36,54 @@ Every number below is generated from the run's records by `stress/render_swebenc
 
 <!-- /RESULTS:SWE_SUMMARY -->
 
+### What the local arm shows
+
+1. **Two resolved, and in both the issue told the model the fix.**
+   - **django-11451:** the reporter wrote *"My suggestion is to shortcut with:
+     `if username is None or password is None: return`"*. That is the gold patch, word for word.
+   - **django-13109:** the title and text say *"ForeignKey.validate() should validate using the base
+     manager instead of the default manager"*. The whole gold fix is replacing `_default_manager`
+     with `_base_manager`.
+   - In both, the 7B model's `fix_think` arm made the 2-line change, which is identical to the gold
+     patch's added lines.
+   - So with these models and this budget, **the engine solved no instance that needed the fix to
+     be inferred.** It localised, applied, tested and submitted fixes that the issue text supplied.
+     ("Solution leakage" of this kind is a known SWE-bench failure mode.)
+   - The pre-registered headline stands as measured: 2 / 30, with a Wilson 95% CI of 1.8–21.3%.
+     This reading of it is post hoc (section 6).
+2. **Localisation is not the bottleneck; selection is.**
+   - A localised snippet sat in a gold file on 21 of 30 instances, and overlapped the gold lines on
+     16.
+   - The submission edited a gold file on only 14.
+   - Every instance had a submission that passed L0–L2, so the judge never stopped a wrong fix:
+     28 of 30 submissions failed the official tests.
+3. **L3, the reproduction oracle, contributed nothing.**
+   - Only 10 of the 60 generated reproduction scripts reproduced their issue at `base_commit`,
+     covering 9 instances.
+   - No candidate on any instance resolved a validated reproduction.
+   - So among L2 passers the rule fell back to "smallest diff", which is close to blind.
+4. **L2, the regression oracle, missed real regressions.** On two instances the official grader
+   found PASS_TO_PASS failures that L2's judge-selected tests did not run: 18 on django-15569,
+   and 1 on sphinx-8621.
+5. **The bandit spent the budget on the weakest model.**
+   - The bandit is cost-aware, so it favoured the cheap 1.5B model: 220 of 390 proposals (56%).
+     That model resolved nothing.
+   - The 7B model made 88 proposals (23%) and both resolutions.
+   - This is the misallocation LEVI's routing avoids ([RELATED_WORK](RELATED_WORK.md)).
+6. **Waste.**
+   - 76 of 390 proposals (19%) returned the snippet unchanged.
+   - 163 of 390 never became candidates.
+   - All 30 searches ended on the budget: median 14.8 minutes of search, 450 calls and 128k output
+     tokens in all, with no infrastructure errors.
+
+**Next steps.** None of these changes the pre-registered protocol. They go into the next one:
+
+- **L2:** run every test module that imports an edited module, transitively.
+- **Routing:** the largest model writes the first proposal on each snippet.
+- **Reproduction scripts:** written one per stated behaviour, with runtime diagnosis (SWE-Doctor).
+- **Unchanged-snippet responses:** re-prompted, not counted.
+- **The sample:** the next one stratifies on whether the issue states its fix.
+
 ## 2. Where candidates are lost (the funnel)
 
 <!-- RESULTS:SWE_FUNNEL -->
@@ -151,6 +199,28 @@ resolve rate in section 1 stays the headline.
 
 <!-- RESULTS:SWE_CONTAMINATION -->
 <!-- /RESULTS:SWE_CONTAMINATION -->
+
+### 6.1 Did the issue already contain the fix? (post hoc, no model)
+
+This check counts the gold patch's added lines that appear verbatim in the issue text, ignoring
+whitespace. It misses a fix stated in prose, such as django-13109's "use the base manager instead
+of the default manager"; that one is noted in "What the local arm shows" above.
+
+<!-- RESULTS:SWE_ISSUE_FIX -->
+
+3 of 30 issues contain a non-trivial line of their gold fix verbatim. Listed: those, the issues with at least half of the gold's added 5-grams, and every resolved instance.
+
+| instance | resolved | non-trivial gold lines verbatim in the issue | gold 5-grams present in the issue |
+|---|---|---|---|
+| `django__django-11099` | no | 0 / 2 | 0.53 |
+| `django__django-11451` | **yes** | 1 / 1 | 1.00 |
+| `django__django-11951` | no | 1 / 2 | 0.35 |
+| `django__django-13109` | **yes** | 0 / 1 | 0.00 |
+| `matplotlib__matplotlib-25287` | no | 0 / 6 | 0.59 |
+| `pydata__xarray-4629` | no | 1 / 1 | 1.00 |
+| `sympy__sympy-16886` | no | 0 / 1 | 0.55 |
+
+<!-- /RESULTS:SWE_ISSUE_FIX -->
 
 ## 7. The API arm: the same engine with a stronger model (ADR 0012)
 

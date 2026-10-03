@@ -138,6 +138,17 @@ def submission_overlap(submission_diff: str, gold_patch: str) -> dict[str, Any]:
             "gold_added_lines": len(gold), "submission_added_lines": len(sub)}
 
 
+def issue_states_fix(issue: str, gold_patch: str) -> dict[str, Any]:
+    """No model call: does the issue text already contain the fix? Non-trivial gold added lines found verbatim
+    (whitespace-insensitive), and the share of the gold's added 5-grams present in the issue. A fix stated only in
+    prose ("use X instead of Y") is not caught; that needs reading the issue."""
+    squash = lambda t: re.sub(r"\s+", "", t)  # noqa: E731
+    gold = added_lines(gold_patch)
+    nontrivial = [ln for ln in gold if len(tokens([ln])) >= MIN_LINE_TOKENS]
+    return {"gold_lines_in_issue": sum(1 for ln in nontrivial if squash(ln) in squash(issue)), "gold_nontrivial_lines": len(nontrivial),
+            "issue_overlap5": round(overlap5(tokens(gold), tokens(issue.splitlines())), 3)}
+
+
 def load_jsonl(path: Path) -> dict[str, dict[str, Any]]:
     return {r["instance_id"]: r for r in (json.loads(ln) for ln in path.read_text().splitlines() if ln.strip())}
 

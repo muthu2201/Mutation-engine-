@@ -66,3 +66,10 @@ def test_run_paces_each_instance_and_scores_graded_submissions(tmp_path):
     assert paced == [4] and [p["verdict"] for p in out["probes"]] == ["clean", "clean"]
     assert out["submissions"] == [{"instance_id": TASK["instance_id"], "resolved": True, "model": "m", "overlap5": 1.0,
                                    "identical_added_lines": True, "gold_added_lines": 1, "submission_added_lines": 1}]
+
+
+def test_a_fix_spelled_out_in_the_issue_is_detected_without_a_model():
+    patch = "diff --git a/m.py b/m.py\n+        if username is None or password is None:\n+            return\n"
+    told = "My suggestion is to shortcut with:\n\t\tif username is None or password is None:\n\t\t\treturn"
+    assert c.issue_states_fix(told, patch) == {"gold_lines_in_issue": 1, "gold_nontrivial_lines": 1, "issue_overlap5": 1.0}
+    assert c.issue_states_fix("It crashes when the username is missing.", patch)["gold_lines_in_issue"] == 0

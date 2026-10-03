@@ -168,6 +168,24 @@ def clean_set(probes: dict[str, Any], ids: list[str], allow_path_only: bool = Fa
     return {i for i in ids if all((i, m) in probes["verdict"] and probes["verdict"][(i, m)]["verdict"] in ok for m in probes["models"])}
 
 
+def issue_fix_block(rows: list[dict[str, Any]], data: Path) -> str:
+    """Post hoc, no model: which issues already contain their fix verbatim (reads the gold patches)."""
+    from colloid_evaluator.swebench import contamination as cm
+
+    tasks, gold = cm.load_jsonl(data / "tasks.jsonl"), cm.load_jsonl(data / "gold.jsonl")
+    out = ["| instance | resolved | non-trivial gold lines verbatim in the issue | gold 5-grams present in the issue |", "|---|---|---|---|"]
+    stated = []
+    for r in rows:
+        i = r["instance_id"]
+        f = cm.issue_states_fix(tasks[i]["problem_statement"], gold[i]["patch"])
+        if f["gold_lines_in_issue"] or f["issue_overlap5"] >= 0.5 or (r.get("grade") or {}).get("resolved"):
+            out.append(f"| `{i}` | {'**yes**' if (r.get('grade') or {}).get('resolved') else 'no'} | "
+                       f"{f['gold_lines_in_issue']} / {f['gold_nontrivial_lines']} | {f['issue_overlap5']:.2f} |")
+        stated.append(f["gold_lines_in_issue"] > 0)
+    return "\n".join([f"{sum(stated)} of {len(rows)} issues contain a non-trivial line of their gold fix verbatim. Listed: those, "
+                      "the issues with at least half of the gold's added 5-grams, and every resolved instance.", ""] + out)
+
+
 def contamination(rows: list[dict[str, Any]], probes: dict[str, Any]) -> str:
     """Post-hoc memorisation probes (ADR 0011 addendum). Diagnosis next to the headline, never instead of it."""
     ids = [r["instance_id"] for r in rows]
@@ -217,6 +235,7 @@ def main() -> int:
     ap.add_argument("--run", help="a single arm (same as --arm local=RUN)")
     ap.add_argument("--arm", action="append", default=[], help="LABEL=RUN; the first arm fills the unsuffixed blocks, others NAME_LABEL")
     ap.add_argument("--probes", action="append", default=[], help="LABEL=PROBE_JSON from `colloid swebench probe`")
+    ap.add_argument("--data", help="the SWE-bench data dir (tasks.jsonl, gold.jsonl): adds the post-hoc 'fix stated in the issue' block")
     ap.add_argument("--planned", type=int, default=30)
     ap.add_argument("--write")
     args = ap.parse_args()
@@ -232,6 +251,8 @@ def main() -> int:
     for n, (label, rows) in enumerate(arms):
         if label in probes:
             blocks["SWE_CONTAMINATION" + ("" if n == 0 else f"_{label.upper()}")] = contamination(rows, probes[label])
+    if args.data:
+        blocks["SWE_ISSUE_FIX"] = issue_fix_block(arms[0][1], Path(args.data))
     if len(arms) >= 2:
         blocks["SWE_PAIRED"] = paired(arms[:2])
         if all(lab in probes for lab, _ in arms[:2]):
