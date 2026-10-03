@@ -155,10 +155,68 @@ def paired(arms: list[tuple[str, list[dict[str, Any]]]]) -> str:
     return "\n".join(out)
 
 
+def load_probes(path: Path) -> dict[str, Any]:
+    """A ``colloid swebench probe`` report: verdicts keyed by (instance, model), plus submission overlaps."""
+    rep = json.loads(path.read_text())
+    return {"models": rep["models"], "verdict": {(p["instance_id"], p["model"]): p for p in rep["probes"]},
+            "submissions": {s["instance_id"]: s for s in rep.get("submissions", [])}}
+
+
+def clean_set(probes: dict[str, Any], ids: list[str], allow_path_only: bool = False) -> set[str]:
+    """Instances on which every probed model of the arm is ``clean`` (or, looser, not ``suspect``)."""
+    ok = {"clean", "path-only"} if allow_path_only else {"clean"}
+    return {i for i in ids if all((i, m) in probes["verdict"] and probes["verdict"][(i, m)]["verdict"] in ok for m in probes["models"])}
+
+
+def contamination(rows: list[dict[str, Any]], probes: dict[str, Any]) -> str:
+    """Post-hoc memorisation probes (ADR 0011 addendum). Diagnosis next to the headline, never instead of it."""
+    ids = [r["instance_id"] for r in rows]
+    resolved = {r["instance_id"] for r in rows if (r.get("grade") or {}).get("resolved")}
+    out = ["| model | instances probed | file named, not in issue | `suspect` | `path-only` | `clean` |", "|---|---|---|---|---|---|"]
+    for m in probes["models"]:
+        ps = [probes["verdict"][(i, m)] for i in ids if (i, m) in probes["verdict"]]
+        v = Counter(p["verdict"] for p in ps)
+        hits = sum(1 for p in ps if p["path_hit"] and not p["path_mentioned_in_issue"])
+        out.append(f"| {m} | {len(ps)} | {hits} | {v['suspect']} | {v['path-only']} | {v['clean']} |")
+    out += ["", "Every resolved instance, probed with the model that solved it:", "",
+            "| instance | solved by | verdict | file probe | task-ID 5-gram overlap | gold lines recalled | submission ∩ gold (5-gram) | submission = gold's added lines |",
+            "|---|---|---|---|---|---|---|---|"]
+    for r in rows:
+        if r["instance_id"] not in resolved:
+            continue
+        i, m = r["instance_id"], (r.get("submission") or {}).get("model")
+        p, s = probes["verdict"].get((i, m)), probes["submissions"].get(i, {})
+        if p is None:
+            out.append(f"| `{i}` | {m} | not probed | | | | | |")
+            continue
+        fp = ("named" + (" (in issue)" if p["path_mentioned_in_issue"] else "")) if p["path_hit"] else "missed"
+        out.append(f"| `{i}` | {m} | **{p['verdict']}** | {fp} | {p['task_id_overlap']:.2f} | {p['task_id_exact_lines']} | "
+                   f"{s.get('overlap5', 0):.2f} | {'yes' if s.get('identical_added_lines') else 'no'} |")
+    out += ["", "| restricted to instances where every model of the arm is ... | instances | resolved | Wilson 95% CI |", "|---|---|---|---|"]
+    for label, allow in (("`clean` (the pre-declared rule)", False), ("not `suspect` (`path-only` allowed)", True)):
+        keep = clean_set(probes, ids, allow)
+        k = len(keep & resolved)
+        lo, hi = wilson(k, len(keep))
+        out.append(f"| {label} | {len(keep)} | {k} | {100 * lo:.1f}–{100 * hi:.1f}% |")
+    return "\n".join(out)
+
+
+def paired_clean(arms: list[tuple[str, list[dict[str, Any]]]], probes: dict[str, dict[str, Any]]) -> str:
+    """ADR 0012 amendment: the paired comparison again, on instances clean for both arms."""
+    keep = None
+    for lab, rows in arms:
+        ids = [r["instance_id"] for r in rows]
+        c = clean_set(probes[lab], ids)
+        keep = c if keep is None else keep & c
+    sub = [(lab, [r for r in rows if r["instance_id"] in (keep or set())]) for lab, rows in arms]
+    return paired(sub)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--run", help="a single arm (same as --arm local=RUN)")
     ap.add_argument("--arm", action="append", default=[], help="LABEL=RUN; the first arm fills the unsuffixed blocks, others NAME_LABEL")
+    ap.add_argument("--probes", action="append", default=[], help="LABEL=PROBE_JSON from `colloid swebench probe`")
     ap.add_argument("--planned", type=int, default=30)
     ap.add_argument("--write")
     args = ap.parse_args()
@@ -170,8 +228,14 @@ def main() -> int:
         blocks.update({f"SWE_SUMMARY{suffix}": summary(rows, args.planned), f"SWE_FUNNEL{suffix}": funnel(rows),
                        f"SWE_LOCALISATION{suffix}": localisation(rows), f"SWE_INSTANCES{suffix}": per_instance(rows),
                        f"SWE_ARMS{suffix}": arms_block(rows)})
+    probes = {label: load_probes(Path(path)) for label, path in (a.split("=", 1) for a in args.probes)}
+    for n, (label, rows) in enumerate(arms):
+        if label in probes:
+            blocks["SWE_CONTAMINATION" + ("" if n == 0 else f"_{label.upper()}")] = contamination(rows, probes[label])
     if len(arms) >= 2:
         blocks["SWE_PAIRED"] = paired(arms[:2])
+        if all(lab in probes for lab, _ in arms[:2]):
+            blocks["SWE_PAIRED_CLEAN"] = paired_clean(arms[:2], probes)
     if args.write:
         doc = Path(args.write).read_text()
         for name, body in blocks.items():

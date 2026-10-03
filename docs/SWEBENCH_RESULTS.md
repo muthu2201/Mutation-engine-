@@ -44,36 +44,67 @@ Every number below is generated from the run's records by `stress/render_swebenc
 <!-- RESULTS:SWE_INSTANCES -->
 <!-- /RESULTS:SWE_INSTANCES -->
 
-## 6. The API arm: the same engine with a stronger model (ADR 0012)
+## 6. Memorisation probes (post hoc; ADR 0011 addendum)
+
+SWE-bench Verified is contaminated for frontier models (see
+[RELATED_WORK](RELATED_WORK.md)). So after grading, each local model was asked two questions it
+can answer only from memory:
+
+- **File path:** the issue text alone, with no code. Which file holds the bug?
+- **Task ID:** the instance ID alone. Write the gold patch.
+
+Each winning patch was also compared with the gold patch. The verdict rule (`suspect`,
+`path-only`, `clean`) was fixed in the ADR before any probe ran. These probes are diagnosis: the
+resolve rate in section 1 stays the headline.
+
+<!-- RESULTS:SWE_CONTAMINATION -->
+<!-- /RESULTS:SWE_CONTAMINATION -->
+
+## 7. The API arm: the same engine with a stronger model (ADR 0012)
 
 The same 30 instances, localisation, prompts, bandit, judge, grader and budget, with
 Qwen3.8 27B served by OpenRouter in place of the local models. It is pre-registered in
 [ADR 0012](adr/0012-swe-bench-api-arm.md) and runs after the local arm.
 
-### 6.1 Result
+### 7.1 Result
 
 <!-- RESULTS:SWE_SUMMARY_API -->
 <!-- /RESULTS:SWE_SUMMARY_API -->
 
-### 6.2 The funnel
+### 7.2 The funnel
 
 <!-- RESULTS:SWE_FUNNEL_API -->
 <!-- /RESULTS:SWE_FUNNEL_API -->
 
-### 6.3 Local vs API, instance by instance (the pre-registered comparison)
+### 7.3 Local vs API, instance by instance (the pre-registered comparison)
 
 <!-- RESULTS:SWE_PAIRED -->
 <!-- /RESULTS:SWE_PAIRED -->
 
-## 7. Reproduce
+### 7.4 Memorisation probes for the API model
+
+<!-- RESULTS:SWE_CONTAMINATION_API -->
+<!-- /RESULTS:SWE_CONTAMINATION_API -->
+
+### 7.5 Local vs API on the instances clean for both arms (ADR 0012 amendment)
+
+<!-- RESULTS:SWE_PAIRED_CLEAN -->
+<!-- /RESULTS:SWE_PAIRED_CLEAN -->
+
+## 8. Reproduce
 
 ```bash
 python -m venv /opt/colloid/state/swebench/venv && /opt/colloid/state/swebench/venv/bin/pip install swebench pandas pyarrow
 colloid swebench prepare                     # tasks.jsonl (search-visible), gold.jsonl (grader only), sample.json
 colloid swebench run --out runs/swebench     # pre-registered sample; resumable
 colloid swebench ingest --out runs/swebench  # resolved fixes -> the lake
-python stress/render_swebench.py --run runs/swebench --write docs/SWEBENCH_RESULTS.md
-# the API arm (ADR 0012), with OPENROUTER_API_KEY in the environment
+colloid swebench probe --out runs/swebench   # post hoc: docs/results/swebench/contamination_local.json
+python stress/render_swebench.py --arm local=runs/swebench --probes local=docs/results/swebench/contamination_local.json \
+    --write docs/SWEBENCH_RESULTS.md
+# the API arm (ADR 0012), with OPENROUTER_API_KEY in the environment: scripts/run-swebench-api.sh, i.e.
 colloid swebench run --provider openrouter --out runs/swebench-api
-python stress/render_swebench.py --arm local=docs/results/swebench/local --arm api=runs/swebench-api --write docs/SWEBENCH_RESULTS.md
+colloid swebench probe --provider openrouter --out runs/swebench-api   # contamination_api.json
+python stress/render_swebench.py --arm local=docs/results/swebench/local --arm api=docs/results/swebench/api \
+    --probes local=docs/results/swebench/contamination_local.json --probes api=docs/results/swebench/contamination_api.json \
+    --write docs/SWEBENCH_RESULTS.md
 ```

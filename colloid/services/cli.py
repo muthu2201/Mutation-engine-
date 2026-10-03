@@ -151,9 +151,10 @@ def cmd_swebench(args: argparse.Namespace) -> int:
                 report = contamination.run(sample, tasks, gold, Path(args.out), ask, models)
             finally:
                 server.stop()
-        Path(args.probe_out).parent.mkdir(parents=True, exist_ok=True)
-        Path(args.probe_out).write_text(json.dumps(report, indent=2))
-        print(f"wrote {args.probe_out}")
+        out = Path(args.probe_out or f"docs/results/swebench/contamination_{'api' if args.provider == 'openrouter' else 'local'}.json")
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(json.dumps(report, indent=2))
+        print(f"wrote {out}")
         return 0
     from colloid.adapters.llm.llama_server import LlamaServer
     from colloid.adapters.llm.openai_compat import OpenAICompatProvider
@@ -440,7 +441,7 @@ def main(argv: list[str] | None = None) -> int:
     bo.set_defaults(fn=cmd_bakeoff)
     sw = sub.add_parser("swebench", help="repair real issues (SWE-bench Verified, ADR 0011)")
     sw.add_argument("action", choices=["prepare", "run", "ingest", "probe"])
-    sw.add_argument("--probe-out", default="docs/results/swebench/contamination.json")
+    sw.add_argument("--probe-out", help="default docs/results/swebench/contamination_{local,api}.json")
     sw.add_argument("--data", default=str(SWEBENCH / "data"))
     sw.add_argument("--parquet", default=str(SWEBENCH / "verified.parquet"))
     sw.add_argument("--grader-python", default=str(SWEBENCH / "venv/bin/python"))
