@@ -18,7 +18,7 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from render_results import aa_block, replace_block, run_block
+from render_results import replace_block, run_block
 
 from colloid.adapters.telemetry.jsonl import read_events
 
@@ -109,7 +109,7 @@ def bakeoff_blocks() -> dict[str, str]:
         c = e.get("conformance")
         conf.append(f"| `{name}` | {e['language']} | {c['requests'] if c else 'reference'} | {c['mismatches'] if c else '—'} |")
     load = [f"Offered load {rep['rate_rps']} req/s for every arm (half the Python reference's knee), protocol `{rep['protocol']}`.\n",
-            "| implementation | $ / 1M req | CPU ms / req | p50 ms | p95 ms | stack PSS MB | cost vs Python (95% CI) |", "|---|---|---|---|---|---|---|"]
+            "| implementation | $ / 1M req | CPU ms / req | p50 ms | p95 ms | stack PSS MB | cost saving vs Python (95% CI; negative = costs more) |", "|---|---|---|---|---|---|---|"]
     for name, e in impls.items():
         m = e.get("at_equal_load")
         if not m:
@@ -214,12 +214,7 @@ def main() -> int:
     }
     for label, run in (("COLD", args.cold), ("PRIMED", args.primed)):
         if (Path(run) / "colloid.db").exists():
-            from colloid.adapters.store.sql_store import open_store
-
-            store = open_store(f"sqlite:///{Path(run) / 'colloid.db'}")
-            aa = store.kv_get("aa_test")
-            store.close()
-            blocks[f"M1_{label}"] = (aa_block(aa, "A/A noise floor") if aa else "") + "\n" + run_block(run)
+            blocks[f"M1_{label}"] = run_block(run)  # run_block already renders the run's A/A table
             blocks[f"LLM_{label}"] = llm_block(run)
     if args.write:
         doc = Path(args.write).read_text()

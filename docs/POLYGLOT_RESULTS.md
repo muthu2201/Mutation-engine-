@@ -18,6 +18,51 @@ by `stress/render_polyglot.py`. None are hand-entered. The environment is the sa
 4-vCPU KVM guest as experiment 1 (see the caveat there). The load generator runs on CPU 0;
 the service and Postgres share CPUs 1–3.
 
+## Findings
+
+1. **The engine is language-neutral (ladder M1a: passed).**
+   - One judge certified Go and TypeScript ports of the Python system: zero oracle
+     mismatches on every port, and 14/14 Go canaries rejected.
+   - The same search optimised the Go implementation: a 30% verified holdout cost gain.
+   - The gain is carried by two database indexes. Ablation shows a small LLM rewrite of
+     `toLower` riding along as a hitchhiker that contributes nothing.
+2. **Knowledge crossed the language boundary, but did not speed up the search (ladder M1b:
+   not passed).**
+   - The Python run's verified index genes reached the Go run as generation-1 seeds, through
+     shared loci.
+   - The primed run verified its first program 22 minutes sooner (0.70 h vs 1.06 h).
+   - It did not meet the pre-registered criterion: verified gain per hour was 0.75× the cold
+     run's, where 1.25× was required. Its best gain was 6.8 pp lower, where at most 3 pp was
+     allowed.
+   - Three things are visible in the evidence:
+     - the lake's strongest seed (+31% on Python) was failed by our own judge's soak check
+       in both attempts, a false positive (finding 3);
+     - the cold run found the same indexes on its own by generation 3, because this target's
+       search space is small;
+     - one run per arm, and the two arms ran at different offered loads (30 vs 45 req/s,
+       because each run calibrates to half its own measured knee).
+   - The re-test needs replicated runs at a fixed, pre-registered rate.
+3. **The judge found a flaw in itself, and it was fixed with evidence (ADR 0010).**
+   - The soak's leak test flagged database buffer warm-up as a leak.
+   - On identical samples, the old rule rejected 21 of 57 honest soaks; the fixed rule
+     rejected 0 of 57.
+   - Both rules caught 6 of 6 real leaks.
+   - Both canary suites still reject everything under the fixed judge (17/17 and 14/14).
+4. **On this workload, the language matters far less than the data access.**
+   - At equal load, the four implementations cost within 5% of each other: Go +1.7%, Node
+     +3.1% and Bun +4.9% more than Python + C, and only Go's CI spans zero.
+   - About 27 ms of CPU per request is spent mostly in Postgres, serving N+1 queries.
+   - One index cut cost by 20–30%.
+   - The language shows in footprint and latency, not cost:
+     - Go's service uses 19 MB, Python's 33 MB, Node's and Bun's about 120 MB;
+     - Go's p50 is 8.1 ms against Python's 11.2 ms.
+   - For a cost-efficient stack, the order is: fix data access first, then choose the
+     runtime for footprint and latency.
+5. **The rules the engine learned now generalise across languages.**
+   - The two mined CRL rules carry verified evidence from both the Python and the Go runs.
+   - Applied to either implementation, they propose the same indexes on the same loci.
+   - Whether they generalise to a different *system* (M2) still needs a held-out schema.
+
 ---
 
 ## 1. Four implementations of one contract
@@ -218,18 +263,6 @@ most 3 pp below.
 
 <!-- RESULTS:M1_COLD -->
 
-**A/A noise floor** (20 runs of the L5 protocol, identical program vs itself, α=0.05):
-
-| objective | raw FPR (within-run CI) | effect SD across runs | median within-run SE | τ (between-run SD) | calibrated FPR (leave-one-out) | binomial p |
-|---|---|---|---|---|---|---|
-| cost | 10% (2) | 2.11% | 1.48% | 1.22% | 5% (1) | 0.642 |
-| cpu | 10% (2) | 2.13% | 1.52% | 1.20% | 5% (1) | 0.642 |
-| mem | 5% (1) | 2.41% | 1.65% | 1.15% | 5% (1) | 0.642 |
-| p50 | 5% (1) | 3.79% | 3.32% | 0.00% | 5% (1) | 0.642 |
-| p95 | 15% (3) | 4.21% | 4.92% | 0.00% | 15% (3) | 0.075 |
-
-Gate: cost: 1/20 calibrated false positives (raw 2/20), binomial p=0.642 vs alpha=0.05 → promotions allowed: **True**.
-
 **Run `runs/stackzero-go`** — rate 30.0 rps (knee ≈ 60 rps), 8 generations, 25 programs evaluated of 60 proposed, 12 promoted, 1 L6-verified (promotion held), 189 min wall.
 
 **Cascade funnel** (how many candidates each stage saw / passed):
@@ -362,18 +395,6 @@ Gate: cost: 1/20 calibrated false positives (raw 2/20), binomial p=0.642 vs alph
 
 <!-- RESULTS:M1_PRIMED -->
 
-**A/A noise floor** (20 runs of the L5 protocol, identical program vs itself, α=0.05):
-
-| objective | raw FPR (within-run CI) | effect SD across runs | median within-run SE | τ (between-run SD) | calibrated FPR (leave-one-out) | binomial p |
-|---|---|---|---|---|---|---|
-| cost | 10% (2) | 1.89% | 1.19% | 1.33% | 5% (1) | 0.642 |
-| cpu | 10% (2) | 1.92% | 1.20% | 1.35% | 5% (1) | 0.642 |
-| mem | 0% (0) | 2.03% | 1.83% | 0.50% | 0% (0) | 1.000 |
-| p50 | 5% (1) | 3.90% | 3.12% | 1.65% | 5% (1) | 0.642 |
-| p95 | 10% (2) | 4.97% | 3.98% | 2.81% | 10% (2) | 0.264 |
-
-Gate: cost: 1/20 calibrated false positives (raw 2/20), binomial p=0.642 vs alpha=0.05 → promotions allowed: **True**.
-
 **Run `runs/stackzero-go-primed`** — rate 45.0 rps (knee ≈ 90 rps), 8 generations, 22 programs evaluated of 51 proposed, 6 promoted, 0 L6-verified (promotion held), 168 min wall.
 
 **Cascade funnel** (how many candidates each stage saw / passed):
@@ -499,6 +520,27 @@ Configuration differences besides the lake: none.
 
 <!-- /RESULTS:M1_TRANSFER -->
 
+**Reading the A/B.**
+
+- **The verdict.** The pre-registered criterion is not met, and that is the result.
+- **What did transfer.**
+  - The seeds arrived and were measured.
+  - The single-index seed passed L6 when re-checked after the run (+24.6% holdout).
+  - The primed run's first verified program came 22 minutes sooner.
+- **What blocked more.** The two-index seed, the best thing the lake held, was failed by the
+  soak check in the run and again in the killed first attempt. The calibration in §2.1
+  attributes that to database warm-up, not to the program.
+- **Caveats.**
+  - **One run per arm.** The killed first attempt of arm B promoted the single-index seed in
+    generation 1; the rerun promoted a different program first.
+  - **Different offered loads.** The rate is calibrated per run, so the arms ran at
+    30 req/s (cold) and 45 req/s (primed). The configuration check did not list this, because
+    it treats the rate as a measured quantity.
+- **The re-test.**
+  - fixed judge (ADR 0010);
+  - a pre-registered fixed rate;
+  - at least three seeds per arm.
+
 ---
 
 ## 4. The language bake-off
@@ -513,7 +555,7 @@ against the Python reference).
 
 Offered load 45.0 req/s for every arm (half the Python reference's knee), protocol `bakeoff`.
 
-| implementation | $ / 1M req | CPU ms / req | p50 ms | p95 ms | stack PSS MB | cost vs Python (95% CI) |
+| implementation | $ / 1M req | CPU ms / req | p50 ms | p95 ms | stack PSS MB | cost saving vs Python (95% CI; negative = costs more) |
 |---|---|---|---|---|---|---|
 | `stackzero` | 0.3413 | 26.96 | 11.2 | 113.9 | 218 | reference |
 | `stackzero-go` | 0.3471 | 27.47 | 8.1 | 119.4 | 204 | -1.7% [-3.6, +0.1] |
@@ -563,6 +605,22 @@ Assumptions: {"utilisation": 0.6, "usd_per_vcpu_hour": 0.0446, "usd_per_gb_hour"
 
 <!-- /RESULTS:BAKEOFF_SCALE -->
 
+**Reading the bake-off.**
+
+- **Equal cost.** All four implementations spend about 27 ms of CPU per request, within 4% of
+  each other. Most of it is Postgres: the contract's first version issues N+1 queries with no
+  secondary indexes. At 10k req/s the projected monthly cost differs by under $700 between
+  the cheapest and the most expensive runtime.
+- **One index is worth more than any runtime swap.** The index Colloid found is worth about
+  20% of the cost by itself, and the two-index program about 30%.
+- **Where the runtimes differ.**
+  - **Footprint:** Go's static binary needs no runtime on disk and runs in 19 MB, against
+    116–119 MB for the JavaScript runtimes.
+  - **Start-up:** 61 ms for Go, 274 ms for Python + uvicorn.
+  - **Latency:** Go's p50 is the lowest.
+- **Capacity.** Every implementation sustains 90 req/s and fails the knee test at 130 req/s.
+  The shared database is the limit, so the grid cannot separate them.
+
 ---
 
 ## 5. Grammar seeds: the first learned rules (CRL v0)
@@ -610,6 +668,17 @@ rule equality-filter-sorted-index v1 {
 | `stackzero-go` | equality-filter-sorted-index | `reviews (product_id, created_at desc, id desc)` | db.idx_reviews_product_created | 1 |
 
 <!-- /RESULTS:RULES -->
+
+**Reading the rules.** Each rule is a grammar seed: a candidate generator that only exists
+because verified evidence backs it. The parser refuses a rule with no evidence whose CI lower
+bound is above zero.
+
+- **Evidence from both languages.** Both rules now cite program records verified on the
+  Python *and* the Go implementation.
+- **Same proposals.** Applied to either implementation's Atlas, they propose the same indexes,
+  on loci matched by meaning (knob fingerprints), not by name.
+- **What is not shown yet.** That the rules transfer to a system with a *different* schema is
+  rung M2, and is not claimed here.
 
 ---
 
