@@ -1,0 +1,206 @@
+{
+  "instance_id": "astropy__astropy-14309",
+  "repo": "astropy/astropy",
+  "version": "5.1",
+  "base_commit": "cdb66059a2feb44ee49021874605ba90801f9986",
+  "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.astropy__astropy-14309:latest",
+  "started_at": "2026-10-03T12:19:04.529904+00:00",
+  "image_digest": "ghcr.io/epoch-research/swe-bench.eval.x86_64.astropy__astropy-14309@sha256:13f8d040d30af633e8f934b292775979ee6dc6f5f2661ff03ee85edf0348e00b",
+  "pull_s": 19.4,
+  "files_considered": 493,
+  "ranked_files": [
+    {
+      "file": "astropy/io/registry/base.py",
+      "score": 4.5
+    },
+    {
+      "file": "astropy/io/registry/compat.py",
+      "score": 3.539
+    },
+    {
+      "file": "astropy/__init__.py",
+      "score": 3.504
+    },
+    {
+      "file": "astropy/table/__init__.py",
+      "score": 3.279
+    },
+    {
+      "file": "astropy/io/fits/connect.py",
+      "score": 3.266
+    },
+    {
+      "file": "astropy/io/registry/__init__.py",
+      "score": 3.139
+    },
+    {
+      "file": "astropy/io/__init__.py",
+      "score": 3.095
+    },
+    {
+      "file": "astropy/io/fits/hdu/hdulist.py",
+      "score": 1.697
+    }
+  ],
+  "localised": [
+    {
+      "file": "astropy/io/registry/base.py",
+      "name": "_UnifiedIORegistryBase.identify_format",
+      "kind": "function",
+      "start": 282,
+      "end": 318,
+      "score": 6.5
+    },
+    {
+      "file": "astropy/io/fits/connect.py",
+      "name": "is_fits",
+      "kind": "function",
+      "start": 48,
+      "end": 72,
+      "score": 5.144
+    },
+    {
+      "file": "astropy/io/registry/base.py",
+      "name": "_UnifiedIORegistryBase._is_best_match",
+      "kind": "function",
+      "start": 330,
+      "end": 347,
+      "score": 3.628
+    },
+    {
+      "file": "astropy/io/fits/hdu/hdulist.py",
+      "name": "HDUList.append",
+      "kind": "function",
+      "start": 716,
+      "end": 759,
+      "score": 3.417
+    },
+    {
+      "file": "astropy/io/registry/compat.py",
+      "name": "_make_io_func",
+      "kind": "function",
+      "start": 32,
+      "end": 54,
+      "score": 2.975
+    },
+    {
+      "file": "astropy/io/registry/base.py",
+      "name": "_UnifiedIORegistryBase.register_identifier",
+      "kind": "function",
+      "start": 206,
+      "end": 261,
+      "score": 2.448
+    }
+  ],
+  "repro": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "ISSUE REPRODUCED",
+      "script_hash": "0a5d78e905a9b61c"
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "ISSUE REPRODUCED",
+      "script_hash": "4083b94b472898c9"
+    }
+  ],
+  "candidates": [
+    {
+      "snippet": "py:astropy/io/registry/base.py::_UnifiedIORegistryBase.identify_format",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "c92c1bae2e0d2964",
+      "response_hash": "3d58ceff42377dea",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "astropy/cosmology/flrw/tests/test_base.py",
+        "astropy/io/registry/tests/test_registries.py"
+      ],
+      "regressions": 0,
+      "votes": 2,
+      "repro": [
+        "ISSUE RESOLVED",
+        "ISSUE RESOLVED"
+      ],
+      "changed_lines": 23,
+      "judge_s": 11.9,
+      "diff": "diff --git a/astropy/io/registry/base.py b/astropy/io/registry/base.py\nindex 0ac2a20cce..62d6150a44 100644\n--- a/astropy/io/registry/base.py\n+++ b/astropy/io/registry/base.py\n@@ -279,7 +279,9 @@ class _UnifiedIORegistryBase(metaclass=abc.ABCMeta):\n                 f\" {data_class.__name__!r}\"\n             )\n \n-    def identify_format(self, origin, data_class_required, path, fileobj, args, kwargs):\n+    def identify_format(\n+        self, origin, data_class_required, path, fileobj, args, kwargs\n+    ):\n         \"\"\"Loop through identifiers to see which formats match.\n \n         Parameters\n@@ -309,11 +311,20 @@ class _UnifiedIORegistryBase(metaclass=abc.ABCMeta):\n         \"\"\"\n         valid_formats = []\n         for data_format, data_class in self._identifiers:\n-            if self._is_best_match(data_class_required, data_class, self._identifiers):\n-                if self._identifiers[(data_format, data_class)](\n-                    origin, path, fileobj, *args, **kwargs\n-                ):\n-                    valid_formats.append(data_format)\n+            if self._is_best_match(\n+                data_class_required, data_class, self._identifiers\n+            ):\n+                try:\n+                    if self._identifiers[(data_format, data_class)](\n+                        origin, path, fileobj, *args, **kwargs\n+                    ):\n+                        valid_formats.append(data_format)\n+                except IndexError:\n+                    # Identifier functions requiring positional arguments\n+                    # in `args` will fail if none are given, e.g. when\n+                    # trying to identify a file only by its name. In this\n+                    # case the format simply cannot match.\n+                    pass\n \n         return valid_formats\n \n",
+      "new_source": "def identify_format(\n    self, origin, data_class_required, path, fileobj, args, kwargs\n):\n    \"\"\"Loop through identifiers to see which formats match.\n\n    Parameters\n    ----------\n    origin : str\n        A string ``\"read`` or ``\"write\"`` identifying whether the file is to be\n        opened for reading or writing.\n    data_class_required : object\n        The specified class for the result of `read` or the class that is to be\n        written.\n    path : str or path-like or None\n        The path to the file or None.\n    fileobj : file-like or None.\n        An open file object to read the file's contents, or ``None`` if the\n        file could not be opened.\n    args : sequence\n        Positional arguments for the `read` or `write` function. Note that\n        these must be provided as sequence.\n    kwargs : dict-like\n        Keyword arguments for the `read` or `write` function. Note that this\n        parameter must be `dict`-like.\n\n    Returns\n    -------\n    valid_formats : list\n        List of matching formats.\n    \"\"\"\n    valid_formats = []\n    for data_format, data_class in self._identifiers:\n        if self._is_best_match(\n            data_class_required, data_class, self._identifiers\n        ):\n            try:\n                if self._identifiers[(data_format, data_class)](\n                    origin, path, fileobj, *args, **kwargs\n                ):\n                    valid_formats.append(data_format)\n            except IndexError:\n                # Identifier functions requiring positional arguments\n                # in `args` will fail if none are given, e.g. when\n                # trying to identify a file only by its name. In this\n                # case the format simply cannot match.\n                pass\n\n    return valid_formats\n"
+    }
+  ],
+  "validated_repro": 2,
+  "stop": "every validated reproduction resolved",
+  "submission": {
+    "snippet": "py:astropy/io/registry/base.py::_UnifiedIORegistryBase.identify_format",
+    "model": "moonshotai/kimi-k3",
+    "template": "fix_think",
+    "diff": "diff --git a/astropy/io/registry/base.py b/astropy/io/registry/base.py\nindex 0ac2a20cce..62d6150a44 100644\n--- a/astropy/io/registry/base.py\n+++ b/astropy/io/registry/base.py\n@@ -279,7 +279,9 @@ class _UnifiedIORegistryBase(metaclass=abc.ABCMeta):\n                 f\" {data_class.__name__!r}\"\n             )\n \n-    def identify_format(self, origin, data_class_required, path, fileobj, args, kwargs):\n+    def identify_format(\n+        self, origin, data_class_required, path, fileobj, args, kwargs\n+    ):\n         \"\"\"Loop through identifiers to see which formats match.\n \n         Parameters\n@@ -309,11 +311,20 @@ class _UnifiedIORegistryBase(metaclass=abc.ABCMeta):\n         \"\"\"\n         valid_formats = []\n         for data_format, data_class in self._identifiers:\n-            if self._is_best_match(data_class_required, data_class, self._identifiers):\n-                if self._identifiers[(data_format, data_class)](\n-                    origin, path, fileobj, *args, **kwargs\n-                ):\n-                    valid_formats.append(data_format)\n+            if self._is_best_match(\n+                data_class_required, data_class, self._identifiers\n+            ):\n+                try:\n+                    if self._identifiers[(data_format, data_class)](\n+                        origin, path, fileobj, *args, **kwargs\n+                    ):\n+                        valid_formats.append(data_format)\n+                except IndexError:\n+                    # Identifier functions requiring positional arguments\n+                    # in `args` will fail if none are given, e.g. when\n+                    # trying to identify a file only by its name. In this\n+                    # case the format simply cannot match.\n+                    pass\n \n         return valid_formats\n \n",
+    "votes": 2,
+    "changed_lines": 23,
+    "new_source": "def identify_format(\n    self, origin, data_class_required, path, fileobj, args, kwargs\n):\n    \"\"\"Loop through identifiers to see which formats match.\n\n    Parameters\n    ----------\n    origin : str\n        A string ``\"read`` or ``\"write\"`` identifying whether the file is to be\n        opened for reading or writing.\n    data_class_required : object\n        The specified class for the result of `read` or the class that is to be\n        written.\n    path : str or path-like or None\n        The path to the file or None.\n    fileobj : file-like or None.\n        An open file object to read the file's contents, or ``None`` if the\n        file could not be opened.\n    args : sequence\n        Positional arguments for the `read` or `write` function. Note that\n        these must be provided as sequence.\n    kwargs : dict-like\n        Keyword arguments for the `read` or `write` function. Note that this\n        parameter must be `dict`-like.\n\n    Returns\n    -------\n    valid_formats : list\n        List of matching formats.\n    \"\"\"\n    valid_formats = []\n    for data_format, data_class in self._identifiers:\n        if self._is_best_match(\n            data_class_required, data_class, self._identifiers\n        ):\n            try:\n                if self._identifiers[(data_format, data_class)](\n                    origin, path, fileobj, *args, **kwargs\n                ):\n                    valid_formats.append(data_format)\n            except IndexError:\n                # Identifier functions requiring positional arguments\n                # in `args` will fail if none are given, e.g. when\n                # trying to identify a file only by its name. In this\n                # case the format simply cannot match.\n                pass\n\n    return valid_formats\n",
+    "prompt_hash": "c92c1bae2e0d2964",
+    "response_hash": "3d58ceff42377dea"
+  },
+  "search_s": 41.9,
+  "llm_calls": 3,
+  "tokens_in": 4771,
+  "tokens_out": 777,
+  "calls": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 4.02,
+      "tokens_in": 1467,
+      "tokens_out": 108,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 4.73,
+      "tokens_in": 1467,
+      "tokens_out": 117,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 18.09,
+      "tokens_in": 1837,
+      "tokens_out": 552,
+      "finish_reason": "stop",
+      "empty": false
+    }
+  ],
+  "arms": {
+    "moonshotai/kimi-k3/fix": 0.3,
+    "moonshotai/kimi-k3/fix_think": 0.5333333333333333
+  },
+  "grade": {
+    "resolved": true,
+    "applied": true,
+    "fail_to_pass": {
+      "success": 1,
+      "failure": 0
+    },
+    "pass_to_pass": {
+      "success": 141,
+      "failure": 0
+    }
+  },
+  "grade_s": 1.2,
+  "wall_s": 71.7,
+  "diagnosis": {
+    "gold_files": [
+      "astropy/io/fits/connect.py"
+    ],
+    "localised_file_hit": true,
+    "localised_line_hit": true,
+    "submission_files": [
+      "astropy/io/registry/base.py"
+    ],
+    "submission_in_gold_file": false,
+    "gold_changed_lines": 5
+  }
+}

@@ -1,0 +1,17 @@
+diff --git a/astropy/nddata/compat.py b/astropy/nddata/compat.py
+index 1e0694d0eb..e099e4e273 100644
+--- a/astropy/nddata/compat.py
++++ b/astropy/nddata/compat.py
+@@ -176,8 +176,10 @@ class NDDataArray(NDArithmeticMixin, NDSlicingMixin, NDIOMixin, NDData):
+             else:
+                 self._mask = mask
+         else:
+-            # internal representation should be one numpy understands
+-            self._mask = np.ma.nomask
++            # internal representation should be None so that checks for a
++            # missing mask (e.g. ``mask is None`` during mask propagation in
++            # arithmetic) work as expected
++            self._mask = None
+ 
+     @property
+     def shape(self):
