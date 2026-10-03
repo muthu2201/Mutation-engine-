@@ -37,8 +37,8 @@ anything. Nothing here alters a pre-registered protocol that is already running:
   In the ablations, removing the diverse seeding hurt most.
 - **Bearing on Colloid.**
   - Colloid's search uses local Qwen2.5-Coder 1.5B/3B/7B only.
-  - Its Thompson bandit is cost-aware, so it drifts towards the cheapest model. In the SWE-bench
-    pilot, the 1.5B arm took most of the calls and produced every L2 regression.
+  - Its Thompson bandit is cost-aware, so it drifts towards the cheapest model. In the first SWE-bench
+    pilot instance, the 1.5B arm took most of the calls and produced every L2 regression.
   - LEVI's routing is the principled alternative: the large model for structural attempts, the
     small one for local variants.
 - **What changes, in the next protocol, not the running one.**
@@ -60,8 +60,8 @@ anything. Nothing here alters a pre-registered protocol that is already running:
   - ADR 0011's L3 keeps only reproduction scripts that print `ISSUE REPRODUCED` at
     `base_commit`, and uses them only to *rank* candidates that already passed L2. That is
     close to SWE-Doctor's patch validation and avoids their fail-to-fail failure mode.
-  - It does not use runtime diagnosis. In the pilot, the small models produced no script that
-    reproduced the issue at all.
+  - It does not use runtime diagnosis. In the first pilot instance, neither reproduction script
+    (one from the 7B model, one from the 3B) reproduced the issue.
 - **What changes, in the next protocol.**
   - one reproduction script per stated behaviour;
   - when a script fails, its traceback and the locals at the failing frame go into the fix
