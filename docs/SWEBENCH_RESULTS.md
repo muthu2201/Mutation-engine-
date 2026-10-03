@@ -94,7 +94,7 @@ Qwen3.8 27B served by OpenRouter in place of the local models. It is pre-registe
 ## 8. Reproduce
 
 ```bash
-python -m venv /opt/colloid/state/swebench/venv && /opt/colloid/state/swebench/venv/bin/pip install swebench pandas pyarrow
+python -m venv /opt/colloid/state/swebench/venv && /opt/colloid/state/swebench/venv/bin/pip install swebench==5.0.2 pandas==3.0.6 pyarrow==25.0.1
 colloid swebench prepare                     # tasks.jsonl (search-visible), gold.jsonl (grader only), sample.json
 colloid swebench run --out runs/swebench     # pre-registered sample; resumable
 colloid swebench ingest --out runs/swebench  # resolved fixes -> the lake

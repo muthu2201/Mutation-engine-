@@ -20,9 +20,9 @@ echo "==> grader venv"
 mkdir -p "$SWE" /opt/colloid/logs
 if [ ! -x "$SWE/venv/bin/python" ]; then
   if command -v uv >/dev/null; then
-    uv venv -q -p python3.12 "$SWE/venv" && uv pip install -q -p "$SWE/venv/bin/python" swebench pandas pyarrow
+    uv venv -q -p python3.12 "$SWE/venv" && uv pip install -q -p "$SWE/venv/bin/python" swebench==5.0.2 pandas==3.0.6 pyarrow==25.0.1
   else
-    python3.12 -m venv "$SWE/venv" && "$SWE/venv/bin/pip" install -q swebench pandas pyarrow
+    python3.12 -m venv "$SWE/venv" && "$SWE/venv/bin/pip" install -q swebench==5.0.2 pandas==3.0.6 pyarrow==25.0.1
   fi
 fi
 
