@@ -12,3 +12,6 @@ runs/
 *.db
 *.db-wal
 *.db-shm
+
+# the official SWE-bench harness writes per-instance logs here
+/logs/

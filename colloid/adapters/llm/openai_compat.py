@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import time
 from collections.abc import Mapping, Sequence
+from typing import Any
 
 import httpx
 
@@ -36,6 +37,7 @@ class OpenAICompatProvider:
         cpus_used: float = 4.0,
         max_retries: int = 3,
         api_key: str | None = None,
+        extra_body: Mapping[str, Any] | None = None,
     ) -> None:
         self.base_url = base_url.rstrip("/")
         self._models = tuple(models)
@@ -45,6 +47,7 @@ class OpenAICompatProvider:
         self.cpus_used = cpus_used
         self.max_retries = max_retries
         self.headers = {"Authorization": f"Bearer {api_key}"} if api_key else {}
+        self.extra_body = dict(extra_body or {})  # e.g. a hosted reasoning model's {"reasoning": {"effort": "medium"}}
 
     def models(self) -> Sequence[ModelInfo]:
         return [ModelInfo(m, self.context_tokens, 0.0, 0.0, local=True) for m in self._models]
@@ -74,6 +77,7 @@ class OpenAICompatProvider:
             "max_tokens": max_tokens,
             "temperature": temperature,
             "top_p": 0.95,
+            **self.extra_body,
         }
         last: Exception | None = None
         for attempt in range(self.max_retries + 1):

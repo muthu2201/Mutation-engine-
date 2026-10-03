@@ -124,14 +124,21 @@ def cmd_swebench(args: argparse.Namespace) -> int:
 
     tasks = swe.load_tasks(data / "tasks.jsonl")
     sample = args.instance or json.loads((data / "sample.json").read_text())["instances"]
+    run_args = {"gold": data / "gold.jsonl", "grader_python": args.grader_python, "keep_images": args.keep_images}
+    if args.provider == "openrouter":  # the API arm (ADR 0012): the same search, a hosted model
+        from colloid.adapters.llm import openrouter
+
+        budget = swe.Budget(search_s=args.search_minutes * 60, llm_calls=args.llm_calls, max_tokens_extra=args.max_tokens_extra)
+        swe.run(sample, tasks, Path(args.out), openrouter.provider(args.api_model, args.reasoning_effort), [args.api_model],
+                budget=budget, pace=openrouter.pace, **run_args)
+        return 0
     models = [m for m in (args.model or list(MODEL_FILES)) if Path(MODEL_FILES[m]).exists()]
     server = LlamaServer({m: MODEL_FILES[m] for m in models})
     server.start()
     try:
         llm = OpenAICompatProvider(server.base_url, models, name="local")
         budget = swe.Budget(search_s=args.search_minutes * 60, llm_calls=args.llm_calls)
-        swe.run(sample, tasks, Path(args.out), llm, models, gold=data / "gold.jsonl", grader_python=args.grader_python, budget=budget,
-                keep_images=args.keep_images)
+        swe.run(sample, tasks, Path(args.out), llm, models, budget=budget, **run_args)
     finally:
         server.stop()
     return 0
@@ -407,6 +414,10 @@ def main(argv: list[str] | None = None) -> int:
     sw.add_argument("--llm-calls", type=int, default=16)
     sw.add_argument("--keep-images", action="store_true")
     sw.add_argument("--lake", default="git:colloid/datalake")
+    sw.add_argument("--provider", choices=["local", "openrouter"], default="local", help="openrouter reads OPENROUTER_API_KEY from the environment")
+    sw.add_argument("--api-model", default="qwen/qwen3.8-27b:free")
+    sw.add_argument("--reasoning-effort", choices=["low", "medium", "high", "xhigh"], default="medium")
+    sw.add_argument("--max-tokens-extra", type=int, default=6000, help="added to every request's cap for a hosted reasoning model")
     sw.set_defaults(fn=cmd_swebench)
     d = sub.add_parser("dashboard"); d.add_argument("run"); d.add_argument("--port", type=int, default=8080); d.set_defaults(fn=cmd_dashboard)
     from colloid.adapters.target import DEFAULT_TARGET, TARGETS

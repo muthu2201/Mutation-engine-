@@ -52,6 +52,7 @@ class Budget:
     snippets: int = 6
     snippet_max_lines: int = 150
     test_timeout_s: float = 300.0
+    max_tokens_extra: int = 0  # added to every request's cap; a hosted reasoning model spends tokens before it answers
 
 
 def load_tasks(path: Path) -> dict[str, dict[str, Any]]:
@@ -122,7 +123,7 @@ class Repairer:
         scripts: list[str] = []
         for i in range(b.repro_calls):
             model = self.models[i % len(self.models)]
-            text = self._ask(model, repair.SYSTEM_REPRO, repair.repro_prompt(issue, repo), temperature=0.7, max_tokens=900)
+            text = self._ask(model, repair.SYSTEM_REPRO, repair.repro_prompt(issue, repo), temperature=0.7, max_tokens=900 + b.max_tokens_extra)
             script = repair.parse_repro(text)
             outcome = judge.validate_repro(script) if script else "unparseable"
             rec["repro"].append({"model": model, "outcome": outcome, "script_hash": _h(script) if script else None})
@@ -148,7 +149,7 @@ class Repairer:
             ts = time.monotonic()
             try:
                 text = self._ask(model, repair.SYSTEM_FIX, prompt, temperature=0.2 if first_pass else 0.8,
-                                 max_tokens=min(2400, 40 * snip.lines + 400))
+                                 max_tokens=min(2400, 40 * snip.lines + 400) + b.max_tokens_extra)
             except LLMError as exc:
                 rec["candidates"].append({"snippet": snip.symbol_path, "model": model, "template": template, "stage": "llm", "reason": str(exc)[:300]})
                 bandit.update(("repair",), arm, 0.0, cost=time.monotonic() - ts)
@@ -219,7 +220,8 @@ def _diagnose(grader_python: str, gold: Path, record_path: Path) -> dict[str, An
 
 
 def run(sample: Sequence[str], tasks: dict[str, dict[str, Any]], out_dir: Path, llm: Any, models: Sequence[str], *, gold: Path,
-        grader_python: str, budget: Budget | None = None, keep_images: bool = False, log: Callable[[str], None] = print) -> list[dict[str, Any]]:
+        grader_python: str, budget: Budget | None = None, keep_images: bool = False, log: Callable[[str], None] = print,
+        pace: Callable[[int], None] | None = None) -> list[dict[str, Any]]:
     budget = budget or Budget()
     out_dir.mkdir(parents=True, exist_ok=True)
     results_path = out_dir / "results.jsonl"
@@ -229,6 +231,8 @@ def run(sample: Sequence[str], tasks: dict[str, dict[str, Any]], out_dir: Path, 
         if iid in done:
             continue
         task = tasks[iid]
+        if pace is not None:  # a rate-limited hosted model: wait until a whole instance's budget is available
+            pace(budget.llm_calls)
         inst_dir = out_dir / iid
         inst_dir.mkdir(exist_ok=True)
         log(f"[{n}/{len(sample)}] {iid}")
