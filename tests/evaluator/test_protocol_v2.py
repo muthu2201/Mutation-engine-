@@ -16,7 +16,7 @@ SAME = "```python\ndef shout(text):\n    return text\n```"
 
 
 def _repo(tmp_path: Path) -> Path:
-    (tmp_path / "pkg").mkdir()
+    (tmp_path / "pkg").mkdir(parents=True)
     (tmp_path / "pkg/words.py").write_text(SRC)
     return tmp_path
 
@@ -120,3 +120,32 @@ def test_transitive_selection_finds_the_tests_of_modules_that_use_the_edited_one
     (tmp_path / "tests/test_greet.py").write_text("from pkg import greet\n")
     assert repos.select_tests(tmp_path, ["pkg/words.py"]) == []
     assert repos.select_tests(tmp_path, ["pkg/words.py"], transitive=True) == ["tests/test_greet.py"]
+
+
+def test_an_llm_error_while_writing_reproductions_is_recorded_not_fatal(tmp_path):
+    from colloid.ports import LLMError
+
+    class Flaky(FakeLLM):
+        def complete(self, model, system, messages, **kw):
+            if system == repair.SYSTEM_REPRO and self.calls == 0:
+                self.calls += 1
+                raise LLMError("nvidia unavailable after retries: Server disconnected without sending a response.")
+            return super().complete(model, system, messages, **kw)
+
+    for protocol in ("v1", "v2"):
+        r = swe.Repairer(Flaky([FIX] * 10), ["big"], swe.Budget(llm_calls=6, protocol=protocol), log=lambda m: None)
+        rec = r.solve({"instance_id": "x", "problem_statement": ISSUE, "repo": "acme/pkg"}, FakeJudge(), _repo(tmp_path / protocol))
+        assert rec["repro"][0]["outcome"] == "llm error" and rec["submission"] is not None
+
+
+def test_a_call_cannot_outlive_the_search_budget(tmp_path):
+    seen = []
+
+    class Slow(FakeLLM):
+        def complete(self, model, system, messages, *, timeout_s, **kw):
+            seen.append(timeout_s)
+            return super().complete(model, system, messages, timeout_s=timeout_s, **kw)
+
+    r = swe.Repairer(Slow([FIX]), ["big"], swe.Budget(llm_calls=4, search_s=90.0, protocol="v1"), log=lambda m: None)
+    r.solve({"instance_id": "x", "problem_statement": ISSUE, "repo": "acme/pkg"}, FakeJudge(), _repo(tmp_path))
+    assert seen and all(60.0 <= t <= 90.0 for t in seen)

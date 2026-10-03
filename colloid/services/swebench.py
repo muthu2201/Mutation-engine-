@@ -101,12 +101,17 @@ class Repairer:
         self.call_log: list[dict[str, Any]] = []  # per call: latency and how it ended (a hosted reasoning model can run out of tokens)
         self.free_declines = 0  # v2: unchanged-snippet responses not charged to the budget (capped)
         self.empty_retries = 0  # v2: empty endpoint responses retried, not charged
+        self._t0 = time.monotonic()  # the instance's search clock (reset by solve)
 
     def _ask(self, model: str, system: str, prompt: str, *, temperature: float, max_tokens: int) -> str:
         self.calls += 1
+        # a call may not run past the instance's search budget (at least 60 s, at most 600 s): a hung endpoint must not
+        # turn a 20-minute search into an hour (found by the ADR 0014 pilot)
+        left = self.budget.search_s - (time.monotonic() - self._t0)
+        timeout = min(600.0, max(60.0, left))
         for attempt in range(3 if self.budget.v2 else 1):  # v2: an empty endpoint response is retried, not charged
             c = self.llm.complete(model, system, [{"role": "user", "content": prompt}], max_tokens=max_tokens, temperature=temperature,
-                                  timeout_s=600.0)
+                                  timeout_s=timeout)
             self.tokens[0] += c.tokens_in
             self.tokens[1] += c.tokens_out
             empty = not str(c.text).strip()
@@ -119,7 +124,7 @@ class Repairer:
         return str(c.text)
 
     def solve(self, task: dict[str, Any], judge: RepairJudge, root: Path) -> dict[str, Any]:
-        t0 = time.monotonic()
+        t0 = self._t0 = time.monotonic()
         b = self.budget
         issue, repo = task["problem_statement"], task["repo"]
         files = source_files(root)
@@ -142,8 +147,12 @@ class Repairer:
         for i in range(n_repro):
             model = self.models[i % len(self.models)]
             focus = repair.REPRO_FOCUS[i] if b.v2 else ""
-            text = self._ask(model, repair.SYSTEM_REPRO, repair.repro_prompt(issue, repo, focus), temperature=0.7,
-                             max_tokens=900 + b.max_tokens_extra)
+            try:
+                text = self._ask(model, repair.SYSTEM_REPRO, repair.repro_prompt(issue, repo, focus), temperature=0.7,
+                                 max_tokens=900 + b.max_tokens_extra)
+            except LLMError as exc:  # recorded, not fatal: the search goes on without this script (found by the ADR 0014 pilot)
+                rec["repro"].append({"model": model, "outcome": "llm error", "reason": str(exc)[:300]})
+                continue
             script = repair.parse_repro(text)
             outcome = judge.validate_repro(script) if script else "unparseable"
             rec["repro"].append({"model": model, "outcome": outcome, "script_hash": _h(script) if script else None,

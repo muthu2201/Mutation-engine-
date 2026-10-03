@@ -132,10 +132,14 @@ def _hosted(args: argparse.Namespace) -> tuple[Any, str, Any, int]:
     if args.provider in ("gemini", "groq", "xkiro", "bedrock"):
         from colloid.adapters.llm import hosted
 
-        return hosted.provider(args.provider, model, effort), model, None, extra  # per-minute spacing, no daily pacing
-    from colloid.adapters.llm import nvidia
+        p = hosted.provider(args.provider, model, effort)
+    else:
+        from colloid.adapters.llm import nvidia
 
-    return nvidia.provider(model, effort), model, None, extra  # no daily cap; requests are spaced per minute instead
+        p = nvidia.provider(model, effort)  # no daily cap; requests are spaced per minute instead
+    if getattr(args, "no_thinking", False):  # chat-template switch for models that think by default (GLM 5.3; ADR 0014 amendment 2)
+        p.extra_body["chat_template_kwargs"] = {"thinking": False, "enable_thinking": False}
+    return p, model, None, extra
 
 
 def cmd_swebench(args: argparse.Namespace) -> int:
@@ -535,6 +539,7 @@ def main(argv: list[str] | None = None) -> int:
     sw.add_argument("--api-model", help="default: qwen/qwen3.8-27b:free (openrouter), moonshotai/kimi-k3 (nvidia)")
     sw.add_argument("--reasoning-effort", choices=["none", "low", "medium", "high", "xhigh", "max"],
                     help="default: medium (openrouter), high (nvidia); none sends no reasoning setting")
+    sw.add_argument("--no-thinking", action="store_true", help="turn a model's default thinking off via its chat template")
     sw.add_argument("--max-tokens-extra", type=int, help="added to every request's cap for a hosted reasoning model (default 6000 / 16000)")
     sw.set_defaults(fn=cmd_swebench)
     d = sub.add_parser("dashboard"); d.add_argument("run"); d.add_argument("--port", type=int, default=8080); d.set_defaults(fn=cmd_dashboard)

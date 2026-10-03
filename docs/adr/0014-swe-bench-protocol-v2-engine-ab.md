@@ -130,3 +130,27 @@ calls answered all three, in about 10 s each, with no empty response.
 - **Cost:** none (free endpoint), so point 5 no longer applies. The Bedrock credit stays
   available for a later replication with GLM 5 (`zai.glm-5`), recorded as its own amendment
   before it runs.
+
+## Amendment 2 (2026-10-03, after the pilot, before any sampled instance ran)
+
+The pilot did what pilots are for: it found two harness bugs and one unusable setting. All three
+were fixed before any sampled instance ran.
+
+1. **GLM 5.3 runs with thinking off** (`--no-thinking`, through the chat template).
+   - With its default thinking mode on, a real reproduction prompt (about 5,400 characters)
+     ran past NVIDIA's 300 s gateway limit, and the server disconnected.
+   - The same prompt with thinking off came back in 105 s, as a usable script of 1,245 tokens.
+   - Both G arms use this setting, so the paired comparison is unaffected.
+2. **Harness: an API error while writing reproduction scripts is recorded, not fatal.**
+   - Before, it aborted the whole instance. The first pilot instance was lost after 38 minutes
+     of disconnects.
+   - This applies to both protocols. It changes only runs that would otherwise have crashed,
+     and no earlier arm had a crashed instance.
+3. **Harness: no call outlives the search budget.**
+   - Each call's timeout is now the time left in the instance's 20-minute search, at least
+     60 s and at most 600 s.
+   - Before, one call could block for 600 s on each of several retries.
+   - This applies to both protocols. In the K-v1 arm the median call took 20.9 s, so its
+     pairing with K-v2 is essentially unaffected; the comparison notes the difference.
+
+The GLM pilots are rerun on the fixed harness. Their evidence is committed with the arms.
