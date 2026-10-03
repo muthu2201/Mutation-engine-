@@ -1,6 +1,6 @@
 {
  "schema": "colloid.mutation/1",
- "head": "a7da3c1896df823f2a686bfe5088816629266d3b2f0b23c8aca68be3471a4bad",
- "entries": 42,
- "last_message": "lake: +2 CRL rule record(s)"
+ "head": "cdf694a9270be4f5e774a1f10e64210b928799b7ad16ae29690b177b1442bb31",
+ "entries": 46,
+ "last_message": "lake: +4 records from SWE-bench run local"
 }

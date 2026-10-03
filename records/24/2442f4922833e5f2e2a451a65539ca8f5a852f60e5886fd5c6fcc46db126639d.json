@@ -1,0 +1,33 @@
+{
+ "content": {
+  "explain": "django__django-13109: rewrite of ForeignKey.validate in django/db/models/fields/related.py that resolves the issue (official SWE-bench grader)",
+  "locus": {
+   "kind": "function",
+   "language": "python",
+   "layer": "app",
+   "surface": "code_region",
+   "symbol_path": "py:django/django/django/db/models/fields/related.py::ForeignKey.validate",
+   "unit": "ForeignKey.validate",
+   "unit_id": "2030b1456f45a002"
+  },
+  "payload": {
+   "base_commit": "fbe82f82555bc25dccb476c749ca062f0b522be3",
+   "diff": "diff --git a/django/db/models/fields/related.py b/django/db/models/fields/related.py\nindex d517d7269b..c2aea9c730 100644\n--- a/django/db/models/fields/related.py\n+++ b/django/db/models/fields/related.py\n@@ -914,7 +914,7 @@ class ForeignKey(ForeignObject):\n             return\n \n         using = router.db_for_read(self.remote_field.model, instance=model_instance)\n-        qs = self.remote_field.model._default_manager.using(using).filter(\n+        qs = self.remote_field.model._base_manager.using(using).filter(\n             **{self.remote_field.field_name: value}\n         )\n         qs = qs.complex_filter(self.get_limit_choices_to())\n",
+   "language": "python",
+   "source": "def validate(self, value, model_instance):\n    if self.remote_field.parent_link:\n        return\n    super().validate(value, model_instance)\n    if value is None:\n        return\n\n    using = router.db_for_read(self.remote_field.model, instance=model_instance)\n    qs = self.remote_field.model._base_manager.using(using).filter(\n        **{self.remote_field.field_name: value}\n    )\n    qs = qs.complex_filter(self.get_limit_choices_to())\n    if not qs.exists():\n        raise exceptions.ValidationError(\n            self.error_messages['invalid'],\n            code='invalid',\n            params={\n                'model': self.remote_field.model._meta.verbose_name, 'pk': value,\n                'field': self.remote_field.field_name, 'value': value,\n            },  # 'pk' is included for backwards compatibility\n        )\n"
+  },
+  "payload_kind": "source",
+  "provenance": {
+   "model": "qwen2.5-coder-7b",
+   "notes": "",
+   "operator": "repair_rewrite",
+   "prompt_hash": "0a874e788106eb05",
+   "response_hash": "1c719ecca6565e1e",
+   "template": "fix_think"
+  },
+  "target": "swebench:django/django"
+ },
+ "id": "2442f4922833e5f2e2a451a65539ca8f5a852f60e5886fd5c6fcc46db126639d",
+ "kind": "gene",
+ "schema": "colloid.mutation/1"
+}
