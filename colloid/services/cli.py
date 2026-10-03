@@ -120,6 +120,8 @@ def _hosted(args: argparse.Namespace) -> tuple[Any, str, Any, int]:
     """(provider, model, pace, extra max_tokens) for a hosted API arm; keys come only from the environment."""
     model_d, effort_d, extra_d = HOSTED_DEFAULTS[args.provider]
     model, effort = args.api_model or model_d, args.reasoning_effort or effort_d
+    if effort == "none":  # send no reasoning setting at all (the provider's default)
+        effort = None
     extra = extra_d if args.max_tokens_extra is None else args.max_tokens_extra
     if not model:
         raise SystemExit(f"--api-model is required for --provider {args.provider} (list them: colloid llm models --provider {args.provider})")
@@ -531,7 +533,8 @@ def main(argv: list[str] | None = None) -> int:
     sw.add_argument("--provider", choices=["local", "openrouter", "nvidia", "gemini", "groq", "xkiro", "bedrock"], default="local",
                     help="hosted arms read their key (e.g. NVIDIA_API_KEY, GEMINI_API_KEY, GROQ_API_KEY) from the environment")
     sw.add_argument("--api-model", help="default: qwen/qwen3.8-27b:free (openrouter), moonshotai/kimi-k3 (nvidia)")
-    sw.add_argument("--reasoning-effort", choices=["low", "medium", "high", "xhigh", "max"], help="default: medium (openrouter), high (nvidia)")
+    sw.add_argument("--reasoning-effort", choices=["none", "low", "medium", "high", "xhigh", "max"],
+                    help="default: medium (openrouter), high (nvidia); none sends no reasoning setting")
     sw.add_argument("--max-tokens-extra", type=int, help="added to every request's cap for a hosted reasoning model (default 6000 / 16000)")
     sw.set_defaults(fn=cmd_swebench)
     d = sub.add_parser("dashboard"); d.add_argument("run"); d.add_argument("--port", type=int, default=8080); d.set_defaults(fn=cmd_dashboard)

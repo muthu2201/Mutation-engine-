@@ -112,3 +112,21 @@ own effect, which no experiment so far has isolated.
 - If v2 helps, it becomes the default, and the next pre-registration starts from it. If it does
   not, the bottleneck is somewhere this ADR did not touch, most likely localisation or the fix
   prompts, and that is reported.
+
+## Amendment (2026-10-03, before any GLM arm ran): GLM 5.3 on NVIDIA instead of GLM 5 on Bedrock
+
+**Why.** The Bedrock key is not yet visible to the session. NVIDIA's free endpoint, whose key is
+available, serves **GLM 5.3** (`z-ai/glm-5.3`). The owner proposed it. A smoke test of three
+calls answered all three, in about 10 s each, with no empty response.
+
+**What changes:** the G arms only. Both are now **GLM 5.3 on NVIDIA**:
+
+- **Request settings:** no reasoning setting (`--reasoning-effort none`), with 8,000 extra
+  `max_tokens`.
+- **Sampling:** the engine's own temperatures, because GLM 5.3 accepts them.
+- **Order:** G-v2 first, then G-v1, after K-v2.
+- **Unchanged:** everything else in this ADR, including the pilot on the two pilot instances
+  under both protocols, with empty and truncation shares reported and nothing tuned.
+- **Cost:** none (free endpoint), so point 5 no longer applies. The Bedrock credit stays
+  available for a later replication with GLM 5 (`zai.glm-5`), recorded as its own amendment
+  before it runs.
