@@ -40,6 +40,12 @@ print(f"sample reproduces: {len(a['instances'])} instances")
 PY
 
 echo "==> docker"
+# after a worker restart the agent proxy can move to a new port while dockerd keeps the old one: restart it (when idle)
+if docker info >/dev/null 2>&1 && [ -n "${HTTPS_PROXY:-}" ] && [ -z "$(docker ps -q)" ] \
+   && [ "$(docker info --format '{{.HTTPSProxy}}' 2>/dev/null)" != "$HTTPS_PROXY" ]; then
+  echo "    dockerd uses a stale proxy; restarting it"
+  kill "$(pgrep -x dockerd)"; for _ in $(seq 1 20); do pgrep -x dockerd >/dev/null || break; sleep 1; done
+fi
 if ! docker info >/dev/null 2>&1; then
   mkdir -p /opt/colloid/state/docker
   setsid nohup dockerd --data-root /opt/colloid/state/docker > /opt/colloid/logs/dockerd.log 2>&1 < /dev/null &

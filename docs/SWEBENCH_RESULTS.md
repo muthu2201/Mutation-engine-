@@ -49,6 +49,9 @@ Every number below is generated from the run's records by `stress/render_swebenc
    - So with these models and this budget, **the engine solved no instance that needed the fix to
      be inferred.** It localised, applied, tested and submitted fixes that the issue text supplied.
      ("Solution leakage" of this kind is a known SWE-bench failure mode.)
+   - The memorisation probes (section 6) found **no recall**. No model was `suspect` on any
+     instance, and both resolved instances are `clean` for the 7B model that solved them. The
+     successes came from the issue text, not from memory.
    - The pre-registered headline stands as measured: 2 / 30, with a Wilson 95% CI of 1.8–21.3%.
      This reading of it is post hoc (section 6).
 2. **Localisation is not the bottleneck; selection is.**
@@ -198,6 +201,25 @@ Each winning patch was also compared with the gold patch. The verdict rule (`sus
 resolve rate in section 1 stays the headline.
 
 <!-- RESULTS:SWE_CONTAMINATION -->
+
+| model | instances probed | file named, not in issue | `suspect` | `path-only` | `clean` |
+|---|---|---|---|---|---|
+| qwen2.5-coder-7b | 30 | 6 | 0 | 6 | 24 |
+| qwen2.5-coder-3b | 30 | 5 | 0 | 5 | 25 |
+| qwen2.5-coder-1.5b | 30 | 1 | 0 | 1 | 29 |
+
+Every resolved instance, probed with the model that solved it:
+
+| instance | solved by | verdict | file probe | task-ID 5-gram overlap | gold lines recalled | submission ∩ gold (5-gram) | submission = gold's added lines |
+|---|---|---|---|---|---|---|---|
+| `django__django-11451` | qwen2.5-coder-7b | **clean** | missed | 0.00 | 0 | 1.00 | yes |
+| `django__django-13109` | qwen2.5-coder-7b | **clean** | named (in issue) | 0.00 | 0 | 1.00 | yes |
+
+| restricted to instances where every model of the arm is ... | instances | resolved | Wilson 95% CI |
+|---|---|---|---|
+| `clean` (the pre-declared rule) | 22 | 1 | 0.8–21.8% |
+| not `suspect` (`path-only` allowed) | 30 | 2 | 1.8–21.3% |
+
 <!-- /RESULTS:SWE_CONTAMINATION -->
 
 ### 6.1 Did the issue already contain the fix? (post hoc, no model)

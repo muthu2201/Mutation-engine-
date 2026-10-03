@@ -103,7 +103,8 @@ commands (`colloid lake push`, `colloid stack ...`), never by hand.
 - **The bandit misallocated the budget.** The cost-aware bandit gave 56% of proposals to the
   1.5B model, which resolved nothing.
 - The full write-up is in `docs/SWEBENCH_RESULTS.md`, "What the local arm shows". The memorisation
-  probes for the three local models finish after this note was written; see section 6 there.
+  probes found no recall: no model was `suspect` on any instance, and both resolved instances are
+  `clean` for the 7B model.
 <!-- /HANDOFF:LOCAL -->
 
 ## 3. Before the next session starts (the owner)
@@ -180,8 +181,8 @@ When it has finished:
 
 ```bash
 V=/opt/colloid/venv/bin
-$V/colloid swebench ingest --provider nvidia --out runs/swebench-api   # resolved fixes + their probe verdicts -> lake
-$V/colloid lake push
+$V/python -m colloid.services.cli swebench ingest --provider nvidia --out runs/swebench-api   # resolved fixes + their probe verdicts -> lake
+$V/python -m colloid.services.cli lake push
 $V/python -m pytest -q tests && $V/ruff check . && $V/lint-imports
 git add docs/results/swebench/api docs/results/swebench/contamination_api.json docs/SWEBENCH_RESULTS.md
 git commit   # then push, and update PR #3's body with the API arm's result
@@ -207,6 +208,11 @@ any difference survives on the clean instances.
 - **Shared CPU.** Do not run CPU-heavy or cluster-touching work during a timed or scored run:
   test suites, image builds or a second arm. Stop processes by exact name (`pgrep -x`), never
   with `pkill -f` and a pattern that matches your own shell.
+- **After a worker restart.** The session's proxy can move to a new port while `dockerd` keeps
+  the old one, and every image pull is then refused. `scripts/setup-swebench.sh` detects this
+  and restarts `dockerd` when no container is running. To wait for a background job, wait on a
+  file it writes when it finishes, never on `pgrep -f <pattern>`: the shell that launched the
+  job carries the same text in its command line.
 - **Network.**
   - Never disable TLS verification or unset `HTTPS_PROXY`.
   - Docker Hub rate-limits this host, so SWE-bench images come from Epoch AI's GHCR rebuilds
