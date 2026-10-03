@@ -1,0 +1,13 @@
+diff --git a/lib/matplotlib/figure.py b/lib/matplotlib/figure.py
+index f1a6711cb6..e24197a654 100644
+--- a/lib/matplotlib/figure.py
++++ b/lib/matplotlib/figure.py
+@@ -1423,7 +1423,7 @@ default: %(va)s
+ 
+         height_ratios : array-like of length *nrows*, optional
+             Defines the relative heights of the rows. Each row gets a
+-            relative height of ``height_ratios[i] / sum(height_ratios)``.
++            relative height of ``height_ratios[i] / sum(height_ratios)``
+             If not given, all rows will have the same height.
+         """
+         gs = GridSpec(nrows=nrows, ncols=ncols, figure=self,

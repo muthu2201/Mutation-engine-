@@ -1,0 +1,513 @@
+{
+  "instance_id": "sympy__sympy-12481",
+  "repo": "sympy/sympy",
+  "version": "1.0",
+  "base_commit": "c807dfe7569692cad24f02a08477b70c1679a4dd",
+  "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.sympy__sympy-12481:latest",
+  "started_at": "2026-10-03T15:27:22.557162+00:00",
+  "image_digest": "ghcr.io/epoch-research/swe-bench.eval.x86_64.sympy__sympy-12481@sha256:46963c9c7a9cd5119565b9c77a853b1c0ca38775491a9281ebc3e92021f6e963",
+  "pull_s": 30.5,
+  "files_considered": 590,
+  "ranked_files": [
+    {
+      "file": "sympy/combinatorics/permutations.py",
+      "score": 1.5
+    },
+    {
+      "file": "sympy/utilities/iterables.py",
+      "score": 0.777
+    },
+    {
+      "file": "sympy/combinatorics/util.py",
+      "score": 0.657
+    },
+    {
+      "file": "sympy/combinatorics/perm_groups.py",
+      "score": 0.628
+    },
+    {
+      "file": "sympy/combinatorics/polyhedron.py",
+      "score": 0.596
+    },
+    {
+      "file": "sympy/functions/combinatorial/numbers.py",
+      "score": 0.543
+    },
+    {
+      "file": "sympy/matrices/matrices.py",
+      "score": 0.537
+    },
+    {
+      "file": "sympy/combinatorics/partitions.py",
+      "score": 0.475
+    }
+  ],
+  "localised": [
+    {
+      "file": "sympy/combinatorics/permutations.py",
+      "name": "Permutation.<L525-584>",
+      "kind": "block",
+      "start": 525,
+      "end": 584,
+      "score": 2.5
+    },
+    {
+      "file": "sympy/combinatorics/permutations.py",
+      "name": "Permutation.__mul__",
+      "kind": "function",
+      "start": 1248,
+      "end": 1307,
+      "score": 2.331
+    },
+    {
+      "file": "sympy/combinatorics/permutations.py",
+      "name": "Permutation.cycles",
+      "kind": "function",
+      "start": 2240,
+      "end": 2261,
+      "score": 2.243
+    },
+    {
+      "file": "sympy/combinatorics/permutations.py",
+      "name": "Permutation.__new__",
+      "kind": "function",
+      "start": 801,
+      "end": 929,
+      "score": 2.179
+    },
+    {
+      "file": "sympy/combinatorics/permutations.py",
+      "name": "Permutation.parity",
+      "kind": "function",
+      "start": 1790,
+      "end": 1817,
+      "score": 2.075
+    },
+    {
+      "file": "sympy/combinatorics/permutations.py",
+      "name": "Permutation.<L465-524>",
+      "kind": "block",
+      "start": 465,
+      "end": 524,
+      "score": 2.06
+    }
+  ],
+  "repro": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "unparseable",
+      "script_hash": null
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "ISSUE REPRODUCED",
+      "script_hash": "17b89f0946e8f5b5"
+    }
+  ],
+  "candidates": [
+    {
+      "snippet": "py:sympy/combinatorics/permutations.py::Permutation.<L525-584>",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "12cd6a8000e33b73",
+      "response_hash": "8603df828ae705d3",
+      "stage": "parse",
+      "reason": "file does not parse after the splice: invalid syntax (line 527)"
+    },
+    {
+      "snippet": "py:sympy/combinatorics/permutations.py::Permutation.__mul__",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "76fe1263784ce7ef",
+      "response_hash": "6be52afa4ac712c9",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "sympy/combinatorics/tests/test_permutations.py",
+        "sympy/core/tests/test_args.py",
+        "sympy/combinatorics/tests/test_generators.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 11,
+      "judge_s": 10.1,
+      "diff": "diff --git a/sympy/combinatorics/permutations.py b/sympy/combinatorics/permutations.py\nindex 136ed5a478..726e8b99b8 100644\n--- a/sympy/combinatorics/permutations.py\n+++ b/sympy/combinatorics/permutations.py\n@@ -1299,11 +1299,12 @@ def __mul__(self, other):\n         a = self.array_form\n         # __rmul__ makes sure the other is a Permutation\n         b = other.array_form\n-        if not b:\n-            perm = a\n-        else:\n-            b.extend(list(range(len(b), len(a))))\n-            perm = [b[i] for i in a] + b[len(a):]\n+        n = max(len(a), len(b))\n+        if n == 0:\n+            return _af_new([])\n+        a = a + list(range(len(a), n))\n+        b = b + list(range(len(b), n))\n+        perm = [b[i] for i in a]\n         return _af_new(perm)\n \n     def commutes_with(self, other):\n",
+      "new_source": "def __mul__(self, other):\n    \"\"\"\n    Return the product a*b as a Permutation; the ith value is b(a(i)).\n\n    Examples\n    ========\n\n    >>> from sympy.combinatorics.permutations import _af_rmul, Permutation\n    >>> Permutation.print_cyclic = False\n\n    >>> a, b = [1, 0, 2], [0, 2, 1]\n    >>> a = Permutation(a); b = Permutation(b)\n    >>> list(a*b)\n    [2, 0, 1]\n    >>> [b(a(i)) for i in range(3)]\n    [2, 0, 1]\n\n    This handles operands in reverse order compared to _af_rmul and rmul:\n\n    >>> al = list(a); bl = list(b)\n    >>> _af_rmul(al, bl)\n    [1, 2, 0]\n    >>> [al[bl[i]] for i in range(3)]\n    [1, 2, 0]\n\n    It is acceptable for the arrays to have different lengths; the shorter\n    one will be padded to match the longer one:\n\n    >>> b*Permutation([1, 0])\n    Permutation([1, 2, 0])\n    >>> Permutation([1, 0])*b\n    Permutation([2, 0, 1])\n\n    It is also acceptable to allow coercion to handle conversion of a\n    single list to the left of a Permutation:\n\n    >>> [0, 1]*a # no change: 2-element identity\n    Permutation([1, 0, 2])\n    >>> [[0, 1]]*a # exchange first two elements\n    Permutation([0, 1, 2])\n\n    You cannot use more than 1 cycle notation in a product of cycles\n    since coercion can only handle one argument to the left. To handle\n    multiple cycles it is convenient to use Cycle instead of Permutation:\n\n    >>> [[1, 2]]*[[2, 3]]*Permutation([]) # doctest: +SKIP\n    >>> from sympy.combinatorics.permutations import Cycle\n    >>> Cycle(1, 2)(2, 3)\n    (1 3 2)\n\n    \"\"\"\n    a = self.array_form\n    # __rmul__ makes sure the other is a Permutation\n    b = other.array_form\n    n = max(len(a), len(b))\n    if n == 0:\n        return _af_new([])\n    a = a + list(range(len(a), n))\n    b = b + list(range(len(b), n))\n    perm = [b[i] for i in a]\n    return _af_new(perm)\n"
+    },
+    {
+      "snippet": "py:sympy/combinatorics/permutations.py::Permutation.cycles",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "2d663832ab5370dc",
+      "response_hash": "a06ab2bf4b6da375",
+      "stage": "parse",
+      "reason": "replacement has 128 lines for a 22-line snippet"
+    },
+    {
+      "snippet": "py:sympy/combinatorics/permutations.py::Permutation.__new__",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "ffdfd2ffa78008bd",
+      "response_hash": "b1654547b155b719",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "1 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "sympy/combinatorics/tests/test_permutations.py",
+        "sympy/core/tests/test_args.py",
+        "sympy/combinatorics/tests/test_generators.py"
+      ],
+      "regressions": 1,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 14,
+      "judge_s": 5.1
+    },
+    {
+      "snippet": "py:sympy/combinatorics/permutations.py::Permutation.parity",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "47f3eeda200edbba",
+      "response_hash": "38893c95604117e9",
+      "stage": "parse",
+      "reason": "response does not define parity()"
+    },
+    {
+      "snippet": "py:sympy/combinatorics/permutations.py::Permutation.<L465-524>",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "5101332c2349cbab",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:sympy/combinatorics/permutations.py::Permutation.<L525-584>",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "12cd6a8000e33b73",
+      "response_hash": "7b1e14d14eb6c33b",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "sympy/combinatorics/tests/test_permutations.py",
+        "sympy/core/tests/test_args.py",
+        "sympy/combinatorics/tests/test_generators.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 10,
+      "judge_s": 5.9,
+      "diff": "diff --git a/sympy/combinatorics/permutations.py b/sympy/combinatorics/permutations.py\nindex 136ed5a478..06a74fdc95 100644\n--- a/sympy/combinatorics/permutations.py\n+++ b/sympy/combinatorics/permutations.py\n@@ -582,6 +582,16 @@ class Permutation(Basic):\n     trigger an error. For this reason, it is better to start the cycle\n     with the singleton:\n \n+    Cyclic-form entry with non-disjoint cycles is permitted; in that\n+    case the cycles are applied in left-to-right order and the\n+    resulting permutation is returned:\n+\n+    >>> Permutation([[0, 1], [0, 1]])\n+    Permutation([], size=2)\n+    >>> p = Permutation([[0, 1, 2], [0, 1]])\n+    >>> q = Permutation(0, 1, 2)*Permutation(0, 1)\n+    >>> p == q\n+    True\n     The following fails because there is is no element 3:\n \n     >>> Permutation(1, 2)(3)\n",
+      "new_source": "Disjoint Cycle Notation\n-----------------------\n\nIn disjoint cycle notation, only the elements that have shifted are\nindicated. In the above case, the 2 and 1 switched places. This can\nbe entered in two ways:\n\n>>> Permutation(1, 2) == Permutation([[1, 2]]) == p\nTrue\n\nOnly the relative ordering of elements in a cycle matter:\n\n>>> Permutation(1,2,3) == Permutation(2,3,1) == Permutation(3,1,2)\nTrue\n\nThe disjoint cycle notation is convenient when representing permutations\nthat have several cycles in them:\n\n>>> Permutation(1, 2)(3, 5) == Permutation([[1, 2], [3, 5]])\nTrue\n\nIt also provides some economy in entry when computing products of\npermutations that are written in disjoint cycle notation:\n\n>>> Permutation(1, 2)(1, 3)(2, 3)\nPermutation([0, 3, 2, 1])\n>>> _ == Permutation([[1, 2]])*Permutation([[1, 3]])*Permutation([[2, 3]])\nTrue\n\nEntering a singleton in a permutation is a way to indicate the size of the\npermutation. The ``size`` keyword can also be used.\n\nArray-form entry:\n\n>>> Permutation([[1, 2], [9]])\nPermutation([0, 2, 1], size=10)\n>>> Permutation([[1, 2]], size=10)\nPermutation([0, 2, 1], size=10)\n\nCyclic-form entry:\n\n>>> Permutation(1, 2, size=10)\nPermutation([0, 2, 1], size=10)\n>>> Permutation(9)(1, 2)\nPermutation([0, 2, 1], size=10)\n\nCaution: no singleton containing an element larger than the largest\nin any previous cycle can be entered. This is an important difference\nin how Permutation and Cycle handle the __call__ syntax. A singleton\nargument at the start of a Permutation performs instantiation of the\nPermutation and is permitted:\n\n>>> Permutation(5)\nPermutation([], size=6)\n\nA singleton entered after instantiation is a call to the permutation\n-- a function call -- and if the argument is out of range it will\ntrigger an error. For this reason, it is better to start the cycle\nwith the singleton:\n\nCyclic-form entry with non-disjoint cycles is permitted; in that\ncase the cycles are applied in left-to-right order and the\nresulting permutation is returned:\n\n>>> Permutation([[0, 1], [0, 1]])\nPermutation([], size=2)\n>>> p = Permutation([[0, 1, 2], [0, 1]])\n>>> q = Permutation(0, 1, 2)*Permutation(0, 1)\n>>> p == q\nTrue\n"
+    },
+    {
+      "snippet": "py:sympy/combinatorics/permutations.py::Permutation.__mul__",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "17e29f02bf480e33",
+      "response_hash": "a005e2fa1b08098b",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "sympy/combinatorics/tests/test_permutations.py",
+        "sympy/core/tests/test_args.py",
+        "sympy/combinatorics/tests/test_generators.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 4,
+      "judge_s": 5.1,
+      "diff": "diff --git a/sympy/combinatorics/permutations.py b/sympy/combinatorics/permutations.py\nindex 136ed5a478..116b02c828 100644\n--- a/sympy/combinatorics/permutations.py\n+++ b/sympy/combinatorics/permutations.py\n@@ -1298,11 +1298,11 @@ def __mul__(self, other):\n         \"\"\"\n         a = self.array_form\n         # __rmul__ makes sure the other is a Permutation\n-        b = other.array_form\n+        b = list(other.array_form)\n         if not b:\n             perm = a\n         else:\n-            b.extend(list(range(len(b), len(a))))\n+            b = b + list(range(len(b), len(a)))\n             perm = [b[i] for i in a] + b[len(a):]\n         return _af_new(perm)\n \n",
+      "new_source": "def __mul__(self, other):\n    \"\"\"\n    Return the product a*b as a Permutation; the ith value is b(a(i)).\n\n    Examples\n    ========\n\n    >>> from sympy.combinatorics.permutations import _af_rmul, Permutation\n    >>> Permutation.print_cyclic = False\n\n    >>> a, b = [1, 0, 2], [0, 2, 1]\n    >>> a = Permutation(a); b = Permutation(b)\n    >>> list(a*b)\n    [2, 0, 1]\n    >>> [b(a(i)) for i in range(3)]\n    [2, 0, 1]\n\n    This handles operands in reverse order compared to _af_rmul and rmul:\n\n    >>> al = list(a); bl = list(b)\n    >>> _af_rmul(al, bl)\n    [1, 2, 0]\n    >>> [al[bl[i]] for i in range(3)]\n    [1, 2, 0]\n\n    It is acceptable for the arrays to have different lengths; the shorter\n    one will be padded to match the longer one:\n\n    >>> b*Permutation([1, 0])\n    Permutation([1, 2, 0])\n    >>> Permutation([1, 0])*b\n    Permutation([2, 0, 1])\n\n    It is also acceptable to allow coercion to handle conversion of a\n    single list to the left of a Permutation:\n\n    >>> [0, 1]*a # no change: 2-element identity\n    Permutation([1, 0, 2])\n    >>> [[0, 1]]*a # exchange first two elements\n    Permutation([0, 1, 2])\n\n    You cannot use more than 1 cycle notation in a product of cycles\n    since coercion can only handle one argument to the left. To handle\n    multiple cycles it is convenient to use Cycle instead of Permutation:\n\n    >>> [[1, 2]]*[[2, 3]]*Permutation([]) # doctest: +SKIP\n    >>> from sympy.combinatorics.permutations import Cycle\n    >>> Cycle(1, 2)(2, 3)\n    (1 3 2)\n\n    \"\"\"\n    a = self.array_form\n    # __rmul__ makes sure the other is a Permutation\n    b = list(other.array_form)\n    if not b:\n        perm = a\n    else:\n        b = b + list(range(len(b), len(a)))\n        perm = [b[i] for i in a] + b[len(a):]\n    return _af_new(perm)\n"
+    },
+    {
+      "snippet": "py:sympy/combinatorics/permutations.py::Permutation.cycles",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "2d663832ab5370dc",
+      "response_hash": "1fb299b507890f17",
+      "stage": "parse",
+      "reason": "response does not define cycles()"
+    },
+    {
+      "snippet": "py:sympy/combinatorics/permutations.py::Permutation.__new__",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "0fbfe98727218dbd",
+      "response_hash": "ed3204ee7b5a243d",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "614 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "sympy/combinatorics/tests/test_permutations.py",
+        "sympy/core/tests/test_args.py",
+        "sympy/combinatorics/tests/test_generators.py"
+      ],
+      "regressions": 614,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 32,
+      "judge_s": 4.1
+    },
+    {
+      "snippet": "py:sympy/combinatorics/permutations.py::Permutation.parity",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "47f3eeda200edbba",
+      "response_hash": "5c7ebb0b8a38ab88",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "sympy/combinatorics/tests/test_permutations.py",
+        "sympy/core/tests/test_args.py",
+        "sympy/combinatorics/tests/test_generators.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 6,
+      "judge_s": 5.6,
+      "diff": "diff --git a/sympy/combinatorics/permutations.py b/sympy/combinatorics/permutations.py\nindex 136ed5a478..21ff5b60f7 100644\n--- a/sympy/combinatorics/permutations.py\n+++ b/sympy/combinatorics/permutations.py\n@@ -1811,9 +1811,9 @@ def parity(self):\n \n         _af_parity\n         \"\"\"\n-        if self._cyclic_form is not None:\n-            return (self.size - self.cycles) % 2\n-\n+        # The cyclic form, if present, may have come from non-disjoint\n+        # cycles (which are now composed, not rejected), so it cannot be\n+        # trusted for computing the parity; always use the array form.\n         return _af_parity(self.array_form)\n \n     @property\n",
+      "new_source": "def parity(self):\n    \"\"\"\n    Computes the parity of a permutation.\n\n    The parity of a permutation reflects the parity of the\n    number of inversions in the permutation, i.e., the\n    number of pairs of x and y such that ``x > y`` but ``p[x] < p[y]``.\n\n    Examples\n    ========\n\n    >>> from sympy.combinatorics.permutations import Permutation\n    >>> p = Permutation([0, 1, 2, 3])\n    >>> p.parity()\n    0\n    >>> p = Permutation([3, 2, 0, 1])\n    >>> p.parity()\n    1\n\n    See Also\n    ========\n\n    _af_parity\n    \"\"\"\n    # The cyclic form, if present, may have come from non-disjoint\n    # cycles (which are now composed, not rejected), so it cannot be\n    # trusted for computing the parity; always use the array form.\n    return _af_parity(self.array_form)\n"
+    },
+    {
+      "snippet": "py:sympy/combinatorics/permutations.py::Permutation.<L465-524>",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "5101332c2349cbab",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:sympy/combinatorics/permutations.py::Permutation.<L525-584>",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "f721e0febec429c9",
+      "response_hash": "0e382412dbb6e94d",
+      "stage": "parse",
+      "reason": "file does not parse after the splice: invalid syntax (line 530)"
+    },
+    {
+      "snippet": "py:sympy/combinatorics/permutations.py::Permutation.__mul__",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "17e29f02bf480e33",
+      "response_hash": "88ec250be3a760ce",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "sympy/combinatorics/tests/test_permutations.py",
+        "sympy/core/tests/test_args.py",
+        "sympy/combinatorics/tests/test_generators.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 2,
+      "judge_s": 5.8,
+      "diff": "diff --git a/sympy/combinatorics/permutations.py b/sympy/combinatorics/permutations.py\nindex 136ed5a478..952e7b1db8 100644\n--- a/sympy/combinatorics/permutations.py\n+++ b/sympy/combinatorics/permutations.py\n@@ -1302,7 +1302,7 @@ def __mul__(self, other):\n         if not b:\n             perm = a\n         else:\n-            b.extend(list(range(len(b), len(a))))\n+            b = b + list(range(len(b), len(a))) if len(b) < len(a) else b\n             perm = [b[i] for i in a] + b[len(a):]\n         return _af_new(perm)\n \n",
+      "new_source": "def __mul__(self, other):\n    \"\"\"\n    Return the product a*b as a Permutation; the ith value is b(a(i)).\n\n    Examples\n    ========\n\n    >>> from sympy.combinatorics.permutations import _af_rmul, Permutation\n    >>> Permutation.print_cyclic = False\n\n    >>> a, b = [1, 0, 2], [0, 2, 1]\n    >>> a = Permutation(a); b = Permutation(b)\n    >>> list(a*b)\n    [2, 0, 1]\n    >>> [b(a(i)) for i in range(3)]\n    [2, 0, 1]\n\n    This handles operands in reverse order compared to _af_rmul and rmul:\n\n    >>> al = list(a); bl = list(b)\n    >>> _af_rmul(al, bl)\n    [1, 2, 0]\n    >>> [al[bl[i]] for i in range(3)]\n    [1, 2, 0]\n\n    It is acceptable for the arrays to have different lengths; the shorter\n    one will be padded to match the longer one:\n\n    >>> b*Permutation([1, 0])\n    Permutation([1, 2, 0])\n    >>> Permutation([1, 0])*b\n    Permutation([2, 0, 1])\n\n    It is also acceptable to allow coercion to handle conversion of a\n    single list to the left of a Permutation:\n\n    >>> [0, 1]*a # no change: 2-element identity\n    Permutation([1, 0, 2])\n    >>> [[0, 1]]*a # exchange first two elements\n    Permutation([0, 1, 2])\n\n    You cannot use more than 1 cycle notation in a product of cycles\n    since coercion can only handle one argument to the left. To handle\n    multiple cycles it is convenient to use Cycle instead of Permutation:\n\n    >>> [[1, 2]]*[[2, 3]]*Permutation([]) # doctest: +SKIP\n    >>> from sympy.combinatorics.permutations import Cycle\n    >>> Cycle(1, 2)(2, 3)\n    (1 3 2)\n\n    \"\"\"\n    a = self.array_form\n    # __rmul__ makes sure the other is a Permutation\n    b = other.array_form\n    if not b:\n        perm = a\n    else:\n        b = b + list(range(len(b), len(a))) if len(b) < len(a) else b\n        perm = [b[i] for i in a] + b[len(a):]\n    return _af_new(perm)\n"
+    }
+  ],
+  "validated_repro": 1,
+  "stop": "budget",
+  "submission": {
+    "snippet": "py:sympy/combinatorics/permutations.py::Permutation.__mul__",
+    "model": "moonshotai/kimi-k3",
+    "template": "fix",
+    "diff": "diff --git a/sympy/combinatorics/permutations.py b/sympy/combinatorics/permutations.py\nindex 136ed5a478..952e7b1db8 100644\n--- a/sympy/combinatorics/permutations.py\n+++ b/sympy/combinatorics/permutations.py\n@@ -1302,7 +1302,7 @@ def __mul__(self, other):\n         if not b:\n             perm = a\n         else:\n-            b.extend(list(range(len(b), len(a))))\n+            b = b + list(range(len(b), len(a))) if len(b) < len(a) else b\n             perm = [b[i] for i in a] + b[len(a):]\n         return _af_new(perm)\n \n",
+    "votes": 0,
+    "changed_lines": 2,
+    "new_source": "def __mul__(self, other):\n    \"\"\"\n    Return the product a*b as a Permutation; the ith value is b(a(i)).\n\n    Examples\n    ========\n\n    >>> from sympy.combinatorics.permutations import _af_rmul, Permutation\n    >>> Permutation.print_cyclic = False\n\n    >>> a, b = [1, 0, 2], [0, 2, 1]\n    >>> a = Permutation(a); b = Permutation(b)\n    >>> list(a*b)\n    [2, 0, 1]\n    >>> [b(a(i)) for i in range(3)]\n    [2, 0, 1]\n\n    This handles operands in reverse order compared to _af_rmul and rmul:\n\n    >>> al = list(a); bl = list(b)\n    >>> _af_rmul(al, bl)\n    [1, 2, 0]\n    >>> [al[bl[i]] for i in range(3)]\n    [1, 2, 0]\n\n    It is acceptable for the arrays to have different lengths; the shorter\n    one will be padded to match the longer one:\n\n    >>> b*Permutation([1, 0])\n    Permutation([1, 2, 0])\n    >>> Permutation([1, 0])*b\n    Permutation([2, 0, 1])\n\n    It is also acceptable to allow coercion to handle conversion of a\n    single list to the left of a Permutation:\n\n    >>> [0, 1]*a # no change: 2-element identity\n    Permutation([1, 0, 2])\n    >>> [[0, 1]]*a # exchange first two elements\n    Permutation([0, 1, 2])\n\n    You cannot use more than 1 cycle notation in a product of cycles\n    since coercion can only handle one argument to the left. To handle\n    multiple cycles it is convenient to use Cycle instead of Permutation:\n\n    >>> [[1, 2]]*[[2, 3]]*Permutation([]) # doctest: +SKIP\n    >>> from sympy.combinatorics.permutations import Cycle\n    >>> Cycle(1, 2)(2, 3)\n    (1 3 2)\n\n    \"\"\"\n    a = self.array_form\n    # __rmul__ makes sure the other is a Permutation\n    b = other.array_form\n    if not b:\n        perm = a\n    else:\n        b = b + list(range(len(b), len(a))) if len(b) < len(a) else b\n        perm = [b[i] for i in a] + b[len(a):]\n    return _af_new(perm)\n",
+    "prompt_hash": "17e29f02bf480e33",
+    "response_hash": "88ec250be3a760ce"
+  },
+  "search_s": 1175.8,
+  "llm_calls": 16,
+  "tokens_in": 13757,
+  "tokens_out": 21733,
+  "calls": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 37.73,
+      "tokens_in": 297,
+      "tokens_out": 33,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 28.23,
+      "tokens_in": 297,
+      "tokens_out": 345,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 69.11,
+      "tokens_in": 918,
+      "tokens_out": 1493,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 58.17,
+      "tokens_in": 971,
+      "tokens_out": 1206,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 77.57,
+      "tokens_in": 548,
+      "tokens_out": 1455,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 64.95,
+      "tokens_in": 1612,
+      "tokens_out": 1414,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 94.75,
+      "tokens_in": 600,
+      "tokens_out": 1552,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 21.33,
+      "tokens_in": 998,
+      "tokens_out": 32,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 217.48,
+      "tokens_in": 918,
+      "tokens_out": 5243,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 70.13,
+      "tokens_in": 961,
+      "tokens_out": 1471,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 87.49,
+      "tokens_in": 548,
+      "tokens_out": 1842,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 69.26,
+      "tokens_in": 1602,
+      "tokens_out": 1379,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 56.63,
+      "tokens_in": 600,
+      "tokens_out": 890,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 20.42,
+      "tokens_in": 998,
+      "tokens_out": 33,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 80.75,
+      "tokens_in": 928,
+      "tokens_out": 1972,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 74.69,
+      "tokens_in": 961,
+      "tokens_out": 1373,
+      "finish_reason": "stop",
+      "empty": false
+    }
+  ],
+  "arms": {
+    "moonshotai/kimi-k3/fix": 0.16666666666666666,
+    "moonshotai/kimi-k3/fix_think": 0.13333333333333333
+  },
+  "grade": {
+    "resolved": false,
+    "applied": true,
+    "fail_to_pass": {
+      "success": 0,
+      "failure": 1
+    },
+    "pass_to_pass": {
+      "success": 7,
+      "failure": 0
+    }
+  },
+  "grade_s": 1.4,
+  "wall_s": 1216.4,
+  "diagnosis": {
+    "gold_files": [
+      "sympy/combinatorics/permutations.py"
+    ],
+    "localised_file_hit": true,
+    "localised_line_hit": true,
+    "submission_files": [
+      "sympy/combinatorics/permutations.py"
+    ],
+    "submission_in_gold_file": true,
+    "gold_changed_lines": 8
+  }
+}

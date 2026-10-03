@@ -1,0 +1,17 @@
+diff --git a/sklearn/preprocessing/_discretization.py b/sklearn/preprocessing/_discretization.py
+index dd969c12b..f8ed842f7 100644
+--- a/sklearn/preprocessing/_discretization.py
++++ b/sklearn/preprocessing/_discretization.py
+@@ -252,7 +252,11 @@ class KBinsDiscretizer(BaseEstimator, TransformerMixin):
+             rtol = 1.e-5
+             atol = 1.e-8
+             eps = atol + rtol * np.abs(Xt[:, jj])
+-            Xt[:, jj] = np.digitize(Xt[:, jj] + eps, bin_edges[jj][1:])
++            # bin edges may not be monotonically increasing (e.g. kmeans can
++            # return unsorted centers). Sort them so np.digitize works
++            # correctly.
++            sorted_edges = np.sort(bin_edges[jj])
++            Xt[:, jj] = np.digitize(Xt[:, jj] + eps, sorted_edges[1:])
+         np.clip(Xt, 0, self.n_bins_ - 1, out=Xt)
+ 
+         if self.encode == 'ordinal':

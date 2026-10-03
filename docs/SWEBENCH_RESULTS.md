@@ -253,29 +253,255 @@ amendment 2 records the switch from Qwen3.8 on OpenRouter, made before any API-a
 The model's reasoning effort is fixed by a pilot on two instances outside the sample
 (`docs/results/swebench/api_pilot.json`). The arm runs after the local arm.
 
+### What the API arm shows
+
+1. **Kimi K3 resolved the same 2 instances as the 1.5–7B local models, and no others.**
+   - Paired difference 0; there are no discordant pairs, so the exact McNemar p is 1.0.
+   - On the 17 instances clean for both arms, each resolved 1.
+   - The probes found no recall here either: Kimi K3 was `suspect` on no instance, and its two
+     resolved instances are `clean` and `path-only`.
+   - Both resolved issues state their fix (section 1).
+   - On this sample, **a model roughly 400 times larger than the local 7B added nothing through
+     this engine.** The engine's verification and selection signals are the binding constraint,
+     not the model.
+2. **The stronger model exposed a flaw in L3.**
+   - Kimi K3 wrote far better reproduction scripts: a validated reproduction on 23 of 30
+     instances, against 9 for the local models.
+   - 11 submissions made their validated script print `ISSUE RESOLVED`, and **9 of those 11 failed
+     the official tests.**
+   - One script checks one facet of an issue, so a patch can satisfy it and still be wrong. The
+     search's stop rule ("every validated reproduction resolved") ended those searches early. This
+     is SWE-Doctor's warning ([RELATED_WORK](RELATED_WORK.md)), now measured on our own engine.
+3. **L2 again missed real regressions.** Submissions passed L2 while breaking 78 official
+   PASS_TO_PASS tests (pytest-7982), 18 (django-15569) and 1 (sphinx-8621).
+4. **About two-thirds of the budget was wasted.**
+   - 107 of 358 calls (30%) were empty responses from the free endpoint: a normal stop after
+     about 33 tokens of degenerate reasoning (see the pilot).
+   - 100 of 298 proposals (34%) returned the snippet unchanged. That is often a correct "the
+     bug is not here", but the engine charged it as a spent call.
+5. **Better selection, same outcome.** 18 of 30 submissions edited a gold file, against 14 for the
+   local arm. The arm took 3.8 h against 8.0 h, and its searches stopped on the call budget, not
+   the clock (median 6.8 minutes).
+
+These findings define protocol v2 (ADR 0014): change the engine, not the model, and measure the
+engine's effect with the model held fixed.
+
 ### 7.1 Result
 
 <!-- RESULTS:SWE_SUMMARY_API -->
+
+**Resolved: 2 / 30** (6.7%, Wilson 95% CI 1.8–21.3%), graded by the official SWE-bench harness. 30 of 30 pre-registered instances ran.
+
+| | count |
+|---|---|
+| instances run | 30 |
+| a patch was submitted (passed L0–L2) | 27 |
+| resolved (all FAIL_TO_PASS and PASS_TO_PASS pass) | 2 |
+| infrastructure errors | 0 |
+| wall clock, all instances | 3.8 h |
+| LLM calls | 358 |
+
 <!-- /RESULTS:SWE_SUMMARY_API -->
 
 ### 7.2 The funnel
 
 <!-- RESULTS:SWE_FUNNEL_API -->
+
+| stage | candidates |
+|---|---|
+| proposals | 298 |
+| parsed and spliced | 82 |
+| passed L0 (patch policy) | 82 |
+| passed L1 (applies, compiles) | 82 |
+| passed L2 (no regressions) | 71 |
+| resolved ≥1 validated reproduction (L3) | 11 |
+
+| reproduction script at base_commit | scripts |
+|---|---|
+| ISSUE REPRODUCED | 29 |
+| unparseable | 16 |
+| OTHER | 7 |
+| NONE | 4 |
+| ISSUE RESOLVED | 4 |
+
+| why a response was not a candidate | count |
+|---|---|
+| parse: identical to the original | 100 |
+| parse: no code block in response | 93 |
+| parse: response does not define __init__() | 2 |
+| parse: response does not define validators() | 2 |
+| parse: file does not parse after the splice: invalid sy | 2 |
+| parse: file does not parse after the splice: invalid de | 2 |
+| parse: replacement has 38 lines for a 3-line snippet | 1 |
+| parse: response does not define bulk_update() | 1 |
+
 <!-- /RESULTS:SWE_FUNNEL_API -->
+
+<!-- RESULTS:SWE_LOCALISATION_API -->
+
+Computed after grading, from the gold patch, for diagnosis only:
+
+| | instances |
+|---|---|
+| a localised snippet is in a file the gold patch changes | 21 / 30 |
+| a localised snippet overlaps the gold patch's changed lines | 16 / 30 |
+| the submission edits a file the gold patch changes | 18 / 30 |
+
+<!-- /RESULTS:SWE_LOCALISATION_API -->
+
+<!-- RESULTS:SWE_ARMS_API -->
+
+| arm (model / prompt) | proposals | passed L0–L2 | resolved a reproduction | resolved instances |
+|---|---|---|---|---|
+| moonshotai/kimi-k3 / fix | 145 | 34 | 5 | 0 |
+| moonshotai/kimi-k3 / fix_think | 153 | 37 | 6 | 2 |
+
+<!-- /RESULTS:SWE_ARMS_API -->
+
+<details><summary>Every instance (API arm)</summary>
+
+<!-- RESULTS:SWE_INSTANCES_API -->
+
+| instance | localised (file / lines) | validated repro | candidates ok / proposed | submitted | resolved | wall min |
+|---|---|---|---|---|---|---|
+| `astropy__astropy-7336` | ✓ / ✗ | 2/2 | 1 / 14 | yes | no | 7 |
+| `django__django-11099` | ✓ / ✓ | 2/2 | 2 / 14 | yes | no | 6 |
+| `django__django-11451` | ✓ / ✓ | 1/2 | 1 / 1 | yes | **yes** | 1 |
+| `django__django-11490` | ✗ / ✗ | 0/2 | 6 / 14 | yes | no | 9 |
+| `django__django-11951` | ✓ / ✓ | 0/2 | 4 / 14 | yes | no | 7 |
+| `django__django-12276` | ✓ / ✓ | 2/2 | 6 / 14 | yes | no | 5 |
+| `django__django-12304` | ✗ / ✗ | 0/2 | 0 / 14 | no | no | 6 |
+| `django__django-13109` | ✓ / ✓ | 1/2 | 1 / 1 | yes | **yes** | 1 |
+| `django__django-13112` | ✗ / ✗ | 1/2 | 0 / 14 | no | no | 6 |
+| `django__django-13821` | ✗ / ✗ | 0/2 | 1 / 14 | yes | no | 7 |
+| `django__django-13933` | ✓ / ✓ | 1/2 | 3 / 14 | yes | no | 5 |
+| `django__django-14580` | ✗ / ✗ | 0/2 | 7 / 14 | yes | no | 15 |
+| `django__django-15569` | ✓ / ✓ | 1/2 | 1 / 1 | yes | no | 2 |
+| `matplotlib__matplotlib-20859` | ✓ / ✗ | 1/2 | 3 / 14 | yes | no | 13 |
+| `matplotlib__matplotlib-24177` | ✗ / ✗ | 2/2 | 1 / 14 | yes | no | 9 |
+| `matplotlib__matplotlib-25287` | ✗ / ✗ | 1/2 | 0 / 14 | no | no | 8 |
+| `matplotlib__matplotlib-25311` | ✗ / ✗ | 0/2 | 1 / 14 | yes | no | 12 |
+| `pydata__xarray-4075` | ✓ / ✗ | 1/2 | 3 / 10 | yes | no | 7 |
+| `pydata__xarray-4629` | ✗ / ✗ | 0/2 | 4 / 14 | yes | no | 10 |
+| `pytest-dev__pytest-7205` | ✓ / ✓ | 2/2 | 3 / 14 | yes | no | 10 |
+| `pytest-dev__pytest-7982` | ✓ / ✓ | 1/2 | 1 / 1 | yes | no | 1 |
+| `scikit-learn__scikit-learn-13135` | ✓ / ✓ | 1/2 | 1 / 2 | yes | no | 2 |
+| `sphinx-doc__sphinx-8621` | ✓ / ✓ | 1/2 | 1 / 3 | yes | no | 3 |
+| `sphinx-doc__sphinx-9281` | ✓ / ✗ | 1/2 | 3 / 14 | yes | no | 10 |
+| `sphinx-doc__sphinx-9698` | ✓ / ✓ | 1/2 | 2 / 2 | yes | no | 4 |
+| `sphinx-doc__sphinx-9711` | ✓ / ✓ | 1/2 | 4 / 7 | yes | no | 6 |
+| `sympy__sympy-12096` | ✓ / ✓ | 1/2 | 2 / 7 | yes | no | 7 |
+| `sympy__sympy-12481` | ✓ / ✓ | 1/2 | 5 / 14 | yes | no | 20 |
+| `sympy__sympy-15809` | ✓ / ✗ | 2/2 | 2 / 8 | yes | no | 21 |
+| `sympy__sympy-16886` | ✓ / ✓ | 1/2 | 2 / 3 | yes | no | 3 |
+
+<!-- /RESULTS:SWE_INSTANCES_API -->
+
+</details>
 
 ### 7.3 Local vs API, instance by instance (the pre-registered comparison)
 
 <!-- RESULTS:SWE_PAIRED -->
+
+30 instances ran in both arms.
+
+| arm | resolved | Wilson 95% CI |
+|---|---|---|
+| local | 2 / 30 | 1.8–21.3% |
+| api | 2 / 30 | 1.8–21.3% |
+
+Discordant pairs: 0 resolved only by `api`, 0 only by `local`; paired difference +0 (api − local), exact McNemar p = 1.000.
+
+| instance | local | api |
+|---|---|---|
+| `astropy__astropy-7336` | no | no |
+| `django__django-11099` | no | no |
+| `django__django-11451` | **yes** | **yes** |
+| `django__django-11490` | no | no |
+| `django__django-11951` | no | no |
+| `django__django-12276` | no | no |
+| `django__django-12304` | no | no |
+| `django__django-13109` | **yes** | **yes** |
+| `django__django-13112` | no | no |
+| `django__django-13821` | no | no |
+| `django__django-13933` | no | no |
+| `django__django-14580` | no | no |
+| `django__django-15569` | no | no |
+| `matplotlib__matplotlib-20859` | no | no |
+| `matplotlib__matplotlib-24177` | no | no |
+| `matplotlib__matplotlib-25287` | no | no |
+| `matplotlib__matplotlib-25311` | no | no |
+| `pydata__xarray-4075` | no | no |
+| `pydata__xarray-4629` | no | no |
+| `pytest-dev__pytest-7205` | no | no |
+| `pytest-dev__pytest-7982` | no | no |
+| `scikit-learn__scikit-learn-13135` | no | no |
+| `sphinx-doc__sphinx-8621` | no | no |
+| `sphinx-doc__sphinx-9281` | no | no |
+| `sphinx-doc__sphinx-9698` | no | no |
+| `sphinx-doc__sphinx-9711` | no | no |
+| `sympy__sympy-12096` | no | no |
+| `sympy__sympy-12481` | no | no |
+| `sympy__sympy-15809` | no | no |
+| `sympy__sympy-16886` | no | no |
+
 <!-- /RESULTS:SWE_PAIRED -->
 
 ### 7.4 Memorisation probes for the API model
 
 <!-- RESULTS:SWE_CONTAMINATION_API -->
+
+| model | instances probed | file named, not in issue | `suspect` | `path-only` | `clean` |
+|---|---|---|---|---|---|
+| moonshotai/kimi-k3 | 30 | 8 | 0 | 8 | 22 |
+
+Every resolved instance, probed with the model that solved it:
+
+| instance | solved by | verdict | file probe | task-ID 5-gram overlap | gold lines recalled | submission ∩ gold (5-gram) | submission = gold's added lines |
+|---|---|---|---|---|---|---|---|
+| `django__django-11451` | moonshotai/kimi-k3 | **path-only** | named | 0.00 | 0 | 1.00 | yes |
+| `django__django-13109` | moonshotai/kimi-k3 | **clean** | missed | 0.00 | 0 | 1.00 | yes |
+
+| restricted to instances where every model of the arm is ... | instances | resolved | Wilson 95% CI |
+|---|---|---|---|
+| `clean` (the pre-declared rule) | 22 | 1 | 0.8–21.8% |
+| not `suspect` (`path-only` allowed) | 30 | 2 | 1.8–21.3% |
+
 <!-- /RESULTS:SWE_CONTAMINATION_API -->
 
 ### 7.5 Local vs API on the instances clean for both arms (ADR 0012 amendment)
 
 <!-- RESULTS:SWE_PAIRED_CLEAN -->
+
+17 instances ran in both arms.
+
+| arm | resolved | Wilson 95% CI |
+|---|---|---|
+| local | 1 / 17 | 1.0–27.0% |
+| api | 1 / 17 | 1.0–27.0% |
+
+Discordant pairs: 0 resolved only by `api`, 0 only by `local`; paired difference +0 (api − local), exact McNemar p = 1.000.
+
+| instance | local | api |
+|---|---|---|
+| `astropy__astropy-7336` | no | no |
+| `django__django-11951` | no | no |
+| `django__django-12276` | no | no |
+| `django__django-12304` | no | no |
+| `django__django-13109` | **yes** | **yes** |
+| `django__django-13112` | no | no |
+| `django__django-14580` | no | no |
+| `django__django-15569` | no | no |
+| `matplotlib__matplotlib-20859` | no | no |
+| `matplotlib__matplotlib-24177` | no | no |
+| `pydata__xarray-4075` | no | no |
+| `pydata__xarray-4629` | no | no |
+| `pytest-dev__pytest-7205` | no | no |
+| `pytest-dev__pytest-7982` | no | no |
+| `scikit-learn__scikit-learn-13135` | no | no |
+| `sphinx-doc__sphinx-8621` | no | no |
+| `sphinx-doc__sphinx-9711` | no | no |
+
 <!-- /RESULTS:SWE_PAIRED_CLEAN -->
 
 ## 8. Reproduce

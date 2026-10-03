@@ -1,0 +1,451 @@
+{
+  "instance_id": "matplotlib__matplotlib-20859",
+  "repo": "matplotlib/matplotlib",
+  "version": "3.4",
+  "base_commit": "64619e53e9d0ed417daba287ac0d3a06943a54d5",
+  "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.matplotlib__matplotlib-20859:latest",
+  "started_at": "2026-10-03T13:44:45.635822+00:00",
+  "image_digest": "ghcr.io/epoch-research/swe-bench.eval.x86_64.matplotlib__matplotlib-20859@sha256:e12ca64eda80740fe915560956fe2047de82469a9204dc6f8e5a10f15d90750b",
+  "pull_s": 39.3,
+  "files_considered": 242,
+  "ranked_files": [
+    {
+      "file": "lib/matplotlib/figure.py",
+      "score": 4.439
+    },
+    {
+      "file": "lib/matplotlib/legend.py",
+      "score": 3.593
+    },
+    {
+      "file": "lib/matplotlib/pyplot.py",
+      "score": 2.295
+    },
+    {
+      "file": "lib/matplotlib/__init__.py",
+      "score": 1.783
+    },
+    {
+      "file": "lib/matplotlib/axes/_axes.py",
+      "score": 1.697
+    },
+    {
+      "file": "lib/mpl_toolkits/mplot3d/axes3d.py",
+      "score": 1.559
+    },
+    {
+      "file": "lib/matplotlib/backend_tools.py",
+      "score": 1.282
+    },
+    {
+      "file": "lib/matplotlib/gridspec.py",
+      "score": 1.263
+    }
+  ],
+  "localised": [
+    {
+      "file": "lib/matplotlib/figure.py",
+      "name": "FigureBase.legend",
+      "kind": "function",
+      "start": 940,
+      "end": 1073,
+      "score": 6.5
+    },
+    {
+      "file": "lib/matplotlib/legend.py",
+      "name": "DraggableLegend.__init__",
+      "kind": "function",
+      "start": 53,
+      "end": 73,
+      "score": 4.871
+    },
+    {
+      "file": "lib/matplotlib/figure.py",
+      "name": "SubFigure.__init__",
+      "kind": "function",
+      "start": 1942,
+      "end": 2009,
+      "score": 3.956
+    },
+    {
+      "file": "lib/matplotlib/figure.py",
+      "name": "FigureBase.subplots",
+      "kind": "function",
+      "start": 790,
+      "end": 901,
+      "score": 3.949
+    },
+    {
+      "file": "lib/matplotlib/figure.py",
+      "name": "FigureBase.subfigures",
+      "kind": "function",
+      "start": 1393,
+      "end": 1445,
+      "score": 3.842
+    },
+    {
+      "file": "lib/matplotlib/figure.py",
+      "name": "FigureBase.__init__",
+      "kind": "function",
+      "start": 186,
+      "end": 216,
+      "score": 3.697
+    }
+  ],
+  "repro": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "ISSUE REPRODUCED",
+      "script_hash": "11b36f0196e371f4"
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "unparseable",
+      "script_hash": null
+    }
+  ],
+  "candidates": [
+    {
+      "snippet": "py:lib/matplotlib/figure.py::FigureBase.legend",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "483295fee8f0f21b",
+      "response_hash": "73929c2806c0456e",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "lib/matplotlib/tests/test_figure.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 8,
+      "judge_s": 26.8,
+      "diff": "diff --git a/lib/matplotlib/figure.py b/lib/matplotlib/figure.py\nindex f1a6711cb6..41ec19d2b6 100644\n--- a/lib/matplotlib/figure.py\n+++ b/lib/matplotlib/figure.py\n@@ -1054,14 +1054,6 @@ default: %(va)s\n                 **kwargs)\n         # check for third arg\n         if len(extra_args):\n-            # _api.warn_deprecated(\n-            #     \"2.1\",\n-            #     message=\"Figure.legend will accept no more than two \"\n-            #     \"positional arguments in the future.  Use \"\n-            #     \"'fig.legend(handles, labels, loc=location)' \"\n-            #     \"instead.\")\n-            # kwargs['loc'] = extra_args[0]\n-            # extra_args = extra_args[1:]\n             pass\n         transform = kwargs.pop('bbox_transform', self.transSubfigure)\n         # explicitly set the bbox transform if the user hasn't.\n",
+      "new_source": "@docstring.dedent_interpd\ndef legend(self, *args, **kwargs):\n    \"\"\"\n    Place a legend on the figure.\n\n    Call signatures::\n\n        legend()\n        legend(handles, labels)\n        legend(handles=handles)\n        legend(labels)\n\n    The call signatures correspond to the following different ways to use\n    this method:\n\n    **1. Automatic detection of elements to be shown in the legend**\n\n    The elements to be added to the legend are automatically determined,\n    when you do not pass in any extra arguments.\n\n    In this case, the labels are taken from the artist. You can specify\n    them either at artist creation or by calling the\n    :meth:`~.Artist.set_label` method on the artist::\n\n        ax.plot([1, 2, 3], label='Inline label')\n        fig.legend()\n\n    or::\n\n        line, = ax.plot([1, 2, 3])\n        line.set_label('Label via method')\n        fig.legend()\n\n    Specific lines can be excluded from the automatic legend element\n    selection by defining a label starting with an underscore.\n    This is default for all artists, so calling `.Figure.legend` without\n    any arguments and without setting the labels manually will result in\n    no legend being drawn.\n\n\n    **2. Explicitly listing the artists and labels in the legend**\n\n    For full control of which artists have a legend entry, it is possible\n    to pass an iterable of legend artists followed by an iterable of\n    legend labels respectively::\n\n        fig.legend([line1, line2, line3], ['label1', 'label2', 'label3'])\n\n\n    **3. Explicitly listing the artists in the legend**\n\n    This is similar to 2, but the labels are taken from the artists'\n    label properties. Example::\n\n        line1, = ax1.plot([1, 2, 3], label='label1')\n        line2, = ax2.plot([1, 2, 3], label='label2')\n        fig.legend(handles=[line1, line2])\n\n\n    **4. Labeling existing plot elements**\n\n    .. admonition:: Discouraged\n\n        This call signature is discouraged, because the relation between\n        plot elements and labels is only implicit by their order and can\n        easily be mixed up.\n\n    To make a legend for all artists on all Axes, call this function with\n    an iterable of strings, one for each legend item. For example::\n\n        fig, (ax1, ax2)  = plt.subplots(1, 2)\n        ax1.plot([1, 3, 5], color='blue')\n        ax2.plot([2, 4, 6], color='red')\n        fig.legend(['the blues', 'the reds'])\n\n\n    Parameters\n    ----------\n    handles : list of `.Artist`, optional\n        A list of Artists (lines, patches) to be added to the legend.\n        Use this together with *labels*, if you need full control on what\n        is shown in the legend and the automatic mechanism described above\n        is not sufficient.\n\n        The length of handles and labels should be the same in this\n        case. If they are not, they are truncated to the smaller length.\n\n    labels : list of str, optional\n        A list of labels to show next to the artists.\n        Use this together with *handles*, if you need full control on what\n        is shown in the legend and the automatic mechanism described above\n        is not sufficient.\n\n    Returns\n    -------\n    `~matplotlib.legend.Legend`\n\n    Other Parameters\n    ----------------\n    %(_legend_kw_doc)s\n\n    See Also\n    --------\n    .Axes.legend\n\n    Notes\n    -----\n    Some artists are not supported by this function.  See\n    :doc:`/tutorials/intermediate/legend_guide` for details.\n    \"\"\"\n\n    handles, labels, extra_args, kwargs = mlegend._parse_legend_args(\n            self.axes,\n            *args,\n            **kwargs)\n    # check for third arg\n    if len(extra_args):\n        pass\n    transform = kwargs.pop('bbox_transform', self.transSubfigure)\n    # explicitly set the bbox transform if the user hasn't.\n    l = mlegend.Legend(self, handles, labels, *extra_args,\n                       bbox_transform=transform, **kwargs)\n    self.legends.append(l)\n    l._remove_method = self.legends.remove\n    self.stale = True\n    return l\n"
+    },
+    {
+      "snippet": "py:lib/matplotlib/legend.py::DraggableLegend.__init__",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "a233c9152f94d28b",
+      "response_hash": "ab51d7d5ad2b523d",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:lib/matplotlib/figure.py::SubFigure.__init__",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "630d69acd41ca9f5",
+      "response_hash": "d87f1eb631a6f25e",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:lib/matplotlib/figure.py::FigureBase.subplots",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "784c1c53546e3d10",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:lib/matplotlib/figure.py::FigureBase.subfigures",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "d07f5269fadd5ef7",
+      "response_hash": "dd38f03b7b77424e",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:lib/matplotlib/figure.py::FigureBase.__init__",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "4595d656e5b5db48",
+      "response_hash": "4c6f0a867c9485fa",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "lib/matplotlib/tests/test_figure.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 3,
+      "judge_s": 14.8,
+      "diff": "diff --git a/lib/matplotlib/figure.py b/lib/matplotlib/figure.py\nindex f1a6711cb6..3e764dedac 100644\n--- a/lib/matplotlib/figure.py\n+++ b/lib/matplotlib/figure.py\n@@ -201,6 +201,9 @@ class FigureBase(Artist):\n         self._align_label_groups = {\"x\": cbook.Grouper(), \"y\": cbook.Grouper()}\n \n         self.figure = self\n+        # mark as figure-like so that Legend (and other artists that\n+        # distinguish figure from axes parents) accept SubFigure parents\n+        self.isfigure = True\n         # list of child gridspecs for this figure\n         self._gridspecs = []\n         self._localaxes = _AxesStack()  # track all axes and current axes\n",
+      "new_source": "def __init__(self, **kwargs):\n    super().__init__()\n    # remove the non-figure artist _axes property\n    # as it makes no sense for a figure to be _in_ an axes\n    # this is used by the property methods in the artist base class\n    # which are over-ridden in this class\n    del self._axes\n\n    self._suptitle = None\n    self._supxlabel = None\n    self._supylabel = None\n\n    # groupers to keep track of x and y labels we want to align.\n    # see self.align_xlabels and self.align_ylabels and\n    # axis._get_tick_boxes_siblings\n    self._align_label_groups = {\"x\": cbook.Grouper(), \"y\": cbook.Grouper()}\n\n    self.figure = self\n    # mark as figure-like so that Legend (and other artists that\n    # distinguish figure from axes parents) accept SubFigure parents\n    self.isfigure = True\n    # list of child gridspecs for this figure\n    self._gridspecs = []\n    self._localaxes = _AxesStack()  # track all axes and current axes\n    self.artists = []\n    self.lines = []\n    self.patches = []\n    self.texts = []\n    self.images = []\n    self.legends = []\n    self.subfigs = []\n    self.stale = True\n    self.suppressComposite = None\n    self.set(**kwargs)\n"
+    },
+    {
+      "snippet": "py:lib/matplotlib/figure.py::FigureBase.legend",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "483295fee8f0f21b",
+      "response_hash": "a156786bbbc5e91d",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:lib/matplotlib/legend.py::DraggableLegend.__init__",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "a233c9152f94d28b",
+      "response_hash": "ab51d7d5ad2b523d",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:lib/matplotlib/figure.py::SubFigure.__init__",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "630d69acd41ca9f5",
+      "response_hash": "89e29564b472e349",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:lib/matplotlib/figure.py::FigureBase.subplots",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "4f13ef6e0b1afe94",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:lib/matplotlib/figure.py::FigureBase.subfigures",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "d07f5269fadd5ef7",
+      "response_hash": "9efc0b7124608ee0",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "lib/matplotlib/tests/test_figure.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 2,
+      "judge_s": 14.9,
+      "diff": "diff --git a/lib/matplotlib/figure.py b/lib/matplotlib/figure.py\nindex f1a6711cb6..e24197a654 100644\n--- a/lib/matplotlib/figure.py\n+++ b/lib/matplotlib/figure.py\n@@ -1423,7 +1423,7 @@ default: %(va)s\n \n         height_ratios : array-like of length *nrows*, optional\n             Defines the relative heights of the rows. Each row gets a\n-            relative height of ``height_ratios[i] / sum(height_ratios)``.\n+            relative height of ``height_ratios[i] / sum(height_ratios)``\n             If not given, all rows will have the same height.\n         \"\"\"\n         gs = GridSpec(nrows=nrows, ncols=ncols, figure=self,\n",
+      "new_source": "def subfigures(self, nrows=1, ncols=1, squeeze=True,\n               wspace=None, hspace=None,\n               width_ratios=None, height_ratios=None,\n               **kwargs):\n    \"\"\"\n    Add a subfigure to this figure or subfigure.\n\n    A subfigure has the same artist methods as a figure, and is logically\n    the same as a figure, but cannot print itself.\n    See :doc:`/gallery/subplots_axes_and_figures/subfigures`.\n\n    Parameters\n    ----------\n    nrows, ncols : int, default: 1\n        Number of rows/columns of the subfigure grid.\n\n    squeeze : bool, default: True\n        If True, extra dimensions are squeezed out from the returned\n        array of subfigures.\n\n    wspace, hspace : float, default: None\n        The amount of width/height reserved for space between subfigures,\n        expressed as a fraction of the average subfigure width/height.\n        If not given, the values will be inferred from a figure or\n        rcParams when necessary.\n\n    width_ratios : array-like of length *ncols*, optional\n        Defines the relative widths of the columns. Each column gets a\n        relative width of ``width_ratios[i] / sum(width_ratios)``.\n        If not given, all columns will have the same width.\n\n    height_ratios : array-like of length *nrows*, optional\n        Defines the relative heights of the rows. Each row gets a\n        relative height of ``height_ratios[i] / sum(height_ratios)``\n        If not given, all rows will have the same height.\n    \"\"\"\n    gs = GridSpec(nrows=nrows, ncols=ncols, figure=self,\n                  wspace=wspace, hspace=hspace,\n                  width_ratios=width_ratios,\n                  height_ratios=height_ratios)\n\n    sfarr = np.empty((nrows, ncols), dtype=object)\n    for i in range(ncols):\n        for j in range(nrows):\n            sfarr[j, i] = self.add_subfigure(gs[j, i], **kwargs)\n\n    if squeeze:\n        # Discarding unneeded dimensions that equal 1.  If we only have one\n        # subfigure, just return it instead of a 1-element array.\n        return sfarr.item() if sfarr.size == 1 else sfarr.squeeze()\n    else:\n        # Returned axis array will be always 2-d, even if nrows=ncols=1.\n        return sfarr\n"
+    },
+    {
+      "snippet": "py:lib/matplotlib/figure.py::FigureBase.__init__",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "4595d656e5b5db48",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:lib/matplotlib/figure.py::FigureBase.legend",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "d5d5ce4a9aa5cbf4",
+      "response_hash": "1fd421e15642d609",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:lib/matplotlib/legend.py::DraggableLegend.__init__",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "a233c9152f94d28b",
+      "response_hash": "ab51d7d5ad2b523d",
+      "stage": "parse",
+      "reason": "identical to the original"
+    }
+  ],
+  "validated_repro": 1,
+  "stop": "budget",
+  "submission": {
+    "snippet": "py:lib/matplotlib/figure.py::FigureBase.subfigures",
+    "model": "moonshotai/kimi-k3",
+    "template": "fix_think",
+    "diff": "diff --git a/lib/matplotlib/figure.py b/lib/matplotlib/figure.py\nindex f1a6711cb6..e24197a654 100644\n--- a/lib/matplotlib/figure.py\n+++ b/lib/matplotlib/figure.py\n@@ -1423,7 +1423,7 @@ default: %(va)s\n \n         height_ratios : array-like of length *nrows*, optional\n             Defines the relative heights of the rows. Each row gets a\n-            relative height of ``height_ratios[i] / sum(height_ratios)``.\n+            relative height of ``height_ratios[i] / sum(height_ratios)``\n             If not given, all rows will have the same height.\n         \"\"\"\n         gs = GridSpec(nrows=nrows, ncols=ncols, figure=self,\n",
+    "votes": 0,
+    "changed_lines": 2,
+    "new_source": "def subfigures(self, nrows=1, ncols=1, squeeze=True,\n               wspace=None, hspace=None,\n               width_ratios=None, height_ratios=None,\n               **kwargs):\n    \"\"\"\n    Add a subfigure to this figure or subfigure.\n\n    A subfigure has the same artist methods as a figure, and is logically\n    the same as a figure, but cannot print itself.\n    See :doc:`/gallery/subplots_axes_and_figures/subfigures`.\n\n    Parameters\n    ----------\n    nrows, ncols : int, default: 1\n        Number of rows/columns of the subfigure grid.\n\n    squeeze : bool, default: True\n        If True, extra dimensions are squeezed out from the returned\n        array of subfigures.\n\n    wspace, hspace : float, default: None\n        The amount of width/height reserved for space between subfigures,\n        expressed as a fraction of the average subfigure width/height.\n        If not given, the values will be inferred from a figure or\n        rcParams when necessary.\n\n    width_ratios : array-like of length *ncols*, optional\n        Defines the relative widths of the columns. Each column gets a\n        relative width of ``width_ratios[i] / sum(width_ratios)``.\n        If not given, all columns will have the same width.\n\n    height_ratios : array-like of length *nrows*, optional\n        Defines the relative heights of the rows. Each row gets a\n        relative height of ``height_ratios[i] / sum(height_ratios)``\n        If not given, all rows will have the same height.\n    \"\"\"\n    gs = GridSpec(nrows=nrows, ncols=ncols, figure=self,\n                  wspace=wspace, hspace=hspace,\n                  width_ratios=width_ratios,\n                  height_ratios=height_ratios)\n\n    sfarr = np.empty((nrows, ncols), dtype=object)\n    for i in range(ncols):\n        for j in range(nrows):\n            sfarr[j, i] = self.add_subfigure(gs[j, i], **kwargs)\n\n    if squeeze:\n        # Discarding unneeded dimensions that equal 1.  If we only have one\n        # subfigure, just return it instead of a 1-element array.\n        return sfarr.item() if sfarr.size == 1 else sfarr.squeeze()\n    else:\n        # Returned axis array will be always 2-d, even if nrows=ncols=1.\n        return sfarr\n",
+    "prompt_hash": "d07f5269fadd5ef7",
+    "response_hash": "9efc0b7124608ee0"
+  },
+  "search_s": 719.2,
+  "llm_calls": 16,
+  "tokens_in": 24256,
+  "tokens_out": 10279,
+  "calls": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 5.16,
+      "tokens_in": 849,
+      "tokens_out": 144,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 12.71,
+      "tokens_in": 849,
+      "tokens_out": 32,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 52.05,
+      "tokens_in": 2025,
+      "tokens_out": 1332,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 44.19,
+      "tokens_in": 1185,
+      "tokens_out": 326,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 40.11,
+      "tokens_in": 1565,
+      "tokens_out": 1003,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 8.29,
+      "tokens_in": 2047,
+      "tokens_out": 33,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 52.8,
+      "tokens_in": 1547,
+      "tokens_out": 967,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 53.89,
+      "tokens_in": 1295,
+      "tokens_out": 951,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 99.13,
+      "tokens_in": 2025,
+      "tokens_out": 1319,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 13.28,
+      "tokens_in": 1185,
+      "tokens_out": 271,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 49.7,
+      "tokens_in": 1565,
+      "tokens_out": 1002,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 12.86,
+      "tokens_in": 2057,
+      "tokens_out": 32,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 38.53,
+      "tokens_in": 1547,
+      "tokens_out": 999,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 12.83,
+      "tokens_in": 1295,
+      "tokens_out": 33,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 70.92,
+      "tokens_in": 2035,
+      "tokens_out": 1484,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 91.68,
+      "tokens_in": 1185,
+      "tokens_out": 351,
+      "finish_reason": "stop",
+      "empty": false
+    }
+  ],
+  "arms": {
+    "moonshotai/kimi-k3/fix": 0.11249999999999999,
+    "moonshotai/kimi-k3/fix_think": 0.12
+  },
+  "grade": {
+    "resolved": false,
+    "applied": true,
+    "fail_to_pass": {
+      "success": 0,
+      "failure": 1
+    },
+    "pass_to_pass": {
+      "success": 88,
+      "failure": 0
+    }
+  },
+  "grade_s": 1.7,
+  "wall_s": 781.6,
+  "diagnosis": {
+    "gold_files": [
+      "lib/matplotlib/legend.py"
+    ],
+    "localised_file_hit": true,
+    "localised_line_hit": false,
+    "submission_files": [
+      "lib/matplotlib/figure.py"
+    ],
+    "submission_in_gold_file": false,
+    "gold_changed_lines": 8
+  }
+}

@@ -1,0 +1,444 @@
+{
+  "instance_id": "django__django-11099",
+  "repo": "django/django",
+  "version": "3.0",
+  "base_commit": "d26b2424437dabeeca94d7900b37d2df4410da0c",
+  "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.django__django-11099:latest",
+  "started_at": "2026-10-03T12:33:07.114850+00:00",
+  "image_digest": "ghcr.io/epoch-research/swe-bench.eval.x86_64.django__django-11099@sha256:f1aace6a4ae7d79a561487c133b0a37c663c568b1e60299ae07125efd28f16ba",
+  "pull_s": 22.4,
+  "files_considered": 818,
+  "ranked_files": [
+    {
+      "file": "django/contrib/auth/validators.py",
+      "score": 2.0
+    },
+    {
+      "file": "django/db/models/fields/__init__.py",
+      "score": 1.027
+    },
+    {
+      "file": "django/contrib/auth/migrations/0008_alter_user_username_max_length.py",
+      "score": 0.792
+    },
+    {
+      "file": "django/contrib/auth/migrations/0004_alter_user_username_opts.py",
+      "score": 0.789
+    },
+    {
+      "file": "django/contrib/auth/migrations/0007_alter_validators_add_error_messages.py",
+      "score": 0.787
+    },
+    {
+      "file": "django/core/validators.py",
+      "score": 0.752
+    },
+    {
+      "file": "django/contrib/auth/password_validation.py",
+      "score": 0.722
+    },
+    {
+      "file": "django/contrib/auth/models.py",
+      "score": 0.687
+    }
+  ],
+  "localised": [
+    {
+      "file": "django/db/models/fields/__init__.py",
+      "name": "IntegerField.validators",
+      "kind": "function",
+      "start": 1788,
+      "end": 1803,
+      "score": 2.8
+    },
+    {
+      "file": "django/db/models/fields/__init__.py",
+      "name": "DecimalField.validators",
+      "kind": "function",
+      "start": 1529,
+      "end": 1533,
+      "score": 2.75
+    },
+    {
+      "file": "django/db/models/fields/__init__.py",
+      "name": "Field.validators",
+      "kind": "function",
+      "start": 568,
+      "end": 574,
+      "score": 2.563
+    },
+    {
+      "file": "django/contrib/auth/validators.py",
+      "name": "ASCIIUsernameValidator.<L10-15>",
+      "kind": "block",
+      "start": 10,
+      "end": 15,
+      "score": 2.224
+    },
+    {
+      "file": "django/contrib/auth/validators.py",
+      "name": "UnicodeUsernameValidator.<L20-25>",
+      "kind": "block",
+      "start": 20,
+      "end": 25,
+      "score": 2.145
+    },
+    {
+      "file": "django/contrib/auth/migrations/0008_alter_user_username_max_length.py",
+      "name": "Migration.<L7-24>",
+      "kind": "block",
+      "start": 7,
+      "end": 24,
+      "score": 1.198
+    }
+  ],
+  "repro": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "ISSUE REPRODUCED",
+      "script_hash": "e82759b4d519bee5"
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "ISSUE REPRODUCED",
+      "script_hash": "871c9b9318b3034b"
+    }
+  ],
+  "candidates": [
+    {
+      "snippet": "py:django/db/models/fields/__init__.py::IntegerField.validators",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "d2f6db4fd18933ff",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:django/db/models/fields/__init__.py::DecimalField.validators",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "52fd73b0e1a676e0",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:django/db/models/fields/__init__.py::Field.validators",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "06012e677cbd7b76",
+      "response_hash": "3f30ef5a72584c7a",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/contrib/auth/validators.py::ASCIIUsernameValidator.<L10-15>",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "de66900077e3629f",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:django/contrib/auth/validators.py::UnicodeUsernameValidator.<L20-25>",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "465fe270eac9b234",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:django/contrib/auth/migrations/0008_alter_user_username_max_length.py::Migration.<L7-24>",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "f28e7fdc020aa387",
+      "response_hash": "11ba58cfcb40ad63",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/db/models/fields/__init__.py::IntegerField.validators",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "11bbf2b10f74dd20",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:django/db/models/fields/__init__.py::DecimalField.validators",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "52fd73b0e1a676e0",
+      "response_hash": "43fbed73ed700435",
+      "stage": "parse",
+      "reason": "response does not define validators()"
+    },
+    {
+      "snippet": "py:django/db/models/fields/__init__.py::Field.validators",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "06012e677cbd7b76",
+      "response_hash": "3f30ef5a72584c7a",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/contrib/auth/validators.py::ASCIIUsernameValidator.<L10-15>",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "505e529955838a3a",
+      "response_hash": "8096ea44825b5c62",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/auth_tests/test_validators.py",
+        "tests/forms_tests/tests/test_validators.py",
+        "tests/validation/test_validators.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED",
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 2,
+      "judge_s": 8.3,
+      "diff": "diff --git a/django/contrib/auth/validators.py b/django/contrib/auth/validators.py\nindex b4878cfd45..118da28408 100644\n--- a/django/contrib/auth/validators.py\n+++ b/django/contrib/auth/validators.py\n@@ -7,7 +7,7 @@ from django.utils.translation import gettext_lazy as _\n \n @deconstructible\n class ASCIIUsernameValidator(validators.RegexValidator):\n-    regex = r'^[\\w.@+-]+$'\n+    regex = r'\\A[\\w.@+-]+\\Z'\n     message = _(\n         'Enter a valid username. This value may contain only English letters, '\n         'numbers, and @/./+/-/_ characters.'\n",
+      "new_source": "regex = r'\\A[\\w.@+-]+\\Z'\nmessage = _(\n    'Enter a valid username. This value may contain only English letters, '\n    'numbers, and @/./+/-/_ characters.'\n)\nflags = re.ASCII\n"
+    },
+    {
+      "snippet": "py:django/contrib/auth/validators.py::UnicodeUsernameValidator.<L20-25>",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "465fe270eac9b234",
+      "response_hash": "4116d476c0bc685f",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/auth_tests/test_validators.py",
+        "tests/forms_tests/tests/test_validators.py",
+        "tests/validation/test_validators.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED",
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 2,
+      "judge_s": 4.7,
+      "diff": "diff --git a/django/contrib/auth/validators.py b/django/contrib/auth/validators.py\nindex b4878cfd45..1f59a32ca1 100644\n--- a/django/contrib/auth/validators.py\n+++ b/django/contrib/auth/validators.py\n@@ -17,7 +17,7 @@ class ASCIIUsernameValidator(validators.RegexValidator):\n \n @deconstructible\n class UnicodeUsernameValidator(validators.RegexValidator):\n-    regex = r'^[\\w.@+-]+$'\n+    regex = r'\\A[\\w.@+-]+\\Z'\n     message = _(\n         'Enter a valid username. This value may contain only letters, '\n         'numbers, and @/./+/-/_ characters.'\n",
+      "new_source": "regex = r'\\A[\\w.@+-]+\\Z'\nmessage = _(\n    'Enter a valid username. This value may contain only letters, '\n    'numbers, and @/./+/-/_ characters.'\n)\nflags = 0\n"
+    },
+    {
+      "snippet": "py:django/contrib/auth/migrations/0008_alter_user_username_max_length.py::Migration.<L7-24>",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "f28e7fdc020aa387",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:django/db/models/fields/__init__.py::IntegerField.validators",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "11bbf2b10f74dd20",
+      "response_hash": "1f1a7d2f36cd3104",
+      "stage": "parse",
+      "reason": "response does not define validators()"
+    },
+    {
+      "snippet": "py:django/db/models/fields/__init__.py::DecimalField.validators",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "a9913d8406f6a221",
+      "response_hash": "4d0c794317ada58b",
+      "stage": "parse",
+      "reason": "identical to the original"
+    }
+  ],
+  "validated_repro": 2,
+  "stop": "budget",
+  "submission": {
+    "snippet": "py:django/contrib/auth/validators.py::ASCIIUsernameValidator.<L10-15>",
+    "model": "moonshotai/kimi-k3",
+    "template": "fix_think",
+    "diff": "diff --git a/django/contrib/auth/validators.py b/django/contrib/auth/validators.py\nindex b4878cfd45..118da28408 100644\n--- a/django/contrib/auth/validators.py\n+++ b/django/contrib/auth/validators.py\n@@ -7,7 +7,7 @@ from django.utils.translation import gettext_lazy as _\n \n @deconstructible\n class ASCIIUsernameValidator(validators.RegexValidator):\n-    regex = r'^[\\w.@+-]+$'\n+    regex = r'\\A[\\w.@+-]+\\Z'\n     message = _(\n         'Enter a valid username. This value may contain only English letters, '\n         'numbers, and @/./+/-/_ characters.'\n",
+    "votes": 0,
+    "changed_lines": 2,
+    "new_source": "regex = r'\\A[\\w.@+-]+\\Z'\nmessage = _(\n    'Enter a valid username. This value may contain only English letters, '\n    'numbers, and @/./+/-/_ characters.'\n)\nflags = re.ASCII\n",
+    "prompt_hash": "505e529955838a3a",
+    "response_hash": "8096ea44825b5c62"
+  },
+  "search_s": 327.3,
+  "llm_calls": 16,
+  "tokens_in": 9261,
+  "tokens_out": 4008,
+  "calls": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 14.26,
+      "tokens_in": 403,
+      "tokens_out": 151,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 7.27,
+      "tokens_in": 403,
+      "tokens_out": 172,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 7.33,
+      "tokens_in": 761,
+      "tokens_out": 32,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 26.74,
+      "tokens_in": 624,
+      "tokens_out": 32,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 16.28,
+      "tokens_in": 642,
+      "tokens_out": 338,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 8.14,
+      "tokens_in": 469,
+      "tokens_out": 32,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 8.51,
+      "tokens_in": 476,
+      "tokens_out": 32,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 32.13,
+      "tokens_in": 543,
+      "tokens_out": 718,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 26.13,
+      "tokens_in": 771,
+      "tokens_out": 32,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 22.44,
+      "tokens_in": 624,
+      "tokens_out": 661,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 8.13,
+      "tokens_in": 642,
+      "tokens_out": 192,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 13.55,
+      "tokens_in": 479,
+      "tokens_out": 136,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 7.81,
+      "tokens_in": 476,
+      "tokens_out": 146,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 12.66,
+      "tokens_in": 543,
+      "tokens_out": 32,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 46.08,
+      "tokens_in": 771,
+      "tokens_out": 602,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 32.44,
+      "tokens_in": 634,
+      "tokens_out": 700,
+      "finish_reason": "stop",
+      "empty": false
+    }
+  ],
+  "arms": {
+    "moonshotai/kimi-k3/fix": 0.075,
+    "moonshotai/kimi-k3/fix_think": 0.12
+  },
+  "grade": {
+    "resolved": false,
+    "applied": true,
+    "fail_to_pass": {
+      "success": 1,
+      "failure": 2
+    },
+    "pass_to_pass": {
+      "success": 19,
+      "failure": 0
+    }
+  },
+  "grade_s": 1.4,
+  "wall_s": 363.5,
+  "diagnosis": {
+    "gold_files": [
+      "django/contrib/auth/validators.py"
+    ],
+    "localised_file_hit": true,
+    "localised_line_hit": true,
+    "submission_files": [
+      "django/contrib/auth/validators.py"
+    ],
+    "submission_in_gold_file": true,
+    "gold_changed_lines": 4
+  }
+}

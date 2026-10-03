@@ -1,0 +1,13 @@
+diff --git a/sympy/combinatorics/permutations.py b/sympy/combinatorics/permutations.py
+index 136ed5a478..952e7b1db8 100644
+--- a/sympy/combinatorics/permutations.py
++++ b/sympy/combinatorics/permutations.py
+@@ -1302,7 +1302,7 @@ def __mul__(self, other):
+         if not b:
+             perm = a
+         else:
+-            b.extend(list(range(len(b), len(a))))
++            b = b + list(range(len(b), len(a))) if len(b) < len(a) else b
+             perm = [b[i] for i in a] + b[len(a):]
+         return _af_new(perm)
+ 

@@ -1,0 +1,387 @@
+{
+  "instance_id": "pydata__xarray-4075",
+  "repo": "pydata/xarray",
+  "version": "0.12",
+  "base_commit": "19b088636eb7d3f65ab7a1046ac672e0689371d8",
+  "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.pydata__xarray-4075:latest",
+  "started_at": "2026-10-03T14:27:11.106355+00:00",
+  "image_digest": "ghcr.io/epoch-research/swe-bench.eval.x86_64.pydata__xarray-4075@sha256:ff77b37db46f4dd6c37cb8e87deea72d06a47a0d93395b9add1bbf01215406c1",
+  "pull_s": 42.3,
+  "files_considered": 77,
+  "ranked_files": [
+    {
+      "file": "xarray/__init__.py",
+      "score": 3.301
+    },
+    {
+      "file": "xarray/util/print_versions.py",
+      "score": 1.5
+    },
+    {
+      "file": "xarray/core/dataarray.py",
+      "score": 1.459
+    },
+    {
+      "file": "xarray/core/weighted.py",
+      "score": 1.422
+    },
+    {
+      "file": "xarray/core/computation.py",
+      "score": 1.336
+    },
+    {
+      "file": "xarray/core/duck_array_ops.py",
+      "score": 1.292
+    },
+    {
+      "file": "xarray/core/common.py",
+      "score": 0.973
+    },
+    {
+      "file": "xarray/core/rolling_exp.py",
+      "score": 0.736
+    }
+  ],
+  "localised": [
+    {
+      "file": "xarray/core/dataarray.py",
+      "name": "DataArray.dot",
+      "kind": "function",
+      "start": 2875,
+      "end": 2926,
+      "score": 3.794
+    },
+    {
+      "file": "xarray/util/print_versions.py",
+      "name": "show_versions",
+      "kind": "function",
+      "start": 80,
+      "end": 156,
+      "score": 3.227
+    },
+    {
+      "file": "xarray/core/computation.py",
+      "name": "dot",
+      "kind": "function",
+      "start": 1072,
+      "end": 1215,
+      "score": 2.806
+    },
+    {
+      "file": "xarray/core/common.py",
+      "name": "DataWithCoords.weighted",
+      "kind": "function",
+      "start": 766,
+      "end": 783,
+      "score": 2.666
+    },
+    {
+      "file": "xarray/core/duck_array_ops.py",
+      "name": "mean",
+      "kind": "function",
+      "start": 503,
+      "end": 532,
+      "score": 2.641
+    },
+    {
+      "file": "xarray/core/weighted.py",
+      "name": "Weighted.sum_of_weights",
+      "kind": "function",
+      "start": 180,
+      "end": 188,
+      "score": 2.641
+    }
+  ],
+  "repro": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "unparseable",
+      "script_hash": null
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "ISSUE REPRODUCED",
+      "script_hash": "eae2d723529a2a89"
+    }
+  ],
+  "candidates": [
+    {
+      "snippet": "py:xarray/core/dataarray.py::DataArray.dot",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "2224160b5ea3d62d",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:xarray/util/print_versions.py::show_versions",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "dc07b508a19d9d1a",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:xarray/core/computation.py::dot",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "d50503e042cdc50c",
+      "response_hash": "ed6fa472bdc2ea0e",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:xarray/core/common.py::DataWithCoords.weighted",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "88c1c0aea91fc727",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:xarray/core/duck_array_ops.py::mean",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "76b753a7891b2c80",
+      "response_hash": "d7e59946414c0fa0",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "xarray/tests/test_duck_array_ops.py",
+        "xarray/tests/test_dask.py",
+        "xarray/tests/test_utils.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 5,
+      "judge_s": 38.6,
+      "diff": "diff --git a/xarray/core/duck_array_ops.py b/xarray/core/duck_array_ops.py\nindex 1340b456..c07d7fae 100644\n--- a/xarray/core/duck_array_ops.py\n+++ b/xarray/core/duck_array_ops.py\n@@ -529,6 +529,11 @@ def mean(array, axis=None, skipna=None, **kwargs):\n         mean_timedeltas = _mean(timedeltas, axis=axis, skipna=skipna, **kwargs)\n         return _to_pytimedelta(mean_timedeltas, unit=\"us\") + offset\n     else:\n+        # cast boolean arrays to float so that reductions (e.g. dot\n+        # products used for weighted means) yield numeric results\n+        # instead of booleans\n+        if array.dtype.kind == \"b\":\n+            array = array.astype(float)\n         return _mean(array, axis=axis, skipna=skipna, **kwargs)\n \n \n",
+      "new_source": "def mean(array, axis=None, skipna=None, **kwargs):\n    \"\"\"inhouse mean that can handle np.datetime64 or cftime.datetime\n    dtypes\"\"\"\n    from .common import _contains_cftime_datetimes\n\n    array = asarray(array)\n    if array.dtype.kind in \"Mm\":\n        offset = _datetime_nanmin(array)\n\n        # xarray always uses np.datetime64[ns] for np.datetime64 data\n        dtype = \"timedelta64[ns]\"\n        return (\n            _mean(\n                datetime_to_numeric(array, offset), axis=axis, skipna=skipna, **kwargs\n            ).astype(dtype)\n            + offset\n        )\n    elif _contains_cftime_datetimes(array):\n        if isinstance(array, dask_array_type):\n            raise NotImplementedError(\n                \"Computing the mean of an array containing \"\n                \"cftime.datetime objects is not yet implemented on \"\n                \"dask arrays.\"\n            )\n        offset = min(array)\n        timedeltas = datetime_to_numeric(array, offset, datetime_unit=\"us\")\n        mean_timedeltas = _mean(timedeltas, axis=axis, skipna=skipna, **kwargs)\n        return _to_pytimedelta(mean_timedeltas, unit=\"us\") + offset\n    else:\n        # cast boolean arrays to float so that reductions (e.g. dot\n        # products used for weighted means) yield numeric results\n        # instead of booleans\n        if array.dtype.kind == \"b\":\n            array = array.astype(float)\n        return _mean(array, axis=axis, skipna=skipna, **kwargs)\n"
+    },
+    {
+      "snippet": "py:xarray/core/weighted.py::Weighted.sum_of_weights",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "58132ef7908f386d",
+      "response_hash": "ebe86bb1be2e4ef6",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "xarray/tests/test_weighted.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 12,
+      "judge_s": 17.5,
+      "diff": "diff --git a/xarray/core/weighted.py b/xarray/core/weighted.py\nindex 996d2e4c..3167d938 100644\n--- a/xarray/core/weighted.py\n+++ b/xarray/core/weighted.py\n@@ -183,8 +183,16 @@ class Weighted:\n         keep_attrs: Optional[bool] = None,\n     ) -> Union[\"DataArray\", \"Dataset\"]:\n \n-        return self._implementation(\n-            self._sum_of_weights, dim=dim, keep_attrs=keep_attrs\n+        # bool weights need to be cast to a numeric type so that the\n+        # dot product with `obj.notnull()` yields a number instead of a\n+        # bool (GH4074)\n+        if self.weights.dtype.kind == \"b\":\n+            weighted = type(self)(self.obj, self.weights * 1)\n+        else:\n+            weighted = self\n+\n+        return weighted._implementation(\n+            weighted._sum_of_weights, dim=dim, keep_attrs=keep_attrs\n         )\n \n     def sum(\n",
+      "new_source": "def sum_of_weights(\n    self,\n    dim: Optional[Union[Hashable, Iterable[Hashable]]] = None,\n    keep_attrs: Optional[bool] = None,\n) -> Union[\"DataArray\", \"Dataset\"]:\n\n    # bool weights need to be cast to a numeric type so that the\n    # dot product with `obj.notnull()` yields a number instead of a\n    # bool (GH4074)\n    if self.weights.dtype.kind == \"b\":\n        weighted = type(self)(self.obj, self.weights * 1)\n    else:\n        weighted = self\n\n    return weighted._implementation(\n        weighted._sum_of_weights, dim=dim, keep_attrs=keep_attrs\n    )\n"
+    },
+    {
+      "snippet": "py:xarray/core/dataarray.py::DataArray.dot",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "ce854731dd435655",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:xarray/util/print_versions.py::show_versions",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "853bcd3c1e3ade36",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:xarray/core/computation.py::dot",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "d50503e042cdc50c",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:xarray/core/common.py::DataWithCoords.weighted",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "9ec43e48569b45a1",
+      "response_hash": "e3df0e5566d8fd3f",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "xarray/tests/test_coding_times.py",
+        "xarray/tests/test_dataarray.py",
+        "xarray/tests/test_dataset.py"
+      ],
+      "regressions": 0,
+      "votes": 1,
+      "repro": [
+        "ISSUE RESOLVED"
+      ],
+      "changed_lines": 5,
+      "judge_s": 57.4,
+      "diff": "diff --git a/xarray/core/common.py b/xarray/core/common.py\nindex e343f342..3177ff86 100644\n--- a/xarray/core/common.py\n+++ b/xarray/core/common.py\n@@ -780,7 +780,10 @@ class DataWithCoords(SupportsArithmetic, AttrAccessMixin):\n         Missing values can be replaced by ``weights.fillna(0)``.\n         \"\"\"\n \n-        return self._weighted_cls(self, weights)\n+        if weights.dtype != bool:\n+            return self._weighted_cls(self, weights)\n+\n+        return self._weighted_cls(self, weights.astype(float))\n \n     def rolling(\n         self,\n",
+      "new_source": "def weighted(self, weights):\n    \"\"\"\n    Weighted operations.\n\n    Parameters\n    ----------\n    weights : DataArray\n        An array of weights associated with the values in this Dataset.\n        Each value in the data contributes to the reduction operation\n        according to its associated weight.\n\n    Notes\n    -----\n    ``weights`` must be a DataArray and cannot contain missing values.\n    Missing values can be replaced by ``weights.fillna(0)``.\n    \"\"\"\n\n    if weights.dtype != bool:\n        return self._weighted_cls(self, weights)\n\n    return self._weighted_cls(self, weights.astype(float))\n"
+    }
+  ],
+  "validated_repro": 1,
+  "stop": "every validated reproduction resolved",
+  "submission": {
+    "snippet": "py:xarray/core/common.py::DataWithCoords.weighted",
+    "model": "moonshotai/kimi-k3",
+    "template": "fix",
+    "diff": "diff --git a/xarray/core/common.py b/xarray/core/common.py\nindex e343f342..3177ff86 100644\n--- a/xarray/core/common.py\n+++ b/xarray/core/common.py\n@@ -780,7 +780,10 @@ class DataWithCoords(SupportsArithmetic, AttrAccessMixin):\n         Missing values can be replaced by ``weights.fillna(0)``.\n         \"\"\"\n \n-        return self._weighted_cls(self, weights)\n+        if weights.dtype != bool:\n+            return self._weighted_cls(self, weights)\n+\n+        return self._weighted_cls(self, weights.astype(float))\n \n     def rolling(\n         self,\n",
+    "votes": 1,
+    "changed_lines": 5,
+    "new_source": "def weighted(self, weights):\n    \"\"\"\n    Weighted operations.\n\n    Parameters\n    ----------\n    weights : DataArray\n        An array of weights associated with the values in this Dataset.\n        Each value in the data contributes to the reduction operation\n        according to its associated weight.\n\n    Notes\n    -----\n    ``weights`` must be a DataArray and cannot contain missing values.\n    Missing values can be replaced by ``weights.fillna(0)``.\n    \"\"\"\n\n    if weights.dtype != bool:\n        return self._weighted_cls(self, weights)\n\n    return self._weighted_cls(self, weights.astype(float))\n",
+    "prompt_hash": "9ec43e48569b45a1",
+    "response_hash": "e3df0e5566d8fd3f"
+  },
+  "search_s": 363.0,
+  "llm_calls": 12,
+  "tokens_in": 17253,
+  "tokens_out": 2844,
+  "calls": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 13.73,
+      "tokens_in": 912,
+      "tokens_out": 33,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 6.75,
+      "tokens_in": 912,
+      "tokens_out": 151,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 7.14,
+      "tokens_in": 1462,
+      "tokens_out": 32,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 11.41,
+      "tokens_in": 1636,
+      "tokens_out": 32,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 8.59,
+      "tokens_in": 2333,
+      "tokens_out": 186,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 8.16,
+      "tokens_in": 1150,
+      "tokens_out": 32,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 48.76,
+      "tokens_in": 1273,
+      "tokens_out": 740,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 55.88,
+      "tokens_in": 1024,
+      "tokens_out": 1337,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 11.79,
+      "tokens_in": 1452,
+      "tokens_out": 33,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 12.95,
+      "tokens_in": 1626,
+      "tokens_out": 32,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 12.39,
+      "tokens_in": 2333,
+      "tokens_out": 33,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 13.33,
+      "tokens_in": 1140,
+      "tokens_out": 203,
+      "finish_reason": "stop",
+      "empty": false
+    }
+  ],
+  "arms": {
+    "moonshotai/kimi-k3/fix": 0.31666666666666665,
+    "moonshotai/kimi-k3/fix_think": 0.11249999999999999
+  },
+  "grade": {
+    "resolved": false,
+    "applied": true,
+    "fail_to_pass": {
+      "success": 0,
+      "failure": 2
+    },
+    "pass_to_pass": {
+      "success": 958,
+      "failure": 0
+    }
+  },
+  "grade_s": 1.4,
+  "wall_s": 428.0,
+  "diagnosis": {
+    "gold_files": [
+      "xarray/core/weighted.py"
+    ],
+    "localised_file_hit": true,
+    "localised_line_hit": false,
+    "submission_files": [
+      "xarray/core/common.py"
+    ],
+    "submission_in_gold_file": false,
+    "gold_changed_lines": 9
+  }
+}

@@ -1,0 +1,446 @@
+{
+  "instance_id": "matplotlib__matplotlib-24177",
+  "repo": "matplotlib/matplotlib",
+  "version": "3.6",
+  "base_commit": "493d608e39d32a67173c23a7bbc47d6bfedcef61",
+  "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.matplotlib__matplotlib-24177:latest",
+  "started_at": "2026-10-03T13:57:47.290117+00:00",
+  "image_digest": "ghcr.io/epoch-research/swe-bench.eval.x86_64.matplotlib__matplotlib-24177@sha256:8189bb05219d715ddc430b0e61e472779ea4ac8fa86b95243c2d11917a12428e",
+  "pull_s": 66.7,
+  "files_considered": 240,
+  "ranked_files": [
+    {
+      "file": "lib/matplotlib/axes/_axes.py",
+      "score": 2.5
+    },
+    {
+      "file": "lib/matplotlib/pyplot.py",
+      "score": 2.34
+    },
+    {
+      "file": "lib/matplotlib/figure.py",
+      "score": 1.978
+    },
+    {
+      "file": "lib/matplotlib/axes/_base.py",
+      "score": 1.345
+    },
+    {
+      "file": "lib/mpl_toolkits/axisartist/axislines.py",
+      "score": 1.12
+    },
+    {
+      "file": "lib/mpl_toolkits/axes_grid1/mpl_axes.py",
+      "score": 1.109
+    },
+    {
+      "file": "lib/matplotlib/backend_bases.py",
+      "score": 0.999
+    },
+    {
+      "file": "lib/matplotlib/__init__.py",
+      "score": 0.993
+    }
+  ],
+  "localised": [
+    {
+      "file": "lib/matplotlib/axes/_axes.py",
+      "name": "Axes.step",
+      "kind": "function",
+      "start": 2084,
+      "end": 2150,
+      "score": 3.887
+    },
+    {
+      "file": "lib/matplotlib/pyplot.py",
+      "name": "hist",
+      "kind": "function",
+      "start": 2557,
+      "end": 2568,
+      "score": 3.468
+    },
+    {
+      "file": "lib/mpl_toolkits/axisartist/axislines.py",
+      "name": "Axes.axis",
+      "kind": "function",
+      "start": 466,
+      "end": 468,
+      "score": 3.253
+    },
+    {
+      "file": "lib/mpl_toolkits/axes_grid1/mpl_axes.py",
+      "name": "Axes.axis",
+      "kind": "function",
+      "start": 43,
+      "end": 45,
+      "score": 3.251
+    },
+    {
+      "file": "lib/matplotlib/pyplot.py",
+      "name": "step",
+      "kind": "function",
+      "start": 2856,
+      "end": 2860,
+      "score": 2.714
+    },
+    {
+      "file": "lib/matplotlib/pyplot.py",
+      "name": "axes",
+      "kind": "function",
+      "start": 960,
+      "end": 1055,
+      "score": 2.696
+    }
+  ],
+  "repro": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "ISSUE REPRODUCED",
+      "script_hash": "f414c4abbe25acd6"
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "ISSUE REPRODUCED",
+      "script_hash": "c1219b51211425b1"
+    }
+  ],
+  "candidates": [
+    {
+      "snippet": "py:lib/matplotlib/axes/_axes.py::Axes.step",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "296fe149317060f0",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:lib/matplotlib/pyplot.py::hist",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "983f8d3d845041b7",
+      "response_hash": "c15b7dc8e889d542",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:lib/mpl_toolkits/axisartist/axislines.py::Axes.axis",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "fb6dd3c500309a12",
+      "response_hash": "ca4aa4daa0706788",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:lib/mpl_toolkits/axes_grid1/mpl_axes.py::Axes.axis",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "13c85588296f637c",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:lib/matplotlib/pyplot.py::step",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "a54c9713032da66a",
+      "response_hash": "11eedccc909da204",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:lib/matplotlib/pyplot.py::axes",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "409f8b101e353151",
+      "response_hash": "1d9baf33593edf4d",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:lib/matplotlib/axes/_axes.py::Axes.step",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "296fe149317060f0",
+      "response_hash": "dd320d478a6fe38e",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED",
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 10,
+      "judge_s": 3.0,
+      "diff": "diff --git a/lib/matplotlib/axes/_axes.py b/lib/matplotlib/axes/_axes.py\nindex 2412f815cd..eb9c737069 100644\n--- a/lib/matplotlib/axes/_axes.py\n+++ b/lib/matplotlib/axes/_axes.py\n@@ -2147,7 +2147,15 @@ class Axes(_AxesBase):\n         \"\"\"\n         _api.check_in_list(('pre', 'post', 'mid'), where=where)\n         kwargs['drawstyle'] = 'steps-' + where\n-        return self.plot(x, y, *args, data=data, **kwargs)\n+        lines = self.plot(x, y, *args, data=data, **kwargs)\n+        # The step drawstyle interpolates the underlying path, whose vertices\n+        # may extend outside the raw (x, y) data limits.  Recompute the data\n+        # limits using the actual display paths so that autoscaling accounts\n+        # for the full extent of the drawn steps.\n+        for line in lines:\n+            self.update_datalim(line.get_path().vertices)\n+        self._request_autoscale_view()\n+        return lines\n \n     @staticmethod\n     def _convert_dx(dx, x0, xconv, convert):\n",
+      "new_source": "def step(self, x, y, *args, where='pre', data=None, **kwargs):\n    \"\"\"\n    Make a step plot.\n\n    Call signatures::\n\n        step(x, y, [fmt], *, data=None, where='pre', **kwargs)\n        step(x, y, [fmt], x2, y2, [fmt2], ..., *, where='pre', **kwargs)\n\n    This is just a thin wrapper around `.plot` which changes some\n    formatting options. Most of the concepts and parameters of plot can be\n    used here as well.\n\n    .. note::\n\n        This method uses a standard plot with a step drawstyle: The *x*\n        values are the reference positions and steps extend left/right/both\n        directions depending on *where*.\n\n        For the common case where you know the values and edges of the\n        steps, use `~.Axes.stairs` instead.\n\n    Parameters\n    ----------\n    x : array-like\n        1D sequence of x positions. It is assumed, but not checked, that\n        it is uniformly increasing.\n\n    y : array-like\n        1D sequence of y levels.\n\n    fmt : str, optional\n        A format string, e.g. 'g' for a green line. See `.plot` for a more\n        detailed description.\n\n        Note: While full format strings are accepted, it is recommended to\n        only specify the color. Line styles are currently ignored (use\n        the keyword argument *linestyle* instead). Markers are accepted\n        and plotted on the given positions, however, this is a rarely\n        needed feature for step plots.\n\n    where : {'pre', 'post', 'mid'}, default: 'pre'\n        Define where the steps should be placed:\n\n        - 'pre': The y value is continued constantly to the left from\n          every *x* position, i.e. the interval ``(x[i-1], x[i]]`` has the\n          value ``y[i]``.\n        - 'post': The y value is continued constantly to the right from\n          every *x* position, i.e. the interval ``[x[i], x[i+1])`` has the\n          value ``y[i]``.\n        - 'mid': Steps occur half-way between the *x* positions.\n\n    data : indexable object, optional\n        An object with labelled data. If given, provide the label names to\n        plot in *x* and *y*.\n\n    **kwargs\n        Additional parameters are the same as those for `.plot`.\n\n    Returns\n    -------\n    list of `.Line2D`\n        Objects representing the plotted data.\n    \"\"\"\n    _api.check_in_list(('pre', 'post', 'mid'), where=where)\n    kwargs['drawstyle'] = 'steps-' + where\n    lines = self.plot(x, y, *args, data=data, **kwargs)\n    # The step drawstyle interpolates the underlying path, whose vertices\n    # may extend outside the raw (x, y) data limits.  Recompute the data\n    # limits using the actual display paths so that autoscaling accounts\n    # for the full extent of the drawn steps.\n    for line in lines:\n        self.update_datalim(line.get_path().vertices)\n    self._request_autoscale_view()\n    return lines\n"
+    },
+    {
+      "snippet": "py:lib/matplotlib/pyplot.py::hist",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "377d908d2462969c",
+      "response_hash": "1029170fcdad3b76",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "1 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "lib/matplotlib/tests/test_pyplot.py"
+      ],
+      "regressions": 1,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 5,
+      "judge_s": 11.6
+    },
+    {
+      "snippet": "py:lib/mpl_toolkits/axisartist/axislines.py::Axes.axis",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "fb6dd3c500309a12",
+      "response_hash": "ca4aa4daa0706788",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:lib/mpl_toolkits/axes_grid1/mpl_axes.py::Axes.axis",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "13c85588296f637c",
+      "response_hash": "7d1eb69319adf6dc",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:lib/matplotlib/pyplot.py::step",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "a54c9713032da66a",
+      "response_hash": "8161948e3b9bb5d6",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "1 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "lib/matplotlib/tests/test_pyplot.py"
+      ],
+      "regressions": 1,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 6,
+      "judge_s": 5.5
+    },
+    {
+      "snippet": "py:lib/matplotlib/pyplot.py::axes",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "409f8b101e353151",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:lib/matplotlib/axes/_axes.py::Axes.step",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "e5c9417932389770",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:lib/matplotlib/pyplot.py::hist",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "377d908d2462969c",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    }
+  ],
+  "validated_repro": 2,
+  "stop": "budget",
+  "submission": {
+    "snippet": "py:lib/matplotlib/axes/_axes.py::Axes.step",
+    "model": "moonshotai/kimi-k3",
+    "template": "fix",
+    "diff": "diff --git a/lib/matplotlib/axes/_axes.py b/lib/matplotlib/axes/_axes.py\nindex 2412f815cd..eb9c737069 100644\n--- a/lib/matplotlib/axes/_axes.py\n+++ b/lib/matplotlib/axes/_axes.py\n@@ -2147,7 +2147,15 @@ class Axes(_AxesBase):\n         \"\"\"\n         _api.check_in_list(('pre', 'post', 'mid'), where=where)\n         kwargs['drawstyle'] = 'steps-' + where\n-        return self.plot(x, y, *args, data=data, **kwargs)\n+        lines = self.plot(x, y, *args, data=data, **kwargs)\n+        # The step drawstyle interpolates the underlying path, whose vertices\n+        # may extend outside the raw (x, y) data limits.  Recompute the data\n+        # limits using the actual display paths so that autoscaling accounts\n+        # for the full extent of the drawn steps.\n+        for line in lines:\n+            self.update_datalim(line.get_path().vertices)\n+        self._request_autoscale_view()\n+        return lines\n \n     @staticmethod\n     def _convert_dx(dx, x0, xconv, convert):\n",
+    "votes": 0,
+    "changed_lines": 10,
+    "new_source": "def step(self, x, y, *args, where='pre', data=None, **kwargs):\n    \"\"\"\n    Make a step plot.\n\n    Call signatures::\n\n        step(x, y, [fmt], *, data=None, where='pre', **kwargs)\n        step(x, y, [fmt], x2, y2, [fmt2], ..., *, where='pre', **kwargs)\n\n    This is just a thin wrapper around `.plot` which changes some\n    formatting options. Most of the concepts and parameters of plot can be\n    used here as well.\n\n    .. note::\n\n        This method uses a standard plot with a step drawstyle: The *x*\n        values are the reference positions and steps extend left/right/both\n        directions depending on *where*.\n\n        For the common case where you know the values and edges of the\n        steps, use `~.Axes.stairs` instead.\n\n    Parameters\n    ----------\n    x : array-like\n        1D sequence of x positions. It is assumed, but not checked, that\n        it is uniformly increasing.\n\n    y : array-like\n        1D sequence of y levels.\n\n    fmt : str, optional\n        A format string, e.g. 'g' for a green line. See `.plot` for a more\n        detailed description.\n\n        Note: While full format strings are accepted, it is recommended to\n        only specify the color. Line styles are currently ignored (use\n        the keyword argument *linestyle* instead). Markers are accepted\n        and plotted on the given positions, however, this is a rarely\n        needed feature for step plots.\n\n    where : {'pre', 'post', 'mid'}, default: 'pre'\n        Define where the steps should be placed:\n\n        - 'pre': The y value is continued constantly to the left from\n          every *x* position, i.e. the interval ``(x[i-1], x[i]]`` has the\n          value ``y[i]``.\n        - 'post': The y value is continued constantly to the right from\n          every *x* position, i.e. the interval ``[x[i], x[i+1])`` has the\n          value ``y[i]``.\n        - 'mid': Steps occur half-way between the *x* positions.\n\n    data : indexable object, optional\n        An object with labelled data. If given, provide the label names to\n        plot in *x* and *y*.\n\n    **kwargs\n        Additional parameters are the same as those for `.plot`.\n\n    Returns\n    -------\n    list of `.Line2D`\n        Objects representing the plotted data.\n    \"\"\"\n    _api.check_in_list(('pre', 'post', 'mid'), where=where)\n    kwargs['drawstyle'] = 'steps-' + where\n    lines = self.plot(x, y, *args, data=data, **kwargs)\n    # The step drawstyle interpolates the underlying path, whose vertices\n    # may extend outside the raw (x, y) data limits.  Recompute the data\n    # limits using the actual display paths so that autoscaling accounts\n    # for the full extent of the drawn steps.\n    for line in lines:\n        self.update_datalim(line.get_path().vertices)\n    self._request_autoscale_view()\n    return lines\n",
+    "prompt_hash": "296fe149317060f0",
+    "response_hash": "dd320d478a6fe38e"
+  },
+  "search_s": 461.0,
+  "llm_calls": 16,
+  "tokens_in": 18911,
+  "tokens_out": 5959,
+  "calls": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 14.01,
+      "tokens_in": 721,
+      "tokens_out": 387,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 13.56,
+      "tokens_in": 721,
+      "tokens_out": 323,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 23.8,
+      "tokens_in": 1600,
+      "tokens_out": 32,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 89.13,
+      "tokens_in": 1191,
+      "tokens_out": 544,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 14.79,
+      "tokens_in": 834,
+      "tokens_out": 332,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 10.31,
+      "tokens_in": 779,
+      "tokens_out": 33,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 27.16,
+      "tokens_in": 1094,
+      "tokens_out": 683,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 69.1,
+      "tokens_in": 1826,
+      "tokens_out": 1096,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 49.52,
+      "tokens_in": 1600,
+      "tokens_out": 1106,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 29.29,
+      "tokens_in": 1201,
+      "tokens_out": 493,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 4.26,
+      "tokens_in": 834,
+      "tokens_out": 103,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 17.67,
+      "tokens_in": 779,
+      "tokens_out": 219,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 28.85,
+      "tokens_in": 1094,
+      "tokens_out": 511,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 13.76,
+      "tokens_in": 1826,
+      "tokens_out": 32,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 17.35,
+      "tokens_in": 1610,
+      "tokens_out": 32,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 12.63,
+      "tokens_in": 1201,
+      "tokens_out": 33,
+      "finish_reason": "stop",
+      "empty": true
+    }
+  ],
+  "arms": {
+    "moonshotai/kimi-k3/fix": 0.0818181818181818,
+    "moonshotai/kimi-k3/fix_think": 0.08571428571428572
+  },
+  "grade": {
+    "resolved": false,
+    "applied": true,
+    "fail_to_pass": {
+      "success": 0,
+      "failure": 1
+    },
+    "pass_to_pass": {
+      "success": 768,
+      "failure": 0
+    }
+  },
+  "grade_s": 1.5,
+  "wall_s": 560.9,
+  "diagnosis": {
+    "gold_files": [
+      "lib/matplotlib/axes/_base.py"
+    ],
+    "localised_file_hit": false,
+    "localised_line_hit": false,
+    "submission_files": [
+      "lib/matplotlib/axes/_axes.py"
+    ],
+    "submission_in_gold_file": false,
+    "gold_changed_lines": 2
+  }
+}

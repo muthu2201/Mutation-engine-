@@ -1,0 +1,345 @@
+{
+  "instance_id": "sphinx-doc__sphinx-9711",
+  "repo": "sphinx-doc/sphinx",
+  "version": "4.3",
+  "base_commit": "81a4fd973d4cfcb25d01a7b0be62cdb28f82406d",
+  "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.sphinx-doc__sphinx-9711:latest",
+  "started_at": "2026-10-03T15:14:00.985765+00:00",
+  "image_digest": "ghcr.io/epoch-research/swe-bench.eval.x86_64.sphinx-doc__sphinx-9711@sha256:7101296e6a8b8e5f8235b3a297df22f386a58227cbf7e53d141043089efe01c9",
+  "pull_s": 20.7,
+  "files_considered": 177,
+  "ranked_files": [
+    {
+      "file": "sphinx/application.py",
+      "score": 1.0
+    },
+    {
+      "file": "sphinx/config.py",
+      "score": 0.633
+    },
+    {
+      "file": "sphinx/locale/__init__.py",
+      "score": 0.631
+    },
+    {
+      "file": "sphinx/extension.py",
+      "score": 0.62
+    },
+    {
+      "file": "sphinx/cmd/quickstart.py",
+      "score": 0.616
+    },
+    {
+      "file": "setup.py",
+      "score": 0.547
+    },
+    {
+      "file": "sphinx/ext/napoleon/__init__.py",
+      "score": 0.541
+    },
+    {
+      "file": "sphinx/environment/__init__.py",
+      "score": 0.525
+    }
+  ],
+  "localised": [
+    {
+      "file": "sphinx/extension.py",
+      "name": "verify_needs_extensions",
+      "kind": "function",
+      "start": 42,
+      "end": 58,
+      "score": 1.31
+    },
+    {
+      "file": "sphinx/application.py",
+      "name": "Sphinx.__init__",
+      "kind": "function",
+      "start": 138,
+      "end": 270,
+      "score": 1.26
+    },
+    {
+      "file": "sphinx/application.py",
+      "name": "Sphinx.require_sphinx",
+      "kind": "function",
+      "start": 395,
+      "end": 406,
+      "score": 1.015
+    },
+    {
+      "file": "sphinx/cmd/quickstart.py",
+      "name": "ask_user",
+      "kind": "function",
+      "start": 191,
+      "end": 326,
+      "score": 0.937
+    },
+    {
+      "file": "sphinx/ext/napoleon/__init__.py",
+      "name": "setup",
+      "kind": "function",
+      "start": 297,
+      "end": 331,
+      "score": 0.932
+    },
+    {
+      "file": "sphinx/locale/__init__.py",
+      "name": "setlocale",
+      "kind": "function",
+      "start": 151,
+      "end": 168,
+      "score": 0.924
+    }
+  ],
+  "repro": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "ISSUE REPRODUCED",
+      "script_hash": "b288d657da870c2b"
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "OTHER",
+      "script_hash": "eceb408ec48df613"
+    }
+  ],
+  "candidates": [
+    {
+      "snippet": "py:sphinx/extension.py::verify_needs_extensions",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "bf663ff8995c5f07",
+      "response_hash": "d9a9c23968cc79ba",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "OTHER"
+      ],
+      "changed_lines": 14,
+      "judge_s": 1.6,
+      "diff": "diff --git a/sphinx/extension.py b/sphinx/extension.py\nindex 7ec6c8518..022536779 100644\n--- a/sphinx/extension.py\n+++ b/sphinx/extension.py\n@@ -51,12 +51,24 @@ def verify_needs_extensions(app: \"Sphinx\", config: Config) -> None:\n                               'but it is not loaded.'), extname)\n             continue\n \n-        if extension.version == 'unknown version' or reqversion > extension.version:\n+        if extension.version == 'unknown version':\n             raise VersionRequirementError(__('This project needs the extension %s at least in '\n                                              'version %s and therefore cannot be built with '\n                                              'the loaded version (%s).') %\n                                           (extname, reqversion, extension.version))\n \n+        try:\n+            version = parse_version(extension.version)\n+            required_version = parse_version(reqversion)\n+            if version < required_version:\n+                raise VersionRequirementError(__('This project needs the extension %s at least in '\n+                                                 'version %s and therefore cannot be built with '\n+                                                 'the loaded version (%s).') %\n+                                              (extname, reqversion, extension.version))\n+        except ValueError:\n+            logger.warning(__('The %s extension has an invalid version string (%s). '\n+                              'Skipping version check.'), extname, extension.version)\n+\n \n def setup(app: \"Sphinx\") -> Dict[str, Any]:\n     app.connect('config-inited', verify_needs_extensions, priority=800)\n",
+      "new_source": "def verify_needs_extensions(app: \"Sphinx\", config: Config) -> None:\n    \"\"\"Verify the required Sphinx extensions are loaded.\"\"\"\n    if config.needs_extensions is None:\n        return\n\n    for extname, reqversion in config.needs_extensions.items():\n        extension = app.extensions.get(extname)\n        if extension is None:\n            logger.warning(__('The %s extension is required by needs_extensions settings, '\n                              'but it is not loaded.'), extname)\n            continue\n\n        if extension.version == 'unknown version':\n            raise VersionRequirementError(__('This project needs the extension %s at least in '\n                                             'version %s and therefore cannot be built with '\n                                             'the loaded version (%s).') %\n                                          (extname, reqversion, extension.version))\n\n        try:\n            version = parse_version(extension.version)\n            required_version = parse_version(reqversion)\n            if version < required_version:\n                raise VersionRequirementError(__('This project needs the extension %s at least in '\n                                                 'version %s and therefore cannot be built with '\n                                                 'the loaded version (%s).') %\n                                              (extname, reqversion, extension.version))\n        except ValueError:\n            logger.warning(__('The %s extension has an invalid version string (%s). '\n                              'Skipping version check.'), extname, extension.version)\n"
+    },
+    {
+      "snippet": "py:sphinx/application.py::Sphinx.__init__",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "a5f914e3b289e058",
+      "response_hash": "e68260e2fbbe9577",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/test_application.py",
+        "tests/test_util.py",
+        "tests/test_templating.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 4,
+      "judge_s": 9.0,
+      "diff": "diff --git a/sphinx/application.py b/sphinx/application.py\nindex 4a75a83fe..17e389c24 100644\n--- a/sphinx/application.py\n+++ b/sphinx/application.py\n@@ -223,7 +223,9 @@ class Sphinx:\n         self._init_i18n()\n \n         # check the Sphinx version if requested\n-        if self.config.needs_sphinx and self.config.needs_sphinx > sphinx.__display_version__:\n+        if (self.config.needs_sphinx and\n+                _parse_version(self.config.needs_sphinx) >\n+                _parse_version(sphinx.__display_version__)):\n             raise VersionRequirementError(\n                 __('This project needs at least Sphinx v%s and therefore cannot '\n                    'be built with this version.') % self.config.needs_sphinx)\n",
+      "new_source": "def __init__(self, srcdir: str, confdir: Optional[str], outdir: str, doctreedir: str,\n             buildername: str, confoverrides: Dict = None,\n             status: IO = sys.stdout, warning: IO = sys.stderr,\n             freshenv: bool = False, warningiserror: bool = False, tags: List[str] = None,\n             verbosity: int = 0, parallel: int = 0, keep_going: bool = False) -> None:\n    self.phase = BuildPhase.INITIALIZATION\n    self.verbosity = verbosity\n    self.extensions: Dict[str, Extension] = {}\n    self.builder: Optional[Builder] = None\n    self.env: Optional[BuildEnvironment] = None\n    self.project: Optional[Project] = None\n    self.registry = SphinxComponentRegistry()\n\n    # validate provided directories\n    self.srcdir = abspath(srcdir)\n    self.outdir = abspath(outdir)\n    self.doctreedir = abspath(doctreedir)\n\n    if not path.isdir(self.srcdir):\n        raise ApplicationError(__('Cannot find source directory (%s)') %\n                               self.srcdir)\n\n    if path.exists(self.outdir) and not path.isdir(self.outdir):\n        raise ApplicationError(__('Output directory (%s) is not a directory') %\n                               self.outdir)\n\n    if self.srcdir == self.outdir:\n        raise ApplicationError(__('Source directory and destination '\n                                  'directory cannot be identical'))\n\n    self.parallel = parallel\n\n    if status is None:\n        self._status: IO = StringIO()\n        self.quiet: bool = True\n    else:\n        self._status = status\n        self.quiet = False\n\n    if warning is None:\n        self._warning: IO = StringIO()\n    else:\n        self._warning = warning\n    self._warncount = 0\n    self.keep_going = warningiserror and keep_going\n    if self.keep_going:\n        self.warningiserror = False\n    else:\n        self.warningiserror = warningiserror\n    logging.setup(self, self._status, self._warning)\n\n    self.events = EventManager(self)\n\n    # keep last few messages for traceback\n    # This will be filled by sphinx.util.logging.LastMessagesWriter\n    self.messagelog: deque = deque(maxlen=10)\n\n    # say hello to the world\n    logger.info(bold(__('Running Sphinx v%s') % sphinx.__display_version__))\n\n    # notice for parallel build on macOS and py38+\n    if sys.version_info > (3, 8) and platform.system() == 'Darwin' and parallel > 1:\n        logger.info(bold(__(\"For security reasons, parallel mode is disabled on macOS and \"\n                            \"python3.8 and above. For more details, please read \"\n                            \"https://github.com/sphinx-doc/sphinx/issues/6803\")))\n\n    # status code for command-line application\n    self.statuscode = 0\n\n    # read config\n    self.tags = Tags(tags)\n    if confdir is None:\n        # set confdir to srcdir if -C given (!= no confdir); a few pieces\n        # of code expect a confdir to be set\n        self.confdir = self.srcdir\n        self.config = Config({}, confoverrides or {})\n    else:\n        self.confdir = abspath(confdir)\n        self.config = Config.read(self.confdir, confoverrides or {}, self.tags)\n\n    # initialize some limited config variables before initialize i18n and loading\n    # extensions\n    self.config.pre_init_values()\n\n    # set up translation infrastructure\n    self._init_i18n()\n\n    # check the Sphinx version if requested\n    if (self.config.needs_sphinx and\n            _parse_version(self.config.needs_sphinx) >\n            _parse_version(sphinx.__display_version__)):\n        raise VersionRequirementError(\n            __('This project needs at least Sphinx v%s and therefore cannot '\n               'be built with this version.') % self.config.needs_sphinx)\n\n    # load all built-in extension modules\n    for extension in builtin_extensions:\n        self.setup_extension(extension)\n\n    # load all user-given extension modules\n    for extension in self.config.extensions:\n        self.setup_extension(extension)\n\n    # preload builder module (before init config values)\n    self.preload_builder(buildername)\n\n    if not path.isdir(outdir):\n        with progress_message(__('making output directory')):\n            ensuredir(outdir)\n\n    # the config file itself can be an extension\n    if self.config.setup:\n        prefix = __('while setting up extension %s:') % \"conf.py\"\n        with prefixed_warnings(prefix):\n            if callable(self.config.setup):\n                self.config.setup(self)\n            else:\n                raise ConfigError(\n                    __(\"'setup' as currently defined in conf.py isn't a Python callable. \"\n                       \"Please modify its definition to make it a callable function. \"\n                       \"This is needed for conf.py to behave as a Sphinx extension.\")\n                )\n\n    # now that we know all config values, collect them from conf.py\n    self.config.init_values()\n    self.events.emit('config-inited', self.config)\n\n    # create the project\n    self.project = Project(self.srcdir, self.config.source_suffix)\n    # create the builder\n    self.builder = self.create_builder(buildername)\n    # set up the build environment\n    self._init_env(freshenv)\n    # set up the builder\n    self._init_builder()\n"
+    },
+    {
+      "snippet": "py:sphinx/application.py::Sphinx.require_sphinx",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "67250fce242660e1",
+      "response_hash": "0d0ad6f54a1b90e8",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/test_application.py",
+        "tests/test_util.py",
+        "tests/test_templating.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 3,
+      "judge_s": 5.3,
+      "diff": "diff --git a/sphinx/application.py b/sphinx/application.py\nindex 4a75a83fe..b37710ac5 100644\n--- a/sphinx/application.py\n+++ b/sphinx/application.py\n@@ -402,7 +402,8 @@ class Sphinx:\n \n         .. versionadded:: 1.0\n         \"\"\"\n-        if version > sphinx.__display_version__[:3]:\n+        major, minor, *rest = (int(p) for p in version.split('.'))\n+        if (major, minor) > sphinx.version_info[:2]:\n             raise VersionRequirementError(version)\n \n     # event interface\n",
+      "new_source": "def require_sphinx(self, version: str) -> None:\n    \"\"\"Check the Sphinx version if requested.\n\n    Compare *version* with the version of the running Sphinx, and abort the\n    build when it is too old.\n\n    :param version: The required version in the form of ``major.minor``.\n\n    .. versionadded:: 1.0\n    \"\"\"\n    major, minor, *rest = (int(p) for p in version.split('.'))\n    if (major, minor) > sphinx.version_info[:2]:\n        raise VersionRequirementError(version)\n"
+    },
+    {
+      "snippet": "py:sphinx/cmd/quickstart.py::ask_user",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "445de00d7ec716d8",
+      "response_hash": "c7bdd751e692dfc0",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:sphinx/ext/napoleon/__init__.py::setup",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "b18b2546c48d84fc",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:sphinx/locale/__init__.py::setlocale",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "aef960773a4b391e",
+      "response_hash": "234693d227cdc6f5",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:sphinx/extension.py::verify_needs_extensions",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "bf663ff8995c5f07",
+      "response_hash": "fdb1bca2bb04d4d6",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [],
+      "regressions": 0,
+      "votes": 1,
+      "repro": [
+        "ISSUE RESOLVED"
+      ],
+      "changed_lines": 29,
+      "judge_s": 2.3,
+      "diff": "diff --git a/sphinx/extension.py b/sphinx/extension.py\nindex 7ec6c8518..bcfcc6ef7 100644\n--- a/sphinx/extension.py\n+++ b/sphinx/extension.py\n@@ -51,7 +51,34 @@ def verify_needs_extensions(app: \"Sphinx\", config: Config) -> None:\n                               'but it is not loaded.'), extname)\n             continue\n \n-        if extension.version == 'unknown version' or reqversion > extension.version:\n+        if extension.version == 'unknown version':\n+            raise VersionRequirementError(__('This project needs the extension %s at least in '\n+                                             'version %s and therefore cannot be built with '\n+                                             'the loaded version (%s).') %\n+                                          (extname, reqversion, extension.version))\n+\n+        fulfilled = True\n+        for req, actual in zip(reqversion.split('.'), extension.version.split('.')):\n+            try:\n+                reqv = int(req)\n+            except ValueError:\n+                reqv = req\n+            try:\n+                actualv = int(actual)\n+            except ValueError:\n+                actualv = actual\n+\n+            if type(reqv) is not type(actualv):\n+                reqv = str(reqv)\n+                actualv = str(actualv)\n+\n+            if reqv > actualv:\n+                fulfilled = False\n+                break\n+            elif reqv < actualv:\n+                break\n+\n+        if not fulfilled:\n             raise VersionRequirementError(__('This project needs the extension %s at least in '\n                                              'version %s and therefore cannot be built with '\n                                              'the loaded version (%s).') %\n",
+      "new_source": "def verify_needs_extensions(app: \"Sphinx\", config: Config) -> None:\n    \"\"\"Verify the required Sphinx extensions are loaded.\"\"\"\n    if config.needs_extensions is None:\n        return\n\n    for extname, reqversion in config.needs_extensions.items():\n        extension = app.extensions.get(extname)\n        if extension is None:\n            logger.warning(__('The %s extension is required by needs_extensions settings, '\n                              'but it is not loaded.'), extname)\n            continue\n\n        if extension.version == 'unknown version':\n            raise VersionRequirementError(__('This project needs the extension %s at least in '\n                                             'version %s and therefore cannot be built with '\n                                             'the loaded version (%s).') %\n                                          (extname, reqversion, extension.version))\n\n        fulfilled = True\n        for req, actual in zip(reqversion.split('.'), extension.version.split('.')):\n            try:\n                reqv = int(req)\n            except ValueError:\n                reqv = req\n            try:\n                actualv = int(actual)\n            except ValueError:\n                actualv = actual\n\n            if type(reqv) is not type(actualv):\n                reqv = str(reqv)\n                actualv = str(actualv)\n\n            if reqv > actualv:\n                fulfilled = False\n                break\n            elif reqv < actualv:\n                break\n\n        if not fulfilled:\n            raise VersionRequirementError(__('This project needs the extension %s at least in '\n                                             'version %s and therefore cannot be built with '\n                                             'the loaded version (%s).') %\n                                          (extname, reqversion, extension.version))\n"
+    }
+  ],
+  "validated_repro": 1,
+  "stop": "every validated reproduction resolved",
+  "submission": {
+    "snippet": "py:sphinx/extension.py::verify_needs_extensions",
+    "model": "moonshotai/kimi-k3",
+    "template": "fix",
+    "diff": "diff --git a/sphinx/extension.py b/sphinx/extension.py\nindex 7ec6c8518..bcfcc6ef7 100644\n--- a/sphinx/extension.py\n+++ b/sphinx/extension.py\n@@ -51,7 +51,34 @@ def verify_needs_extensions(app: \"Sphinx\", config: Config) -> None:\n                               'but it is not loaded.'), extname)\n             continue\n \n-        if extension.version == 'unknown version' or reqversion > extension.version:\n+        if extension.version == 'unknown version':\n+            raise VersionRequirementError(__('This project needs the extension %s at least in '\n+                                             'version %s and therefore cannot be built with '\n+                                             'the loaded version (%s).') %\n+                                          (extname, reqversion, extension.version))\n+\n+        fulfilled = True\n+        for req, actual in zip(reqversion.split('.'), extension.version.split('.')):\n+            try:\n+                reqv = int(req)\n+            except ValueError:\n+                reqv = req\n+            try:\n+                actualv = int(actual)\n+            except ValueError:\n+                actualv = actual\n+\n+            if type(reqv) is not type(actualv):\n+                reqv = str(reqv)\n+                actualv = str(actualv)\n+\n+            if reqv > actualv:\n+                fulfilled = False\n+                break\n+            elif reqv < actualv:\n+                break\n+\n+        if not fulfilled:\n             raise VersionRequirementError(__('This project needs the extension %s at least in '\n                                              'version %s and therefore cannot be built with '\n                                              'the loaded version (%s).') %\n",
+    "votes": 1,
+    "changed_lines": 29,
+    "new_source": "def verify_needs_extensions(app: \"Sphinx\", config: Config) -> None:\n    \"\"\"Verify the required Sphinx extensions are loaded.\"\"\"\n    if config.needs_extensions is None:\n        return\n\n    for extname, reqversion in config.needs_extensions.items():\n        extension = app.extensions.get(extname)\n        if extension is None:\n            logger.warning(__('The %s extension is required by needs_extensions settings, '\n                              'but it is not loaded.'), extname)\n            continue\n\n        if extension.version == 'unknown version':\n            raise VersionRequirementError(__('This project needs the extension %s at least in '\n                                             'version %s and therefore cannot be built with '\n                                             'the loaded version (%s).') %\n                                          (extname, reqversion, extension.version))\n\n        fulfilled = True\n        for req, actual in zip(reqversion.split('.'), extension.version.split('.')):\n            try:\n                reqv = int(req)\n            except ValueError:\n                reqv = req\n            try:\n                actualv = int(actual)\n            except ValueError:\n                actualv = actual\n\n            if type(reqv) is not type(actualv):\n                reqv = str(reqv)\n                actualv = str(actualv)\n\n            if reqv > actualv:\n                fulfilled = False\n                break\n            elif reqv < actualv:\n                break\n\n        if not fulfilled:\n            raise VersionRequirementError(__('This project needs the extension %s at least in '\n                                             'version %s and therefore cannot be built with '\n                                             'the loaded version (%s).') %\n                                          (extname, reqversion, extension.version))\n",
+    "prompt_hash": "bf663ff8995c5f07",
+    "response_hash": "fdb1bca2bb04d4d6"
+  },
+  "search_s": 331.0,
+  "llm_calls": 9,
+  "tokens_in": 9725,
+  "tokens_out": 5578,
+  "calls": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 34.4,
+      "tokens_in": 595,
+      "tokens_out": 596,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 35.65,
+      "tokens_in": 595,
+      "tokens_out": 629,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 27.43,
+      "tokens_in": 785,
+      "tokens_out": 450,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 70.47,
+      "tokens_in": 2052,
+      "tokens_out": 1425,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 18.82,
+      "tokens_in": 1006,
+      "tokens_out": 198,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 72.39,
+      "tokens_in": 2231,
+      "tokens_out": 1609,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 11.53,
+      "tokens_in": 913,
+      "tokens_out": 32,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 14.69,
+      "tokens_in": 763,
+      "tokens_out": 248,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 25.06,
+      "tokens_in": 785,
+      "tokens_out": 391,
+      "finish_reason": "stop",
+      "empty": false
+    }
+  ],
+  "arms": {
+    "moonshotai/kimi-k3/fix": 0.2777777777777778,
+    "moonshotai/kimi-k3/fix_think": 0.3
+  },
+  "grade": {
+    "resolved": false,
+    "applied": true,
+    "fail_to_pass": {
+      "success": 0,
+      "failure": 1
+    },
+    "pass_to_pass": {
+      "success": 0,
+      "failure": 0
+    }
+  },
+  "grade_s": 1.9,
+  "wall_s": 364.9,
+  "diagnosis": {
+    "gold_files": [
+      "sphinx/extension.py"
+    ],
+    "localised_file_hit": true,
+    "localised_line_hit": true,
+    "submission_files": [
+      "sphinx/extension.py"
+    ],
+    "submission_in_gold_file": true,
+    "gold_changed_lines": 15
+  }
+}

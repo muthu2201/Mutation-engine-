@@ -1,0 +1,14 @@
+diff --git a/django/db/models/query.py b/django/db/models/query.py
+index 794e0faae7..c465fdb70d 100644
+--- a/django/db/models/query.py
++++ b/django/db/models/query.py
+@@ -679,7 +679,8 @@ class QuerySet:
+             if not id_list:
+                 return {}
+             filter_key = '{}__in'.format(field_name)
+-            batch_size = connections[self.db].features.max_query_params
++            max_query_params = connections[self.db].features.max_query_params
++            batch_size = min(max_query_params, len(id_list)) if max_query_params else len(id_list)
+             id_list = tuple(id_list)
+             # If the database has a limit on the number of query parameters
+             # (e.g. SQLite), retrieve objects in batches if necessary.

@@ -1,0 +1,238 @@
+{
+  "instance_id": "sphinx-doc__sphinx-8621",
+  "repo": "sphinx-doc/sphinx",
+  "version": "3.5",
+  "base_commit": "21698c14461d27933864d73e6fba568a154e83b3",
+  "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.sphinx-doc__sphinx-8621:latest",
+  "started_at": "2026-10-03T14:57:31.469552+00:00",
+  "image_digest": "ghcr.io/epoch-research/swe-bench.eval.x86_64.sphinx-doc__sphinx-8621@sha256:57fb8acd12f29d08ddee9ec15cf8b3158ea181a1c0ed04f26611616cf7b46d6c",
+  "pull_s": 19.8,
+  "files_considered": 183,
+  "ranked_files": [
+    {
+      "file": "sphinx/builders/html/transforms.py",
+      "score": 1.0
+    },
+    {
+      "file": "sphinx/writers/html.py",
+      "score": 0.909
+    },
+    {
+      "file": "sphinx/writers/html5.py",
+      "score": 0.907
+    },
+    {
+      "file": "sphinx/roles.py",
+      "score": 0.532
+    },
+    {
+      "file": "sphinx/writers/latex.py",
+      "score": 0.439
+    },
+    {
+      "file": "sphinx/addnodes.py",
+      "score": 0.314
+    },
+    {
+      "file": "sphinx/writers/text.py",
+      "score": 0.298
+    },
+    {
+      "file": "sphinx/application.py",
+      "score": 0.273
+    }
+  ],
+  "localised": [
+    {
+      "file": "sphinx/writers/html.py",
+      "name": "HTMLTranslator.visit_literal",
+      "kind": "function",
+      "start": 495,
+      "end": 502,
+      "score": 1.454
+    },
+    {
+      "file": "sphinx/writers/html5.py",
+      "name": "HTML5Translator.visit_literal",
+      "kind": "function",
+      "start": 446,
+      "end": 453,
+      "score": 1.454
+    },
+    {
+      "file": "sphinx/builders/html/transforms.py",
+      "name": "KeyboardTransform.<L22-40>",
+      "kind": "block",
+      "start": 22,
+      "end": 40,
+      "score": 1.44
+    },
+    {
+      "file": "sphinx/writers/html.py",
+      "name": "HTMLTranslator.depart_literal",
+      "kind": "function",
+      "start": 504,
+      "end": 509,
+      "score": 1.212
+    },
+    {
+      "file": "sphinx/writers/html5.py",
+      "name": "HTML5Translator.depart_literal",
+      "kind": "function",
+      "start": 455,
+      "end": 460,
+      "score": 1.212
+    },
+    {
+      "file": "sphinx/builders/html/transforms.py",
+      "name": "KeyboardTransform.run",
+      "kind": "function",
+      "start": 42,
+      "end": 59,
+      "score": 1.142
+    }
+  ],
+  "repro": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "ISSUE REPRODUCED",
+      "script_hash": "7e47a2b274ca3a96"
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "OTHER",
+      "script_hash": "f92bb579ea9194b1"
+    }
+  ],
+  "candidates": [
+    {
+      "snippet": "py:sphinx/writers/html.py::HTMLTranslator.visit_literal",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "0bd7c55fd7b652fb",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:sphinx/writers/html5.py::HTML5Translator.visit_literal",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "319602dbfe7752e9",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:sphinx/builders/html/transforms.py::KeyboardTransform.<L22-40>",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "7664e7d75bf2f6fb",
+      "response_hash": "3c8b5d57972383e4",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/test_markup.py"
+      ],
+      "regressions": 0,
+      "votes": 1,
+      "repro": [
+        "ISSUE RESOLVED"
+      ],
+      "changed_lines": 2,
+      "judge_s": 9.2,
+      "diff": "diff --git a/sphinx/builders/html/transforms.py b/sphinx/builders/html/transforms.py\nindex c91da57e9..311b1b7a0 100644\n--- a/sphinx/builders/html/transforms.py\n+++ b/sphinx/builders/html/transforms.py\n@@ -37,7 +37,7 @@ class KeyboardTransform(SphinxPostTransform):\n     \"\"\"\n     default_priority = 400\n     builders = ('html',)\n-    pattern = re.compile(r'(-|\\+|\\^|\\s+)')\n+    pattern = re.compile(r'(?<=.)(-|\\+|\\^|\\s+)(?=.)')\n \n     def run(self, **kwargs: Any) -> None:\n         matcher = NodeMatcher(nodes.literal, classes=[\"kbd\"])\n",
+      "new_source": "\"\"\"Transform :kbd: role to more detailed form.\n\nBefore::\n\n    <literal class=\"kbd\">\n        Control-x\n\nAfter::\n\n    <literal class=\"kbd\">\n        <literal class=\"kbd\">\n            Control\n        -\n        <literal class=\"kbd\">\n            x\n\"\"\"\ndefault_priority = 400\nbuilders = ('html',)\npattern = re.compile(r'(?<=.)(-|\\+|\\^|\\s+)(?=.)')\n"
+    }
+  ],
+  "validated_repro": 1,
+  "stop": "every validated reproduction resolved",
+  "submission": {
+    "snippet": "py:sphinx/builders/html/transforms.py::KeyboardTransform.<L22-40>",
+    "model": "moonshotai/kimi-k3",
+    "template": "fix",
+    "diff": "diff --git a/sphinx/builders/html/transforms.py b/sphinx/builders/html/transforms.py\nindex c91da57e9..311b1b7a0 100644\n--- a/sphinx/builders/html/transforms.py\n+++ b/sphinx/builders/html/transforms.py\n@@ -37,7 +37,7 @@ class KeyboardTransform(SphinxPostTransform):\n     \"\"\"\n     default_priority = 400\n     builders = ('html',)\n-    pattern = re.compile(r'(-|\\+|\\^|\\s+)')\n+    pattern = re.compile(r'(?<=.)(-|\\+|\\^|\\s+)(?=.)')\n \n     def run(self, **kwargs: Any) -> None:\n         matcher = NodeMatcher(nodes.literal, classes=[\"kbd\"])\n",
+    "votes": 1,
+    "changed_lines": 2,
+    "new_source": "\"\"\"Transform :kbd: role to more detailed form.\n\nBefore::\n\n    <literal class=\"kbd\">\n        Control-x\n\nAfter::\n\n    <literal class=\"kbd\">\n        <literal class=\"kbd\">\n            Control\n        -\n        <literal class=\"kbd\">\n            x\n\"\"\"\ndefault_priority = 400\nbuilders = ('html',)\npattern = re.compile(r'(?<=.)(-|\\+|\\^|\\s+)(?=.)')\n",
+    "prompt_hash": "7664e7d75bf2f6fb",
+    "response_hash": "3c8b5d57972383e4"
+  },
+  "search_s": 158.0,
+  "llm_calls": 5,
+  "tokens_in": 4245,
+  "tokens_out": 2620,
+  "calls": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 41.2,
+      "tokens_in": 733,
+      "tokens_out": 704,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 40.6,
+      "tokens_in": 733,
+      "tokens_out": 992,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 9.42,
+      "tokens_in": 960,
+      "tokens_out": 33,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 12.52,
+      "tokens_in": 949,
+      "tokens_out": 34,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 37.71,
+      "tokens_in": 870,
+      "tokens_out": 857,
+      "finish_reason": "stop",
+      "empty": false
+    }
+  ],
+  "arms": {
+    "moonshotai/kimi-k3/fix": 0.32,
+    "moonshotai/kimi-k3/fix_think": 0.3
+  },
+  "grade": {
+    "resolved": false,
+    "applied": true,
+    "fail_to_pass": {
+      "success": 0,
+      "failure": 2
+    },
+    "pass_to_pass": {
+      "success": 30,
+      "failure": 1
+    }
+  },
+  "grade_s": 1.4,
+  "wall_s": 188.6,
+  "diagnosis": {
+    "gold_files": [
+      "sphinx/builders/html/transforms.py"
+    ],
+    "localised_file_hit": true,
+    "localised_line_hit": true,
+    "submission_files": [
+      "sphinx/builders/html/transforms.py"
+    ],
+    "submission_in_gold_file": true,
+    "gold_changed_lines": 2
+  }
+}

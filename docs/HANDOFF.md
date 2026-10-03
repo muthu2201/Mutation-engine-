@@ -134,6 +134,18 @@ commands (`colloid lake push`, `colloid stack ...`), never by hand.
   `clean` for the 7B model.
 <!-- /HANDOFF:LOCAL -->
 
+### The API arm (Kimi K3 on NVIDIA, finished 2026-10-03)
+
+- **2 / 30, the same two instances as the local arm.** Paired difference 0, exact McNemar
+  p = 1.0; no `suspect` probes.
+- **The bottleneck is the engine, not the model:**
+  - **L3:** 9 of the 11 submissions that resolved a validated reproduction script failed the
+    official tests. A single-facet script is not enough.
+  - **L2:** missed 78 and 18 official regressions.
+  - **Waste:** 30% of calls came back empty from the endpoint, and 34% of proposals returned the
+    snippet unchanged.
+- **Next:** protocol v2 (ADR 0014), an engine A/B with the model held fixed (GLM 5 on Bedrock).
+
 ## 3. Before the next session starts (the owner)
 
 1. **The NVIDIA key is in the environment** as `NVIDIA_API_KEY` (done 2026-10-03). The stored

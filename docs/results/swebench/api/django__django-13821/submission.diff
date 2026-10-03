@@ -1,0 +1,14 @@
+diff --git a/django/db/backends/sqlite3/features.py b/django/db/backends/sqlite3/features.py
+index 3348256c74..595145ced8 100644
+--- a/django/db/backends/sqlite3/features.py
++++ b/django/db/backends/sqlite3/features.py
+@@ -84,7 +84,8 @@ class DatabaseFeatures(BaseDatabaseFeatures):
+     @cached_property
+     def supports_atomic_references_rename(self):
+         # SQLite 3.28.0 bundled with MacOS 10.15 does not support renaming
+-        # references atomically.
++        # references atomically. SQLite 3.9.0 is the minimum supported
++        # version, but atomic reference renaming still requires 3.26.0+.
+         if platform.mac_ver()[0].startswith('10.15.') and Database.sqlite_version_info == (3, 28, 0):
+             return False
+         return Database.sqlite_version_info >= (3, 26, 0)

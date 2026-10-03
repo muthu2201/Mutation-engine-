@@ -1,0 +1,521 @@
+{
+  "instance_id": "django__django-12276",
+  "repo": "django/django",
+  "version": "3.1",
+  "base_commit": "53d8646f799de7f92ab9defe9dc56c6125448102",
+  "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.django__django-12276:latest",
+  "started_at": "2026-10-03T12:57:12.671029+00:00",
+  "image_digest": "ghcr.io/epoch-research/swe-bench.eval.x86_64.django__django-12276@sha256:5eda6a8e10810ddbaac8b2763ee96916ac4545ed532083c7ee6dbd2bd3550216",
+  "pull_s": 21.8,
+  "files_considered": 825,
+  "ranked_files": [
+    {
+      "file": "django/forms/widgets.py",
+      "score": 2.5
+    },
+    {
+      "file": "django/forms/forms.py",
+      "score": 0.833
+    },
+    {
+      "file": "django/forms/formsets.py",
+      "score": 0.726
+    },
+    {
+      "file": "django/forms/fields.py",
+      "score": 0.726
+    },
+    {
+      "file": "django/forms/models.py",
+      "score": 0.689
+    },
+    {
+      "file": "django/forms/boundfield.py",
+      "score": 0.66
+    },
+    {
+      "file": "django/contrib/admin/widgets.py",
+      "score": 0.586
+    },
+    {
+      "file": "django/contrib/staticfiles/management/commands/collectstatic.py",
+      "score": 0.476
+    }
+  ],
+  "localised": [
+    {
+      "file": "django/forms/widgets.py",
+      "name": "ClearableFileInput.use_required_attribute",
+      "kind": "function",
+      "start": 454,
+      "end": 455,
+      "score": 4.406
+    },
+    {
+      "file": "django/forms/widgets.py",
+      "name": "Select.use_required_attribute",
+      "kind": "function",
+      "start": 689,
+      "end": 700,
+      "score": 3.417
+    },
+    {
+      "file": "django/forms/widgets.py",
+      "name": "CheckboxSelectMultiple.use_required_attribute",
+      "kind": "function",
+      "start": 769,
+      "end": 772,
+      "score": 3.377
+    },
+    {
+      "file": "django/forms/widgets.py",
+      "name": "Widget.use_required_attribute",
+      "kind": "function",
+      "start": 275,
+      "end": 276,
+      "score": 3.293
+    },
+    {
+      "file": "django/forms/widgets.py",
+      "name": "ClearableFileInput.<L395-398>",
+      "kind": "block",
+      "start": 395,
+      "end": 398,
+      "score": 2.5
+    },
+    {
+      "file": "django/forms/widgets.py",
+      "name": "FileInput.<L375-377>",
+      "kind": "block",
+      "start": 375,
+      "end": 377,
+      "score": 2.464
+    }
+  ],
+  "repro": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "ISSUE REPRODUCED",
+      "script_hash": "32ae49b81a9451b3"
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "ISSUE REPRODUCED",
+      "script_hash": "7fc2e4753eba6329"
+    }
+  ],
+  "candidates": [
+    {
+      "snippet": "py:django/forms/widgets.py::ClearableFileInput.use_required_attribute",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "b6a6aacc15825fbc",
+      "response_hash": "2b750d8397d50eca",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/forms_tests/tests/test_widgets.py",
+        "tests/forms_tests/field_tests/test_splitdatetimefield.py",
+        "tests/forms_tests/tests/test_formsets.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED",
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 1,
+      "judge_s": 7.1,
+      "diff": "diff --git a/django/forms/widgets.py b/django/forms/widgets.py\nindex 338d54d72f..55d6e1971c 100644\n--- a/django/forms/widgets.py\n+++ b/django/forms/widgets.py\n@@ -451,6 +451,7 @@ class ClearableFileInput(FileInput):\n             return False\n         return upload\n \n+    # In FileInput (remove the override from ClearableFileInput):\n     def use_required_attribute(self, initial):\n         return super().use_required_attribute(initial) and not initial\n \n",
+      "new_source": "# In FileInput (remove the override from ClearableFileInput):\ndef use_required_attribute(self, initial):\n    return super().use_required_attribute(initial) and not initial\n"
+    },
+    {
+      "snippet": "py:django/forms/widgets.py::Select.use_required_attribute",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "bdf3d81eb426dce2",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:django/forms/widgets.py::CheckboxSelectMultiple.use_required_attribute",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "da17d4f3ad80ab9e",
+      "response_hash": "f4e253596e9e65db",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/forms_tests/tests/test_widgets.py",
+        "tests/forms_tests/field_tests/test_splitdatetimefield.py",
+        "tests/forms_tests/tests/test_formsets.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED",
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 4,
+      "judge_s": 4.5,
+      "diff": "diff --git a/django/forms/widgets.py b/django/forms/widgets.py\nindex 338d54d72f..e49ce67226 100644\n--- a/django/forms/widgets.py\n+++ b/django/forms/widgets.py\n@@ -767,9 +767,7 @@ class CheckboxSelectMultiple(ChoiceWidget):\n     option_template_name = 'django/forms/widgets/checkbox_option.html'\n \n     def use_required_attribute(self, initial):\n-        # Don't use the 'required' attribute because browser validation would\n-        # require all checkboxes to be checked instead of at least one.\n-        return False\n+        return super().use_required_attribute(initial) and not initial\n \n     def value_omitted_from_data(self, data, files, name):\n         # HTML checkboxes don't appear in POST data if not checked, so it's\n",
+      "new_source": "def use_required_attribute(self, initial):\n    return super().use_required_attribute(initial) and not initial\n"
+    },
+    {
+      "snippet": "py:django/forms/widgets.py::Widget.use_required_attribute",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "b7f569ecb4bf8cff",
+      "response_hash": "9005352b3721403c",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "68 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "tests/forms_tests/tests/test_widgets.py",
+        "tests/forms_tests/field_tests/test_splitdatetimefield.py",
+        "tests/forms_tests/tests/test_formsets.py"
+      ],
+      "regressions": 68,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 12,
+      "judge_s": 3.0
+    },
+    {
+      "snippet": "py:django/forms/widgets.py::ClearableFileInput.<L395-398>",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "52f8bb81a9db95fc",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:django/forms/widgets.py::FileInput.<L375-377>",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "119632c450ec4796",
+      "response_hash": "e3ecf647b8c7ef1b",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/forms_tests/tests/test_widgets.py",
+        "tests/forms_tests/field_tests/test_splitdatetimefield.py",
+        "tests/forms_tests/tests/test_formsets.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED",
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 3,
+      "judge_s": 4.7,
+      "diff": "diff --git a/django/forms/widgets.py b/django/forms/widgets.py\nindex 338d54d72f..93e532c228 100644\n--- a/django/forms/widgets.py\n+++ b/django/forms/widgets.py\n@@ -376,6 +376,9 @@ class FileInput(Input):\n     needs_multipart_form = True\n     template_name = 'django/forms/widgets/file.html'\n \n+    def use_required_attribute(self, initial):\n+        return super().use_required_attribute(initial) and not initial\n+\n     def format_value(self, value):\n         \"\"\"File input never renders a value.\"\"\"\n         return\n",
+      "new_source": "input_type = 'file'\nneeds_multipart_form = True\ntemplate_name = 'django/forms/widgets/file.html'\n\ndef use_required_attribute(self, initial):\n    return super().use_required_attribute(initial) and not initial\n"
+    },
+    {
+      "snippet": "py:django/forms/widgets.py::ClearableFileInput.use_required_attribute",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "b6a6aacc15825fbc",
+      "response_hash": "0d2de5761db21f48",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/forms/widgets.py::Select.use_required_attribute",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "bdf3d81eb426dce2",
+      "response_hash": "0d2de5761db21f48",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/forms_tests/tests/test_widgets.py",
+        "tests/forms_tests/field_tests/test_splitdatetimefield.py",
+        "tests/forms_tests/tests/test_formsets.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED",
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 12,
+      "judge_s": 4.6,
+      "diff": "diff --git a/django/forms/widgets.py b/django/forms/widgets.py\nindex 338d54d72f..8d201c7f5b 100644\n--- a/django/forms/widgets.py\n+++ b/django/forms/widgets.py\n@@ -687,17 +687,7 @@ class Select(ChoiceWidget):\n         return value is None or value == ''\n \n     def use_required_attribute(self, initial):\n-        \"\"\"\n-        Don't render 'required' if the first <option> has a value, as that's\n-        invalid HTML.\n-        \"\"\"\n-        use_required_attribute = super().use_required_attribute(initial)\n-        # 'required' is always okay for <select multiple>.\n-        if self.allow_multiple_selected:\n-            return use_required_attribute\n-\n-        first_choice = next(iter(self.choices), None)\n-        return use_required_attribute and first_choice is not None and self._choice_has_empty_value(first_choice)\n+        return super().use_required_attribute(initial) and not initial\n \n \n class NullBooleanSelect(Select):\n",
+      "new_source": "def use_required_attribute(self, initial):\n    return super().use_required_attribute(initial) and not initial\n"
+    },
+    {
+      "snippet": "py:django/forms/widgets.py::CheckboxSelectMultiple.use_required_attribute",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "da17d4f3ad80ab9e",
+      "response_hash": "0d78665c2225b601",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/forms/widgets.py::Widget.use_required_attribute",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "b7f569ecb4bf8cff",
+      "response_hash": "8456d32ad6a085aa",
+      "stage": "parse",
+      "reason": "response does not define use_required_attribute()"
+    },
+    {
+      "snippet": "py:django/forms/widgets.py::ClearableFileInput.<L395-398>",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "52f8bb81a9db95fc",
+      "response_hash": "d2671c9e0d17b5e2",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/forms_tests/tests/test_widgets.py",
+        "tests/forms_tests/field_tests/test_splitdatetimefield.py",
+        "tests/forms_tests/tests/test_formsets.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED",
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 3,
+      "judge_s": 4.6,
+      "diff": "diff --git a/django/forms/widgets.py b/django/forms/widgets.py\nindex 338d54d72f..680ded59af 100644\n--- a/django/forms/widgets.py\n+++ b/django/forms/widgets.py\n@@ -397,6 +397,9 @@ class ClearableFileInput(FileInput):\n     input_text = _('Change')\n     template_name = 'django/forms/widgets/clearable_file_input.html'\n \n+    def use_required_attribute(self, initial):\n+        return super().use_required_attribute(initial) and not initial\n+\n     def clear_checkbox_name(self, name):\n         \"\"\"\n         Given the name of the file input, return the name of the clear checkbox\n",
+      "new_source": "clear_checkbox_label = _('Clear')\ninitial_text = _('Currently')\ninput_text = _('Change')\ntemplate_name = 'django/forms/widgets/clearable_file_input.html'\n\ndef use_required_attribute(self, initial):\n    return super().use_required_attribute(initial) and not initial\n"
+    },
+    {
+      "snippet": "py:django/forms/widgets.py::FileInput.<L375-377>",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "119632c450ec4796",
+      "response_hash": "ec2bd064368cbc85",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/forms_tests/tests/test_widgets.py",
+        "tests/forms_tests/field_tests/test_splitdatetimefield.py",
+        "tests/forms_tests/tests/test_formsets.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED",
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 3,
+      "judge_s": 4.5,
+      "diff": "diff --git a/django/forms/widgets.py b/django/forms/widgets.py\nindex 338d54d72f..22b14676e3 100644\n--- a/django/forms/widgets.py\n+++ b/django/forms/widgets.py\n@@ -376,6 +376,9 @@ class FileInput(Input):\n     needs_multipart_form = True\n     template_name = 'django/forms/widgets/file.html'\n \n+    def use_required_attribute(self, initial):\n+        return super().use_required_attribute(initial) and initial is None\n+\n     def format_value(self, value):\n         \"\"\"File input never renders a value.\"\"\"\n         return\n",
+      "new_source": "input_type = 'file'\nneeds_multipart_form = True\ntemplate_name = 'django/forms/widgets/file.html'\n\ndef use_required_attribute(self, initial):\n    return super().use_required_attribute(initial) and initial is None\n"
+    },
+    {
+      "snippet": "py:django/forms/widgets.py::ClearableFileInput.use_required_attribute",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "b6a6aacc15825fbc",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:django/forms/widgets.py::Select.use_required_attribute",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "bdf3d81eb426dce2",
+      "response_hash": "60b03a74d4381ddc",
+      "stage": "parse",
+      "reason": "replacement has 81 lines for a 12-line snippet"
+    }
+  ],
+  "validated_repro": 2,
+  "stop": "budget",
+  "submission": {
+    "snippet": "py:django/forms/widgets.py::ClearableFileInput.use_required_attribute",
+    "model": "moonshotai/kimi-k3",
+    "template": "fix",
+    "diff": "diff --git a/django/forms/widgets.py b/django/forms/widgets.py\nindex 338d54d72f..55d6e1971c 100644\n--- a/django/forms/widgets.py\n+++ b/django/forms/widgets.py\n@@ -451,6 +451,7 @@ class ClearableFileInput(FileInput):\n             return False\n         return upload\n \n+    # In FileInput (remove the override from ClearableFileInput):\n     def use_required_attribute(self, initial):\n         return super().use_required_attribute(initial) and not initial\n \n",
+    "votes": 0,
+    "changed_lines": 1,
+    "new_source": "# In FileInput (remove the override from ClearableFileInput):\ndef use_required_attribute(self, initial):\n    return super().use_required_attribute(initial) and not initial\n",
+    "prompt_hash": "b6a6aacc15825fbc",
+    "response_hash": "2b750d8397d50eca"
+  },
+  "search_s": 245.7,
+  "llm_calls": 16,
+  "tokens_in": 8334,
+  "tokens_out": 3818,
+  "calls": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 10.1,
+      "tokens_in": 378,
+      "tokens_out": 223,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 7.45,
+      "tokens_in": 378,
+      "tokens_out": 187,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 7.21,
+      "tokens_in": 521,
+      "tokens_out": 164,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 4.85,
+      "tokens_in": 601,
+      "tokens_out": 32,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 10.0,
+      "tokens_in": 540,
+      "tokens_out": 267,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 12.53,
+      "tokens_in": 515,
+      "tokens_out": 336,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 7.65,
+      "tokens_in": 533,
+      "tokens_out": 33,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 5.61,
+      "tokens_in": 518,
+      "tokens_out": 111,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 17.06,
+      "tokens_in": 521,
+      "tokens_out": 527,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 5.81,
+      "tokens_in": 601,
+      "tokens_out": 151,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 15.34,
+      "tokens_in": 540,
+      "tokens_out": 187,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 17.01,
+      "tokens_in": 515,
+      "tokens_out": 366,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 25.32,
+      "tokens_in": 533,
+      "tokens_out": 369,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 7.85,
+      "tokens_in": 518,
+      "tokens_out": 88,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 10.66,
+      "tokens_in": 521,
+      "tokens_out": 32,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 29.4,
+      "tokens_in": 601,
+      "tokens_out": 745,
+      "finish_reason": "stop",
+      "empty": false
+    }
+  ],
+  "arms": {
+    "moonshotai/kimi-k3/fix": 0.15,
+    "moonshotai/kimi-k3/fix_think": 0.3
+  },
+  "grade": {
+    "resolved": false,
+    "applied": true,
+    "fail_to_pass": {
+      "success": 0,
+      "failure": 2
+    },
+    "pass_to_pass": {
+      "success": 117,
+      "failure": 0
+    }
+  },
+  "grade_s": 1.2,
+  "wall_s": 281.0,
+  "diagnosis": {
+    "gold_files": [
+      "django/forms/widgets.py"
+    ],
+    "localised_file_hit": true,
+    "localised_line_hit": true,
+    "submission_files": [
+      "django/forms/widgets.py"
+    ],
+    "submission_in_gold_file": true,
+    "gold_changed_lines": 6
+  }
+}

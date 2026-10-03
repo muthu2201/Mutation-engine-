@@ -1,0 +1,205 @@
+{
+  "instance_id": "django__django-13109",
+  "repo": "django/django",
+  "version": "3.2",
+  "base_commit": "fbe82f82555bc25dccb476c749ca062f0b522be3",
+  "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.django__django-13109:latest",
+  "started_at": "2026-10-03T13:08:17.203597+00:00",
+  "image_digest": "ghcr.io/epoch-research/swe-bench.eval.x86_64.django__django-13109@sha256:951fdfb84e7d4d781b47e2b87a895c181fb235e2af7d3753d36bea31612039d6",
+  "pull_s": 23.6,
+  "files_considered": 844,
+  "ranked_files": [
+    {
+      "file": "django/forms/models.py",
+      "score": 2.5
+    },
+    {
+      "file": "django/db/models/base.py",
+      "score": 2.373
+    },
+    {
+      "file": "django/db/models/fields/related.py",
+      "score": 2.266
+    },
+    {
+      "file": "django/db/models/fields/__init__.py",
+      "score": 2.231
+    },
+    {
+      "file": "django/db/models/query.py",
+      "score": 2.158
+    },
+    {
+      "file": "django/db/models/manager.py",
+      "score": 2.109
+    },
+    {
+      "file": "django/forms/fields.py",
+      "score": 1.99
+    },
+    {
+      "file": "django/contrib/contenttypes/fields.py",
+      "score": 1.917
+    }
+  ],
+  "localised": [
+    {
+      "file": "django/db/models/fields/related.py",
+      "name": "ForeignKey.validate",
+      "kind": "function",
+      "start": 909,
+      "end": 929,
+      "score": 4.018
+    },
+    {
+      "file": "django/db/models/base.py",
+      "name": "Model.__init__",
+      "kind": "function",
+      "start": 406,
+      "end": 503,
+      "score": 3.977
+    },
+    {
+      "file": "django/db/models/fields/related.py",
+      "name": "ForeignKey.__init__",
+      "kind": "function",
+      "start": 790,
+      "end": 828,
+      "score": 3.869
+    },
+    {
+      "file": "django/db/models/fields/__init__.py",
+      "name": "CharField.__init__",
+      "kind": "function",
+      "start": 985,
+      "end": 987,
+      "score": 3.7
+    },
+    {
+      "file": "django/forms/fields.py",
+      "name": "BooleanField.validate",
+      "kind": "function",
+      "start": 725,
+      "end": 727,
+      "score": 3.611
+    },
+    {
+      "file": "django/forms/fields.py",
+      "name": "CharField.__init__",
+      "kind": "function",
+      "start": 211,
+      "end": 221,
+      "score": 3.573
+    }
+  ],
+  "repro": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "unparseable",
+      "script_hash": null
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "ISSUE REPRODUCED",
+      "script_hash": "65829f70cb3e6c5e"
+    }
+  ],
+  "candidates": [
+    {
+      "snippet": "py:django/db/models/fields/related.py::ForeignKey.validate",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "0a874e788106eb05",
+      "response_hash": "81bf43cb64a6df41",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/queries/test_query.py",
+        "tests/update/tests.py"
+      ],
+      "regressions": 0,
+      "votes": 1,
+      "repro": [
+        "ISSUE RESOLVED"
+      ],
+      "changed_lines": 2,
+      "judge_s": 7.6,
+      "diff": "diff --git a/django/db/models/fields/related.py b/django/db/models/fields/related.py\nindex d517d7269b..c2aea9c730 100644\n--- a/django/db/models/fields/related.py\n+++ b/django/db/models/fields/related.py\n@@ -914,7 +914,7 @@ class ForeignKey(ForeignObject):\n             return\n \n         using = router.db_for_read(self.remote_field.model, instance=model_instance)\n-        qs = self.remote_field.model._default_manager.using(using).filter(\n+        qs = self.remote_field.model._base_manager.using(using).filter(\n             **{self.remote_field.field_name: value}\n         )\n         qs = qs.complex_filter(self.get_limit_choices_to())\n",
+      "new_source": "def validate(self, value, model_instance):\n    if self.remote_field.parent_link:\n        return\n    super().validate(value, model_instance)\n    if value is None:\n        return\n\n    using = router.db_for_read(self.remote_field.model, instance=model_instance)\n    qs = self.remote_field.model._base_manager.using(using).filter(\n        **{self.remote_field.field_name: value}\n    )\n    qs = qs.complex_filter(self.get_limit_choices_to())\n    if not qs.exists():\n        raise exceptions.ValidationError(\n            self.error_messages['invalid'],\n            code='invalid',\n            params={\n                'model': self.remote_field.model._meta.verbose_name, 'pk': value,\n                'field': self.remote_field.field_name, 'value': value,\n            },  # 'pk' is included for backwards compatibility\n        )\n"
+    }
+  ],
+  "validated_repro": 1,
+  "stop": "every validated reproduction resolved",
+  "submission": {
+    "snippet": "py:django/db/models/fields/related.py::ForeignKey.validate",
+    "model": "moonshotai/kimi-k3",
+    "template": "fix_think",
+    "diff": "diff --git a/django/db/models/fields/related.py b/django/db/models/fields/related.py\nindex d517d7269b..c2aea9c730 100644\n--- a/django/db/models/fields/related.py\n+++ b/django/db/models/fields/related.py\n@@ -914,7 +914,7 @@ class ForeignKey(ForeignObject):\n             return\n \n         using = router.db_for_read(self.remote_field.model, instance=model_instance)\n-        qs = self.remote_field.model._default_manager.using(using).filter(\n+        qs = self.remote_field.model._base_manager.using(using).filter(\n             **{self.remote_field.field_name: value}\n         )\n         qs = qs.complex_filter(self.get_limit_choices_to())\n",
+    "votes": 1,
+    "changed_lines": 2,
+    "new_source": "def validate(self, value, model_instance):\n    if self.remote_field.parent_link:\n        return\n    super().validate(value, model_instance)\n    if value is None:\n        return\n\n    using = router.db_for_read(self.remote_field.model, instance=model_instance)\n    qs = self.remote_field.model._base_manager.using(using).filter(\n        **{self.remote_field.field_name: value}\n    )\n    qs = qs.complex_filter(self.get_limit_choices_to())\n    if not qs.exists():\n        raise exceptions.ValidationError(\n            self.error_messages['invalid'],\n            code='invalid',\n            params={\n                'model': self.remote_field.model._meta.verbose_name, 'pk': value,\n                'field': self.remote_field.field_name, 'value': value,\n            },  # 'pk' is included for backwards compatibility\n        )\n",
+    "prompt_hash": "0a874e788106eb05",
+    "response_hash": "81bf43cb64a6df41"
+  },
+  "search_s": 49.0,
+  "llm_calls": 3,
+  "tokens_in": 2295,
+  "tokens_out": 723,
+  "calls": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 9.16,
+      "tokens_in": 655,
+      "tokens_out": 32,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 19.57,
+      "tokens_in": 655,
+      "tokens_out": 417,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 10.03,
+      "tokens_in": 985,
+      "tokens_out": 274,
+      "finish_reason": "stop",
+      "empty": false
+    }
+  ],
+  "arms": {
+    "moonshotai/kimi-k3/fix": 0.3,
+    "moonshotai/kimi-k3/fix_think": 0.5333333333333333
+  },
+  "grade": {
+    "resolved": true,
+    "applied": true,
+    "fail_to_pass": {
+      "success": 2,
+      "failure": 0
+    },
+    "pass_to_pass": {
+      "success": 170,
+      "failure": 0
+    }
+  },
+  "grade_s": 1.4,
+  "wall_s": 87.3,
+  "diagnosis": {
+    "gold_files": [
+      "django/db/models/fields/related.py"
+    ],
+    "localised_file_hit": true,
+    "localised_line_hit": true,
+    "submission_files": [
+      "django/db/models/fields/related.py"
+    ],
+    "submission_in_gold_file": true,
+    "gold_changed_lines": 2
+  }
+}

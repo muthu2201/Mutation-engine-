@@ -1,0 +1,40 @@
+diff --git a/sphinx/extension.py b/sphinx/extension.py
+index 7ec6c8518..bcfcc6ef7 100644
+--- a/sphinx/extension.py
++++ b/sphinx/extension.py
+@@ -51,7 +51,34 @@ def verify_needs_extensions(app: "Sphinx", config: Config) -> None:
+                               'but it is not loaded.'), extname)
+             continue
+ 
+-        if extension.version == 'unknown version' or reqversion > extension.version:
++        if extension.version == 'unknown version':
++            raise VersionRequirementError(__('This project needs the extension %s at least in '
++                                             'version %s and therefore cannot be built with '
++                                             'the loaded version (%s).') %
++                                          (extname, reqversion, extension.version))
++
++        fulfilled = True
++        for req, actual in zip(reqversion.split('.'), extension.version.split('.')):
++            try:
++                reqv = int(req)
++            except ValueError:
++                reqv = req
++            try:
++                actualv = int(actual)
++            except ValueError:
++                actualv = actual
++
++            if type(reqv) is not type(actualv):
++                reqv = str(reqv)
++                actualv = str(actualv)
++
++            if reqv > actualv:
++                fulfilled = False
++                break
++            elif reqv < actualv:
++                break
++
++        if not fulfilled:
+             raise VersionRequirementError(__('This project needs the extension %s at least in '
+                                              'version %s and therefore cannot be built with '
+                                              'the loaded version (%s).') %

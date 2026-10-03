@@ -1,0 +1,423 @@
+{
+  "instance_id": "matplotlib__matplotlib-25311",
+  "repo": "matplotlib/matplotlib",
+  "version": "3.7",
+  "base_commit": "430fb1db88843300fb4baae3edc499bbfe073b0c",
+  "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.matplotlib__matplotlib-25311:latest",
+  "started_at": "2026-10-03T14:15:07.709007+00:00",
+  "image_digest": "ghcr.io/epoch-research/swe-bench.eval.x86_64.matplotlib__matplotlib-25311@sha256:abcedb5f5827d58c57389b2f225c34a7adca27cef842e655e70962d41c296763",
+  "pull_s": 77.7,
+  "files_considered": 755,
+  "ranked_files": [
+    {
+      "file": "lib/matplotlib/figure.py",
+      "score": 2.325
+    },
+    {
+      "file": "lib/matplotlib/pyplot.py",
+      "score": 2.297
+    },
+    {
+      "file": "lib/matplotlib/axes/_axes.py",
+      "score": 1.534
+    },
+    {
+      "file": "lib/matplotlib/legend.py",
+      "score": 1.5
+    },
+    {
+      "file": "lib/matplotlib/backends/backend_qtagg.py",
+      "score": 1.167
+    },
+    {
+      "file": "lib/matplotlib/backends/backend_nbagg.py",
+      "score": 1.163
+    },
+    {
+      "file": "lib/matplotlib/backends/_backend_tk.py",
+      "score": 1.125
+    },
+    {
+      "file": "lib/matplotlib/backend_bases.py",
+      "score": 1.113
+    }
+  ],
+  "localised": [
+    {
+      "file": "lib/matplotlib/figure.py",
+      "name": "FigureBase.add_subplot",
+      "kind": "function",
+      "start": 631,
+      "end": 758,
+      "score": 3.272
+    },
+    {
+      "file": "lib/matplotlib/figure.py",
+      "name": "FigureBase.legend",
+      "kind": "function",
+      "start": 1004,
+      "end": 1138,
+      "score": 3.27
+    },
+    {
+      "file": "lib/matplotlib/pyplot.py",
+      "name": "show",
+      "kind": "function",
+      "start": 400,
+      "end": 445,
+      "score": 3.205
+    },
+    {
+      "file": "lib/matplotlib/legend.py",
+      "name": "Legend.set_draggable",
+      "kind": "function",
+      "start": 1173,
+      "end": 1205,
+      "score": 3.19
+    },
+    {
+      "file": "lib/matplotlib/figure.py",
+      "name": "Figure.show",
+      "kind": "function",
+      "start": 2659,
+      "end": 2701,
+      "score": 3.083
+    },
+    {
+      "file": "lib/matplotlib/axes/_axes.py",
+      "name": "Axes.legend",
+      "kind": "function",
+      "start": 197,
+      "end": 320,
+      "score": 2.952
+    }
+  ],
+  "repro": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "ISSUE RESOLVED",
+      "script_hash": "a084a887d84dc468"
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "unparseable",
+      "script_hash": null
+    }
+  ],
+  "candidates": [
+    {
+      "snippet": "py:lib/matplotlib/figure.py::FigureBase.add_subplot",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "300634adcfc51b3e",
+      "response_hash": "3c308e0169e9012a",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:lib/matplotlib/figure.py::FigureBase.legend",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "482be10707e335d4",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:lib/matplotlib/pyplot.py::show",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "450ba7b3b43d2641",
+      "response_hash": "dcc2ae6b84aa6381",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:lib/matplotlib/legend.py::Legend.set_draggable",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "f3ce80631bf89ee9",
+      "response_hash": "942528c155a35a91",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "lib/matplotlib/tests/test_legend.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 19,
+      "judge_s": 33.7,
+      "diff": "diff --git a/lib/matplotlib/legend.py b/lib/matplotlib/legend.py\nindex ff6abdb958..f9e6ce82ac 100644\n--- a/lib/matplotlib/legend.py\n+++ b/lib/matplotlib/legend.py\n@@ -1193,6 +1193,25 @@ class Legend(Artist):\n             If *state* is ``True`` this returns the `.DraggableLegend` helper\n             instance. Otherwise this returns *None*.\n         \"\"\"\n+        # Make .DraggableLegend picklable: it holds a strong reference to the\n+        # (unpicklable) canvas, which would otherwise make pickling a figure\n+        # with a draggable legend fail.  When unpickled, the canvas is\n+        # restored from the legend's figure.  This is installed once, lazily,\n+        # so that no change occurs unless dragging is actually enabled.\n+        if not getattr(DraggableLegend, \"_pickle_safe\", False):\n+            def _draggable_getstate(self):\n+                d = self.__dict__.copy()\n+                d[\"canvas\"] = None  # Canvases cannot be pickled.\n+                return d\n+\n+            def _draggable_setstate(self, state):\n+                self.__dict__.update(state)\n+                self.canvas = self.ref_artist.figure.canvas\n+\n+            DraggableLegend.__getstate__ = _draggable_getstate\n+            DraggableLegend.__setstate__ = _draggable_setstate\n+            DraggableLegend._pickle_safe = True\n+\n         if state:\n             if self._draggable is None:\n                 self._draggable = DraggableLegend(self,\n",
+      "new_source": "def set_draggable(self, state, use_blit=False, update='loc'):\n    \"\"\"\n    Enable or disable mouse dragging support of the legend.\n\n    Parameters\n    ----------\n    state : bool\n        Whether mouse dragging is enabled.\n    use_blit : bool, optional\n        Use blitting for faster image composition. For details see\n        :ref:`func-animation`.\n    update : {'loc', 'bbox'}, optional\n        The legend parameter to be changed when dragged:\n\n        - 'loc': update the *loc* parameter of the legend\n        - 'bbox': update the *bbox_to_anchor* parameter of the legend\n\n    Returns\n    -------\n    `.DraggableLegend` or *None*\n        If *state* is ``True`` this returns the `.DraggableLegend` helper\n        instance. Otherwise this returns *None*.\n    \"\"\"\n    # Make .DraggableLegend picklable: it holds a strong reference to the\n    # (unpicklable) canvas, which would otherwise make pickling a figure\n    # with a draggable legend fail.  When unpickled, the canvas is\n    # restored from the legend's figure.  This is installed once, lazily,\n    # so that no change occurs unless dragging is actually enabled.\n    if not getattr(DraggableLegend, \"_pickle_safe\", False):\n        def _draggable_getstate(self):\n            d = self.__dict__.copy()\n            d[\"canvas\"] = None  # Canvases cannot be pickled.\n            return d\n\n        def _draggable_setstate(self, state):\n            self.__dict__.update(state)\n            self.canvas = self.ref_artist.figure.canvas\n\n        DraggableLegend.__getstate__ = _draggable_getstate\n        DraggableLegend.__setstate__ = _draggable_setstate\n        DraggableLegend._pickle_safe = True\n\n    if state:\n        if self._draggable is None:\n            self._draggable = DraggableLegend(self,\n                                              use_blit,\n                                              update=update)\n    else:\n        if self._draggable is not None:\n            self._draggable.disconnect()\n        self._draggable = None\n    return self._draggable\n"
+    },
+    {
+      "snippet": "py:lib/matplotlib/figure.py::Figure.show",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "f837ceb816814a43",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:lib/matplotlib/axes/_axes.py::Axes.legend",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "2b399171dbdd8e8f",
+      "response_hash": "b0994ad42eca83d6",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:lib/matplotlib/figure.py::FigureBase.add_subplot",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "300634adcfc51b3e",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:lib/matplotlib/figure.py::FigureBase.legend",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "482be10707e335d4",
+      "response_hash": "3239eaadb73e4615",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:lib/matplotlib/pyplot.py::show",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "c7e83bfb9d82ba3a",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:lib/matplotlib/legend.py::Legend.set_draggable",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "f3ce80631bf89ee9",
+      "response_hash": "811391b0080b88b1",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:lib/matplotlib/figure.py::Figure.show",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "f837ceb816814a43",
+      "response_hash": "6dc3e63850812dd4",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:lib/matplotlib/axes/_axes.py::Axes.legend",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "2b399171dbdd8e8f",
+      "response_hash": "b0994ad42eca83d6",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:lib/matplotlib/figure.py::FigureBase.add_subplot",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "fe00805f1d13fe34",
+      "response_hash": "1dbbbfb3a4f77a2c",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:lib/matplotlib/figure.py::FigureBase.legend",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "30b2f9245cb7f20b",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    }
+  ],
+  "validated_repro": 0,
+  "stop": "budget",
+  "submission": {
+    "snippet": "py:lib/matplotlib/legend.py::Legend.set_draggable",
+    "model": "moonshotai/kimi-k3",
+    "template": "fix",
+    "diff": "diff --git a/lib/matplotlib/legend.py b/lib/matplotlib/legend.py\nindex ff6abdb958..f9e6ce82ac 100644\n--- a/lib/matplotlib/legend.py\n+++ b/lib/matplotlib/legend.py\n@@ -1193,6 +1193,25 @@ class Legend(Artist):\n             If *state* is ``True`` this returns the `.DraggableLegend` helper\n             instance. Otherwise this returns *None*.\n         \"\"\"\n+        # Make .DraggableLegend picklable: it holds a strong reference to the\n+        # (unpicklable) canvas, which would otherwise make pickling a figure\n+        # with a draggable legend fail.  When unpickled, the canvas is\n+        # restored from the legend's figure.  This is installed once, lazily,\n+        # so that no change occurs unless dragging is actually enabled.\n+        if not getattr(DraggableLegend, \"_pickle_safe\", False):\n+            def _draggable_getstate(self):\n+                d = self.__dict__.copy()\n+                d[\"canvas\"] = None  # Canvases cannot be pickled.\n+                return d\n+\n+            def _draggable_setstate(self, state):\n+                self.__dict__.update(state)\n+                self.canvas = self.ref_artist.figure.canvas\n+\n+            DraggableLegend.__getstate__ = _draggable_getstate\n+            DraggableLegend.__setstate__ = _draggable_setstate\n+            DraggableLegend._pickle_safe = True\n+\n         if state:\n             if self._draggable is None:\n                 self._draggable = DraggableLegend(self,\n",
+    "votes": 0,
+    "changed_lines": 19,
+    "new_source": "def set_draggable(self, state, use_blit=False, update='loc'):\n    \"\"\"\n    Enable or disable mouse dragging support of the legend.\n\n    Parameters\n    ----------\n    state : bool\n        Whether mouse dragging is enabled.\n    use_blit : bool, optional\n        Use blitting for faster image composition. For details see\n        :ref:`func-animation`.\n    update : {'loc', 'bbox'}, optional\n        The legend parameter to be changed when dragged:\n\n        - 'loc': update the *loc* parameter of the legend\n        - 'bbox': update the *bbox_to_anchor* parameter of the legend\n\n    Returns\n    -------\n    `.DraggableLegend` or *None*\n        If *state* is ``True`` this returns the `.DraggableLegend` helper\n        instance. Otherwise this returns *None*.\n    \"\"\"\n    # Make .DraggableLegend picklable: it holds a strong reference to the\n    # (unpicklable) canvas, which would otherwise make pickling a figure\n    # with a draggable legend fail.  When unpickled, the canvas is\n    # restored from the legend's figure.  This is installed once, lazily,\n    # so that no change occurs unless dragging is actually enabled.\n    if not getattr(DraggableLegend, \"_pickle_safe\", False):\n        def _draggable_getstate(self):\n            d = self.__dict__.copy()\n            d[\"canvas\"] = None  # Canvases cannot be pickled.\n            return d\n\n        def _draggable_setstate(self, state):\n            self.__dict__.update(state)\n            self.canvas = self.ref_artist.figure.canvas\n\n        DraggableLegend.__getstate__ = _draggable_getstate\n        DraggableLegend.__setstate__ = _draggable_setstate\n        DraggableLegend._pickle_safe = True\n\n    if state:\n        if self._draggable is None:\n            self._draggable = DraggableLegend(self,\n                                              use_blit,\n                                              update=update)\n    else:\n        if self._draggable is not None:\n            self._draggable.disconnect()\n        self._draggable = None\n    return self._draggable\n",
+    "prompt_hash": "f3ce80631bf89ee9",
+    "response_hash": "942528c155a35a91"
+  },
+  "search_s": 614.1,
+  "llm_calls": 16,
+  "tokens_in": 20317,
+  "tokens_out": 13049,
+  "calls": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 13.53,
+      "tokens_in": 420,
+      "tokens_out": 191,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 9.83,
+      "tokens_in": 420,
+      "tokens_out": 34,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 66.73,
+      "tokens_in": 1888,
+      "tokens_out": 1838,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 9.93,
+      "tokens_in": 1603,
+      "tokens_out": 32,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 26.7,
+      "tokens_in": 1119,
+      "tokens_out": 618,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 140.68,
+      "tokens_in": 826,
+      "tokens_out": 2896,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 12.68,
+      "tokens_in": 960,
+      "tokens_out": 32,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 46.19,
+      "tokens_in": 1592,
+      "tokens_out": 1455,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 5.64,
+      "tokens_in": 1888,
+      "tokens_out": 32,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 42.93,
+      "tokens_in": 1603,
+      "tokens_out": 1125,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 7.48,
+      "tokens_in": 1129,
+      "tokens_out": 35,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 56.36,
+      "tokens_in": 826,
+      "tokens_out": 1508,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 23.49,
+      "tokens_in": 960,
+      "tokens_out": 635,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 36.98,
+      "tokens_in": 1592,
+      "tokens_out": 1062,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 54.43,
+      "tokens_in": 1878,
+      "tokens_out": 1523,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 17.01,
+      "tokens_in": 1613,
+      "tokens_out": 33,
+      "finish_reason": "stop",
+      "empty": true
+    }
+  ],
+  "arms": {
+    "moonshotai/kimi-k3/fix": 0.13333333333333333,
+    "moonshotai/kimi-k3/fix_think": 0.09999999999999999
+  },
+  "grade": {
+    "resolved": false,
+    "applied": true,
+    "fail_to_pass": {
+      "success": 0,
+      "failure": 1
+    },
+    "pass_to_pass": {
+      "success": 181,
+      "failure": 0
+    }
+  },
+  "grade_s": 1.8,
+  "wall_s": 723.3,
+  "diagnosis": {
+    "gold_files": [
+      "lib/matplotlib/offsetbox.py"
+    ],
+    "localised_file_hit": false,
+    "localised_line_hit": false,
+    "submission_files": [
+      "lib/matplotlib/legend.py"
+    ],
+    "submission_in_gold_file": false,
+    "gold_changed_lines": 4
+  }
+}

@@ -1,0 +1,457 @@
+{
+  "instance_id": "django__django-13933",
+  "repo": "django/django",
+  "version": "4.0",
+  "base_commit": "42e8cf47c7ee2db238bf91197ea398126c546741",
+  "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.django__django-13933:latest",
+  "started_at": "2026-10-03T13:22:28.018067+00:00",
+  "image_digest": "ghcr.io/epoch-research/swe-bench.eval.x86_64.django__django-13933@sha256:461b06b6e32ee2efde57ffa057770ea992d8ed67e5dcade8b980c0b501889aed",
+  "pull_s": 24.7,
+  "files_considered": 851,
+  "ranked_files": [
+    {
+      "file": "django/forms/models.py",
+      "score": 2.0
+    },
+    {
+      "file": "django/forms/fields.py",
+      "score": 1.954
+    },
+    {
+      "file": "django/forms/widgets.py",
+      "score": 1.589
+    },
+    {
+      "file": "django/db/models/query.py",
+      "score": 0.813
+    },
+    {
+      "file": "django/core/exceptions.py",
+      "score": 0.798
+    },
+    {
+      "file": "django/db/models/fields/__init__.py",
+      "score": 0.686
+    },
+    {
+      "file": "django/db/migrations/questioner.py",
+      "score": 0.663
+    },
+    {
+      "file": "django/db/models/fields/reverse_related.py",
+      "score": 0.57
+    }
+  ],
+  "localised": [
+    {
+      "file": "django/forms/models.py",
+      "name": "ModelChoiceField.<L1187-1194>",
+      "kind": "block",
+      "start": 1187,
+      "end": 1194,
+      "score": 2.5
+    },
+    {
+      "file": "django/forms/models.py",
+      "name": "ModelMultipleChoiceField.<L1302-1310>",
+      "kind": "block",
+      "start": 1302,
+      "end": 1310,
+      "score": 2.494
+    },
+    {
+      "file": "django/forms/fields.py",
+      "name": "MultipleChoiceField.<L854-859>",
+      "kind": "block",
+      "start": 854,
+      "end": 859,
+      "score": 2.326
+    },
+    {
+      "file": "django/forms/fields.py",
+      "name": "ChoiceField.<L765-768>",
+      "kind": "block",
+      "start": 765,
+      "end": 768,
+      "score": 2.209
+    },
+    {
+      "file": "django/forms/models.py",
+      "name": "ModelChoiceField.to_python",
+      "kind": "function",
+      "start": 1278,
+      "end": 1288,
+      "score": 2.054
+    },
+    {
+      "file": "django/forms/fields.py",
+      "name": "ChoiceField.validate",
+      "kind": "function",
+      "start": 801,
+      "end": 809,
+      "score": 2.053
+    }
+  ],
+  "repro": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "ISSUE REPRODUCED",
+      "script_hash": "624a852033a393b0"
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "unparseable",
+      "script_hash": null
+    }
+  ],
+  "candidates": [
+    {
+      "snippet": "py:django/forms/models.py::ModelChoiceField.<L1187-1194>",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "79a1543a46c37330",
+      "response_hash": "f5aa0290b2bd77f4",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/forms/models.py::ModelMultipleChoiceField.<L1302-1310>",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "3d08b2c948b7cdac",
+      "response_hash": "c39ea8c9c25ea872",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/forms/fields.py::MultipleChoiceField.<L854-859>",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "ec1ddd548e03874f",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:django/forms/fields.py::ChoiceField.<L765-768>",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "51404e7f2b0e12a1",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:django/forms/models.py::ModelChoiceField.to_python",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "b32774095daf7d9c",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:django/forms/fields.py::ChoiceField.validate",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "14350696c11a4428",
+      "response_hash": "5ba0286001d1b0fc",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/forms/models.py::ModelChoiceField.<L1187-1194>",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "ef594035fe066df5",
+      "response_hash": "a4826b296106bac1",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/auth_tests/test_models.py",
+        "tests/contenttypes_tests/test_models.py",
+        "tests/flatpages_tests/test_models.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "OTHER"
+      ],
+      "changed_lines": 2,
+      "judge_s": 8.4,
+      "diff": "diff --git a/django/forms/models.py b/django/forms/models.py\nindex 422bc5d178..8d55d6563b 100644\n--- a/django/forms/models.py\n+++ b/django/forms/models.py\n@@ -1188,7 +1188,7 @@ class ModelChoiceField(ChoiceField):\n     # This class is a subclass of ChoiceField for purity, but it doesn't\n     # actually use any of ChoiceField's implementation.\n     default_error_messages = {\n-        'invalid_choice': _('Select a valid choice. That choice is not one of'\n+        'invalid_choice': _('Select a valid choice. %(value)s is not one of'\n                             ' the available choices.'),\n     }\n     iterator = ModelChoiceIterator\n",
+      "new_source": "\"\"\"A ChoiceField whose choices are a model QuerySet.\"\"\"\n# This class is a subclass of ChoiceField for purity, but it doesn't\n# actually use any of ChoiceField's implementation.\ndefault_error_messages = {\n    'invalid_choice': _('Select a valid choice. %(value)s is not one of'\n                        ' the available choices.'),\n}\niterator = ModelChoiceIterator\n"
+    },
+    {
+      "snippet": "py:django/forms/models.py::ModelMultipleChoiceField.<L1302-1310>",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "0c85422fe15c1cec",
+      "response_hash": "3653cdc0c3508553",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/auth_tests/test_models.py",
+        "tests/contenttypes_tests/test_models.py",
+        "tests/flatpages_tests/test_models.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 37,
+      "judge_s": 4.7,
+      "diff": "diff --git a/django/forms/models.py b/django/forms/models.py\nindex 422bc5d178..973ce168a9 100644\n--- a/django/forms/models.py\n+++ b/django/forms/models.py\n@@ -1309,6 +1309,43 @@ class ModelMultipleChoiceField(ModelChoiceField):\n         'invalid_pk_value': _('\u201c%(pk)s\u201d is not a valid value.')\n     }\n \n+    def _check_values(self, value):\n+        \"\"\"\n+        Given a list of possible PK values, return a QuerySet that will\n+        fetch the objects with those PKs and determine which ones are\n+        invalid.\n+        \"\"\"\n+        key = self.to_field_name or 'pk'\n+        # deduplicate given values to avoid creating many querysets or\n+        # requiring the database backend deduplicate efficiently.\n+        try:\n+            value = frozenset(value)\n+        except TypeError:\n+            # list of lists isn't hashable, for example.\n+            raise ValidationError(\n+                self.error_messages['invalid_list'],\n+                code='invalid_list',\n+            )\n+        for pk in value:\n+            try:\n+                self.queryset.filter(**{key: pk})\n+            except (ValueError, TypeError):\n+                raise ValidationError(\n+                    self.error_messages['invalid_pk_value'],\n+                    code='invalid_pk_value',\n+                    params={'pk': pk},\n+                )\n+        qs = self.queryset.filter(**{'%s__in' % key: value})\n+        pks = {str(getattr(o, key)) for o in qs}\n+        for val in value:\n+            if str(val) not in pks:\n+                raise ValidationError(\n+                    self.error_messages['invalid_choice'],\n+                    code='invalid_choice',\n+                    params={'value': val},\n+                )\n+        return qs\n+\n     def __init__(self, queryset, **kwargs):\n         super().__init__(queryset, empty_label=None, **kwargs)\n \n",
+      "new_source": "\"\"\"A MultipleChoiceField whose choices are a model QuerySet.\"\"\"\nwidget = SelectMultiple\nhidden_widget = MultipleHiddenInput\ndefault_error_messages = {\n    'invalid_list': _('Enter a list of values.'),\n    'invalid_choice': _('Select a valid choice. %(value)s is not one of the'\n                        ' available choices.'),\n    'invalid_pk_value': _('\u201c%(pk)s\u201d is not a valid value.')\n}\n\ndef _check_values(self, value):\n    \"\"\"\n    Given a list of possible PK values, return a QuerySet that will\n    fetch the objects with those PKs and determine which ones are\n    invalid.\n    \"\"\"\n    key = self.to_field_name or 'pk'\n    # deduplicate given values to avoid creating many querysets or\n    # requiring the database backend deduplicate efficiently.\n    try:\n        value = frozenset(value)\n    except TypeError:\n        # list of lists isn't hashable, for example.\n        raise ValidationError(\n            self.error_messages['invalid_list'],\n            code='invalid_list',\n        )\n    for pk in value:\n        try:\n            self.queryset.filter(**{key: pk})\n        except (ValueError, TypeError):\n            raise ValidationError(\n                self.error_messages['invalid_pk_value'],\n                code='invalid_pk_value',\n                params={'pk': pk},\n            )\n    qs = self.queryset.filter(**{'%s__in' % key: value})\n    pks = {str(getattr(o, key)) for o in qs}\n    for val in value:\n        if str(val) not in pks:\n            raise ValidationError(\n                self.error_messages['invalid_choice'],\n                code='invalid_choice',\n                params={'value': val},\n            )\n    return qs\n"
+    },
+    {
+      "snippet": "py:django/forms/fields.py::MultipleChoiceField.<L854-859>",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "96ca9f23b8d97581",
+      "response_hash": "25034ec7cb5cf53a",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/contenttypes_tests/test_fields.py",
+        "tests/gis_tests/test_fields.py",
+        "django/test/testcases.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 7,
+      "judge_s": 5.9,
+      "diff": "diff --git a/django/forms/fields.py b/django/forms/fields.py\nindex daa65d61eb..88138bbe77 100644\n--- a/django/forms/fields.py\n+++ b/django/forms/fields.py\n@@ -851,11 +851,10 @@ class TypedChoiceField(ChoiceField):\n \n \n class MultipleChoiceField(ChoiceField):\n-    hidden_widget = MultipleHiddenInput\n-    widget = SelectMultiple\n     default_error_messages = {\n-        'invalid_choice': _('Select a valid choice. %(value)s is not one of the available choices.'),\n-        'invalid_list': _('Enter a list of values.'),\n+        'invalid_choice': _(\n+            'Select a valid choice. %(value)s is not one of the available choices.'\n+        ),\n     }\n \n     def to_python(self, value):\n",
+      "new_source": "default_error_messages = {\n    'invalid_choice': _(\n        'Select a valid choice. %(value)s is not one of the available choices.'\n    ),\n}\n"
+    },
+    {
+      "snippet": "py:django/forms/fields.py::ChoiceField.<L765-768>",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "f70dd4dc737f6ff9",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:django/forms/models.py::ModelChoiceField.to_python",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "63f4cb5518cc2756",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:django/forms/fields.py::ChoiceField.validate",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "a7e3d8b82750477d",
+      "response_hash": "117dc0839a5b884d",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/forms/models.py::ModelChoiceField.<L1187-1194>",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "79a1543a46c37330",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:django/forms/models.py::ModelMultipleChoiceField.<L1302-1310>",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "0c85422fe15c1cec",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    }
+  ],
+  "validated_repro": 1,
+  "stop": "budget",
+  "submission": {
+    "snippet": "py:django/forms/models.py::ModelChoiceField.<L1187-1194>",
+    "model": "moonshotai/kimi-k3",
+    "template": "fix",
+    "diff": "diff --git a/django/forms/models.py b/django/forms/models.py\nindex 422bc5d178..8d55d6563b 100644\n--- a/django/forms/models.py\n+++ b/django/forms/models.py\n@@ -1188,7 +1188,7 @@ class ModelChoiceField(ChoiceField):\n     # This class is a subclass of ChoiceField for purity, but it doesn't\n     # actually use any of ChoiceField's implementation.\n     default_error_messages = {\n-        'invalid_choice': _('Select a valid choice. That choice is not one of'\n+        'invalid_choice': _('Select a valid choice. %(value)s is not one of'\n                             ' the available choices.'),\n     }\n     iterator = ModelChoiceIterator\n",
+    "votes": 0,
+    "changed_lines": 2,
+    "new_source": "\"\"\"A ChoiceField whose choices are a model QuerySet.\"\"\"\n# This class is a subclass of ChoiceField for purity, but it doesn't\n# actually use any of ChoiceField's implementation.\ndefault_error_messages = {\n    'invalid_choice': _('Select a valid choice. %(value)s is not one of'\n                        ' the available choices.'),\n}\niterator = ModelChoiceIterator\n",
+    "prompt_hash": "ef594035fe066df5",
+    "response_hash": "a4826b296106bac1"
+  },
+  "search_s": 265.2,
+  "llm_calls": 16,
+  "tokens_in": 10452,
+  "tokens_out": 3503,
+  "calls": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 12.61,
+      "tokens_in": 503,
+      "tokens_out": 316,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 5.32,
+      "tokens_in": 503,
+      "tokens_out": 35,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 16.1,
+      "tokens_in": 656,
+      "tokens_out": 320,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 13.33,
+      "tokens_in": 670,
+      "tokens_out": 368,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 8.58,
+      "tokens_in": 701,
+      "tokens_out": 33,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 14.84,
+      "tokens_in": 677,
+      "tokens_out": 32,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 9.58,
+      "tokens_in": 674,
+      "tokens_out": 32,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 25.95,
+      "tokens_in": 697,
+      "tokens_out": 561,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 4.26,
+      "tokens_in": 646,
+      "tokens_out": 107,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 35.14,
+      "tokens_in": 660,
+      "tokens_out": 772,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 29.37,
+      "tokens_in": 691,
+      "tokens_out": 478,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 4.24,
+      "tokens_in": 667,
+      "tokens_out": 33,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 6.0,
+      "tokens_in": 684,
+      "tokens_out": 33,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 15.5,
+      "tokens_in": 707,
+      "tokens_out": 308,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 10.23,
+      "tokens_in": 656,
+      "tokens_out": 33,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 8.89,
+      "tokens_in": 660,
+      "tokens_out": 42,
+      "finish_reason": "stop",
+      "empty": true
+    }
+  ],
+  "arms": {
+    "moonshotai/kimi-k3/fix": 0.16666666666666666,
+    "moonshotai/kimi-k3/fix_think": 0.06666666666666667
+  },
+  "grade": {
+    "resolved": false,
+    "applied": true,
+    "fail_to_pass": {
+      "success": 0,
+      "failure": 1
+    },
+    "pass_to_pass": {
+      "success": 19,
+      "failure": 0
+    }
+  },
+  "grade_s": 1.3,
+  "wall_s": 304.7,
+  "diagnosis": {
+    "gold_files": [
+      "django/forms/models.py"
+    ],
+    "localised_file_hit": true,
+    "localised_line_hit": true,
+    "submission_files": [
+      "django/forms/models.py"
+    ],
+    "submission_in_gold_file": true,
+    "gold_changed_lines": 6
+  }
+}

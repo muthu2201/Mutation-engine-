@@ -1,0 +1,16 @@
+diff --git a/astropy/units/decorators.py b/astropy/units/decorators.py
+index 8bece5a850..4737e02fd6 100644
+--- a/astropy/units/decorators.py
++++ b/astropy/units/decorators.py
+@@ -151,6 +151,11 @@ class QuantityInput:
+     def __init__(self, func=None, **kwargs):
+         self.equivalencies = kwargs.pop('equivalencies', [])
+         self.decorator_kwargs = kwargs
++        # Return annotations such as ``-> None`` mean "no meaningful return
++        # value" (e.g. __init__), not a unit to convert to. Record them so the
++        # wrapper can bypass return-value unit conversion instead of calling
++        # None.to(...).
++        self.ignore_return_annotations = (None, type(None), inspect.Signature.empty)
+ 
+     def __call__(self, wrapped_function):
+ 

@@ -1,0 +1,110 @@
+diff --git a/sphinx/domains/python.py b/sphinx/domains/python.py
+index cd02eaad5..f6becb93e 100644
+--- a/sphinx/domains/python.py
++++ b/sphinx/domains/python.py
+@@ -1157,55 +1157,56 @@ class PythonModuleIndex(Index):
+ 
+ 
+ class PythonDomain(Domain):
+-    """Python language domain."""
+-    name = 'py'
+-    label = 'Python'
+-    object_types: Dict[str, ObjType] = {
+-        'function':     ObjType(_('function'),      'func', 'obj'),
+-        'data':         ObjType(_('data'),          'data', 'obj'),
+-        'class':        ObjType(_('class'),         'class', 'exc', 'obj'),
+-        'exception':    ObjType(_('exception'),     'exc', 'class', 'obj'),
+-        'method':       ObjType(_('method'),        'meth', 'obj'),
+-        'classmethod':  ObjType(_('class method'),  'meth', 'obj'),
+-        'staticmethod': ObjType(_('static method'), 'meth', 'obj'),
+-        'attribute':    ObjType(_('attribute'),     'attr', 'obj'),
+-        'property':     ObjType(_('property'),      'attr', '_prop', 'obj'),
+-        'module':       ObjType(_('module'),        'mod', 'obj'),
+-    }
+-
+-    directives = {
+-        'function':        PyFunction,
+-        'data':            PyVariable,
+-        'class':           PyClasslike,
+-        'exception':       PyClasslike,
+-        'method':          PyMethod,
+-        'classmethod':     PyClassMethod,
+-        'staticmethod':    PyStaticMethod,
+-        'attribute':       PyAttribute,
+-        'property':        PyProperty,
+-        'module':          PyModule,
+-        'currentmodule':   PyCurrentModule,
+-        'decorator':       PyDecoratorFunction,
+-        'decoratormethod': PyDecoratorMethod,
+-    }
+-    roles = {
+-        'data':  PyXRefRole(),
+-        'exc':   PyXRefRole(),
+-        'func':  PyXRefRole(fix_parens=True),
+-        'class': PyXRefRole(),
+-        'const': PyXRefRole(),
+-        'attr':  PyXRefRole(),
+-        'meth':  PyXRefRole(fix_parens=True),
+-        'mod':   PyXRefRole(),
+-        'obj':   PyXRefRole(),
+-    }
+-    initial_data: Dict[str, Dict[str, Tuple[Any]]] = {
+-        'objects': {},  # fullname -> docname, objtype
+-        'modules': {},  # modname -> docname, synopsis, platform, deprecated
+-    }
+-    indices = [
+-        PythonModuleIndex,
+-    ]
++    class PythonDomain(Domain):
++        """Python language domain."""
++        name = 'py'
++        label = 'Python'
++        object_types: Dict[str, ObjType] = {
++            'function':     ObjType(_('function'),      'func', 'obj'),
++            'data':         ObjType(_('data'),          'data', 'obj'),
++            'class':        ObjType(_('class'),         'class', 'exc', 'obj'),
++            'exception':    ObjType(_('exception'),     'exc', 'class', 'obj'),
++            'method':       ObjType(_('method'),        'meth', 'obj'),
++            'classmethod':  ObjType(_('class method'),  'meth', 'obj'),
++            'staticmethod': ObjType(_('static method'), 'meth', 'obj'),
++            'attribute':    ObjType(_('attribute'),     'attr', 'obj'),
++            'property':     ObjType(_('property'),      'attr', '_prop', 'obj'),
++            'module':       ObjType(_('module'),        'mod', 'obj'),
++        }
++
++        directives = {
++            'function':        PyFunction,
++            'data':            PyVariable,
++            'class':           PyClasslike,
++            'exception':       PyClasslike,
++            'method':          PyMethod,
++            'classmethod':     PyClassMethod,
++            'staticmethod':    PyStaticMethod,
++            'attribute':       PyAttribute,
++            'property':        PyProperty,
++            'module':          PyModule,
++            'currentmodule':   PyCurrentModule,
++            'decorator':       PyDecoratorFunction,
++            'decoratormethod': PyDecoratorMethod,
++        }
++        roles = {
++            'data':  PyXRefRole(),
++            'exc':   PyXRefRole(),
++            'func':  PyXRefRole(fix_parens=True),
++            'class': PyXRefRole(),
++            'const': PyXRefRole(),
++            'attr':  PyXRefRole(),
++            'meth':  PyXRefRole(fix_parens=True),
++            'mod':   PyXRefRole(),
++            'obj':   PyXRefRole(),
++        }
++        initial_data: Dict[str, Dict[str, Tuple[Any]]] = {
++            'objects': {},  # fullname -> docname, objtype
++            'modules': {},  # modname -> docname, synopsis, platform, deprecated
++        }
++        indices = [
++            PythonModuleIndex,
++        ]
+ 
+     @property
+     def objects(self) -> Dict[str, ObjectEntry]:

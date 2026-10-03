@@ -1,0 +1,427 @@
+{
+  "instance_id": "astropy__astropy-7336",
+  "repo": "astropy/astropy",
+  "version": "1.3",
+  "base_commit": "732d89c2940156bdc0e200bb36dc38b5e424bcba",
+  "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.astropy__astropy-7336:latest",
+  "started_at": "2026-10-03T12:26:17.000314+00:00",
+  "image_digest": "ghcr.io/epoch-research/swe-bench.eval.x86_64.astropy__astropy-7336@sha256:65d32c14daba8d47cae4e871ca89c5636ce0c3e9e73eed952287ed60e5421bab",
+  "pull_s": 20.7,
+  "files_considered": 425,
+  "ranked_files": [
+    {
+      "file": "astropy/units/decorators.py",
+      "score": 4.0
+    },
+    {
+      "file": "astropy/utils/decorators.py",
+      "score": 3.752
+    },
+    {
+      "file": "astropy/__init__.py",
+      "score": 3.402
+    },
+    {
+      "file": "astropy/units/__init__.py",
+      "score": 3.142
+    },
+    {
+      "file": "astropy_helpers/astropy_helpers/utils.py",
+      "score": 1.691
+    },
+    {
+      "file": "astropy/modeling/parameters.py",
+      "score": 1.61
+    },
+    {
+      "file": "astropy/extern/bundled/six.py",
+      "score": 1.553
+    },
+    {
+      "file": "astropy/modeling/fitting.py",
+      "score": 1.457
+    }
+  ],
+  "localised": [
+    {
+      "file": "astropy/utils/decorators.py",
+      "name": "classproperty.__init__",
+      "kind": "function",
+      "start": 605,
+      "end": 619,
+      "score": 4.692
+    },
+    {
+      "file": "astropy/utils/decorators.py",
+      "name": "lazyproperty.__init__",
+      "kind": "function",
+      "start": 700,
+      "end": 702,
+      "score": 4.562
+    },
+    {
+      "file": "astropy/units/decorators.py",
+      "name": "QuantityInput.__init__",
+      "kind": "function",
+      "start": 151,
+      "end": 153,
+      "score": 2.71
+    },
+    {
+      "file": "astropy/modeling/parameters.py",
+      "name": "Parameter.__init__",
+      "kind": "function",
+      "start": 212,
+      "end": 264,
+      "score": 2.498
+    },
+    {
+      "file": "astropy_helpers/astropy_helpers/utils.py",
+      "name": "classproperty.__init__",
+      "kind": "function",
+      "start": 736,
+      "end": 749,
+      "score": 2.388
+    },
+    {
+      "file": "astropy/extern/bundled/six.py",
+      "name": "_LazyModule.__init__",
+      "kind": "function",
+      "start": 126,
+      "end": 128,
+      "score": 2.323
+    }
+  ],
+  "repro": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "ISSUE REPRODUCED",
+      "script_hash": "534ec800a4570b2f"
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "ISSUE REPRODUCED",
+      "script_hash": "c119d05a5f58ff63"
+    }
+  ],
+  "candidates": [
+    {
+      "snippet": "py:astropy/utils/decorators.py::classproperty.__init__",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "853aa67177d1f3ba",
+      "response_hash": "766f6975598540ed",
+      "stage": "parse",
+      "reason": "response does not define __init__()"
+    },
+    {
+      "snippet": "py:astropy/utils/decorators.py::lazyproperty.__init__",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "7475c26e04570c85",
+      "response_hash": "9b307ef256c7e467",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:astropy/units/decorators.py::QuantityInput.__init__",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "75b04b03979832f9",
+      "response_hash": "fb855b352ea9bfe4",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:astropy/modeling/parameters.py::Parameter.__init__",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "c74cfc850f9890cf",
+      "response_hash": "1a35c2e76ea892fd",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:astropy_helpers/astropy_helpers/utils.py::classproperty.__init__",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "43349e9178790b12",
+      "response_hash": "8ffc9ecbaaff0da6",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:astropy/extern/bundled/six.py::_LazyModule.__init__",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "e36ae3962835c2f0",
+      "response_hash": "d84733bd1129151b",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:astropy/utils/decorators.py::classproperty.__init__",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "c33132684b6db47f",
+      "response_hash": "686635b943f70c0b",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:astropy/utils/decorators.py::lazyproperty.__init__",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "7475c26e04570c85",
+      "response_hash": "a81689822baa845a",
+      "stage": "parse",
+      "reason": "replacement has 38 lines for a 3-line snippet"
+    },
+    {
+      "snippet": "py:astropy/units/decorators.py::QuantityInput.__init__",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "75b04b03979832f9",
+      "response_hash": "03a13e706fd55585",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "astropy/nddata/tests/test_decorators.py",
+        "astropy/utils/tests/test_decorators.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED",
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 5,
+      "judge_s": 9.3,
+      "diff": "diff --git a/astropy/units/decorators.py b/astropy/units/decorators.py\nindex 8bece5a850..4737e02fd6 100644\n--- a/astropy/units/decorators.py\n+++ b/astropy/units/decorators.py\n@@ -151,6 +151,11 @@ class QuantityInput:\n     def __init__(self, func=None, **kwargs):\n         self.equivalencies = kwargs.pop('equivalencies', [])\n         self.decorator_kwargs = kwargs\n+        # Return annotations such as ``-> None`` mean \"no meaningful return\n+        # value\" (e.g. __init__), not a unit to convert to. Record them so the\n+        # wrapper can bypass return-value unit conversion instead of calling\n+        # None.to(...).\n+        self.ignore_return_annotations = (None, type(None), inspect.Signature.empty)\n \n     def __call__(self, wrapped_function):\n \n",
+      "new_source": "def __init__(self, func=None, **kwargs):\n    self.equivalencies = kwargs.pop('equivalencies', [])\n    self.decorator_kwargs = kwargs\n    # Return annotations such as ``-> None`` mean \"no meaningful return\n    # value\" (e.g. __init__), not a unit to convert to. Record them so the\n    # wrapper can bypass return-value unit conversion instead of calling\n    # None.to(...).\n    self.ignore_return_annotations = (None, type(None), inspect.Signature.empty)\n"
+    },
+    {
+      "snippet": "py:astropy/modeling/parameters.py::Parameter.__init__",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "c74cfc850f9890cf",
+      "response_hash": "1a35c2e76ea892fd",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:astropy_helpers/astropy_helpers/utils.py::classproperty.__init__",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "43349e9178790b12",
+      "response_hash": "b64cc348d306acda",
+      "stage": "parse",
+      "reason": "response does not define __init__()"
+    },
+    {
+      "snippet": "py:astropy/extern/bundled/six.py::_LazyModule.__init__",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "e36ae3962835c2f0",
+      "response_hash": "d84733bd1129151b",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:astropy/utils/decorators.py::classproperty.__init__",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "853aa67177d1f3ba",
+      "response_hash": "5835a49784def110",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:astropy/utils/decorators.py::lazyproperty.__init__",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "767cb7b7bddf2f8c",
+      "response_hash": "af69776768a3f30a",
+      "stage": "parse",
+      "reason": "identical to the original"
+    }
+  ],
+  "validated_repro": 2,
+  "stop": "budget",
+  "submission": {
+    "snippet": "py:astropy/units/decorators.py::QuantityInput.__init__",
+    "model": "moonshotai/kimi-k3",
+    "template": "fix_think",
+    "diff": "diff --git a/astropy/units/decorators.py b/astropy/units/decorators.py\nindex 8bece5a850..4737e02fd6 100644\n--- a/astropy/units/decorators.py\n+++ b/astropy/units/decorators.py\n@@ -151,6 +151,11 @@ class QuantityInput:\n     def __init__(self, func=None, **kwargs):\n         self.equivalencies = kwargs.pop('equivalencies', [])\n         self.decorator_kwargs = kwargs\n+        # Return annotations such as ``-> None`` mean \"no meaningful return\n+        # value\" (e.g. __init__), not a unit to convert to. Record them so the\n+        # wrapper can bypass return-value unit conversion instead of calling\n+        # None.to(...).\n+        self.ignore_return_annotations = (None, type(None), inspect.Signature.empty)\n \n     def __call__(self, wrapped_function):\n \n",
+    "votes": 0,
+    "changed_lines": 5,
+    "new_source": "def __init__(self, func=None, **kwargs):\n    self.equivalencies = kwargs.pop('equivalencies', [])\n    self.decorator_kwargs = kwargs\n    # Return annotations such as ``-> None`` mean \"no meaningful return\n    # value\" (e.g. __init__), not a unit to convert to. Record them so the\n    # wrapper can bypass return-value unit conversion instead of calling\n    # None.to(...).\n    self.ignore_return_annotations = (None, type(None), inspect.Signature.empty)\n",
+    "prompt_hash": "75b04b03979832f9",
+    "response_hash": "03a13e706fd55585"
+  },
+  "search_s": 378.5,
+  "llm_calls": 16,
+  "tokens_in": 12123,
+  "tokens_out": 7724,
+  "calls": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 6.29,
+      "tokens_in": 592,
+      "tokens_out": 143,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 7.99,
+      "tokens_in": 592,
+      "tokens_out": 181,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 24.39,
+      "tokens_in": 793,
+      "tokens_out": 484,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 21.38,
+      "tokens_in": 704,
+      "tokens_out": 460,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 27.16,
+      "tokens_in": 690,
+      "tokens_out": 575,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 37.94,
+      "tokens_in": 1098,
+      "tokens_out": 587,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 26.02,
+      "tokens_in": 781,
+      "tokens_out": 571,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 10.74,
+      "tokens_in": 665,
+      "tokens_out": 254,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 17.27,
+      "tokens_in": 783,
+      "tokens_out": 387,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 32.46,
+      "tokens_in": 704,
+      "tokens_out": 852,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 24.11,
+      "tokens_in": 690,
+      "tokens_out": 696,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 26.43,
+      "tokens_in": 1098,
+      "tokens_out": 599,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 36.96,
+      "tokens_in": 781,
+      "tokens_out": 719,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 20.28,
+      "tokens_in": 665,
+      "tokens_out": 466,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 31.24,
+      "tokens_in": 793,
+      "tokens_out": 549,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 8.18,
+      "tokens_in": 694,
+      "tokens_out": 201,
+      "finish_reason": "stop",
+      "empty": false
+    }
+  ],
+  "arms": {
+    "moonshotai/kimi-k3/fix": 0.06,
+    "moonshotai/kimi-k3/fix_think": 0.11249999999999999
+  },
+  "grade": {
+    "resolved": false,
+    "applied": true,
+    "fail_to_pass": {
+      "success": 0,
+      "failure": 1
+    },
+    "pass_to_pass": {
+      "success": 339,
+      "failure": 0
+    }
+  },
+  "grade_s": 1.4,
+  "wall_s": 410.1,
+  "diagnosis": {
+    "gold_files": [
+      "astropy/units/decorators.py"
+    ],
+    "localised_file_hit": true,
+    "localised_line_hit": false,
+    "submission_files": [
+      "astropy/units/decorators.py"
+    ],
+    "submission_in_gold_file": true,
+    "gold_changed_lines": 2
+  }
+}

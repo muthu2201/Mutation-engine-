@@ -1,0 +1,470 @@
+{
+  "instance_id": "pytest-dev__pytest-7205",
+  "repo": "pytest-dev/pytest",
+  "version": "5.4",
+  "base_commit": "5e7f1ab4bf58e473e5d7f878eb2b499d7deabd29",
+  "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.pytest-dev__pytest-7205:latest",
+  "started_at": "2026-10-03T14:43:54.795337+00:00",
+  "image_digest": "ghcr.io/epoch-research/swe-bench.eval.x86_64.pytest-dev__pytest-7205@sha256:2d3474311e9b4c2d2d13fb07a739d4e18188395eefbb62223ef8f232bd370cad",
+  "pull_s": 19.6,
+  "files_considered": 74,
+  "ranked_files": [
+    {
+      "file": "src/_pytest/fixtures.py",
+      "score": 5.5
+    },
+    {
+      "file": "src/_pytest/runner.py",
+      "score": 5.167
+    },
+    {
+      "file": "src/_pytest/setuponly.py",
+      "score": 4.952
+    },
+    {
+      "file": "src/_pytest/python.py",
+      "score": 4.892
+    },
+    {
+      "file": "src/_pytest/capture.py",
+      "score": 2.067
+    },
+    {
+      "file": "src/_pytest/hookspec.py",
+      "score": 1.726
+    },
+    {
+      "file": "src/_pytest/config/__init__.py",
+      "score": 1.604
+    },
+    {
+      "file": "src/_pytest/nodes.py",
+      "score": 1.587
+    }
+  ],
+  "localised": [
+    {
+      "file": "src/_pytest/fixtures.py",
+      "name": "FixtureDef.execute",
+      "kind": "function",
+      "start": 900,
+      "end": 925,
+      "score": 4.044
+    },
+    {
+      "file": "src/_pytest/runner.py",
+      "name": "CallInfo.from_call",
+      "kind": "function",
+      "start": 252,
+      "end": 277,
+      "score": 3.839
+    },
+    {
+      "file": "src/_pytest/setuponly.py",
+      "name": "_show_fixture_action",
+      "kind": "function",
+      "start": 46,
+      "end": 74,
+      "score": 3.45
+    },
+    {
+      "file": "src/_pytest/fixtures.py",
+      "name": "FixtureRequest._get_active_fixturedef",
+      "kind": "function",
+      "start": 495,
+      "end": 511,
+      "score": 3.222
+    },
+    {
+      "file": "src/_pytest/fixtures.py",
+      "name": "pytest_fixture_setup",
+      "kind": "function",
+      "start": 962,
+      "end": 980,
+      "score": 3.208
+    },
+    {
+      "file": "src/_pytest/setuponly.py",
+      "name": "pytest_fixture_setup",
+      "kind": "function",
+      "start": 20,
+      "end": 34,
+      "score": 3.111
+    }
+  ],
+  "repro": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "ISSUE REPRODUCED",
+      "script_hash": "f1d0c26c01c2e87c"
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "ISSUE REPRODUCED",
+      "script_hash": "61c5c1c25e3fb98f"
+    }
+  ],
+  "candidates": [
+    {
+      "snippet": "py:src/_pytest/fixtures.py::FixtureDef.execute",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "b51b4893f20d8f3d",
+      "response_hash": "cc937ee52567a0e9",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED",
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 7,
+      "judge_s": 2.1,
+      "diff": "diff --git a/src/_pytest/fixtures.py b/src/_pytest/fixtures.py\nindex 638ed89b1..1f95877db 100644\n--- a/src/_pytest/fixtures.py\n+++ b/src/_pytest/fixtures.py\n@@ -922,6 +922,13 @@ class FixtureDef:\n             assert self.cached_result is None\n \n         hook = self._fixturemanager.session.gethookproxy(request.node.fspath)\n+        if hasattr(request, \"param\"):\n+            # Use a safe repr so that consumers displaying the parameter\n+            # (e.g. --setup-show) do not trigger BytesWarning when calling\n+            # str() on a bytes instance.\n+            from _pytest._io.saferepr import saferepr\n+\n+            self.cached_param = saferepr(request.param)\n         return hook.pytest_fixture_setup(fixturedef=self, request=request)\n \n     def cache_key(self, request):\n",
+      "new_source": "def execute(self, request):\n    # get required arguments and register our own finish()\n    # with their finalization\n    for argname in self.argnames:\n        fixturedef = request._get_active_fixturedef(argname)\n        if argname != \"request\":\n            fixturedef.addfinalizer(functools.partial(self.finish, request=request))\n\n    my_cache_key = self.cache_key(request)\n    if self.cached_result is not None:\n        result, cache_key, err = self.cached_result\n        # note: comparison with `==` can fail (or be expensive) for e.g.\n        # numpy arrays (#6497)\n        if my_cache_key is cache_key:\n            if err is not None:\n                _, val, tb = err\n                raise val.with_traceback(tb)\n            else:\n                return result\n        # we have a previous but differently parametrized fixture instance\n        # so we need to tear it down before creating a new one\n        self.finish(request)\n        assert self.cached_result is None\n\n    hook = self._fixturemanager.session.gethookproxy(request.node.fspath)\n    if hasattr(request, \"param\"):\n        # Use a safe repr so that consumers displaying the parameter\n        # (e.g. --setup-show) do not trigger BytesWarning when calling\n        # str() on a bytes instance.\n        from _pytest._io.saferepr import saferepr\n\n        self.cached_param = saferepr(request.param)\n    return hook.pytest_fixture_setup(fixturedef=self, request=request)\n"
+    },
+    {
+      "snippet": "py:src/_pytest/runner.py::CallInfo.from_call",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "d1f5ac01c4fb4923",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:src/_pytest/setuponly.py::_show_fixture_action",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "81d85fcb762555de",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:src/_pytest/fixtures.py::FixtureRequest._get_active_fixturedef",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "4b7e17a4bdbe61ec",
+      "response_hash": "d7f111d62a8702c6",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED",
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 7,
+      "judge_s": 1.9,
+      "diff": "diff --git a/src/_pytest/fixtures.py b/src/_pytest/fixtures.py\nindex 638ed89b1..e5048fd0c 100644\n--- a/src/_pytest/fixtures.py\n+++ b/src/_pytest/fixtures.py\n@@ -506,7 +506,12 @@ class FixtureRequest:\n                 raise\n         # remove indent to prevent the python3 exception\n         # from leaking into the call\n-        self._compute_fixture_value(fixturedef)\n+        with warnings.catch_warnings():\n+            # BytesWarning (raised e.g. via ``python -bb``) when formatting a\n+            # bytes parameter for setup/teardown display should not fail the\n+            # fixture setup.\n+            warnings.filterwarnings(\"ignore\", category=BytesWarning)\n+            self._compute_fixture_value(fixturedef)\n         self._fixture_defs[argname] = fixturedef\n         return fixturedef\n \n",
+      "new_source": "def _get_active_fixturedef(self, argname):\n    try:\n        return self._fixture_defs[argname]\n    except KeyError:\n        try:\n            fixturedef = self._getnextfixturedef(argname)\n        except FixtureLookupError:\n            if argname == \"request\":\n                cached_result = (self, [0], None)\n                scope = \"function\"\n                return PseudoFixtureDef(cached_result, scope)\n            raise\n    # remove indent to prevent the python3 exception\n    # from leaking into the call\n    with warnings.catch_warnings():\n        # BytesWarning (raised e.g. via ``python -bb``) when formatting a\n        # bytes parameter for setup/teardown display should not fail the\n        # fixture setup.\n        warnings.filterwarnings(\"ignore\", category=BytesWarning)\n        self._compute_fixture_value(fixturedef)\n    self._fixture_defs[argname] = fixturedef\n    return fixturedef\n"
+    },
+    {
+      "snippet": "py:src/_pytest/fixtures.py::pytest_fixture_setup",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "498ba599795c4309",
+      "response_hash": "1747639126da410c",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED",
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 7,
+      "judge_s": 2.3,
+      "diff": "diff --git a/src/_pytest/fixtures.py b/src/_pytest/fixtures.py\nindex 638ed89b1..b7da3ff13 100644\n--- a/src/_pytest/fixtures.py\n+++ b/src/_pytest/fixtures.py\n@@ -971,6 +971,13 @@ def pytest_fixture_setup(fixturedef, request):\n \n     fixturefunc = resolve_fixture_function(fixturedef, request)\n     my_cache_key = fixturedef.cache_key(request)\n+\n+    from _pytest._io.saferepr import saferepr\n+\n+    if hasattr(fixturedef, \"cached_param\"):\n+        fixturedef.cached_param = saferepr(fixturedef.cached_param)\n+    else:\n+        fixturedef.cached_param = None\n     try:\n         result = call_fixture_func(fixturefunc, request, kwargs)\n     except TEST_OUTCOME:\n",
+      "new_source": "def pytest_fixture_setup(fixturedef, request):\n    \"\"\" Execution of fixture setup. \"\"\"\n    kwargs = {}\n    for argname in fixturedef.argnames:\n        fixdef = request._get_active_fixturedef(argname)\n        assert fixdef.cached_result is not None\n        result, arg_cache_key, exc = fixdef.cached_result\n        request._check_scope(argname, request.scope, fixdef.scope)\n        kwargs[argname] = result\n\n    fixturefunc = resolve_fixture_function(fixturedef, request)\n    my_cache_key = fixturedef.cache_key(request)\n\n    from _pytest._io.saferepr import saferepr\n\n    if hasattr(fixturedef, \"cached_param\"):\n        fixturedef.cached_param = saferepr(fixturedef.cached_param)\n    else:\n        fixturedef.cached_param = None\n    try:\n        result = call_fixture_func(fixturefunc, request, kwargs)\n    except TEST_OUTCOME:\n        fixturedef.cached_result = (None, my_cache_key, sys.exc_info())\n        raise\n    fixturedef.cached_result = (result, my_cache_key, None)\n    return result\n"
+    },
+    {
+      "snippet": "py:src/_pytest/setuponly.py::pytest_fixture_setup",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "880eeebeb2c74e2b",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:src/_pytest/fixtures.py::FixtureDef.execute",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "b214b7a02d6d02ee",
+      "response_hash": "4539e5aa17a5ae00",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:src/_pytest/runner.py::CallInfo.from_call",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "d1f5ac01c4fb4923",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:src/_pytest/setuponly.py::_show_fixture_action",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "c2ba185950d2c07c",
+      "response_hash": "3c2cd5e14676d847",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "9 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "testing/test_setuponly.py"
+      ],
+      "regressions": 9,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 6,
+      "judge_s": 6.3
+    },
+    {
+      "snippet": "py:src/_pytest/fixtures.py::FixtureRequest._get_active_fixturedef",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "4b7e17a4bdbe61ec",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:src/_pytest/fixtures.py::pytest_fixture_setup",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "1e2915f34911edfc",
+      "response_hash": "921a22a3a957d544",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:src/_pytest/setuponly.py::pytest_fixture_setup",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "3b7ffde7300d658c",
+      "response_hash": "7b4400b8673dd470",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "9 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "testing/test_setuponly.py"
+      ],
+      "regressions": 9,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 3,
+      "judge_s": 3.3
+    },
+    {
+      "snippet": "py:src/_pytest/fixtures.py::FixtureDef.execute",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "b51b4893f20d8f3d",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:src/_pytest/runner.py::CallInfo.from_call",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "d1f5ac01c4fb4923",
+      "response_hash": "be1f9df337b25558",
+      "stage": "parse",
+      "reason": "identical to the original"
+    }
+  ],
+  "validated_repro": 2,
+  "stop": "budget",
+  "submission": {
+    "snippet": "py:src/_pytest/fixtures.py::FixtureDef.execute",
+    "model": "moonshotai/kimi-k3",
+    "template": "fix",
+    "diff": "diff --git a/src/_pytest/fixtures.py b/src/_pytest/fixtures.py\nindex 638ed89b1..1f95877db 100644\n--- a/src/_pytest/fixtures.py\n+++ b/src/_pytest/fixtures.py\n@@ -922,6 +922,13 @@ class FixtureDef:\n             assert self.cached_result is None\n \n         hook = self._fixturemanager.session.gethookproxy(request.node.fspath)\n+        if hasattr(request, \"param\"):\n+            # Use a safe repr so that consumers displaying the parameter\n+            # (e.g. --setup-show) do not trigger BytesWarning when calling\n+            # str() on a bytes instance.\n+            from _pytest._io.saferepr import saferepr\n+\n+            self.cached_param = saferepr(request.param)\n         return hook.pytest_fixture_setup(fixturedef=self, request=request)\n \n     def cache_key(self, request):\n",
+    "votes": 0,
+    "changed_lines": 7,
+    "new_source": "def execute(self, request):\n    # get required arguments and register our own finish()\n    # with their finalization\n    for argname in self.argnames:\n        fixturedef = request._get_active_fixturedef(argname)\n        if argname != \"request\":\n            fixturedef.addfinalizer(functools.partial(self.finish, request=request))\n\n    my_cache_key = self.cache_key(request)\n    if self.cached_result is not None:\n        result, cache_key, err = self.cached_result\n        # note: comparison with `==` can fail (or be expensive) for e.g.\n        # numpy arrays (#6497)\n        if my_cache_key is cache_key:\n            if err is not None:\n                _, val, tb = err\n                raise val.with_traceback(tb)\n            else:\n                return result\n        # we have a previous but differently parametrized fixture instance\n        # so we need to tear it down before creating a new one\n        self.finish(request)\n        assert self.cached_result is None\n\n    hook = self._fixturemanager.session.gethookproxy(request.node.fspath)\n    if hasattr(request, \"param\"):\n        # Use a safe repr so that consumers displaying the parameter\n        # (e.g. --setup-show) do not trigger BytesWarning when calling\n        # str() on a bytes instance.\n        from _pytest._io.saferepr import saferepr\n\n        self.cached_param = saferepr(request.param)\n    return hook.pytest_fixture_setup(fixturedef=self, request=request)\n",
+    "prompt_hash": "b51b4893f20d8f3d",
+    "response_hash": "cc937ee52567a0e9"
+  },
+  "search_s": 596.4,
+  "llm_calls": 16,
+  "tokens_in": 26651,
+  "tokens_out": 5365,
+  "calls": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 23.99,
+      "tokens_in": 1355,
+      "tokens_out": 232,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 19.61,
+      "tokens_in": 1355,
+      "tokens_out": 321,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 53.31,
+      "tokens_in": 1860,
+      "tokens_out": 1083,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 12.71,
+      "tokens_in": 1711,
+      "tokens_out": 33,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 15.9,
+      "tokens_in": 1570,
+      "tokens_out": 33,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 37.28,
+      "tokens_in": 1755,
+      "tokens_out": 399,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 158.53,
+      "tokens_in": 1784,
+      "tokens_out": 746,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 29.89,
+      "tokens_in": 1495,
+      "tokens_out": 32,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 45.85,
+      "tokens_in": 1870,
+      "tokens_out": 712,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 22.28,
+      "tokens_in": 1711,
+      "tokens_out": 33,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 39.29,
+      "tokens_in": 1580,
+      "tokens_out": 331,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 34.53,
+      "tokens_in": 1755,
+      "tokens_out": 32,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 27.17,
+      "tokens_in": 1794,
+      "tokens_out": 527,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 20.74,
+      "tokens_in": 1485,
+      "tokens_out": 266,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 12.24,
+      "tokens_in": 1860,
+      "tokens_out": 33,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 25.2,
+      "tokens_in": 1711,
+      "tokens_out": 552,
+      "finish_reason": "stop",
+      "empty": false
+    }
+  ],
+  "arms": {
+    "moonshotai/kimi-k3/fix": 0.125,
+    "moonshotai/kimi-k3/fix_think": 0.09999999999999999
+  },
+  "grade": {
+    "resolved": false,
+    "applied": true,
+    "fail_to_pass": {
+      "success": 0,
+      "failure": 10
+    },
+    "pass_to_pass": {
+      "success": 16,
+      "failure": 0
+    }
+  },
+  "grade_s": 1.4,
+  "wall_s": 626.6,
+  "diagnosis": {
+    "gold_files": [
+      "src/_pytest/setuponly.py"
+    ],
+    "localised_file_hit": true,
+    "localised_line_hit": true,
+    "submission_files": [
+      "src/_pytest/fixtures.py"
+    ],
+    "submission_in_gold_file": false,
+    "gold_changed_lines": 3
+  }
+}

@@ -1,0 +1,391 @@
+{
+  "instance_id": "matplotlib__matplotlib-25287",
+  "repo": "matplotlib/matplotlib",
+  "version": "3.7",
+  "base_commit": "f8ffce6d44127d4ea7d6491262ab30046b03294b",
+  "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.matplotlib__matplotlib-25287:latest",
+  "started_at": "2026-10-03T14:07:08.204457+00:00",
+  "image_digest": "ghcr.io/epoch-research/swe-bench.eval.x86_64.matplotlib__matplotlib-25287@sha256:a7b4fcc4101b49d1769676a6242246b52efb3860f4e0d445d96d5ca5ba06bfca",
+  "pull_s": 68.3,
+  "files_considered": 243,
+  "ranked_files": [
+    {
+      "file": "lib/matplotlib/axis.py",
+      "score": 4.0
+    },
+    {
+      "file": "lib/matplotlib/pyplot.py",
+      "score": 2.09
+    },
+    {
+      "file": "lib/matplotlib/figure.py",
+      "score": 2.072
+    },
+    {
+      "file": "lib/matplotlib/artist.py",
+      "score": 1.438
+    },
+    {
+      "file": "lib/matplotlib/axes/_base.py",
+      "score": 1.35
+    },
+    {
+      "file": "lib/matplotlib/transforms.py",
+      "score": 1.308
+    },
+    {
+      "file": "lib/matplotlib/axes/_axes.py",
+      "score": 1.063
+    },
+    {
+      "file": "lib/matplotlib/backend_bases.py",
+      "score": 1.024
+    }
+  ],
+  "localised": [
+    {
+      "file": "lib/matplotlib/pyplot.py",
+      "name": "axes",
+      "kind": "function",
+      "start": 1016,
+      "end": 1100,
+      "score": 2.432
+    },
+    {
+      "file": "lib/matplotlib/figure.py",
+      "name": "FigureBase.add_subplot",
+      "kind": "function",
+      "start": 631,
+      "end": 758,
+      "score": 2.428
+    },
+    {
+      "file": "lib/matplotlib/transforms.py",
+      "name": "blended_transform_factory",
+      "kind": "function",
+      "start": 2329,
+      "end": 2340,
+      "score": 2.371
+    },
+    {
+      "file": "lib/matplotlib/figure.py",
+      "name": "Figure.axes",
+      "kind": "function",
+      "start": 2701,
+      "end": 2713,
+      "score": 2.334
+    },
+    {
+      "file": "lib/matplotlib/figure.py",
+      "name": "SubFigure.axes",
+      "kind": "function",
+      "start": 2294,
+      "end": 2307,
+      "score": 2.329
+    },
+    {
+      "file": "lib/matplotlib/figure.py",
+      "name": "SubplotParams.update",
+      "kind": "function",
+      "start": 144,
+      "end": 166,
+      "score": 2.306
+    }
+  ],
+  "repro": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "unparseable",
+      "script_hash": null
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "ISSUE REPRODUCED",
+      "script_hash": "b5d169fe39201929"
+    }
+  ],
+  "candidates": [
+    {
+      "snippet": "py:lib/matplotlib/pyplot.py::axes",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "c4de44f2669c078d",
+      "response_hash": "ffe6c5a9a3e70a35",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:lib/matplotlib/figure.py::FigureBase.add_subplot",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "3d69ad02882c5dd8",
+      "response_hash": "685272e6a4807714",
+      "stage": "parse",
+      "reason": "syntax error: unexpected indent (line 2)"
+    },
+    {
+      "snippet": "py:lib/matplotlib/transforms.py::blended_transform_factory",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "98babf91b1f615b4",
+      "response_hash": "c6e3876ff83235e0",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:lib/matplotlib/figure.py::Figure.axes",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "02f19127cf38b1ea",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:lib/matplotlib/figure.py::SubFigure.axes",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "0edffa30e13522a3",
+      "response_hash": "44741e0bc4fe16a2",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:lib/matplotlib/figure.py::SubplotParams.update",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "99b36e8d6c801644",
+      "response_hash": "fe4ecf1a74874da7",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:lib/matplotlib/pyplot.py::axes",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "0459cd9d302a277a",
+      "response_hash": "630534121f46217c",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:lib/matplotlib/figure.py::FigureBase.add_subplot",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "ec181b74b27772fc",
+      "response_hash": "1dbbbfb3a4f77a2c",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:lib/matplotlib/transforms.py::blended_transform_factory",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "98babf91b1f615b4",
+      "response_hash": "b7cf076e9e3a9e51",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:lib/matplotlib/figure.py::Figure.axes",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "ba3529d28b15d35a",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:lib/matplotlib/figure.py::SubFigure.axes",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "0edffa30e13522a3",
+      "response_hash": "44741e0bc4fe16a2",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:lib/matplotlib/figure.py::SubplotParams.update",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "99b36e8d6c801644",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:lib/matplotlib/pyplot.py::axes",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "c4de44f2669c078d",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:lib/matplotlib/figure.py::FigureBase.add_subplot",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "3d69ad02882c5dd8",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    }
+  ],
+  "validated_repro": 1,
+  "stop": "budget",
+  "submission": null,
+  "search_s": 379.6,
+  "llm_calls": 16,
+  "tokens_in": 21627,
+  "tokens_out": 5846,
+  "calls": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 8.93,
+      "tokens_in": 759,
+      "tokens_out": 33,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 10.0,
+      "tokens_in": 759,
+      "tokens_out": 221,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 60.77,
+      "tokens_in": 1726,
+      "tokens_out": 910,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 31.57,
+      "tokens_in": 2227,
+      "tokens_out": 766,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 21.62,
+      "tokens_in": 934,
+      "tokens_out": 291,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 11.0,
+      "tokens_in": 1040,
+      "tokens_out": 32,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 9.85,
+      "tokens_in": 1043,
+      "tokens_out": 170,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 13.07,
+      "tokens_in": 1123,
+      "tokens_out": 285,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 38.45,
+      "tokens_in": 1716,
+      "tokens_out": 739,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 47.88,
+      "tokens_in": 2217,
+      "tokens_out": 1340,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 25.8,
+      "tokens_in": 934,
+      "tokens_out": 719,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 8.01,
+      "tokens_in": 1030,
+      "tokens_out": 32,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 8.32,
+      "tokens_in": 1043,
+      "tokens_out": 208,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 51.18,
+      "tokens_in": 1123,
+      "tokens_out": 32,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 14.36,
+      "tokens_in": 1726,
+      "tokens_out": 36,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 14.53,
+      "tokens_in": 2227,
+      "tokens_out": 32,
+      "finish_reason": "stop",
+      "empty": true
+    }
+  ],
+  "arms": {
+    "moonshotai/kimi-k3/fix": 0.06666666666666667,
+    "moonshotai/kimi-k3/fix_think": 0.06666666666666667
+  },
+  "grade": {
+    "resolved": false,
+    "submitted": false
+  },
+  "wall_s": 479.4,
+  "diagnosis": {
+    "gold_files": [
+      "lib/matplotlib/axis.py"
+    ],
+    "localised_file_hit": false,
+    "localised_line_hit": false,
+    "submission_files": [],
+    "submission_in_gold_file": false,
+    "gold_changed_lines": 15
+  }
+}
