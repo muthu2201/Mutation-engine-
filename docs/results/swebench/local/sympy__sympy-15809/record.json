@@ -1,0 +1,235 @@
+{
+  "instance_id": "sympy__sympy-15809",
+  "repo": "sympy/sympy",
+  "version": "1.4",
+  "base_commit": "28d913d3cead6c5646307ffa6540b21d65059dfd",
+  "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.sympy__sympy-15809:latest",
+  "started_at": "2026-10-03T10:08:54.741795+00:00",
+  "image_digest": "ghcr.io/epoch-research/swe-bench.eval.x86_64.sympy__sympy-15809@sha256:31d77a85853d61a34f3cedec1588c6ca4247e3a26a65b2eaceaa6ebee7ab0f90",
+  "pull_s": 22.2,
+  "files_considered": 708,
+  "ranked_files": [
+    {
+      "file": "sympy/functions/elementary/miscellaneous.py",
+      "score": 1.951
+    },
+    {
+      "file": "sympy/sets/sets.py",
+      "score": 1.0
+    },
+    {
+      "file": "sympy/calculus/util.py",
+      "score": 0.979
+    },
+    {
+      "file": "sympy/integrals/prde.py",
+      "score": 0.948
+    },
+    {
+      "file": "sympy/combinatorics/permutations.py",
+      "score": 0.935
+    },
+    {
+      "file": "sympy/matrices/matrices.py",
+      "score": 0.922
+    },
+    {
+      "file": "sympy/core/numbers.py",
+      "score": 0.904
+    },
+    {
+      "file": "sympy/ntheory/generate.py",
+      "score": 0.882
+    }
+  ],
+  "localised": [
+    {
+      "file": "sympy/functions/elementary/miscellaneous.py",
+      "name": "Max.<L646-705>",
+      "kind": "block",
+      "start": 646,
+      "end": 705,
+      "score": 2.201
+    },
+    {
+      "file": "sympy/functions/elementary/miscellaneous.py",
+      "name": "Min.<L766-796>",
+      "kind": "block",
+      "start": 766,
+      "end": 796,
+      "score": 2.183
+    },
+    {
+      "file": "sympy/functions/elementary/miscellaneous.py",
+      "name": "Max.<L706-731>",
+      "kind": "block",
+      "start": 706,
+      "end": 731,
+      "score": 2.163
+    },
+    {
+      "file": "sympy/functions/elementary/miscellaneous.py",
+      "name": "Min.fdiff",
+      "kind": "function",
+      "start": 798,
+      "end": 808,
+      "score": 1.856
+    },
+    {
+      "file": "sympy/functions/elementary/miscellaneous.py",
+      "name": "Max.fdiff",
+      "kind": "function",
+      "start": 733,
+      "end": 743,
+      "score": 1.826
+    },
+    {
+      "file": "sympy/functions/elementary/miscellaneous.py",
+      "name": "Max._eval_rewrite_as_Piecewise",
+      "kind": "function",
+      "start": 750,
+      "end": 753,
+      "score": 1.599
+    }
+  ],
+  "repro": [
+    {
+      "model": "qwen2.5-coder-7b",
+      "outcome": "ISSUE REPRODUCED",
+      "script_hash": "fe5903e150e0868c"
+    },
+    {
+      "model": "qwen2.5-coder-3b",
+      "outcome": "unparseable",
+      "script_hash": null
+    }
+  ],
+  "candidates": [
+    {
+      "snippet": "py:sympy/functions/elementary/miscellaneous.py::Max.<L646-705>",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix",
+      "prompt_hash": "9983c4fb02f06690",
+      "response_hash": "2c7dea07ed82e83a",
+      "stage": "parse",
+      "reason": "file does not parse after the splice: invalid decimal literal (line 665)"
+    },
+    {
+      "snippet": "py:sympy/functions/elementary/miscellaneous.py::Min.<L766-796>",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix",
+      "prompt_hash": "6cde51110749e5d7",
+      "response_hash": "aac247088601c024",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "sympy/functions/elementary/tests/test_miscellaneous.py",
+        "sympy/core/tests/test_args.py",
+        "sympy/assumptions/tests/test_query.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 33,
+      "judge_s": 605.6,
+      "diff": "diff --git a/sympy/functions/elementary/miscellaneous.py b/sympy/functions/elementary/miscellaneous.py\nindex 5f9fe73c5c..e13caad202 100644\n--- a/sympy/functions/elementary/miscellaneous.py\n+++ b/sympy/functions/elementary/miscellaneous.py\n@@ -763,37 +763,8 @@ def _eval_is_negative(self):\n \n \n class Min(MinMaxBase, Application):\n-    \"\"\"\n-    Return, if possible, the minimum value of the list.\n-    It is named ``Min`` and not ``min`` to avoid conflicts\n-    with the built-in function ``min``.\n-\n-    Examples\n-    ========\n-\n-    >>> from sympy import Min, Symbol, oo\n-    >>> from sympy.abc import x, y\n-    >>> p = Symbol('p', positive=True)\n-    >>> n = Symbol('n', negative=True)\n-\n-    >>> Min(x, -2)                  #doctest: +SKIP\n-    Min(x, -2)\n-    >>> Min(x, -2).subs(x, 3)\n-    -2\n-    >>> Min(p, -3)\n-    -3\n-    >>> Min(x, y)                   #doctest: +SKIP\n-    Min(x, y)\n-    >>> Min(n, 8, p, -7, p, oo)     #doctest: +SKIP\n-    Min(n, -7)\n-\n-    See Also\n-    ========\n-\n-    Max : find maximum values\n-    \"\"\"\n-    zero = S.NegativeInfinity\n-    identity = S.Infinity\n+    class Min(MinMaxBase, Application):\n+        ...\n \n     def fdiff( self, argindex ):\n         from sympy import Heaviside\n",
+      "new_source": "class Min(MinMaxBase, Application):\n    ...\n"
+    },
+    {
+      "snippet": "py:sympy/functions/elementary/miscellaneous.py::Max.<L706-731>",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix",
+      "prompt_hash": "3a15b689f5ccdb42",
+      "response_hash": "67367d2f37086535",
+      "stage": "parse",
+      "reason": "file does not parse after the splice: unexpected indent (line 728)"
+    },
+    {
+      "snippet": "py:sympy/functions/elementary/miscellaneous.py::Min.fdiff",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix_think",
+      "prompt_hash": "3a3ab39f944cac0e",
+      "response_hash": "824c2756dc1e1b2d",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:sympy/functions/elementary/miscellaneous.py::Max.fdiff",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix_think",
+      "prompt_hash": "e822078efc78d418",
+      "response_hash": "a55fcc170004f87b",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "sympy/functions/elementary/tests/test_miscellaneous.py",
+        "sympy/core/tests/test_args.py",
+        "sympy/assumptions/tests/test_query.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 2,
+      "judge_s": 303.0,
+      "diff": "diff --git a/sympy/functions/elementary/miscellaneous.py b/sympy/functions/elementary/miscellaneous.py\nindex 5f9fe73c5c..c52571199b 100644\n--- a/sympy/functions/elementary/miscellaneous.py\n+++ b/sympy/functions/elementary/miscellaneous.py\n@@ -730,7 +730,7 @@ class Max(MinMaxBase, Application):\n     zero = S.Infinity\n     identity = S.NegativeInfinity\n \n-    def fdiff( self, argindex ):\n+    def fdiff(self, argindex):\n         from sympy import Heaviside\n         n = len(self.args)\n         if 0 < argindex and argindex <= n:\n",
+      "new_source": "def fdiff(self, argindex):\n    from sympy import Heaviside\n    n = len(self.args)\n    if 0 < argindex and argindex <= n:\n        argindex -= 1\n        if n == 2:\n            return Heaviside(self.args[argindex] - self.args[1 - argindex])\n        newargs = tuple([self.args[i] for i in range(n) if i != argindex])\n        return Heaviside(self.args[argindex] - Max(*newargs))\n    else:\n        raise ArgumentIndexError(self, argindex)\n"
+    }
+  ],
+  "validated_repro": 1,
+  "stop": "budget",
+  "submission": {
+    "snippet": "py:sympy/functions/elementary/miscellaneous.py::Max.fdiff",
+    "model": "qwen2.5-coder-3b",
+    "template": "fix_think",
+    "diff": "diff --git a/sympy/functions/elementary/miscellaneous.py b/sympy/functions/elementary/miscellaneous.py\nindex 5f9fe73c5c..c52571199b 100644\n--- a/sympy/functions/elementary/miscellaneous.py\n+++ b/sympy/functions/elementary/miscellaneous.py\n@@ -730,7 +730,7 @@ class Max(MinMaxBase, Application):\n     zero = S.Infinity\n     identity = S.NegativeInfinity\n \n-    def fdiff( self, argindex ):\n+    def fdiff(self, argindex):\n         from sympy import Heaviside\n         n = len(self.args)\n         if 0 < argindex and argindex <= n:\n",
+    "votes": 0,
+    "changed_lines": 2,
+    "new_source": "def fdiff(self, argindex):\n    from sympy import Heaviside\n    n = len(self.args)\n    if 0 < argindex and argindex <= n:\n        argindex -= 1\n        if n == 2:\n            return Heaviside(self.args[argindex] - self.args[1 - argindex])\n        newargs = tuple([self.args[i] for i in range(n) if i != argindex])\n        return Heaviside(self.args[argindex] - Max(*newargs))\n    else:\n        raise ArgumentIndexError(self, argindex)\n",
+    "prompt_hash": "e822078efc78d418",
+    "response_hash": "a55fcc170004f87b"
+  },
+  "search_s": 1217.0,
+  "llm_calls": 7,
+  "tokens_in": 3591,
+  "tokens_out": 1151,
+  "arms": {
+    "qwen2.5-coder-7b/fix": 0.19999999999999998,
+    "qwen2.5-coder-7b/fix_think": 0.3,
+    "qwen2.5-coder-3b/fix": 0.22499999999999998,
+    "qwen2.5-coder-3b/fix_think": 0.22499999999999998,
+    "qwen2.5-coder-1.5b/fix": 0.3,
+    "qwen2.5-coder-1.5b/fix_think": 0.3
+  },
+  "grade": {
+    "resolved": false,
+    "applied": true,
+    "fail_to_pass": {
+      "success": 0,
+      "failure": 2
+    },
+    "pass_to_pass": {
+      "success": 10,
+      "failure": 0
+    }
+  },
+  "grade_s": 27.6,
+  "wall_s": 1275.2,
+  "diagnosis": {
+    "gold_files": [
+      "sympy/functions/elementary/miscellaneous.py"
+    ],
+    "localised_file_hit": true,
+    "localised_line_hit": false,
+    "submission_files": [
+      "sympy/functions/elementary/miscellaneous.py"
+    ],
+    "submission_in_gold_file": true,
+    "gold_changed_lines": 2
+  }
+}

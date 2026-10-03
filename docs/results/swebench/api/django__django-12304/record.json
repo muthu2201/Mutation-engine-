@@ -1,0 +1,391 @@
+{
+  "instance_id": "django__django-12304",
+  "repo": "django/django",
+  "version": "3.1",
+  "base_commit": "4c1b401e8250f9f520b3c7dc369554477ce8b15a",
+  "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.django__django-12304:latest",
+  "started_at": "2026-10-03T13:01:53.755821+00:00",
+  "image_digest": "ghcr.io/epoch-research/swe-bench.eval.x86_64.django__django-12304@sha256:eb8f6db293283f46061a90aed4fbd49e33362ee5ed8059b0a5b4b721b94d2b34",
+  "pull_s": 22.9,
+  "files_considered": 825,
+  "ranked_files": [
+    {
+      "file": "django/utils/functional.py",
+      "score": 1.0
+    },
+    {
+      "file": "django/contrib/admin/templatetags/admin_list.py",
+      "score": 0.953
+    },
+    {
+      "file": "django/db/backends/base/operations.py",
+      "score": 0.916
+    },
+    {
+      "file": "django/forms/models.py",
+      "score": 0.892
+    },
+    {
+      "file": "django/forms/forms.py",
+      "score": 0.861
+    },
+    {
+      "file": "django/core/management/__init__.py",
+      "score": 0.845
+    },
+    {
+      "file": "django/db/models/fields/__init__.py",
+      "score": 0.843
+    },
+    {
+      "file": "django/forms/widgets.py",
+      "score": 0.821
+    }
+  ],
+  "localised": [
+    {
+      "file": "django/contrib/admin/templatetags/admin_list.py",
+      "name": "ResultList.<L302-306>",
+      "kind": "block",
+      "start": 302,
+      "end": 306,
+      "score": 1.477
+    },
+    {
+      "file": "django/forms/forms.py",
+      "name": "BaseForm.hidden_fields",
+      "kind": "function",
+      "start": 467,
+      "end": 472,
+      "score": 1.39
+    },
+    {
+      "file": "django/utils/functional.py",
+      "name": "SimpleLazyObject.__init__",
+      "kind": "function",
+      "start": 359,
+      "end": 369,
+      "score": 1.292
+    },
+    {
+      "file": "django/db/models/fields/__init__.py",
+      "name": "Field.deconstruct",
+      "kind": "function",
+      "start": 414,
+      "end": 501,
+      "score": 1.288
+    },
+    {
+      "file": "django/contrib/admin/templatetags/admin_list.py",
+      "name": "date_hierarchy",
+      "kind": "function",
+      "start": 356,
+      "end": 428,
+      "score": 1.286
+    },
+    {
+      "file": "django/forms/widgets.py",
+      "name": "SelectDateWidget.get_context",
+      "kind": "function",
+      "start": 970,
+      "end": 1004,
+      "score": 1.251
+    }
+  ],
+  "repro": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "unparseable",
+      "script_hash": null
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "ISSUE RESOLVED",
+      "script_hash": "021047f375e01f25"
+    }
+  ],
+  "candidates": [
+    {
+      "snippet": "py:django/contrib/admin/templatetags/admin_list.py::ResultList.<L302-306>",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "ed2280bcb48d5a8f",
+      "response_hash": "748d74b3c82888de",
+      "stage": "parse",
+      "reason": "replacement has 76 lines for a 5-line snippet"
+    },
+    {
+      "snippet": "py:django/forms/forms.py::BaseForm.hidden_fields",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "d77da09310c0c74d",
+      "response_hash": "c5efa59b9505823a",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/utils/functional.py::SimpleLazyObject.__init__",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "ec42eb796bd45393",
+      "response_hash": "7b1de63b9d80fab8",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/db/models/fields/__init__.py::Field.deconstruct",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "0940b3504a04e13d",
+      "response_hash": "fe7a841a6c813b78",
+      "stage": "parse",
+      "reason": "response does not define deconstruct()"
+    },
+    {
+      "snippet": "py:django/contrib/admin/templatetags/admin_list.py::date_hierarchy",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "d2ac422cbd18e47a",
+      "response_hash": "f3364917781f3bca",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/forms/widgets.py::SelectDateWidget.get_context",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "232701bb9466153d",
+      "response_hash": "66df63e75d28cf9a",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/contrib/admin/templatetags/admin_list.py::ResultList.<L302-306>",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "ed2280bcb48d5a8f",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:django/forms/forms.py::BaseForm.hidden_fields",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "c85555767d2cc679",
+      "response_hash": "b26a7750fb98716b",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/utils/functional.py::SimpleLazyObject.__init__",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "ec42eb796bd45393",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:django/db/models/fields/__init__.py::Field.deconstruct",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "58aa5dba067176db",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:django/contrib/admin/templatetags/admin_list.py::date_hierarchy",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "b1eca70022b3ccec",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:django/forms/widgets.py::SelectDateWidget.get_context",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "d59e3bf5c394bd2b",
+      "response_hash": "ee058d4f4da01a86",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/contrib/admin/templatetags/admin_list.py::ResultList.<L302-306>",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "af1f8504d702769f",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:django/forms/forms.py::BaseForm.hidden_fields",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "d77da09310c0c74d",
+      "response_hash": "ce27fcdb4a226bae",
+      "stage": "parse",
+      "reason": "response does not define hidden_fields()"
+    }
+  ],
+  "validated_repro": 0,
+  "stop": "budget",
+  "submission": null,
+  "search_s": 346.7,
+  "llm_calls": 16,
+  "tokens_in": 11272,
+  "tokens_out": 6483,
+  "calls": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 3.59,
+      "tokens_in": 355,
+      "tokens_out": 32,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 11.15,
+      "tokens_in": 355,
+      "tokens_out": 356,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 28.84,
+      "tokens_in": 528,
+      "tokens_out": 862,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 15.55,
+      "tokens_in": 492,
+      "tokens_out": 435,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 27.38,
+      "tokens_in": 457,
+      "tokens_out": 747,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 27.92,
+      "tokens_in": 1325,
+      "tokens_out": 487,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 46.06,
+      "tokens_in": 1116,
+      "tokens_out": 1017,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 42.89,
+      "tokens_in": 878,
+      "tokens_out": 785,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 19.07,
+      "tokens_in": 528,
+      "tokens_out": 32,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 10.24,
+      "tokens_in": 482,
+      "tokens_out": 276,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 10.03,
+      "tokens_in": 457,
+      "tokens_out": 33,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 7.37,
+      "tokens_in": 1315,
+      "tokens_out": 32,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 10.52,
+      "tokens_in": 1106,
+      "tokens_out": 33,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 23.64,
+      "tokens_in": 868,
+      "tokens_out": 614,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 13.66,
+      "tokens_in": 518,
+      "tokens_out": 33,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 34.13,
+      "tokens_in": 492,
+      "tokens_out": 709,
+      "finish_reason": "stop",
+      "empty": false
+    }
+  ],
+  "arms": {
+    "moonshotai/kimi-k3/fix": 0.08571428571428572,
+    "moonshotai/kimi-k3/fix_think": 0.05454545454545454
+  },
+  "grade": {
+    "resolved": false,
+    "submitted": false
+  },
+  "wall_s": 383.4,
+  "diagnosis": {
+    "gold_files": [
+      "django/db/models/enums.py"
+    ],
+    "localised_file_hit": false,
+    "localised_line_hit": false,
+    "submission_files": [],
+    "submission_in_gold_file": false,
+    "gold_changed_lines": 1
+  }
+}

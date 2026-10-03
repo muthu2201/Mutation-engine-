@@ -1,0 +1,314 @@
+{
+  "instance_id": "matplotlib__matplotlib-25311",
+  "repo": "matplotlib/matplotlib",
+  "version": "3.7",
+  "base_commit": "430fb1db88843300fb4baae3edc499bbfe073b0c",
+  "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.matplotlib__matplotlib-25311:latest",
+  "started_at": "2026-10-03T06:34:01.043589+00:00",
+  "image_digest": "ghcr.io/epoch-research/swe-bench.eval.x86_64.matplotlib__matplotlib-25311@sha256:abcedb5f5827d58c57389b2f225c34a7adca27cef842e655e70962d41c296763",
+  "pull_s": 66.2,
+  "files_considered": 755,
+  "ranked_files": [
+    {
+      "file": "lib/matplotlib/figure.py",
+      "score": 2.325
+    },
+    {
+      "file": "lib/matplotlib/pyplot.py",
+      "score": 2.297
+    },
+    {
+      "file": "lib/matplotlib/axes/_axes.py",
+      "score": 1.534
+    },
+    {
+      "file": "lib/matplotlib/legend.py",
+      "score": 1.5
+    },
+    {
+      "file": "lib/matplotlib/backends/backend_qtagg.py",
+      "score": 1.167
+    },
+    {
+      "file": "lib/matplotlib/backends/backend_nbagg.py",
+      "score": 1.163
+    },
+    {
+      "file": "lib/matplotlib/backends/_backend_tk.py",
+      "score": 1.125
+    },
+    {
+      "file": "lib/matplotlib/backend_bases.py",
+      "score": 1.113
+    }
+  ],
+  "localised": [
+    {
+      "file": "lib/matplotlib/figure.py",
+      "name": "FigureBase.add_subplot",
+      "kind": "function",
+      "start": 631,
+      "end": 758,
+      "score": 3.272
+    },
+    {
+      "file": "lib/matplotlib/figure.py",
+      "name": "FigureBase.legend",
+      "kind": "function",
+      "start": 1004,
+      "end": 1138,
+      "score": 3.27
+    },
+    {
+      "file": "lib/matplotlib/pyplot.py",
+      "name": "show",
+      "kind": "function",
+      "start": 400,
+      "end": 445,
+      "score": 3.205
+    },
+    {
+      "file": "lib/matplotlib/legend.py",
+      "name": "Legend.set_draggable",
+      "kind": "function",
+      "start": 1173,
+      "end": 1205,
+      "score": 3.19
+    },
+    {
+      "file": "lib/matplotlib/figure.py",
+      "name": "Figure.show",
+      "kind": "function",
+      "start": 2659,
+      "end": 2701,
+      "score": 3.083
+    },
+    {
+      "file": "lib/matplotlib/axes/_axes.py",
+      "name": "Axes.legend",
+      "kind": "function",
+      "start": 197,
+      "end": 320,
+      "score": 2.952
+    }
+  ],
+  "repro": [
+    {
+      "model": "qwen2.5-coder-7b",
+      "outcome": "ISSUE REPRODUCED",
+      "script_hash": "12a8019891a42ab5"
+    },
+    {
+      "model": "qwen2.5-coder-3b",
+      "outcome": "unparseable",
+      "script_hash": null
+    }
+  ],
+  "candidates": [
+    {
+      "snippet": "py:lib/matplotlib/figure.py::FigureBase.add_subplot",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix",
+      "prompt_hash": "fe00805f1d13fe34",
+      "response_hash": "829df91d7b086d1d",
+      "stage": "parse",
+      "reason": "syntax error: invalid syntax (line 10)"
+    },
+    {
+      "snippet": "py:lib/matplotlib/figure.py::FigureBase.legend",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix",
+      "prompt_hash": "482be10707e335d4",
+      "response_hash": "6a0e3a9019d8fbed",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:lib/matplotlib/pyplot.py::show",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "c7e83bfb9d82ba3a",
+      "response_hash": "778aba0564ee5f1a",
+      "stage": "parse",
+      "reason": "response does not define show()"
+    },
+    {
+      "snippet": "py:lib/matplotlib/legend.py::Legend.set_draggable",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix",
+      "prompt_hash": "f3ce80631bf89ee9",
+      "response_hash": "3db923af33d50876",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "lib/matplotlib/tests/test_legend.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 4,
+      "judge_s": 32.4,
+      "diff": "diff --git a/lib/matplotlib/legend.py b/lib/matplotlib/legend.py\nindex ff6abdb958..f2160f906a 100644\n--- a/lib/matplotlib/legend.py\n+++ b/lib/matplotlib/legend.py\n@@ -1196,8 +1196,8 @@ class Legend(Artist):\n         if state:\n             if self._draggable is None:\n                 self._draggable = DraggableLegend(self,\n-                                                  use_blit,\n-                                                  update=update)\n+     use_blit,\n+     update=update)\n         else:\n             if self._draggable is not None:\n                 self._draggable.disconnect()\n",
+      "new_source": "def set_draggable(self, state, use_blit=False, update='loc'):\n    \"\"\"\n    Enable or disable mouse dragging support of the legend.\n\n    Parameters\n    ----------\n    state : bool\n        Whether mouse dragging is enabled.\n    use_blit : bool, optional\n        Use blitting for faster image composition. For details see\n        :ref:`func-animation`.\n    update : {'loc', 'bbox'}, optional\n        The legend parameter to be changed when dragged:\n\n        - 'loc': update the *loc* parameter of the legend\n        - 'bbox': update the *bbox_to_anchor* parameter of the legend\n\n    Returns\n    -------\n    `.DraggableLegend` or *None*\n        If *state* is ``True`` this returns the `.DraggableLegend` helper\n        instance. Otherwise this returns *None*.\n    \"\"\"\n    if state:\n        if self._draggable is None:\n            self._draggable = DraggableLegend(self,\n use_blit,\n update=update)\n    else:\n        if self._draggable is not None:\n            self._draggable.disconnect()\n        self._draggable = None\n    return self._draggable\n"
+    },
+    {
+      "snippet": "py:lib/matplotlib/figure.py::Figure.show",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix",
+      "prompt_hash": "f837ceb816814a43",
+      "response_hash": "6dc3e63850812dd4",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:lib/matplotlib/axes/_axes.py::Axes.legend",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "bb31682d03df5225",
+      "response_hash": "ce8e949a5ba1af64",
+      "stage": "parse",
+      "reason": "response does not define legend()"
+    },
+    {
+      "snippet": "py:lib/matplotlib/figure.py::FigureBase.add_subplot",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "300634adcfc51b3e",
+      "response_hash": "fa64da335f49de4a",
+      "stage": "parse",
+      "reason": "response does not define add_subplot()"
+    },
+    {
+      "snippet": "py:lib/matplotlib/figure.py::FigureBase.legend",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix_think",
+      "prompt_hash": "30b2f9245cb7f20b",
+      "response_hash": "39f009dd9d846ad3",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "lib/matplotlib/tests/test_figure.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 14,
+      "judge_s": 32.4,
+      "diff": "diff --git a/lib/matplotlib/figure.py b/lib/matplotlib/figure.py\nindex 10a4072328..92775baaaf 100644\n--- a/lib/matplotlib/figure.py\n+++ b/lib/matplotlib/figure.py\n@@ -1007,7 +1007,6 @@ default: %(va)s\n         Place a legend on the figure.\n \n         Call signatures::\n-\n             legend()\n             legend(handles, labels)\n             legend(handles=handles)\n@@ -1119,19 +1118,8 @@ default: %(va)s\n                 **kwargs)\n         # check for third arg\n         if len(extra_args):\n-            # _api.warn_deprecated(\n-            #     \"2.1\",\n-            #     message=\"Figure.legend will accept no more than two \"\n-            #     \"positional arguments in the future.  Use \"\n-            #     \"'fig.legend(handles, labels, loc=location)' \"\n-            #     \"instead.\")\n-            # kwargs['loc'] = extra_args[0]\n-            # extra_args = extra_args[1:]\n             pass\n-        transform = kwargs.pop('bbox_transform', self.transSubfigure)\n-        # explicitly set the bbox transform if the user hasn't.\n-        l = mlegend.Legend(self, handles, labels, *extra_args,\n-                           bbox_transform=transform, **kwargs)\n+        l = mlegend.Legend(self, handles, labels, *extra_args, **kwargs)\n         self.legends.append(l)\n         l._remove_method = self.legends.remove\n         self.stale = True\n",
+      "new_source": "@_docstring.dedent_interpd\ndef legend(self, *args, **kwargs):\n    \"\"\"\n    Place a legend on the figure.\n\n    Call signatures::\n        legend()\n        legend(handles, labels)\n        legend(handles=handles)\n        legend(labels)\n\n    The call signatures correspond to the following different ways to use\n    this method:\n\n    **1. Automatic detection of elements to be shown in the legend**\n\n    The elements to be added to the legend are automatically determined,\n    when you do not pass in any extra arguments.\n\n    In this case, the labels are taken from the artist. You can specify\n    them either at artist creation or by calling the\n    :meth:`~.Artist.set_label` method on the artist::\n\n        ax.plot([1, 2, 3], label='Inline label')\n        fig.legend()\n\n    or::\n\n        line, = ax.plot([1, 2, 3])\n        line.set_label('Label via method')\n        fig.legend()\n\n    Specific lines can be excluded from the automatic legend element\n    selection by defining a label starting with an underscore.\n    This is default for all artists, so calling `.Figure.legend` without\n    any arguments and without setting the labels manually will result in\n    no legend being drawn.\n\n\n    **2. Explicitly listing the artists and labels in the legend**\n\n    For full control of which artists have a legend entry, it is possible\n    to pass an iterable of legend artists followed by an iterable of\n    legend labels respectively::\n\n        fig.legend([line1, line2, line3], ['label1', 'label2', 'label3'])\n\n\n    **3. Explicitly listing the artists in the legend**\n\n    This is similar to 2, but the labels are taken from the artists'\n    label properties. Example::\n\n        line1, = ax1.plot([1, 2, 3], label='label1')\n        line2, = ax2.plot([1, 2, 3], label='label2')\n        fig.legend(handles=[line1, line2])\n\n\n    **4. Labeling existing plot elements**\n\n    .. admonition:: Discouraged\n\n        This call signature is discouraged, because the relation between\n        plot elements and labels is only implicit by their order and can\n        easily be mixed up.\n\n    To make a legend for all artists on all Axes, call this function with\n    an iterable of strings, one for each legend item. For example::\n\n        fig, (ax1, ax2) = plt.subplots(1, 2)\n        ax1.plot([1, 3, 5], color='blue')\n        ax2.plot([2, 4, 6], color='red')\n        fig.legend(['the blues', 'the reds'])\n\n\n    Parameters\n    ----------\n    handles : list of `.Artist`, optional\n        A list of Artists (lines, patches) to be added to the legend.\n        Use this together with *labels*, if you need full control on what\n        is shown in the legend and the automatic mechanism described above\n        is not sufficient.\n\n        The length of handles and labels should be the same in this\n        case. If they are not, they are truncated to the smaller length.\n\n    labels : list of str, optional\n        A list of labels to show next to the artists.\n        Use this together with *handles*, if you need full control on what\n        is shown in the legend and the automatic mechanism described above\n        is not sufficient.\n\n    Returns\n    -------\n    `~matplotlib.legend.Legend`\n\n    Other Parameters\n    ----------------\n    %(_legend_kw_figure)s\n\n\n    See Also\n    --------\n    .Axes.legend\n\n    Notes\n    -----\n    Some artists are not supported by this function.  See\n    :doc:`/tutorials/intermediate/legend_guide` for details.\n    \"\"\"\n\n    handles, labels, extra_args, kwargs = mlegend._parse_legend_args(\n            self.axes,\n            *args,\n            **kwargs)\n    # check for third arg\n    if len(extra_args):\n        pass\n    l = mlegend.Legend(self, handles, labels, *extra_args, **kwargs)\n    self.legends.append(l)\n    l._remove_method = self.legends.remove\n    self.stale = True\n    return l\n"
+    },
+    {
+      "snippet": "py:lib/matplotlib/pyplot.py::show",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "c7e83bfb9d82ba3a",
+      "response_hash": "d9fdbccea5ee3f7f",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "1 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "lib/matplotlib/tests/test_pyplot.py"
+      ],
+      "regressions": 1,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 32,
+      "judge_s": 9.9
+    },
+    {
+      "snippet": "py:lib/matplotlib/legend.py::Legend.set_draggable",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "f3ce80631bf89ee9",
+      "response_hash": "c384aa679dac6b2f",
+      "stage": "parse",
+      "reason": "response does not define set_draggable()"
+    },
+    {
+      "snippet": "py:lib/matplotlib/figure.py::Figure.show",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix_think",
+      "prompt_hash": "9386b739a1e8c319",
+      "response_hash": "1cfbd24730d4d1b3",
+      "stage": "parse",
+      "reason": "response does not define show()"
+    },
+    {
+      "snippet": "py:lib/matplotlib/axes/_axes.py::Axes.legend",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "2b399171dbdd8e8f",
+      "response_hash": "9bdb9aa2d3cb669f",
+      "stage": "parse",
+      "reason": "response does not define legend()"
+    },
+    {
+      "snippet": "py:lib/matplotlib/figure.py::FigureBase.add_subplot",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix_think",
+      "prompt_hash": "300634adcfc51b3e",
+      "response_hash": "28b711ddf43d1692",
+      "stage": "parse",
+      "reason": "syntax error: '(' was never closed (line 27)"
+    }
+  ],
+  "validated_repro": 1,
+  "stop": "budget",
+  "submission": {
+    "snippet": "py:lib/matplotlib/legend.py::Legend.set_draggable",
+    "model": "qwen2.5-coder-7b",
+    "template": "fix",
+    "diff": "diff --git a/lib/matplotlib/legend.py b/lib/matplotlib/legend.py\nindex ff6abdb958..f2160f906a 100644\n--- a/lib/matplotlib/legend.py\n+++ b/lib/matplotlib/legend.py\n@@ -1196,8 +1196,8 @@ class Legend(Artist):\n         if state:\n             if self._draggable is None:\n                 self._draggable = DraggableLegend(self,\n-                                                  use_blit,\n-                                                  update=update)\n+     use_blit,\n+     update=update)\n         else:\n             if self._draggable is not None:\n                 self._draggable.disconnect()\n",
+    "votes": 0,
+    "changed_lines": 4,
+    "new_source": "def set_draggable(self, state, use_blit=False, update='loc'):\n    \"\"\"\n    Enable or disable mouse dragging support of the legend.\n\n    Parameters\n    ----------\n    state : bool\n        Whether mouse dragging is enabled.\n    use_blit : bool, optional\n        Use blitting for faster image composition. For details see\n        :ref:`func-animation`.\n    update : {'loc', 'bbox'}, optional\n        The legend parameter to be changed when dragged:\n\n        - 'loc': update the *loc* parameter of the legend\n        - 'bbox': update the *bbox_to_anchor* parameter of the legend\n\n    Returns\n    -------\n    `.DraggableLegend` or *None*\n        If *state* is ``True`` this returns the `.DraggableLegend` helper\n        instance. Otherwise this returns *None*.\n    \"\"\"\n    if state:\n        if self._draggable is None:\n            self._draggable = DraggableLegend(self,\n use_blit,\n update=update)\n    else:\n        if self._draggable is not None:\n            self._draggable.disconnect()\n        self._draggable = None\n    return self._draggable\n",
+    "prompt_hash": "f3ce80631bf89ee9",
+    "response_hash": "3db923af33d50876"
+  },
+  "search_s": 1261.4,
+  "llm_calls": 15,
+  "tokens_in": 17425,
+  "tokens_out": 5384,
+  "arms": {
+    "qwen2.5-coder-7b/fix": 0.22499999999999998,
+    "qwen2.5-coder-7b/fix_think": 0.3,
+    "qwen2.5-coder-3b/fix": 0.15,
+    "qwen2.5-coder-3b/fix_think": 0.15,
+    "qwen2.5-coder-1.5b/fix": 0.15,
+    "qwen2.5-coder-1.5b/fix_think": 0.09999999999999999
+  },
+  "grade": {
+    "resolved": false,
+    "applied": true,
+    "fail_to_pass": {
+      "success": 0,
+      "failure": 1
+    },
+    "pass_to_pass": {
+      "success": 181,
+      "failure": 0
+    }
+  },
+  "grade_s": 31.9,
+  "wall_s": 1386.5,
+  "diagnosis": {
+    "gold_files": [
+      "lib/matplotlib/offsetbox.py"
+    ],
+    "localised_file_hit": false,
+    "localised_line_hit": false,
+    "submission_files": [
+      "lib/matplotlib/legend.py"
+    ],
+    "submission_in_gold_file": false,
+    "gold_changed_lines": 4
+  }
+}

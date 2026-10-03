@@ -1,0 +1,394 @@
+{
+  "instance_id": "pytest-dev__pytest-7982",
+  "repo": "pytest-dev/pytest",
+  "version": "6.2",
+  "base_commit": "a7e38c5c61928033a2dc1915cbee8caa8544a4d0",
+  "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.pytest-dev__pytest-7982:latest",
+  "started_at": "2026-10-03T07:54:35.073581+00:00",
+  "image_digest": "ghcr.io/epoch-research/swe-bench.eval.x86_64.pytest-dev__pytest-7982@sha256:230c229decf51a0ebe131f3271dae67cd04dce119332d6240bd6a3d71115e069",
+  "pull_s": 18.7,
+  "files_considered": 75,
+  "ranked_files": [
+    {
+      "file": "src/_pytest/pathlib.py",
+      "score": 1.0
+    },
+    {
+      "file": "src/_pytest/cacheprovider.py",
+      "score": 0.632
+    },
+    {
+      "file": "src/_pytest/hookspec.py",
+      "score": 0.604
+    },
+    {
+      "file": "src/_pytest/main.py",
+      "score": 0.602
+    },
+    {
+      "file": "src/_pytest/config/__init__.py",
+      "score": 0.602
+    },
+    {
+      "file": "src/_pytest/pytester.py",
+      "score": 0.57
+    },
+    {
+      "file": "src/_pytest/python.py",
+      "score": 0.464
+    },
+    {
+      "file": "src/_pytest/assertion/rewrite.py",
+      "score": 0.456
+    }
+  ],
+  "localised": [
+    {
+      "file": "src/_pytest/pathlib.py",
+      "name": "visit",
+      "kind": "function",
+      "start": 551,
+      "end": 562,
+      "score": 1.5
+    },
+    {
+      "file": "src/_pytest/pathlib.py",
+      "name": "symlink_or_skip",
+      "kind": "function",
+      "start": 411,
+      "end": 416,
+      "score": 1.259
+    },
+    {
+      "file": "src/_pytest/pathlib.py",
+      "name": "ensure_deletable",
+      "kind": "function",
+      "start": 278,
+      "end": 303,
+      "score": 1.064
+    },
+    {
+      "file": "src/_pytest/pytester.py",
+      "name": "Pytester._finalize",
+      "kind": "function",
+      "start": 693,
+      "end": 704,
+      "score": 0.954
+    },
+    {
+      "file": "src/_pytest/python.py",
+      "name": "pytest_pycollect_makeitem",
+      "kind": "function",
+      "start": 218,
+      "end": 250,
+      "score": 0.944
+    },
+    {
+      "file": "src/_pytest/pytester.py",
+      "name": "Pytester.<L625-645>",
+      "kind": "block",
+      "start": 625,
+      "end": 645,
+      "score": 0.937
+    }
+  ],
+  "repro": [
+    {
+      "model": "qwen2.5-coder-7b",
+      "outcome": "unparseable",
+      "script_hash": null
+    },
+    {
+      "model": "qwen2.5-coder-3b",
+      "outcome": "unparseable",
+      "script_hash": null
+    }
+  ],
+  "candidates": [
+    {
+      "snippet": "py:src/_pytest/pathlib.py::visit",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "77841b0a1a7ee3dc",
+      "response_hash": "40607fa7bb530fe9",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "testing/test_pathlib.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 4.6,
+      "diff": "diff --git a/src/_pytest/pathlib.py b/src/_pytest/pathlib.py\nindex f0bdb1481..64c7fec6f 100644\n--- a/src/_pytest/pathlib.py\n+++ b/src/_pytest/pathlib.py\n@@ -558,7 +558,7 @@ def visit(\n     entries = sorted(os.scandir(path), key=lambda entry: entry.name)\n     yield from entries\n     for entry in entries:\n-        if entry.is_dir(follow_symlinks=False) and recurse(entry):\n+        if entry.is_dir(follow_symlinks=True) and recurse(entry):\n             yield from visit(entry.path, recurse)\n \n \n",
+      "new_source": "def visit(\n    path: str, recurse: Callable[[\"os.DirEntry[str]\"], bool]\n) -> Iterator[\"os.DirEntry[str]\"]:\n    \"\"\"Walk a directory recursively, in breadth-first order.\n\n    Entries at each directory level are sorted.\n    \"\"\"\n    entries = sorted(os.scandir(path), key=lambda entry: entry.name)\n    yield from entries\n    for entry in entries:\n        if entry.is_dir(follow_symlinks=True) and recurse(entry):\n            yield from visit(entry.path, recurse)\n"
+    },
+    {
+      "snippet": "py:src/_pytest/pathlib.py::symlink_or_skip",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "49917ef7d6c675f3",
+      "response_hash": "7be219a9cb21a213",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:src/_pytest/pathlib.py::ensure_deletable",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "be3ec69bd7e23b9a",
+      "response_hash": "342c740f53db4c8b",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "testing/test_pathlib.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 9,
+      "judge_s": 2.6,
+      "diff": "diff --git a/src/_pytest/pathlib.py b/src/_pytest/pathlib.py\nindex f0bdb1481..b9d47deb4 100644\n--- a/src/_pytest/pathlib.py\n+++ b/src/_pytest/pathlib.py\n@@ -275,10 +275,17 @@ def maybe_delete_a_numbered_dir(path: Path) -> None:\n                 pass\n \n \n+import os\n+\n def ensure_deletable(path: Path, consider_lock_dead_if_created_before: float) -> bool:\n     \"\"\"Check if `path` is deletable based on whether the lock file is expired.\"\"\"\n     if path.is_symlink():\n-        return False\n+        # Resolve the symlink to get the actual path\n+        resolved_path = os.path.realpath(path)\n+\n+        # Check if the resolved path is deletable\n+        return ensure_deletable(resolved_path, consider_lock_dead_if_created_before)\n+\n     lock = get_lock_path(path)\n     try:\n         if not lock.is_file():\n",
+      "new_source": "import os\n\ndef ensure_deletable(path: Path, consider_lock_dead_if_created_before: float) -> bool:\n    \"\"\"Check if `path` is deletable based on whether the lock file is expired.\"\"\"\n    if path.is_symlink():\n        # Resolve the symlink to get the actual path\n        resolved_path = os.path.realpath(path)\n\n        # Check if the resolved path is deletable\n        return ensure_deletable(resolved_path, consider_lock_dead_if_created_before)\n\n    lock = get_lock_path(path)\n    try:\n        if not lock.is_file():\n            return True\n    except OSError:\n        # we might not have access to the lock file at all, in this case assume\n        # we don't have access to the entire directory (#7491).\n        return False\n    try:\n        lock_time = lock.stat().st_mtime\n    except Exception:\n        return False\n    else:\n        if lock_time < consider_lock_dead_if_created_before:\n            # We want to ignore any errors while trying to remove the lock such as:\n            # - PermissionDenied, like the file permissions have changed since the lock creation;\n            # - FileNotFoundError, in case another pytest process got here first;\n            # and any other cause of failure.\n            with contextlib.suppress(OSError):\n                lock.unlink()\n                return True\n        return False\n"
+    },
+    {
+      "snippet": "py:src/_pytest/pytester.py::Pytester._finalize",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "2d27365d7c630496",
+      "response_hash": "6d9046e78a545d48",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:src/_pytest/python.py::pytest_pycollect_makeitem",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "142fcfcfb1028ef8",
+      "response_hash": "8c05419c63a86959",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 1,
+      "judge_s": 0.7,
+      "diff": "diff --git a/src/_pytest/python.py b/src/_pytest/python.py\nindex 35797cc07..cc2f61ee6 100644\n--- a/src/_pytest/python.py\n+++ b/src/_pytest/python.py\n@@ -246,6 +246,7 @@ def pytest_pycollect_makeitem(collector: \"PyCollector\", name: str, obj: object):\n                 res.add_marker(MARK_GEN.xfail(run=False, reason=reason))\n                 res.warn(PytestCollectionWarning(reason))\n             else:\n+                obj = os.path.realpath(obj)\n                 res = list(collector._genfunctions(name, obj))\n             return res\n \n",
+      "new_source": "@hookimpl(trylast=True)\ndef pytest_pycollect_makeitem(collector: \"PyCollector\", name: str, obj: object):\n    # Nothing was collected elsewhere, let's do it here.\n    if safe_isclass(obj):\n        if collector.istestclass(obj, name):\n            return Class.from_parent(collector, name=name, obj=obj)\n    elif collector.istestfunction(obj, name):\n        # mock seems to store unbound methods (issue473), normalize it.\n        obj = getattr(obj, \"__func__\", obj)\n        # We need to try and unwrap the function if it's a functools.partial\n        # or a functools.wrapped.\n        # We mustn't if it's been wrapped with mock.patch (python 2 only).\n        if not (inspect.isfunction(obj) or inspect.isfunction(get_real_func(obj))):\n            filename, lineno = getfslineno(obj)\n            warnings.warn_explicit(\n                message=PytestCollectionWarning(\n                    \"cannot collect %r because it is not a function.\" % name\n                ),\n                category=None,\n                filename=str(filename),\n                lineno=lineno + 1,\n            )\n        elif getattr(obj, \"__test__\", True):\n            if is_generator(obj):\n                res = Function.from_parent(collector, name=name)\n                reason = \"yield tests were removed in pytest 4.0 - {name} will be ignored\".format(\n                    name=name\n                )\n                res.add_marker(MARK_GEN.xfail(run=False, reason=reason))\n                res.warn(PytestCollectionWarning(reason))\n            else:\n                obj = os.path.realpath(obj)\n                res = list(collector._genfunctions(name, obj))\n            return res\n"
+    },
+    {
+      "snippet": "py:src/_pytest/pytester.py::Pytester.<L625-645>",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "fe5a5cae5755862e",
+      "response_hash": "4d72a55e2a422be6",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "45 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "testing/test_pytester.py"
+      ],
+      "regressions": 45,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 23,
+      "judge_s": 7.1
+    },
+    {
+      "snippet": "py:src/_pytest/pathlib.py::visit",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "77841b0a1a7ee3dc",
+      "response_hash": "fdf707b946973a15",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "testing/test_pathlib.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 5,
+      "judge_s": 2.5,
+      "diff": "diff --git a/src/_pytest/pathlib.py b/src/_pytest/pathlib.py\nindex f0bdb1481..6f4718b6e 100644\n--- a/src/_pytest/pathlib.py\n+++ b/src/_pytest/pathlib.py\n@@ -548,6 +548,9 @@ def resolve_package_path(path: Path) -> Optional[Path]:\n     return result\n \n \n+import os\n+from pathlib import Path\n+\n def visit(\n     path: str, recurse: Callable[[\"os.DirEntry[str]\"], bool]\n ) -> Iterator[\"os.DirEntry[str]\"]:\n@@ -558,7 +561,7 @@ def visit(\n     entries = sorted(os.scandir(path), key=lambda entry: entry.name)\n     yield from entries\n     for entry in entries:\n-        if entry.is_dir(follow_symlinks=False) and recurse(entry):\n+        if entry.is_dir() and recurse(entry):\n             yield from visit(entry.path, recurse)\n \n \n",
+      "new_source": "import os\nfrom pathlib import Path\n\ndef visit(\n    path: str, recurse: Callable[[\"os.DirEntry[str]\"], bool]\n) -> Iterator[\"os.DirEntry[str]\"]:\n    \"\"\"Walk a directory recursively, in breadth-first order.\n\n    Entries at each directory level are sorted.\n    \"\"\"\n    entries = sorted(os.scandir(path), key=lambda entry: entry.name)\n    yield from entries\n    for entry in entries:\n        if entry.is_dir() and recurse(entry):\n            yield from visit(entry.path, recurse)\n"
+    },
+    {
+      "snippet": "py:src/_pytest/pathlib.py::symlink_or_skip",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "49917ef7d6c675f3",
+      "response_hash": "0dfb28c61f6b52e1",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "testing/test_pathlib.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 2.6,
+      "diff": "diff --git a/src/_pytest/pathlib.py b/src/_pytest/pathlib.py\nindex f0bdb1481..3199d3654 100644\n--- a/src/_pytest/pathlib.py\n+++ b/src/_pytest/pathlib.py\n@@ -411,7 +411,7 @@ def parts(s: str) -> Set[str]:\n def symlink_or_skip(src, dst, **kwargs):\n     \"\"\"Make a symlink, or skip the test in case symlinks are not supported.\"\"\"\n     try:\n-        os.symlink(str(src), str(dst), **kwargs)\n+        os.symlink(str(src), str(dst))\n     except OSError as e:\n         skip(f\"symlinks not supported: {e}\")\n \n",
+      "new_source": "def symlink_or_skip(src, dst, **kwargs):\n    \"\"\"Make a symlink, or skip the test in case symlinks are not supported.\"\"\"\n    try:\n        os.symlink(str(src), str(dst))\n    except OSError as e:\n        skip(f\"symlinks not supported: {e}\")\n"
+    },
+    {
+      "snippet": "py:src/_pytest/pathlib.py::ensure_deletable",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "be3ec69bd7e23b9a",
+      "response_hash": "9dfdc81917013721",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "testing/test_pathlib.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 2.6,
+      "diff": "diff --git a/src/_pytest/pathlib.py b/src/_pytest/pathlib.py\nindex f0bdb1481..f38daa3ae 100644\n--- a/src/_pytest/pathlib.py\n+++ b/src/_pytest/pathlib.py\n@@ -278,6 +278,8 @@ def maybe_delete_a_numbered_dir(path: Path) -> None:\n def ensure_deletable(path: Path, consider_lock_dead_if_created_before: float) -> bool:\n     \"\"\"Check if `path` is deletable based on whether the lock file is expired.\"\"\"\n     if path.is_symlink():\n+        # If the symlink points to a directory that does not exist,\n+        # it cannot be deleted.\n         return False\n     lock = get_lock_path(path)\n     try:\n",
+      "new_source": "def ensure_deletable(path: Path, consider_lock_dead_if_created_before: float) -> bool:\n    \"\"\"Check if `path` is deletable based on whether the lock file is expired.\"\"\"\n    if path.is_symlink():\n        # If the symlink points to a directory that does not exist,\n        # it cannot be deleted.\n        return False\n    lock = get_lock_path(path)\n    try:\n        if not lock.is_file():\n            return True\n    except OSError:\n        # we might not have access to the lock file at all, in this case assume\n        # we don't have access to the entire directory (#7491).\n        return False\n    try:\n        lock_time = lock.stat().st_mtime\n    except Exception:\n        return False\n    else:\n        if lock_time < consider_lock_dead_if_created_before:\n            # We want to ignore any errors while trying to remove the lock such as:\n            # - PermissionDenied, like the file permissions have changed since the lock creation;\n            # - FileNotFoundError, in case another pytest process got here first;\n            # and any other cause of failure.\n            with contextlib.suppress(OSError):\n                lock.unlink()\n                return True\n        return False\n"
+    },
+    {
+      "snippet": "py:src/_pytest/pytester.py::Pytester._finalize",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "2d27365d7c630496",
+      "response_hash": "80d9a8a41505f53b",
+      "stage": "parse",
+      "reason": "response does not define _finalize()"
+    },
+    {
+      "snippet": "py:src/_pytest/python.py::pytest_pycollect_makeitem",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "142fcfcfb1028ef8",
+      "response_hash": "11399623d36a09d3",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:src/_pytest/pytester.py::Pytester.<L625-645>",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "fe5a5cae5755862e",
+      "response_hash": "4223d8ada647445f",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "45 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "testing/test_pytester.py"
+      ],
+      "regressions": 45,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 64,
+      "judge_s": 2.6
+    },
+    {
+      "snippet": "py:src/_pytest/pathlib.py::visit",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "77841b0a1a7ee3dc",
+      "response_hash": "06aaddc76b8781d8",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "testing/test_pathlib.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 2.5,
+      "diff": "diff --git a/src/_pytest/pathlib.py b/src/_pytest/pathlib.py\nindex f0bdb1481..b96cba069 100644\n--- a/src/_pytest/pathlib.py\n+++ b/src/_pytest/pathlib.py\n@@ -558,7 +558,7 @@ def visit(\n     entries = sorted(os.scandir(path), key=lambda entry: entry.name)\n     yield from entries\n     for entry in entries:\n-        if entry.is_dir(follow_symlinks=False) and recurse(entry):\n+        if entry.is_dir() and recurse(entry):\n             yield from visit(entry.path, recurse)\n \n \n",
+      "new_source": "def visit(\n    path: str, recurse: Callable[[\"os.DirEntry[str]\"], bool]\n) -> Iterator[\"os.DirEntry[str]\"]:\n    \"\"\"Walk a directory recursively, in breadth-first order.\n\n    Entries at each directory level are sorted.\n    \"\"\"\n    entries = sorted(os.scandir(path), key=lambda entry: entry.name)\n    yield from entries\n    for entry in entries:\n        if entry.is_dir() and recurse(entry):\n            yield from visit(entry.path, recurse)\n"
+    },
+    {
+      "snippet": "py:src/_pytest/pathlib.py::symlink_or_skip",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "49917ef7d6c675f3",
+      "response_hash": "142f83e8b2b7c455",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "testing/test_pathlib.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 37,
+      "judge_s": 2.5,
+      "diff": "diff --git a/src/_pytest/pathlib.py b/src/_pytest/pathlib.py\nindex f0bdb1481..fa9ae0114 100644\n--- a/src/_pytest/pathlib.py\n+++ b/src/_pytest/pathlib.py\n@@ -408,8 +408,43 @@ def parts(s: str) -> Set[str]:\n     return {sep.join(parts[: i + 1]) or sep for i in range(len(parts))}\n \n \n+import atexit\n+import contextlib\n+import fnmatch\n+import importlib.util\n+import itertools\n+import os\n+import shutil\n+import sys\n+import uuid\n+import warnings\n+from enum import Enum\n+from functools import partial\n+from os.path import expanduser\n+from os.path import expandvars\n+from os.path import isabs\n+from os.path import sep\n+from pathlib import Path\n+from pathlib import PurePath\n+from posixpath import sep as posix_sep\n+from types import ModuleType\n+from typing import Callable\n+from typing import Iterable\n+from typing import Iterator\n+from typing import Optional\n+from typing import Set\n+from typing import TypeVar\n+from typing import Union\n+import py\n+from _pytest.compat import assert_never\n+from _pytest.outcomes import skip\n+from _pytest.warning_types import PytestWarning\n+\n def symlink_or_skip(src, dst, **kwargs):\n-    \"\"\"Make a symlink, or skip the test in case symlinks are not supported.\"\"\"\n+    \"\"\"Make a symbolic link, or skip the test in case symlinks are not supported.\"\"\"\n+    if os.path.islink(dst):  # Check if destination is already a symlink\n+        skip(f\"symlink to {dst} already exists\")\n+\n     try:\n         os.symlink(str(src), str(dst), **kwargs)\n     except OSError as e:\n",
+      "new_source": "import atexit\nimport contextlib\nimport fnmatch\nimport importlib.util\nimport itertools\nimport os\nimport shutil\nimport sys\nimport uuid\nimport warnings\nfrom enum import Enum\nfrom functools import partial\nfrom os.path import expanduser\nfrom os.path import expandvars\nfrom os.path import isabs\nfrom os.path import sep\nfrom pathlib import Path\nfrom pathlib import PurePath\nfrom posixpath import sep as posix_sep\nfrom types import ModuleType\nfrom typing import Callable\nfrom typing import Iterable\nfrom typing import Iterator\nfrom typing import Optional\nfrom typing import Set\nfrom typing import TypeVar\nfrom typing import Union\nimport py\nfrom _pytest.compat import assert_never\nfrom _pytest.outcomes import skip\nfrom _pytest.warning_types import PytestWarning\n\ndef symlink_or_skip(src, dst, **kwargs):\n    \"\"\"Make a symbolic link, or skip the test in case symlinks are not supported.\"\"\"\n    if os.path.islink(dst):  # Check if destination is already a symlink\n        skip(f\"symlink to {dst} already exists\")\n\n    try:\n        os.symlink(str(src), str(dst), **kwargs)\n    except OSError as e:\n        skip(f\"symlinks not supported: {e}\")\n"
+    }
+  ],
+  "validated_repro": 0,
+  "stop": "budget",
+  "submission": {
+    "snippet": "py:src/_pytest/python.py::pytest_pycollect_makeitem",
+    "model": "qwen2.5-coder-1.5b",
+    "template": "fix_think",
+    "diff": "diff --git a/src/_pytest/python.py b/src/_pytest/python.py\nindex 35797cc07..cc2f61ee6 100644\n--- a/src/_pytest/python.py\n+++ b/src/_pytest/python.py\n@@ -246,6 +246,7 @@ def pytest_pycollect_makeitem(collector: \"PyCollector\", name: str, obj: object):\n                 res.add_marker(MARK_GEN.xfail(run=False, reason=reason))\n                 res.warn(PytestCollectionWarning(reason))\n             else:\n+                obj = os.path.realpath(obj)\n                 res = list(collector._genfunctions(name, obj))\n             return res\n \n",
+    "votes": 0,
+    "changed_lines": 1,
+    "new_source": "@hookimpl(trylast=True)\ndef pytest_pycollect_makeitem(collector: \"PyCollector\", name: str, obj: object):\n    # Nothing was collected elsewhere, let's do it here.\n    if safe_isclass(obj):\n        if collector.istestclass(obj, name):\n            return Class.from_parent(collector, name=name, obj=obj)\n    elif collector.istestfunction(obj, name):\n        # mock seems to store unbound methods (issue473), normalize it.\n        obj = getattr(obj, \"__func__\", obj)\n        # We need to try and unwrap the function if it's a functools.partial\n        # or a functools.wrapped.\n        # We mustn't if it's been wrapped with mock.patch (python 2 only).\n        if not (inspect.isfunction(obj) or inspect.isfunction(get_real_func(obj))):\n            filename, lineno = getfslineno(obj)\n            warnings.warn_explicit(\n                message=PytestCollectionWarning(\n                    \"cannot collect %r because it is not a function.\" % name\n                ),\n                category=None,\n                filename=str(filename),\n                lineno=lineno + 1,\n            )\n        elif getattr(obj, \"__test__\", True):\n            if is_generator(obj):\n                res = Function.from_parent(collector, name=name)\n                reason = \"yield tests were removed in pytest 4.0 - {name} will be ignored\".format(\n                    name=name\n                )\n                res.add_marker(MARK_GEN.xfail(run=False, reason=reason))\n                res.warn(PytestCollectionWarning(reason))\n            else:\n                obj = os.path.realpath(obj)\n                res = list(collector._genfunctions(name, obj))\n            return res\n",
+    "prompt_hash": "142fcfcfb1028ef8",
+    "response_hash": "8c05419c63a86959"
+  },
+  "search_s": 555.8,
+  "llm_calls": 16,
+  "tokens_in": 9158,
+  "tokens_out": 4777,
+  "arms": {
+    "qwen2.5-coder-7b/fix": 0.3,
+    "qwen2.5-coder-7b/fix_think": 0.3,
+    "qwen2.5-coder-3b/fix": 0.3,
+    "qwen2.5-coder-3b/fix_think": 0.3,
+    "qwen2.5-coder-1.5b/fix": 0.3,
+    "qwen2.5-coder-1.5b/fix_think": 0.5375
+  },
+  "grade": {
+    "resolved": false,
+    "applied": true,
+    "fail_to_pass": {
+      "success": 0,
+      "failure": 1
+    },
+    "pass_to_pass": {
+      "success": 0,
+      "failure": 78
+    }
+  },
+  "grade_s": 26.7,
+  "wall_s": 608.5,
+  "diagnosis": {
+    "gold_files": [
+      "src/_pytest/pathlib.py"
+    ],
+    "localised_file_hit": true,
+    "localised_line_hit": true,
+    "submission_files": [
+      "src/_pytest/python.py"
+    ],
+    "submission_in_gold_file": false,
+    "gold_changed_lines": 2
+  }
+}

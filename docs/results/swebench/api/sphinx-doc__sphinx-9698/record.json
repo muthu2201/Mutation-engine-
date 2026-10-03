@@ -1,0 +1,236 @@
+{
+  "instance_id": "sphinx-doc__sphinx-9698",
+  "repo": "sphinx-doc/sphinx",
+  "version": "4.3",
+  "base_commit": "f050a7775dfc9000f55d023d36d925a8d02ccfa8",
+  "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.sphinx-doc__sphinx-9698:latest",
+  "started_at": "2026-10-03T15:10:12.199726+00:00",
+  "image_digest": "ghcr.io/epoch-research/swe-bench.eval.x86_64.sphinx-doc__sphinx-9698@sha256:0d43c00c294ab70068279346b14f3a2906e94c4fabc7bc8e684d2d6ddfe8f54a",
+  "pull_s": 21.5,
+  "files_considered": 177,
+  "ranked_files": [
+    {
+      "file": "sphinx/ext/autodoc/__init__.py",
+      "score": 1.174
+    },
+    {
+      "file": "sphinx/domains/python.py",
+      "score": 1.0
+    },
+    {
+      "file": "sphinx/addnodes.py",
+      "score": 0.943
+    },
+    {
+      "file": "sphinx/application.py",
+      "score": 0.918
+    },
+    {
+      "file": "sphinx/domains/javascript.py",
+      "score": 0.842
+    },
+    {
+      "file": "sphinx/environment/__init__.py",
+      "score": 0.793
+    },
+    {
+      "file": "sphinx/domains/__init__.py",
+      "score": 0.711
+    },
+    {
+      "file": "sphinx/builders/html/__init__.py",
+      "score": 0.704
+    }
+  ],
+  "localised": [
+    {
+      "file": "sphinx/addnodes.py",
+      "name": "index.<L381-392>",
+      "kind": "block",
+      "start": 381,
+      "end": 392,
+      "score": 1.857
+    },
+    {
+      "file": "sphinx/domains/python.py",
+      "name": "PythonDomain.<L1160-1208>",
+      "kind": "block",
+      "start": 1160,
+      "end": 1208,
+      "score": 1.426
+    },
+    {
+      "file": "sphinx/domains/python.py",
+      "name": "PyMethod.get_index_text",
+      "kind": "function",
+      "start": 784,
+      "end": 803,
+      "score": 1.188
+    },
+    {
+      "file": "sphinx/domains/python.py",
+      "name": "PythonDomain.resolve_xref",
+      "kind": "function",
+      "start": 1321,
+      "end": 1366,
+      "score": 1.152
+    },
+    {
+      "file": "sphinx/domains/python.py",
+      "name": "PythonDomain.objects",
+      "kind": "function",
+      "start": 1210,
+      "end": 1212,
+      "score": 1.141
+    },
+    {
+      "file": "sphinx/domains/python.py",
+      "name": "PythonDomain.modules",
+      "kind": "function",
+      "start": 1235,
+      "end": 1237,
+      "score": 1.141
+    }
+  ],
+  "repro": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "ISSUE REPRODUCED",
+      "script_hash": "0dfc8f833bc10c2a"
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "OTHER",
+      "script_hash": "60d23369c43ebd70"
+    }
+  ],
+  "candidates": [
+    {
+      "snippet": "py:sphinx/addnodes.py::index.<L381-392>",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "614939c7ddae15aa",
+      "response_hash": "fdcbbfba9f6807cb",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/test_domain_c.py",
+        "tests/test_domain_cpp.py",
+        "tests/test_domain_js.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "OTHER"
+      ],
+      "changed_lines": 22,
+      "judge_s": 16.9,
+      "diff": "diff --git a/sphinx/addnodes.py b/sphinx/addnodes.py\nindex b43aa8152..ef95bd552 100644\n--- a/sphinx/addnodes.py\n+++ b/sphinx/addnodes.py\n@@ -378,18 +378,16 @@ class production(nodes.Part, nodes.Inline, nodes.FixedTextElement):\n # other directive-level nodes\n \n class index(nodes.Invisible, nodes.Inline, nodes.TextElement):\n-    \"\"\"Node for index entries.\n-\n-    This node is created by the ``index`` directive and has one attribute,\n-    ``entries``.  Its value is a list of 5-tuples of ``(entrytype, entryname,\n-    target, ignored, key)``.\n-\n-    *entrytype* is one of \"single\", \"pair\", \"double\", \"triple\".\n-\n-    *key* is categorization characters (usually a single character) for\n-    general index page. For the details of this, please see also:\n-    :rst:dir:`glossary` and issue #2320.\n-    \"\"\"\n+    # In sphinx/domains/python.py, replace the start of PyObject.get_index_text()\n+    # (or apply the equivalent guard in PyMethod) with this logic:\n+\n+    def get_index_text(self, objectname: str, name_obj: Tuple[str, str]) -> str:\n+        name, obj = name_obj\n+        if self.objtype == 'module':\n+            return _('%s (module)') % name\n+        if self.objtype == 'method' and 'property' in self.options:\n+            return _('%s (property)') % objectname\n+        return super().get_index_text(objectname, name_obj)\n \n \n class centered(nodes.Part, nodes.TextElement):\n",
+      "new_source": "# In sphinx/domains/python.py, replace the start of PyObject.get_index_text()\n# (or apply the equivalent guard in PyMethod) with this logic:\n\ndef get_index_text(self, objectname: str, name_obj: Tuple[str, str]) -> str:\n    name, obj = name_obj\n    if self.objtype == 'module':\n        return _('%s (module)') % name\n    if self.objtype == 'method' and 'property' in self.options:\n        return _('%s (property)') % objectname\n    return super().get_index_text(objectname, name_obj)\n"
+    },
+    {
+      "snippet": "py:sphinx/domains/python.py::PythonDomain.<L1160-1208>",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "c1faac8e69529c4b",
+      "response_hash": "83367a3be6e50fdb",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/test_domain_py.py"
+      ],
+      "regressions": 0,
+      "votes": 1,
+      "repro": [
+        "ISSUE RESOLVED"
+      ],
+      "changed_lines": 99,
+      "judge_s": 12.9,
+      "diff": "diff --git a/sphinx/domains/python.py b/sphinx/domains/python.py\nindex cd02eaad5..f6becb93e 100644\n--- a/sphinx/domains/python.py\n+++ b/sphinx/domains/python.py\n@@ -1157,55 +1157,56 @@ class PythonModuleIndex(Index):\n \n \n class PythonDomain(Domain):\n-    \"\"\"Python language domain.\"\"\"\n-    name = 'py'\n-    label = 'Python'\n-    object_types: Dict[str, ObjType] = {\n-        'function':     ObjType(_('function'),      'func', 'obj'),\n-        'data':         ObjType(_('data'),          'data', 'obj'),\n-        'class':        ObjType(_('class'),         'class', 'exc', 'obj'),\n-        'exception':    ObjType(_('exception'),     'exc', 'class', 'obj'),\n-        'method':       ObjType(_('method'),        'meth', 'obj'),\n-        'classmethod':  ObjType(_('class method'),  'meth', 'obj'),\n-        'staticmethod': ObjType(_('static method'), 'meth', 'obj'),\n-        'attribute':    ObjType(_('attribute'),     'attr', 'obj'),\n-        'property':     ObjType(_('property'),      'attr', '_prop', 'obj'),\n-        'module':       ObjType(_('module'),        'mod', 'obj'),\n-    }\n-\n-    directives = {\n-        'function':        PyFunction,\n-        'data':            PyVariable,\n-        'class':           PyClasslike,\n-        'exception':       PyClasslike,\n-        'method':          PyMethod,\n-        'classmethod':     PyClassMethod,\n-        'staticmethod':    PyStaticMethod,\n-        'attribute':       PyAttribute,\n-        'property':        PyProperty,\n-        'module':          PyModule,\n-        'currentmodule':   PyCurrentModule,\n-        'decorator':       PyDecoratorFunction,\n-        'decoratormethod': PyDecoratorMethod,\n-    }\n-    roles = {\n-        'data':  PyXRefRole(),\n-        'exc':   PyXRefRole(),\n-        'func':  PyXRefRole(fix_parens=True),\n-        'class': PyXRefRole(),\n-        'const': PyXRefRole(),\n-        'attr':  PyXRefRole(),\n-        'meth':  PyXRefRole(fix_parens=True),\n-        'mod':   PyXRefRole(),\n-        'obj':   PyXRefRole(),\n-    }\n-    initial_data: Dict[str, Dict[str, Tuple[Any]]] = {\n-        'objects': {},  # fullname -> docname, objtype\n-        'modules': {},  # modname -> docname, synopsis, platform, deprecated\n-    }\n-    indices = [\n-        PythonModuleIndex,\n-    ]\n+    class PythonDomain(Domain):\n+        \"\"\"Python language domain.\"\"\"\n+        name = 'py'\n+        label = 'Python'\n+        object_types: Dict[str, ObjType] = {\n+            'function':     ObjType(_('function'),      'func', 'obj'),\n+            'data':         ObjType(_('data'),          'data', 'obj'),\n+            'class':        ObjType(_('class'),         'class', 'exc', 'obj'),\n+            'exception':    ObjType(_('exception'),     'exc', 'class', 'obj'),\n+            'method':       ObjType(_('method'),        'meth', 'obj'),\n+            'classmethod':  ObjType(_('class method'),  'meth', 'obj'),\n+            'staticmethod': ObjType(_('static method'), 'meth', 'obj'),\n+            'attribute':    ObjType(_('attribute'),     'attr', 'obj'),\n+            'property':     ObjType(_('property'),      'attr', '_prop', 'obj'),\n+            'module':       ObjType(_('module'),        'mod', 'obj'),\n+        }\n+\n+        directives = {\n+            'function':        PyFunction,\n+            'data':            PyVariable,\n+            'class':           PyClasslike,\n+            'exception':       PyClasslike,\n+            'method':          PyMethod,\n+            'classmethod':     PyClassMethod,\n+            'staticmethod':    PyStaticMethod,\n+            'attribute':       PyAttribute,\n+            'property':        PyProperty,\n+            'module':          PyModule,\n+            'currentmodule':   PyCurrentModule,\n+            'decorator':       PyDecoratorFunction,\n+            'decoratormethod': PyDecoratorMethod,\n+        }\n+        roles = {\n+            'data':  PyXRefRole(),\n+            'exc':   PyXRefRole(),\n+            'func':  PyXRefRole(fix_parens=True),\n+            'class': PyXRefRole(),\n+            'const': PyXRefRole(),\n+            'attr':  PyXRefRole(),\n+            'meth':  PyXRefRole(fix_parens=True),\n+            'mod':   PyXRefRole(),\n+            'obj':   PyXRefRole(),\n+        }\n+        initial_data: Dict[str, Dict[str, Tuple[Any]]] = {\n+            'objects': {},  # fullname -> docname, objtype\n+            'modules': {},  # modname -> docname, synopsis, platform, deprecated\n+        }\n+        indices = [\n+            PythonModuleIndex,\n+        ]\n \n     @property\n     def objects(self) -> Dict[str, ObjectEntry]:\n",
+      "new_source": "class PythonDomain(Domain):\n    \"\"\"Python language domain.\"\"\"\n    name = 'py'\n    label = 'Python'\n    object_types: Dict[str, ObjType] = {\n        'function':     ObjType(_('function'),      'func', 'obj'),\n        'data':         ObjType(_('data'),          'data', 'obj'),\n        'class':        ObjType(_('class'),         'class', 'exc', 'obj'),\n        'exception':    ObjType(_('exception'),     'exc', 'class', 'obj'),\n        'method':       ObjType(_('method'),        'meth', 'obj'),\n        'classmethod':  ObjType(_('class method'),  'meth', 'obj'),\n        'staticmethod': ObjType(_('static method'), 'meth', 'obj'),\n        'attribute':    ObjType(_('attribute'),     'attr', 'obj'),\n        'property':     ObjType(_('property'),      'attr', '_prop', 'obj'),\n        'module':       ObjType(_('module'),        'mod', 'obj'),\n    }\n\n    directives = {\n        'function':        PyFunction,\n        'data':            PyVariable,\n        'class':           PyClasslike,\n        'exception':       PyClasslike,\n        'method':          PyMethod,\n        'classmethod':     PyClassMethod,\n        'staticmethod':    PyStaticMethod,\n        'attribute':       PyAttribute,\n        'property':        PyProperty,\n        'module':          PyModule,\n        'currentmodule':   PyCurrentModule,\n        'decorator':       PyDecoratorFunction,\n        'decoratormethod': PyDecoratorMethod,\n    }\n    roles = {\n        'data':  PyXRefRole(),\n        'exc':   PyXRefRole(),\n        'func':  PyXRefRole(fix_parens=True),\n        'class': PyXRefRole(),\n        'const': PyXRefRole(),\n        'attr':  PyXRefRole(),\n        'meth':  PyXRefRole(fix_parens=True),\n        'mod':   PyXRefRole(),\n        'obj':   PyXRefRole(),\n    }\n    initial_data: Dict[str, Dict[str, Tuple[Any]]] = {\n        'objects': {},  # fullname -> docname, objtype\n        'modules': {},  # modname -> docname, synopsis, platform, deprecated\n    }\n    indices = [\n        PythonModuleIndex,\n    ]\n"
+    }
+  ],
+  "validated_repro": 1,
+  "stop": "every validated reproduction resolved",
+  "submission": {
+    "snippet": "py:sphinx/domains/python.py::PythonDomain.<L1160-1208>",
+    "model": "moonshotai/kimi-k3",
+    "template": "fix_think",
+    "diff": "diff --git a/sphinx/domains/python.py b/sphinx/domains/python.py\nindex cd02eaad5..f6becb93e 100644\n--- a/sphinx/domains/python.py\n+++ b/sphinx/domains/python.py\n@@ -1157,55 +1157,56 @@ class PythonModuleIndex(Index):\n \n \n class PythonDomain(Domain):\n-    \"\"\"Python language domain.\"\"\"\n-    name = 'py'\n-    label = 'Python'\n-    object_types: Dict[str, ObjType] = {\n-        'function':     ObjType(_('function'),      'func', 'obj'),\n-        'data':         ObjType(_('data'),          'data', 'obj'),\n-        'class':        ObjType(_('class'),         'class', 'exc', 'obj'),\n-        'exception':    ObjType(_('exception'),     'exc', 'class', 'obj'),\n-        'method':       ObjType(_('method'),        'meth', 'obj'),\n-        'classmethod':  ObjType(_('class method'),  'meth', 'obj'),\n-        'staticmethod': ObjType(_('static method'), 'meth', 'obj'),\n-        'attribute':    ObjType(_('attribute'),     'attr', 'obj'),\n-        'property':     ObjType(_('property'),      'attr', '_prop', 'obj'),\n-        'module':       ObjType(_('module'),        'mod', 'obj'),\n-    }\n-\n-    directives = {\n-        'function':        PyFunction,\n-        'data':            PyVariable,\n-        'class':           PyClasslike,\n-        'exception':       PyClasslike,\n-        'method':          PyMethod,\n-        'classmethod':     PyClassMethod,\n-        'staticmethod':    PyStaticMethod,\n-        'attribute':       PyAttribute,\n-        'property':        PyProperty,\n-        'module':          PyModule,\n-        'currentmodule':   PyCurrentModule,\n-        'decorator':       PyDecoratorFunction,\n-        'decoratormethod': PyDecoratorMethod,\n-    }\n-    roles = {\n-        'data':  PyXRefRole(),\n-        'exc':   PyXRefRole(),\n-        'func':  PyXRefRole(fix_parens=True),\n-        'class': PyXRefRole(),\n-        'const': PyXRefRole(),\n-        'attr':  PyXRefRole(),\n-        'meth':  PyXRefRole(fix_parens=True),\n-        'mod':   PyXRefRole(),\n-        'obj':   PyXRefRole(),\n-    }\n-    initial_data: Dict[str, Dict[str, Tuple[Any]]] = {\n-        'objects': {},  # fullname -> docname, objtype\n-        'modules': {},  # modname -> docname, synopsis, platform, deprecated\n-    }\n-    indices = [\n-        PythonModuleIndex,\n-    ]\n+    class PythonDomain(Domain):\n+        \"\"\"Python language domain.\"\"\"\n+        name = 'py'\n+        label = 'Python'\n+        object_types: Dict[str, ObjType] = {\n+            'function':     ObjType(_('function'),      'func', 'obj'),\n+            'data':         ObjType(_('data'),          'data', 'obj'),\n+            'class':        ObjType(_('class'),         'class', 'exc', 'obj'),\n+            'exception':    ObjType(_('exception'),     'exc', 'class', 'obj'),\n+            'method':       ObjType(_('method'),        'meth', 'obj'),\n+            'classmethod':  ObjType(_('class method'),  'meth', 'obj'),\n+            'staticmethod': ObjType(_('static method'), 'meth', 'obj'),\n+            'attribute':    ObjType(_('attribute'),     'attr', 'obj'),\n+            'property':     ObjType(_('property'),      'attr', '_prop', 'obj'),\n+            'module':       ObjType(_('module'),        'mod', 'obj'),\n+        }\n+\n+        directives = {\n+            'function':        PyFunction,\n+            'data':            PyVariable,\n+            'class':           PyClasslike,\n+            'exception':       PyClasslike,\n+            'method':          PyMethod,\n+            'classmethod':     PyClassMethod,\n+            'staticmethod':    PyStaticMethod,\n+            'attribute':       PyAttribute,\n+            'property':        PyProperty,\n+            'module':          PyModule,\n+            'currentmodule':   PyCurrentModule,\n+            'decorator':       PyDecoratorFunction,\n+            'decoratormethod': PyDecoratorMethod,\n+        }\n+        roles = {\n+            'data':  PyXRefRole(),\n+            'exc':   PyXRefRole(),\n+            'func':  PyXRefRole(fix_parens=True),\n+            'class': PyXRefRole(),\n+            'const': PyXRefRole(),\n+            'attr':  PyXRefRole(),\n+            'meth':  PyXRefRole(fix_parens=True),\n+            'mod':   PyXRefRole(),\n+            'obj':   PyXRefRole(),\n+        }\n+        initial_data: Dict[str, Dict[str, Tuple[Any]]] = {\n+            'objects': {},  # fullname -> docname, objtype\n+            'modules': {},  # modname -> docname, synopsis, platform, deprecated\n+        }\n+        indices = [\n+            PythonModuleIndex,\n+        ]\n \n     @property\n     def objects(self) -> Dict[str, ObjectEntry]:\n",
+    "votes": 1,
+    "changed_lines": 99,
+    "new_source": "class PythonDomain(Domain):\n    \"\"\"Python language domain.\"\"\"\n    name = 'py'\n    label = 'Python'\n    object_types: Dict[str, ObjType] = {\n        'function':     ObjType(_('function'),      'func', 'obj'),\n        'data':         ObjType(_('data'),          'data', 'obj'),\n        'class':        ObjType(_('class'),         'class', 'exc', 'obj'),\n        'exception':    ObjType(_('exception'),     'exc', 'class', 'obj'),\n        'method':       ObjType(_('method'),        'meth', 'obj'),\n        'classmethod':  ObjType(_('class method'),  'meth', 'obj'),\n        'staticmethod': ObjType(_('static method'), 'meth', 'obj'),\n        'attribute':    ObjType(_('attribute'),     'attr', 'obj'),\n        'property':     ObjType(_('property'),      'attr', '_prop', 'obj'),\n        'module':       ObjType(_('module'),        'mod', 'obj'),\n    }\n\n    directives = {\n        'function':        PyFunction,\n        'data':            PyVariable,\n        'class':           PyClasslike,\n        'exception':       PyClasslike,\n        'method':          PyMethod,\n        'classmethod':     PyClassMethod,\n        'staticmethod':    PyStaticMethod,\n        'attribute':       PyAttribute,\n        'property':        PyProperty,\n        'module':          PyModule,\n        'currentmodule':   PyCurrentModule,\n        'decorator':       PyDecoratorFunction,\n        'decoratormethod': PyDecoratorMethod,\n    }\n    roles = {\n        'data':  PyXRefRole(),\n        'exc':   PyXRefRole(),\n        'func':  PyXRefRole(fix_parens=True),\n        'class': PyXRefRole(),\n        'const': PyXRefRole(),\n        'attr':  PyXRefRole(),\n        'meth':  PyXRefRole(fix_parens=True),\n        'mod':   PyXRefRole(),\n        'obj':   PyXRefRole(),\n    }\n    initial_data: Dict[str, Dict[str, Tuple[Any]]] = {\n        'objects': {},  # fullname -> docname, objtype\n        'modules': {},  # modname -> docname, synopsis, platform, deprecated\n    }\n    indices = [\n        PythonModuleIndex,\n    ]\n",
+    "prompt_hash": "c1faac8e69529c4b",
+    "response_hash": "83367a3be6e50fdb"
+  },
+  "search_s": 195.4,
+  "llm_calls": 4,
+  "tokens_in": 2691,
+  "tokens_out": 2739,
+  "calls": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 34.17,
+      "tokens_in": 436,
+      "tokens_out": 436,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 27.59,
+      "tokens_in": 436,
+      "tokens_out": 518,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 35.4,
+      "tokens_in": 606,
+      "tokens_out": 720,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 56.03,
+      "tokens_in": 1213,
+      "tokens_out": 1065,
+      "finish_reason": "stop",
+      "empty": false
+    }
+  ],
+  "arms": {
+    "moonshotai/kimi-k3/fix": 0.3,
+    "moonshotai/kimi-k3/fix_think": 0.475
+  },
+  "grade": {
+    "resolved": false,
+    "applied": true,
+    "fail_to_pass": {
+      "success": 0,
+      "failure": 1
+    },
+    "pass_to_pass": {
+      "success": 45,
+      "failure": 0
+    }
+  },
+  "grade_s": 1.5,
+  "wall_s": 228.7,
+  "diagnosis": {
+    "gold_files": [
+      "sphinx/domains/python.py"
+    ],
+    "localised_file_hit": true,
+    "localised_line_hit": true,
+    "submission_files": [
+      "sphinx/domains/python.py"
+    ],
+    "submission_in_gold_file": true,
+    "gold_changed_lines": 2
+  }
+}

@@ -1,0 +1,21 @@
+diff --git a/lib/matplotlib/axes/_axes.py b/lib/matplotlib/axes/_axes.py
+index 2412f815cd..eb9c737069 100644
+--- a/lib/matplotlib/axes/_axes.py
++++ b/lib/matplotlib/axes/_axes.py
+@@ -2147,7 +2147,15 @@ class Axes(_AxesBase):
+         """
+         _api.check_in_list(('pre', 'post', 'mid'), where=where)
+         kwargs['drawstyle'] = 'steps-' + where
+-        return self.plot(x, y, *args, data=data, **kwargs)
++        lines = self.plot(x, y, *args, data=data, **kwargs)
++        # The step drawstyle interpolates the underlying path, whose vertices
++        # may extend outside the raw (x, y) data limits.  Recompute the data
++        # limits using the actual display paths so that autoscaling accounts
++        # for the full extent of the drawn steps.
++        for line in lines:
++            self.update_datalim(line.get_path().vertices)
++        self._request_autoscale_view()
++        return lines
+ 
+     @staticmethod
+     def _convert_dx(dx, x0, xconv, convert):

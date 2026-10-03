@@ -1,0 +1,373 @@
+{
+  "instance_id": "django__django-11951",
+  "repo": "django/django",
+  "version": "3.1",
+  "base_commit": "312049091288dbba2299de8d07ea3e3311ed7238",
+  "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.django__django-11951:latest",
+  "started_at": "2026-10-03T03:24:33.206541+00:00",
+  "image_digest": "ghcr.io/epoch-research/swe-bench.eval.x86_64.django__django-11951@sha256:cac643c7ea678b2786d828ab0bc5e0982036212f0b914d98302817c043f8a655",
+  "pull_s": 13.4,
+  "files_considered": 822,
+  "ranked_files": [
+    {
+      "file": "django/db/models/query.py",
+      "score": 2.0
+    },
+    {
+      "file": "django/contrib/gis/gdal/raster/band.py",
+      "score": 0.82
+    },
+    {
+      "file": "django/db/backends/sqlite3/operations.py",
+      "score": 0.812
+    },
+    {
+      "file": "django/db/models/deletion.py",
+      "score": 0.698
+    },
+    {
+      "file": "django/db/migrations/state.py",
+      "score": 0.69
+    },
+    {
+      "file": "django/db/models/lookups.py",
+      "score": 0.603
+    },
+    {
+      "file": "django/db/models/sql/subqueries.py",
+      "score": 0.585
+    },
+    {
+      "file": "django/db/backends/base/operations.py",
+      "score": 0.504
+    }
+  ],
+  "localised": [
+    {
+      "file": "django/db/models/query.py",
+      "name": "QuerySet.bulk_update",
+      "kind": "function",
+      "start": 502,
+      "end": 543,
+      "score": 3.5
+    },
+    {
+      "file": "django/db/models/query.py",
+      "name": "QuerySet.bulk_create",
+      "kind": "function",
+      "start": 438,
+      "end": 500,
+      "score": 3.091
+    },
+    {
+      "file": "django/contrib/gis/gdal/raster/band.py",
+      "name": "GDALBand.min",
+      "kind": "function",
+      "start": 106,
+      "end": 111,
+      "score": 2.307
+    },
+    {
+      "file": "django/db/migrations/state.py",
+      "name": "StateApps.bulk_update",
+      "kind": "function",
+      "start": 281,
+      "end": 291,
+      "score": 2.302
+    },
+    {
+      "file": "django/db/models/query.py",
+      "name": "QuerySet._batched_insert",
+      "kind": "function",
+      "start": 1205,
+      "end": 1228,
+      "score": 1.41
+    },
+    {
+      "file": "django/db/models/query.py",
+      "name": "QuerySet.in_bulk",
+      "kind": "function",
+      "start": 669,
+      "end": 695,
+      "score": 1.346
+    }
+  ],
+  "repro": [
+    {
+      "model": "qwen2.5-coder-7b",
+      "outcome": "NONE",
+      "script_hash": "8bdc458358e145eb"
+    },
+    {
+      "model": "qwen2.5-coder-3b",
+      "outcome": "unparseable",
+      "script_hash": null
+    }
+  ],
+  "candidates": [
+    {
+      "snippet": "py:django/db/models/query.py::QuerySet.bulk_update",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix",
+      "prompt_hash": "f3bb7424ff1364ff",
+      "response_hash": "2dbac3420b15efdc",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/db/models/query.py::QuerySet.bulk_create",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix",
+      "prompt_hash": "d1ccc1c7b9ebc986",
+      "response_hash": "743d686f7ceab107",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/contrib/gis/gdal/raster/band.py::GDALBand.min",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "982f66e118477017",
+      "response_hash": "5ca9b800e2e11d20",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/gis_tests/gdal_tests/test_raster.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 5.2,
+      "diff": "diff --git a/django/contrib/gis/gdal/raster/band.py b/django/contrib/gis/gdal/raster/band.py\nindex 61c6535213..8daf91052b 100644\n--- a/django/contrib/gis/gdal/raster/band.py\n+++ b/django/contrib/gis/gdal/raster/band.py\n@@ -108,7 +108,7 @@ class GDALBand(GDALRasterBase):\n         \"\"\"\n         Return the minimum pixel value for this band.\n         \"\"\"\n-        return self.statistics()[0]\n+        return self.statistics()[0] if self.statistics() else None\n \n     @property\n     def max(self):\n",
+      "new_source": "@property\ndef min(self):\n    \"\"\"\n    Return the minimum pixel value for this band.\n    \"\"\"\n    return self.statistics()[0] if self.statistics() else None\n"
+    },
+    {
+      "snippet": "py:django/db/migrations/state.py::StateApps.bulk_update",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "afbc472b61ad38cc",
+      "response_hash": "b443a4eaf7aaf2d1",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/db/models/query.py::QuerySet._batched_insert",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "cf5bab10cab16c71",
+      "response_hash": "07fb09dece6e288c",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "92 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "tests/queries/test_query.py",
+        "tests/raw_query/tests.py",
+        "tests/basic/tests.py"
+      ],
+      "regressions": 92,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 9,
+      "judge_s": 6.0
+    },
+    {
+      "snippet": "py:django/db/models/query.py::QuerySet.in_bulk",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix_think",
+      "prompt_hash": "d6123cf2faf0d15e",
+      "response_hash": "e3e5932cfe957552",
+      "stage": "parse",
+      "reason": "response does not define in_bulk()"
+    },
+    {
+      "snippet": "py:django/db/models/query.py::QuerySet.bulk_update",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "f3bb7424ff1364ff",
+      "response_hash": "f8a7fb8cb9db21cf",
+      "stage": "parse",
+      "reason": "response does not define bulk_update()"
+    },
+    {
+      "snippet": "py:django/db/models/query.py::QuerySet.bulk_create",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "d1ccc1c7b9ebc986",
+      "response_hash": "e994d95b99fce5b3",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "92 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "tests/queries/test_query.py",
+        "tests/raw_query/tests.py",
+        "tests/basic/tests.py"
+      ],
+      "regressions": 92,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 24,
+      "judge_s": 3.3
+    },
+    {
+      "snippet": "py:django/contrib/gis/gdal/raster/band.py::GDALBand.min",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "982f66e118477017",
+      "response_hash": "465e5afd2ef20359",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/gis_tests/gdal_tests/test_raster.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 3,
+      "judge_s": 2.9,
+      "diff": "diff --git a/django/contrib/gis/gdal/raster/band.py b/django/contrib/gis/gdal/raster/band.py\nindex 61c6535213..d4baed5b2f 100644\n--- a/django/contrib/gis/gdal/raster/band.py\n+++ b/django/contrib/gis/gdal/raster/band.py\n@@ -108,7 +108,8 @@ class GDALBand(GDALRasterBase):\n         \"\"\"\n         Return the minimum pixel value for this band.\n         \"\"\"\n-        return self.statistics()[0]\n+        stats = self.statistics()\n+        return min(stats) if stats else None  # Added check for empty statistics list to handle cases where no statistics are available\n \n     @property\n     def max(self):\n",
+      "new_source": "@property\ndef min(self):\n    \"\"\"\n    Return the minimum pixel value for this band.\n    \"\"\"\n    stats = self.statistics()\n    return min(stats) if stats else None  # Added check for empty statistics list to handle cases where no statistics are available\n"
+    },
+    {
+      "snippet": "py:django/db/migrations/state.py::StateApps.bulk_update",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "afbc472b61ad38cc",
+      "response_hash": "0e113a9afc6a02c3",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/migrations/test_state.py",
+        "tests/model_regress/test_state.py",
+        "tests/gis_tests/gis_migrations/test_operations.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 5,
+      "judge_s": 5.2,
+      "diff": "diff --git a/django/db/migrations/state.py b/django/db/migrations/state.py\nindex 9b62edad1f..3ea1af631f 100644\n--- a/django/db/migrations/state.py\n+++ b/django/db/migrations/state.py\n@@ -284,11 +284,14 @@ class StateApps(Apps):\n         # all caches when we're finished updating the model instances.\n         ready = self.ready\n         self.ready = False\n+\n         try:\n             yield\n         finally:\n             self.ready = ready\n-            self.clear_cache()\n+            # Clear all caches only if state is not ready after bulk update\n+            if not self.ready:\n+                self.clear_cache()\n \n     def render_multiple(self, model_states):\n         # We keep trying to render the models in a loop, ignoring invalid\n",
+      "new_source": "@contextmanager\ndef bulk_update(self):\n    # Avoid clearing each model's cache for each change. Instead, clear\n    # all caches when we're finished updating the model instances.\n    ready = self.ready\n    self.ready = False\n\n    try:\n        yield\n    finally:\n        self.ready = ready\n        # Clear all caches only if state is not ready after bulk update\n        if not self.ready:\n            self.clear_cache()\n"
+    },
+    {
+      "snippet": "py:django/db/models/query.py::QuerySet._batched_insert",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "cf5bab10cab16c71",
+      "response_hash": "c55e17fd3883dfd8",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "92 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "tests/queries/test_query.py",
+        "tests/raw_query/tests.py",
+        "tests/basic/tests.py"
+      ],
+      "regressions": 92,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 12,
+      "judge_s": 3.2
+    },
+    {
+      "snippet": "py:django/db/models/query.py::QuerySet.in_bulk",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "8151534c9db7c6a6",
+      "response_hash": "72969f01be3f9fcd",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/queries/test_query.py",
+        "tests/raw_query/tests.py",
+        "tests/basic/tests.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 37,
+      "judge_s": 3.5,
+      "diff": "diff --git a/django/db/models/query.py b/django/db/models/query.py\nindex 794e0faae7..0adfadbd67 100644\n--- a/django/db/models/query.py\n+++ b/django/db/models/query.py\n@@ -671,28 +671,25 @@ class QuerySet:\n         Return a dictionary mapping each of the given IDs to the object with\n         that ID. If `id_list` isn't provided, evaluate the entire QuerySet.\n         \"\"\"\n-        assert not self.query.is_sliced, \\\n-            \"Cannot use 'limit' or 'offset' with in_bulk\"\n-        if field_name != 'pk' and not self.model._meta.get_field(field_name).unique:\n+        if not self.query.is_sliced and field_name != 'pk' and not self.model._meta.get_field(field_name).unique:\n             raise ValueError(\"in_bulk()'s field_name must be a unique field but %r isn't.\" % field_name)\n-        if id_list is not None:\n-            if not id_list:\n-                return {}\n-            filter_key = '{}__in'.format(field_name)\n-            batch_size = connections[self.db].features.max_query_params\n-            id_list = tuple(id_list)\n-            # If the database has a limit on the number of query parameters\n-            # (e.g. SQLite), retrieve objects in batches if necessary.\n-            if batch_size and batch_size < len(id_list):\n-                qs = ()\n-                for offset in range(0, len(id_list), batch_size):\n-                    batch = id_list[offset:offset + batch_size]\n-                    qs += tuple(self.filter(**{filter_key: batch}).order_by())\n-            else:\n-                qs = self.filter(**{filter_key: id_list}).order_by()\n+\n+        filter_key = '{}__in'.format(field_name)\n+        id_list = tuple(id_list) if id_list is not None else ()\n+        # If the database has a limit on the number of query parameters (e.g. SQLite),\n+        # retrieve objects in batches if necessary.\n+        batch_size = connections[self.db].features.max_query_params\n+        if batch_size and len(id_list) > 0:\n+            qs = []\n+            for offset in range(0, len(id_list), batch_size):\n+                batch = id_list[offset:offset + batch_size]\n+                qs += tuple(self.filter(**{filter_key: batch}).order_by())\n+\n+            result = {getattr(obj, field_name): obj for obj in chain(*qs)}\n         else:\n-            qs = self._chain()\n-        return {getattr(obj, field_name): obj for obj in qs}\n+            result = {getattr(obj, field_name): obj for obj in self._chain()}\n+\n+        return result\n \n     def delete(self):\n         \"\"\"Delete the records in the current QuerySet.\"\"\"\n",
+      "new_source": "def in_bulk(self, id_list=None, *, field_name='pk'):\n    \"\"\"\n    Return a dictionary mapping each of the given IDs to the object with\n    that ID. If `id_list` isn't provided, evaluate the entire QuerySet.\n    \"\"\"\n    if not self.query.is_sliced and field_name != 'pk' and not self.model._meta.get_field(field_name).unique:\n        raise ValueError(\"in_bulk()'s field_name must be a unique field but %r isn't.\" % field_name)\n\n    filter_key = '{}__in'.format(field_name)\n    id_list = tuple(id_list) if id_list is not None else ()\n    # If the database has a limit on the number of query parameters (e.g. SQLite),\n    # retrieve objects in batches if necessary.\n    batch_size = connections[self.db].features.max_query_params\n    if batch_size and len(id_list) > 0:\n        qs = []\n        for offset in range(0, len(id_list), batch_size):\n            batch = id_list[offset:offset + batch_size]\n            qs += tuple(self.filter(**{filter_key: batch}).order_by())\n\n        result = {getattr(obj, field_name): obj for obj in chain(*qs)}\n    else:\n        result = {getattr(obj, field_name): obj for obj in self._chain()}\n\n    return result\n"
+    },
+    {
+      "snippet": "py:django/db/models/query.py::QuerySet.bulk_update",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix_think",
+      "prompt_hash": "8daa9d337df2f7ad",
+      "response_hash": "cb56950c86c4068f",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/db/models/query.py::QuerySet.bulk_create",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "d1ccc1c7b9ebc986",
+      "response_hash": "b5f1d72ec9d68a32",
+      "stage": "parse",
+      "reason": "response does not define bulk_create()"
+    }
+  ],
+  "validated_repro": 0,
+  "stop": "budget",
+  "submission": {
+    "snippet": "py:django/contrib/gis/gdal/raster/band.py::GDALBand.min",
+    "model": "qwen2.5-coder-1.5b",
+    "template": "fix",
+    "diff": "diff --git a/django/contrib/gis/gdal/raster/band.py b/django/contrib/gis/gdal/raster/band.py\nindex 61c6535213..8daf91052b 100644\n--- a/django/contrib/gis/gdal/raster/band.py\n+++ b/django/contrib/gis/gdal/raster/band.py\n@@ -108,7 +108,7 @@ class GDALBand(GDALRasterBase):\n         \"\"\"\n         Return the minimum pixel value for this band.\n         \"\"\"\n-        return self.statistics()[0]\n+        return self.statistics()[0] if self.statistics() else None\n \n     @property\n     def max(self):\n",
+    "votes": 0,
+    "changed_lines": 2,
+    "new_source": "@property\ndef min(self):\n    \"\"\"\n    Return the minimum pixel value for this band.\n    \"\"\"\n    return self.statistics()[0] if self.statistics() else None\n",
+    "prompt_hash": "982f66e118477017",
+    "response_hash": "5ca9b800e2e11d20"
+  },
+  "search_s": 896.4,
+  "llm_calls": 16,
+  "tokens_in": 11930,
+  "tokens_out": 6010,
+  "arms": {
+    "qwen2.5-coder-7b/fix": 0.3,
+    "qwen2.5-coder-7b/fix_think": 0.3,
+    "qwen2.5-coder-3b/fix": 0.15,
+    "qwen2.5-coder-3b/fix_think": 0.15,
+    "qwen2.5-coder-1.5b/fix": 0.3833333333333333,
+    "qwen2.5-coder-1.5b/fix_think": 0.3
+  },
+  "grade": {
+    "resolved": false,
+    "applied": true,
+    "fail_to_pass": {
+      "success": 0,
+      "failure": 1
+    },
+    "pass_to_pass": {
+      "success": 21,
+      "failure": 0
+    }
+  },
+  "grade_s": 23.6,
+  "wall_s": 940.4,
+  "diagnosis": {
+    "gold_files": [
+      "django/db/models/query.py"
+    ],
+    "localised_file_hit": true,
+    "localised_line_hit": true,
+    "submission_files": [
+      "django/contrib/gis/gdal/raster/band.py"
+    ],
+    "submission_in_gold_file": false,
+    "gold_changed_lines": 3
+  }
+}

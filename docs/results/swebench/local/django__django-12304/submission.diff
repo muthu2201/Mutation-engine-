@@ -1,0 +1,13 @@
+diff --git a/django/forms/forms.py b/django/forms/forms.py
+index a601467e18..adaeada451 100644
+--- a/django/forms/forms.py
++++ b/django/forms/forms.py
+@@ -469,7 +469,7 @@ class BaseForm:
+         Return a list of all the BoundField objects that are hidden fields.
+         Useful for manual form layout in templates.
+         """
+-        return [field for field in self if field.is_hidden]
++        return [field for field in self if isinstance(field, Field) and field.is_hidden]
+ 
+     def visible_fields(self):
+         """

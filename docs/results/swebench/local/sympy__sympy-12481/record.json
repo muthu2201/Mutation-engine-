@@ -1,0 +1,383 @@
+{
+  "instance_id": "sympy__sympy-12481",
+  "repo": "sympy/sympy",
+  "version": "1.0",
+  "base_commit": "c807dfe7569692cad24f02a08477b70c1679a4dd",
+  "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.sympy__sympy-12481:latest",
+  "started_at": "2026-10-03T09:51:54.107502+00:00",
+  "image_digest": "ghcr.io/epoch-research/swe-bench.eval.x86_64.sympy__sympy-12481@sha256:46963c9c7a9cd5119565b9c77a853b1c0ca38775491a9281ebc3e92021f6e963",
+  "pull_s": 20.9,
+  "files_considered": 590,
+  "ranked_files": [
+    {
+      "file": "sympy/combinatorics/permutations.py",
+      "score": 1.5
+    },
+    {
+      "file": "sympy/utilities/iterables.py",
+      "score": 0.777
+    },
+    {
+      "file": "sympy/combinatorics/util.py",
+      "score": 0.657
+    },
+    {
+      "file": "sympy/combinatorics/perm_groups.py",
+      "score": 0.628
+    },
+    {
+      "file": "sympy/combinatorics/polyhedron.py",
+      "score": 0.596
+    },
+    {
+      "file": "sympy/functions/combinatorial/numbers.py",
+      "score": 0.543
+    },
+    {
+      "file": "sympy/matrices/matrices.py",
+      "score": 0.537
+    },
+    {
+      "file": "sympy/combinatorics/partitions.py",
+      "score": 0.475
+    }
+  ],
+  "localised": [
+    {
+      "file": "sympy/combinatorics/permutations.py",
+      "name": "Permutation.<L525-584>",
+      "kind": "block",
+      "start": 525,
+      "end": 584,
+      "score": 2.5
+    },
+    {
+      "file": "sympy/combinatorics/permutations.py",
+      "name": "Permutation.__mul__",
+      "kind": "function",
+      "start": 1248,
+      "end": 1307,
+      "score": 2.331
+    },
+    {
+      "file": "sympy/combinatorics/permutations.py",
+      "name": "Permutation.cycles",
+      "kind": "function",
+      "start": 2240,
+      "end": 2261,
+      "score": 2.243
+    },
+    {
+      "file": "sympy/combinatorics/permutations.py",
+      "name": "Permutation.__new__",
+      "kind": "function",
+      "start": 801,
+      "end": 929,
+      "score": 2.179
+    },
+    {
+      "file": "sympy/combinatorics/permutations.py",
+      "name": "Permutation.parity",
+      "kind": "function",
+      "start": 1790,
+      "end": 1817,
+      "score": 2.075
+    },
+    {
+      "file": "sympy/combinatorics/permutations.py",
+      "name": "Permutation.<L465-524>",
+      "kind": "block",
+      "start": 465,
+      "end": 524,
+      "score": 2.06
+    }
+  ],
+  "repro": [
+    {
+      "model": "qwen2.5-coder-7b",
+      "outcome": "ISSUE REPRODUCED",
+      "script_hash": "0d31ac7fbc532402"
+    },
+    {
+      "model": "qwen2.5-coder-3b",
+      "outcome": "NONE",
+      "script_hash": "9ab2dad2c6a08934"
+    }
+  ],
+  "candidates": [
+    {
+      "snippet": "py:sympy/combinatorics/permutations.py::Permutation.<L525-584>",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "f721e0febec429c9",
+      "response_hash": "0c2b6f6c5bb970d2",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "1 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "sympy/combinatorics/tests/test_permutations.py",
+        "sympy/core/tests/test_args.py",
+        "sympy/combinatorics/tests/test_generators.py"
+      ],
+      "regressions": 1,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 101,
+      "judge_s": 7.9
+    },
+    {
+      "snippet": "py:sympy/combinatorics/permutations.py::Permutation.__mul__",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix_think",
+      "prompt_hash": "76fe1263784ce7ef",
+      "response_hash": "a4bf550b920ab5d6",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "615 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "sympy/combinatorics/tests/test_permutations.py",
+        "sympy/core/tests/test_args.py",
+        "sympy/combinatorics/tests/test_generators.py"
+      ],
+      "regressions": 615,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 12,
+      "judge_s": 2.9
+    },
+    {
+      "snippet": "py:sympy/combinatorics/permutations.py::Permutation.cycles",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "2d663832ab5370dc",
+      "response_hash": "a31084564a3ec01e",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "2 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "sympy/combinatorics/tests/test_permutations.py",
+        "sympy/core/tests/test_args.py",
+        "sympy/combinatorics/tests/test_generators.py"
+      ],
+      "regressions": 2,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 12,
+      "judge_s": 4.2
+    },
+    {
+      "snippet": "py:sympy/combinatorics/permutations.py::Permutation.__new__",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix_think",
+      "prompt_hash": "ffdfd2ffa78008bd",
+      "response_hash": "9fb4cc5e2fefe353",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "sympy/combinatorics/tests/test_permutations.py",
+        "sympy/core/tests/test_args.py",
+        "sympy/combinatorics/tests/test_generators.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 12,
+      "judge_s": 5.0,
+      "diff": "diff --git a/sympy/combinatorics/permutations.py b/sympy/combinatorics/permutations.py\nindex 136ed5a478..a830ec3b36 100644\n--- a/sympy/combinatorics/permutations.py\n+++ b/sympy/combinatorics/permutations.py\n@@ -896,11 +896,7 @@ def __new__(cls, *args, **kwargs):\n \n         temp = flatten(args)\n         if has_dups(temp):\n-            if is_cycle:\n-                raise ValueError('there were repeated elements; to resolve '\n-                'cycles use Cycle%s.' % ''.join([str(tuple(c)) for c in args]))\n-            else:\n-                raise ValueError('there were repeated elements.')\n+            raise ValueError('there were repeated elements.')\n         temp = set(temp)\n \n         if not is_cycle and \\\n@@ -911,10 +907,10 @@ def __new__(cls, *args, **kwargs):\n         if is_cycle:\n             # it's not necessarily canonical so we won't store\n             # it -- use the array form instead\n-            c = Cycle()\n+            aform = []\n             for ci in args:\n-                c = c(*ci)\n-            aform = c.list()\n+                c = Cycle(*ci)\n+                aform = list(c * Permutation(aform))\n         else:\n             aform = list(args)\n         if size and size > len(aform):\n",
+      "new_source": "def __new__(cls, *args, **kwargs):\n    \"\"\"\n    Constructor for the Permutation object from a list or a\n    list of lists in which all elements of the permutation may\n    appear only once.\n\n    Examples\n    ========\n\n    >>> from sympy.combinatorics.permutations import Permutation\n    >>> Permutation.print_cyclic = False\n\n    Permutations entered in array-form are left unaltered:\n\n    >>> Permutation([0, 2, 1])\n    Permutation([0, 2, 1])\n\n    Permutations entered in cyclic form are converted to array form;\n    singletons need not be entered, but can be entered to indicate the\n    largest element:\n\n    >>> Permutation([[4, 5, 6], [0, 1]])\n    Permutation([1, 0, 2, 3, 5, 6, 4])\n    >>> Permutation([[4, 5, 6], [0, 1], [19]])\n    Permutation([1, 0, 2, 3, 5, 6, 4], size=20)\n\n    All manipulation of permutations assumes that the smallest element\n    is 0 (in keeping with 0-based indexing in Python) so if the 0 is\n    missing when entering a permutation in array form, an error will be\n    raised:\n\n    >>> Permutation([2, 1])\n    Traceback (most recent call last):\n    ...\n    ValueError: Integers 0 through 2 must be present.\n\n    If a permutation is entered in cyclic form, it can be entered without\n    singletons and the ``size`` specified so those values can be filled\n    in, otherwise the array form will only extend to the maximum value\n    in the cycles:\n\n    >>> Permutation([[1, 4], [3, 5, 2]], size=10)\n    Permutation([0, 4, 3, 5, 1, 2], size=10)\n    >>> _.array_form\n    [0, 4, 3, 5, 1, 2, 6, 7, 8, 9]\n    \"\"\"\n    size = kwargs.pop('size', None)\n    if size is not None:\n        size = int(size)\n\n    #a) ()\n    #b) (1) = identity\n    #c) (1, 2) = cycle\n    #d) ([1, 2, 3]) = array form\n    #e) ([[1, 2]]) = cyclic form\n    #f) (Cycle) = conversion to permutation\n    #g) (Permutation) = adjust size or return copy\n    ok = True\n    if not args:  # a\n        return _af_new(list(range(size or 0)))\n    elif len(args) > 1:  # c\n        return _af_new(Cycle(*args).list(size))\n    if len(args) == 1:\n        a = args[0]\n        if isinstance(a, Perm):  # g\n            if size is None or size == a.size:\n                return a\n            return Perm(a.array_form, size=size)\n        if isinstance(a, Cycle):  # f\n            return _af_new(a.list(size))\n        if not is_sequence(a):  # b\n            return _af_new(list(range(a + 1)))\n        if has_variety(is_sequence(ai) for ai in a):\n            ok = False\n    else:\n        ok = False\n    if not ok:\n        raise ValueError(\"Permutation argument must be a list of ints, \"\n                         \"a list of lists, Permutation or Cycle.\")\n\n\n    # safe to assume args are valid; this also makes a copy\n    # of the args\n    args = list(args[0])\n\n    is_cycle = args and is_sequence(args[0])\n    if is_cycle:  # e\n        args = [[int(i) for i in c] for c in args]\n    else:  # d\n        args = [int(i) for i in args]\n\n    # if there are n elements present, 0, 1, ..., n-1 should be present\n    # unless a cycle notation has been provided. A 0 will be added\n    # for convenience in case one wants to enter permutations where\n    # counting starts from 1.\n\n    temp = flatten(args)\n    if has_dups(temp):\n        raise ValueError('there were repeated elements.')\n    temp = set(temp)\n\n    if not is_cycle and \\\n            any(i not in temp for i in range(len(temp))):\n        raise ValueError(\"Integers 0 through %s must be present.\" %\n                         max(temp))\n\n    if is_cycle:\n        # it's not necessarily canonical so we won't store\n        # it -- use the array form instead\n        aform = []\n        for ci in args:\n            c = Cycle(*ci)\n            aform = list(c * Permutation(aform))\n    else:\n        aform = list(args)\n    if size and size > len(aform):\n        # don't allow for truncation of permutation which\n        # might split a cycle and lead to an invalid aform\n        # but do allow the permutation size to be increased\n        aform.extend(list(range(len(aform), size)))\n    size = len(aform)\n    obj = Basic.__new__(cls, aform)\n    obj._array_form = aform\n    obj._size = size\n    return obj\n"
+    },
+    {
+      "snippet": "py:sympy/combinatorics/permutations.py::Permutation.parity",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "ff194303b169d871",
+      "response_hash": "3b32feae940ba4ae",
+      "stage": "parse",
+      "reason": "syntax error: '(' was never closed (line 6)"
+    },
+    {
+      "snippet": "py:sympy/combinatorics/permutations.py::Permutation.<L465-524>",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "5101332c2349cbab",
+      "response_hash": "861f19cae50a19c0",
+      "stage": "parse",
+      "reason": "file does not parse after the splice: unmatched ')' (line 643)"
+    },
+    {
+      "snippet": "py:sympy/combinatorics/permutations.py::Permutation.<L525-584>",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "12cd6a8000e33b73",
+      "response_hash": "e30a5128f2894d06",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "sympy/combinatorics/tests/test_permutations.py",
+        "sympy/core/tests/test_args.py",
+        "sympy/combinatorics/tests/test_generators.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 101,
+      "judge_s": 4.9,
+      "diff": "diff --git a/sympy/combinatorics/permutations.py b/sympy/combinatorics/permutations.py\nindex 136ed5a478..1c4c6942c4 100644\n--- a/sympy/combinatorics/permutations.py\n+++ b/sympy/combinatorics/permutations.py\n@@ -522,66 +522,47 @@ class Permutation(Basic):\n     >>> [p(q(i)) for i in range(p.size)]\n     [1, 2, 0]\n \n-    Disjoint Cycle Notation\n-    -----------------------\n-\n-    In disjoint cycle notation, only the elements that have shifted are\n-    indicated. In the above case, the 2 and 1 switched places. This can\n-    be entered in two ways:\n-\n-    >>> Permutation(1, 2) == Permutation([[1, 2]]) == p\n-    True\n-\n-    Only the relative ordering of elements in a cycle matter:\n-\n-    >>> Permutation(1,2,3) == Permutation(2,3,1) == Permutation(3,1,2)\n-    True\n-\n-    The disjoint cycle notation is convenient when representing permutations\n-    that have several cycles in them:\n-\n-    >>> Permutation(1, 2)(3, 5) == Permutation([[1, 2], [3, 5]])\n-    True\n-\n-    It also provides some economy in entry when computing products of\n-    permutations that are written in disjoint cycle notation:\n-\n-    >>> Permutation(1, 2)(1, 3)(2, 3)\n-    Permutation([0, 3, 2, 1])\n-    >>> _ == Permutation([[1, 2]])*Permutation([[1, 3]])*Permutation([[2, 3]])\n-    True\n-\n-    Entering a singleton in a permutation is a way to indicate the size of the\n-    permutation. The ``size`` keyword can also be used.\n-\n-    Array-form entry:\n-\n-    >>> Permutation([[1, 2], [9]])\n-    Permutation([0, 2, 1], size=10)\n-    >>> Permutation([[1, 2]], size=10)\n-    Permutation([0, 2, 1], size=10)\n-\n-    Cyclic-form entry:\n-\n-    >>> Permutation(1, 2, size=10)\n-    Permutation([0, 2, 1], size=10)\n-    >>> Permutation(9)(1, 2)\n-    Permutation([0, 2, 1], size=10)\n-\n-    Caution: no singleton containing an element larger than the largest\n-    in any previous cycle can be entered. This is an important difference\n-    in how Permutation and Cycle handle the __call__ syntax. A singleton\n-    argument at the start of a Permutation performs instantiation of the\n-    Permutation and is permitted:\n-\n-    >>> Permutation(5)\n-    Permutation([], size=6)\n-\n-    A singleton entered after instantiation is a call to the permutation\n-    -- a function call -- and if the argument is out of range it will\n-    trigger an error. For this reason, it is better to start the cycle\n-    with the singleton:\n-\n+    from __future__ import print_function, division\n+    import random\n+    from collections import defaultdict\n+    from sympy.core import Basic\n+    from sympy.core.compatibility import is_sequence, reduce, range, as_int\n+    from sympy.utilities.iterables import (flatten, has_variety, minlex,\n+    from sympy.polys.polytools import lcm\n+    from sympy.matrices import zeros\n+    from mpmath.libmp.libintmath import ifac\n+\n+    class Permutation(Basic):\n+        def __init__(self, *args, **kwargs):\n+            self._cycles = []\n+            self._size = kwargs.get('size', None)\n+\n+            for arg in args:\n+                if isinstance(arg, Basic) and is_sequence(arg):\n+                    if not all(isinstance(x, int) and 0 <= x < len(self) for x in arg):\n+                        raise ValueError(\"All elements in the cycle must be between 0 and the size of the permutation\")\n+                    self._cycles.append(tuple(sorted(arg)))\n+\n+            if self._size is not None:\n+                if max(len(cycle) for cycle in self._cycles) > self._size:\n+                    raise ValueError(\"The maximum length of a cycle must be less than or equal to the size of the permutation\")\n+\n+            if len(self._cycles) == 0 and self._size is None:\n+                raise ValueError(\"At least one cycle must be specified\")\n+\n+            cycles = []\n+            for cycle in self._cycles:\n+                cycle_size = len(cycle)\n+                if not all(1 <= x < cycle_size for x in range(cycle_size)):\n+                    raise ValueError(\"All elements in the cycle must be between 0 and the size of the permutation\")\n+\n+                for i in range(len(cycle) - 1):\n+                    if cycle[i] == cycle[i + 1]:\n+                        raise ValueError(\"Cycles must be disjoint\")\n+\n+                cycles.append(tuple(sorted(cycle)))\n+\n+            self._cycles = cycles\n     The following fails because there is is no element 3:\n \n     >>> Permutation(1, 2)(3)\n",
+      "new_source": "from __future__ import print_function, division\nimport random\nfrom collections import defaultdict\nfrom sympy.core import Basic\nfrom sympy.core.compatibility import is_sequence, reduce, range, as_int\nfrom sympy.utilities.iterables import (flatten, has_variety, minlex,\nfrom sympy.polys.polytools import lcm\nfrom sympy.matrices import zeros\nfrom mpmath.libmp.libintmath import ifac\n\nclass Permutation(Basic):\n    def __init__(self, *args, **kwargs):\n        self._cycles = []\n        self._size = kwargs.get('size', None)\n\n        for arg in args:\n            if isinstance(arg, Basic) and is_sequence(arg):\n                if not all(isinstance(x, int) and 0 <= x < len(self) for x in arg):\n                    raise ValueError(\"All elements in the cycle must be between 0 and the size of the permutation\")\n                self._cycles.append(tuple(sorted(arg)))\n\n        if self._size is not None:\n            if max(len(cycle) for cycle in self._cycles) > self._size:\n                raise ValueError(\"The maximum length of a cycle must be less than or equal to the size of the permutation\")\n\n        if len(self._cycles) == 0 and self._size is None:\n            raise ValueError(\"At least one cycle must be specified\")\n\n        cycles = []\n        for cycle in self._cycles:\n            cycle_size = len(cycle)\n            if not all(1 <= x < cycle_size for x in range(cycle_size)):\n                raise ValueError(\"All elements in the cycle must be between 0 and the size of the permutation\")\n\n            for i in range(len(cycle) - 1):\n                if cycle[i] == cycle[i + 1]:\n                    raise ValueError(\"Cycles must be disjoint\")\n\n            cycles.append(tuple(sorted(cycle)))\n\n        self._cycles = cycles\n"
+    },
+    {
+      "snippet": "py:sympy/combinatorics/permutations.py::Permutation.__mul__",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix",
+      "prompt_hash": "17e29f02bf480e33",
+      "response_hash": "ac02e6edec9787dc",
+      "stage": "parse",
+      "reason": "response does not define __mul__()"
+    },
+    {
+      "snippet": "py:sympy/combinatorics/permutations.py::Permutation.cycles",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix",
+      "prompt_hash": "e48dc6d053b84d69",
+      "response_hash": "104218a594982b8b",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "1 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "sympy/combinatorics/tests/test_permutations.py",
+        "sympy/core/tests/test_args.py",
+        "sympy/combinatorics/tests/test_generators.py"
+      ],
+      "regressions": 1,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 10,
+      "judge_s": 4.3
+    },
+    {
+      "snippet": "py:sympy/combinatorics/permutations.py::Permutation.__new__",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "0fbfe98727218dbd",
+      "response_hash": "297bd12fa243c66c",
+      "stage": "parse",
+      "reason": "response does not define __new__()"
+    },
+    {
+      "snippet": "py:sympy/combinatorics/permutations.py::Permutation.parity",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix",
+      "prompt_hash": "ff194303b169d871",
+      "response_hash": "cde027e5952bcb1a",
+      "stage": "parse",
+      "reason": "response does not define parity()"
+    },
+    {
+      "snippet": "py:sympy/combinatorics/permutations.py::Permutation.<L465-524>",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix",
+      "prompt_hash": "5101332c2349cbab",
+      "response_hash": "c092c65940753176",
+      "stage": "parse",
+      "reason": "file does not parse after the splice: unmatched ')' (line 579)"
+    },
+    {
+      "snippet": "py:sympy/combinatorics/permutations.py::Permutation.<L525-584>",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "f721e0febec429c9",
+      "response_hash": "4fe913e4898d6104",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "sympy/combinatorics/tests/test_permutations.py",
+        "sympy/core/tests/test_args.py",
+        "sympy/combinatorics/tests/test_generators.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 78,
+      "judge_s": 5.1,
+      "diff": "diff --git a/sympy/combinatorics/permutations.py b/sympy/combinatorics/permutations.py\nindex 136ed5a478..fe8fb60de7 100644\n--- a/sympy/combinatorics/permutations.py\n+++ b/sympy/combinatorics/permutations.py\n@@ -522,66 +522,24 @@ class Permutation(Basic):\n     >>> [p(q(i)) for i in range(p.size)]\n     [1, 2, 0]\n \n-    Disjoint Cycle Notation\n-    -----------------------\n-\n-    In disjoint cycle notation, only the elements that have shifted are\n-    indicated. In the above case, the 2 and 1 switched places. This can\n-    be entered in two ways:\n-\n-    >>> Permutation(1, 2) == Permutation([[1, 2]]) == p\n-    True\n-\n-    Only the relative ordering of elements in a cycle matter:\n-\n-    >>> Permutation(1,2,3) == Permutation(2,3,1) == Permutation(3,1,2)\n-    True\n-\n-    The disjoint cycle notation is convenient when representing permutations\n-    that have several cycles in them:\n-\n-    >>> Permutation(1, 2)(3, 5) == Permutation([[1, 2], [3, 5]])\n-    True\n-\n-    It also provides some economy in entry when computing products of\n-    permutations that are written in disjoint cycle notation:\n-\n-    >>> Permutation(1, 2)(1, 3)(2, 3)\n-    Permutation([0, 3, 2, 1])\n-    >>> _ == Permutation([[1, 2]])*Permutation([[1, 3]])*Permutation([[2, 3]])\n-    True\n-\n-    Entering a singleton in a permutation is a way to indicate the size of the\n-    permutation. The ``size`` keyword can also be used.\n-\n-    Array-form entry:\n-\n-    >>> Permutation([[1, 2], [9]])\n-    Permutation([0, 2, 1], size=10)\n-    >>> Permutation([[1, 2]], size=10)\n-    Permutation([0, 2, 1], size=10)\n-\n-    Cyclic-form entry:\n-\n-    >>> Permutation(1, 2, size=10)\n-    Permutation([0, 2, 1], size=10)\n-    >>> Permutation(9)(1, 2)\n-    Permutation([0, 2, 1], size=10)\n-\n-    Caution: no singleton containing an element larger than the largest\n-    in any previous cycle can be entered. This is an important difference\n-    in how Permutation and Cycle handle the __call__ syntax. A singleton\n-    argument at the start of a Permutation performs instantiation of the\n-    Permutation and is permitted:\n-\n-    >>> Permutation(5)\n-    Permutation([], size=6)\n-\n-    A singleton entered after instantiation is a call to the permutation\n-    -- a function call -- and if the argument is out of range it will\n-    trigger an error. For this reason, it is better to start the cycle\n-    with the singleton:\n-\n+    class Permutation(Basic):\n+        def __init__(self, *args, **kwds):\n+            self._data = None\n+            if args:\n+                self.from_cycles(args)\n+            elif kwds:\n+                self.setsize(kwds.get('size', 0))\n+\n+        def from_cycles(self, cycles):\n+            cycles = list(map(tuple, cycles))  # Convert arguments to tuples\n+            data = zeros(len(cycles), dtype=int)  # Initialize the permutation matrix\n+\n+            for i, cycle in enumerate(cycles):\n+                if len(cycle) != 1:\n+                    for j, elem in enumerate(cycle):\n+                        data[cycle[i]] = elem + (i * len(cycles))  # Map elements to their positions\n+\n+            self._data = tuple(range(len(data))) if not data.any() else tuple(sorted(data))\n     The following fails because there is is no element 3:\n \n     >>> Permutation(1, 2)(3)\n",
+      "new_source": "class Permutation(Basic):\n    def __init__(self, *args, **kwds):\n        self._data = None\n        if args:\n            self.from_cycles(args)\n        elif kwds:\n            self.setsize(kwds.get('size', 0))\n\n    def from_cycles(self, cycles):\n        cycles = list(map(tuple, cycles))  # Convert arguments to tuples\n        data = zeros(len(cycles), dtype=int)  # Initialize the permutation matrix\n\n        for i, cycle in enumerate(cycles):\n            if len(cycle) != 1:\n                for j, elem in enumerate(cycle):\n                    data[cycle[i]] = elem + (i * len(cycles))  # Map elements to their positions\n\n        self._data = tuple(range(len(data))) if not data.any() else tuple(sorted(data))\n"
+    },
+    {
+      "snippet": "py:sympy/combinatorics/permutations.py::Permutation.__mul__",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix",
+      "prompt_hash": "17e29f02bf480e33",
+      "response_hash": "ac02e6edec9787dc",
+      "stage": "parse",
+      "reason": "response does not define __mul__()"
+    }
+  ],
+  "validated_repro": 1,
+  "stop": "budget",
+  "submission": {
+    "snippet": "py:sympy/combinatorics/permutations.py::Permutation.__new__",
+    "model": "qwen2.5-coder-7b",
+    "template": "fix_think",
+    "diff": "diff --git a/sympy/combinatorics/permutations.py b/sympy/combinatorics/permutations.py\nindex 136ed5a478..a830ec3b36 100644\n--- a/sympy/combinatorics/permutations.py\n+++ b/sympy/combinatorics/permutations.py\n@@ -896,11 +896,7 @@ def __new__(cls, *args, **kwargs):\n \n         temp = flatten(args)\n         if has_dups(temp):\n-            if is_cycle:\n-                raise ValueError('there were repeated elements; to resolve '\n-                'cycles use Cycle%s.' % ''.join([str(tuple(c)) for c in args]))\n-            else:\n-                raise ValueError('there were repeated elements.')\n+            raise ValueError('there were repeated elements.')\n         temp = set(temp)\n \n         if not is_cycle and \\\n@@ -911,10 +907,10 @@ def __new__(cls, *args, **kwargs):\n         if is_cycle:\n             # it's not necessarily canonical so we won't store\n             # it -- use the array form instead\n-            c = Cycle()\n+            aform = []\n             for ci in args:\n-                c = c(*ci)\n-            aform = c.list()\n+                c = Cycle(*ci)\n+                aform = list(c * Permutation(aform))\n         else:\n             aform = list(args)\n         if size and size > len(aform):\n",
+    "votes": 0,
+    "changed_lines": 12,
+    "new_source": "def __new__(cls, *args, **kwargs):\n    \"\"\"\n    Constructor for the Permutation object from a list or a\n    list of lists in which all elements of the permutation may\n    appear only once.\n\n    Examples\n    ========\n\n    >>> from sympy.combinatorics.permutations import Permutation\n    >>> Permutation.print_cyclic = False\n\n    Permutations entered in array-form are left unaltered:\n\n    >>> Permutation([0, 2, 1])\n    Permutation([0, 2, 1])\n\n    Permutations entered in cyclic form are converted to array form;\n    singletons need not be entered, but can be entered to indicate the\n    largest element:\n\n    >>> Permutation([[4, 5, 6], [0, 1]])\n    Permutation([1, 0, 2, 3, 5, 6, 4])\n    >>> Permutation([[4, 5, 6], [0, 1], [19]])\n    Permutation([1, 0, 2, 3, 5, 6, 4], size=20)\n\n    All manipulation of permutations assumes that the smallest element\n    is 0 (in keeping with 0-based indexing in Python) so if the 0 is\n    missing when entering a permutation in array form, an error will be\n    raised:\n\n    >>> Permutation([2, 1])\n    Traceback (most recent call last):\n    ...\n    ValueError: Integers 0 through 2 must be present.\n\n    If a permutation is entered in cyclic form, it can be entered without\n    singletons and the ``size`` specified so those values can be filled\n    in, otherwise the array form will only extend to the maximum value\n    in the cycles:\n\n    >>> Permutation([[1, 4], [3, 5, 2]], size=10)\n    Permutation([0, 4, 3, 5, 1, 2], size=10)\n    >>> _.array_form\n    [0, 4, 3, 5, 1, 2, 6, 7, 8, 9]\n    \"\"\"\n    size = kwargs.pop('size', None)\n    if size is not None:\n        size = int(size)\n\n    #a) ()\n    #b) (1) = identity\n    #c) (1, 2) = cycle\n    #d) ([1, 2, 3]) = array form\n    #e) ([[1, 2]]) = cyclic form\n    #f) (Cycle) = conversion to permutation\n    #g) (Permutation) = adjust size or return copy\n    ok = True\n    if not args:  # a\n        return _af_new(list(range(size or 0)))\n    elif len(args) > 1:  # c\n        return _af_new(Cycle(*args).list(size))\n    if len(args) == 1:\n        a = args[0]\n        if isinstance(a, Perm):  # g\n            if size is None or size == a.size:\n                return a\n            return Perm(a.array_form, size=size)\n        if isinstance(a, Cycle):  # f\n            return _af_new(a.list(size))\n        if not is_sequence(a):  # b\n            return _af_new(list(range(a + 1)))\n        if has_variety(is_sequence(ai) for ai in a):\n            ok = False\n    else:\n        ok = False\n    if not ok:\n        raise ValueError(\"Permutation argument must be a list of ints, \"\n                         \"a list of lists, Permutation or Cycle.\")\n\n\n    # safe to assume args are valid; this also makes a copy\n    # of the args\n    args = list(args[0])\n\n    is_cycle = args and is_sequence(args[0])\n    if is_cycle:  # e\n        args = [[int(i) for i in c] for c in args]\n    else:  # d\n        args = [int(i) for i in args]\n\n    # if there are n elements present, 0, 1, ..., n-1 should be present\n    # unless a cycle notation has been provided. A 0 will be added\n    # for convenience in case one wants to enter permutations where\n    # counting starts from 1.\n\n    temp = flatten(args)\n    if has_dups(temp):\n        raise ValueError('there were repeated elements.')\n    temp = set(temp)\n\n    if not is_cycle and \\\n            any(i not in temp for i in range(len(temp))):\n        raise ValueError(\"Integers 0 through %s must be present.\" %\n                         max(temp))\n\n    if is_cycle:\n        # it's not necessarily canonical so we won't store\n        # it -- use the array form instead\n        aform = []\n        for ci in args:\n            c = Cycle(*ci)\n            aform = list(c * Permutation(aform))\n    else:\n        aform = list(args)\n    if size and size > len(aform):\n        # don't allow for truncation of permutation which\n        # might split a cycle and lead to an invalid aform\n        # but do allow the permutation size to be increased\n        aform.extend(list(range(len(aform), size)))\n    size = len(aform)\n    obj = Basic.__new__(cls, aform)\n    obj._array_form = aform\n    obj._size = size\n    return obj\n",
+    "prompt_hash": "ffdfd2ffa78008bd",
+    "response_hash": "9fb4cc5e2fefe353"
+  },
+  "search_s": 971.3,
+  "llm_calls": 16,
+  "tokens_in": 12570,
+  "tokens_out": 4803,
+  "arms": {
+    "qwen2.5-coder-7b/fix": 0.3,
+    "qwen2.5-coder-7b/fix_think": 0.3,
+    "qwen2.5-coder-3b/fix": 0.08571428571428572,
+    "qwen2.5-coder-3b/fix_think": 0.19999999999999998,
+    "qwen2.5-coder-1.5b/fix": 0.15,
+    "qwen2.5-coder-1.5b/fix_think": 0.18
+  },
+  "grade": {
+    "resolved": false,
+    "applied": true,
+    "fail_to_pass": {
+      "success": 0,
+      "failure": 1
+    },
+    "pass_to_pass": {
+      "success": 7,
+      "failure": 0
+    }
+  },
+  "grade_s": 20.3,
+  "wall_s": 1020.6,
+  "diagnosis": {
+    "gold_files": [
+      "sympy/combinatorics/permutations.py"
+    ],
+    "localised_file_hit": true,
+    "localised_line_hit": true,
+    "submission_files": [
+      "sympy/combinatorics/permutations.py"
+    ],
+    "submission_in_gold_file": true,
+    "gold_changed_lines": 8
+  }
+}

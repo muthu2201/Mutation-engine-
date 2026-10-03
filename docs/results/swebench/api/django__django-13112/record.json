@@ -1,0 +1,391 @@
+{
+  "instance_id": "django__django-13112",
+  "repo": "django/django",
+  "version": "3.2",
+  "base_commit": "09914ccf688974e068941f55412b930729bafa06",
+  "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.django__django-13112:latest",
+  "started_at": "2026-10-03T13:09:44.583303+00:00",
+  "image_digest": "ghcr.io/epoch-research/swe-bench.eval.x86_64.django__django-13112@sha256:d974a8b4f4f253214b47a856e75890bc4547d5914701a9f9b1d0353b19648e37",
+  "pull_s": 22.0,
+  "files_considered": 844,
+  "ranked_files": [
+    {
+      "file": "django/contrib/auth/apps.py",
+      "score": 3.553
+    },
+    {
+      "file": "django/contrib/postgres/apps.py",
+      "score": 3.508
+    },
+    {
+      "file": "django/contrib/contenttypes/apps.py",
+      "score": 3.485
+    },
+    {
+      "file": "django/contrib/sitemaps/__init__.py",
+      "score": 3.458
+    },
+    {
+      "file": "django/contrib/sites/apps.py",
+      "score": 3.419
+    },
+    {
+      "file": "django/conf/global_settings.py",
+      "score": 3.412
+    },
+    {
+      "file": "django/contrib/auth/__init__.py",
+      "score": 3.389
+    },
+    {
+      "file": "django/contrib/admin/__init__.py",
+      "score": 3.335
+    }
+  ],
+  "localised": [
+    {
+      "file": "django/contrib/contenttypes/apps.py",
+      "name": "<L1-11>",
+      "kind": "block",
+      "start": 1,
+      "end": 11,
+      "score": 1.49
+    },
+    {
+      "file": "django/contrib/auth/apps.py",
+      "name": "AuthConfig.ready",
+      "kind": "function",
+      "start": 17,
+      "end": 28,
+      "score": 1.469
+    },
+    {
+      "file": "django/contrib/postgres/apps.py",
+      "name": "uninstall_if_needed",
+      "kind": "function",
+      "start": 20,
+      "end": 37,
+      "score": 1.393
+    },
+    {
+      "file": "django/contrib/postgres/apps.py",
+      "name": "<L1-17>",
+      "kind": "block",
+      "start": 1,
+      "end": 17,
+      "score": 1.371
+    },
+    {
+      "file": "django/contrib/auth/apps.py",
+      "name": "<L1-10>",
+      "kind": "block",
+      "start": 1,
+      "end": 10,
+      "score": 1.323
+    },
+    {
+      "file": "django/contrib/sites/apps.py",
+      "name": "<L1-5>",
+      "kind": "block",
+      "start": 1,
+      "end": 5,
+      "score": 1.256
+    }
+  ],
+  "repro": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "NONE",
+      "script_hash": "ca0fde181009494b"
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "ISSUE REPRODUCED",
+      "script_hash": "45ddf1348521f67c"
+    }
+  ],
+  "candidates": [
+    {
+      "snippet": "py:django/contrib/contenttypes/apps.py::<L1-11>",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "deab10cbfc8957db",
+      "response_hash": "4e3e73833e015daa",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/contrib/auth/apps.py::AuthConfig.ready",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "d44f3ff88c9fc43f",
+      "response_hash": "1ff46c5fda8d7593",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/contrib/postgres/apps.py::uninstall_if_needed",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "0085b2c0bc046690",
+      "response_hash": "5874653c1378262f",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/contrib/postgres/apps.py::<L1-17>",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "7f86fe9b757a9bbe",
+      "response_hash": "a0be0edb47dd712e",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/contrib/auth/apps.py::<L1-10>",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "0258944094f16fa8",
+      "response_hash": "5f55e7b55765b697",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/contrib/sites/apps.py::<L1-5>",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "90f6f5fb47d87349",
+      "response_hash": "2972ba536ffcbd9e",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/contrib/contenttypes/apps.py::<L1-11>",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "e8b5039eb0d638bf",
+      "response_hash": "e128739545800796",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/contrib/auth/apps.py::AuthConfig.ready",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "0360de2c0d0c7822",
+      "response_hash": "66f216cfb7d41ef9",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/contrib/postgres/apps.py::uninstall_if_needed",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "6dea08045cae57f5",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:django/contrib/postgres/apps.py::<L1-17>",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "7f86fe9b757a9bbe",
+      "response_hash": "de16c79487f1cf86",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/contrib/auth/apps.py::<L1-10>",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "0258944094f16fa8",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:django/contrib/sites/apps.py::<L1-5>",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "c8f471fb0583bdea",
+      "response_hash": "428aed8b53b39b7b",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/contrib/contenttypes/apps.py::<L1-11>",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "e8b5039eb0d638bf",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:django/contrib/auth/apps.py::AuthConfig.ready",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "0360de2c0d0c7822",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    }
+  ],
+  "validated_repro": 1,
+  "stop": "budget",
+  "submission": null,
+  "search_s": 324.2,
+  "llm_calls": 16,
+  "tokens_in": 12973,
+  "tokens_out": 5672,
+  "calls": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 19.51,
+      "tokens_in": 710,
+      "tokens_out": 436,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 47.42,
+      "tokens_in": 710,
+      "tokens_out": 962,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 19.84,
+      "tokens_in": 770,
+      "tokens_out": 355,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 28.64,
+      "tokens_in": 893,
+      "tokens_out": 452,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 22.43,
+      "tokens_in": 980,
+      "tokens_out": 549,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 23.6,
+      "tokens_in": 834,
+      "tokens_out": 474,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 36.4,
+      "tokens_in": 770,
+      "tokens_out": 857,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 11.72,
+      "tokens_in": 718,
+      "tokens_out": 185,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 9.75,
+      "tokens_in": 760,
+      "tokens_out": 217,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 22.25,
+      "tokens_in": 883,
+      "tokens_out": 544,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 7.15,
+      "tokens_in": 970,
+      "tokens_out": 33,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 12.33,
+      "tokens_in": 834,
+      "tokens_out": 335,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 5.44,
+      "tokens_in": 770,
+      "tokens_out": 32,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 6.59,
+      "tokens_in": 728,
+      "tokens_out": 176,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 31.4,
+      "tokens_in": 760,
+      "tokens_out": 32,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 6.47,
+      "tokens_in": 883,
+      "tokens_out": 33,
+      "finish_reason": "stop",
+      "empty": true
+    }
+  ],
+  "arms": {
+    "moonshotai/kimi-k3/fix": 0.075,
+    "moonshotai/kimi-k3/fix_think": 0.06
+  },
+  "grade": {
+    "resolved": false,
+    "submitted": false
+  },
+  "wall_s": 359.5,
+  "diagnosis": {
+    "gold_files": [
+      "django/db/models/fields/related.py"
+    ],
+    "localised_file_hit": false,
+    "localised_line_hit": false,
+    "submission_files": [],
+    "submission_in_gold_file": false,
+    "gold_changed_lines": 6
+  }
+}

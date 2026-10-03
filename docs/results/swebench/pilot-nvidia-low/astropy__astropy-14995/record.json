@@ -1,0 +1,504 @@
+{
+  "instance_id": "astropy__astropy-14995",
+  "repo": "astropy/astropy",
+  "version": "5.2",
+  "base_commit": "b16c7d12ccbc7b2d20364b89fb44285bcbfede54",
+  "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.astropy__astropy-14995:latest",
+  "started_at": "2026-10-03T12:20:16.266049+00:00",
+  "image_digest": "ghcr.io/epoch-research/swe-bench.eval.x86_64.astropy__astropy-14995@sha256:adca9052706170bc3aeab0cead178e25e5b16693f72fd5bb16a22183deff4dce",
+  "pull_s": 20.4,
+  "files_considered": 471,
+  "ranked_files": [
+    {
+      "file": "astropy/__init__.py",
+      "score": 3.144
+    },
+    {
+      "file": "astropy/nddata/__init__.py",
+      "score": 3.111
+    },
+    {
+      "file": "astropy/io/votable/tree.py",
+      "score": 1.558
+    },
+    {
+      "file": "astropy/nddata/mixins/ndarithmetic.py",
+      "score": 1.5
+    },
+    {
+      "file": "astropy/nddata/compat.py",
+      "score": 1.185
+    },
+    {
+      "file": "astropy/time/core.py",
+      "score": 1.112
+    },
+    {
+      "file": "astropy/nddata/nddata.py",
+      "score": 1.099
+    },
+    {
+      "file": "astropy/table/table.py",
+      "score": 1.074
+    }
+  ],
+  "localised": [
+    {
+      "file": "astropy/nddata/compat.py",
+      "name": "NDDataArray.mask",
+      "kind": "function",
+      "start": 167,
+      "end": 180,
+      "score": 3.012
+    },
+    {
+      "file": "astropy/nddata/nddata.py",
+      "name": "NDData.mask",
+      "kind": "function",
+      "start": 318,
+      "end": 326,
+      "score": 2.783
+    },
+    {
+      "file": "astropy/table/table.py",
+      "name": "Table.mask",
+      "kind": "function",
+      "start": 940,
+      "end": 960,
+      "score": 2.77
+    },
+    {
+      "file": "astropy/nddata/compat.py",
+      "name": "NDDataArray.mask",
+      "kind": "function",
+      "start": 160,
+      "end": 165,
+      "score": 2.763
+    },
+    {
+      "file": "astropy/table/table.py",
+      "name": "Table.mask",
+      "kind": "function",
+      "start": 962,
+      "end": 964,
+      "score": 2.745
+    },
+    {
+      "file": "astropy/time/core.py",
+      "name": "TimeBase.mask",
+      "kind": "function",
+      "start": 1016,
+      "end": 1018,
+      "score": 2.727
+    }
+  ],
+  "repro": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "ISSUE REPRODUCED",
+      "script_hash": "33d13cc0da3f39fc"
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "ISSUE REPRODUCED",
+      "script_hash": "d7d7b435538086e2"
+    }
+  ],
+  "candidates": [
+    {
+      "snippet": "py:astropy/nddata/compat.py::NDDataArray.mask",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "3d8b57a14a0d4342",
+      "response_hash": "a32e48c6dde3007c",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "astropy/nddata/tests/test_compat.py",
+        "astropy/nddata/tests/test_nduncertainty.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED",
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 5,
+      "judge_s": 8.2,
+      "diff": "diff --git a/astropy/nddata/compat.py b/astropy/nddata/compat.py\nindex 1e0694d0eb..d44efbf343 100644\n--- a/astropy/nddata/compat.py\n+++ b/astropy/nddata/compat.py\n@@ -176,8 +176,9 @@ class NDDataArray(NDArithmeticMixin, NDSlicingMixin, NDIOMixin, NDData):\n             else:\n                 self._mask = mask\n         else:\n-            # internal representation should be one numpy understands\n-            self._mask = np.ma.nomask\n+            # internal representation should be one that arithmetic\n+            # mask-handling recognises as \"no mask\" (i.e. None)\n+            self._mask = None\n \n     @property\n     def shape(self):\n",
+      "new_source": "@mask.setter\ndef mask(self, value):\n    # Check that value is not either type of null mask.\n    if (value is not None) and (value is not np.ma.nomask):\n        mask = np.array(value, dtype=np.bool_, copy=False)\n        if mask.shape != self.data.shape:\n            raise ValueError(\n                f\"dimensions of mask {mask.shape} and data {self.data.shape} do not match\"\n            )\n        else:\n            self._mask = mask\n    else:\n        # internal representation should be one that arithmetic\n        # mask-handling recognises as \"no mask\" (i.e. None)\n        self._mask = None\n"
+    },
+    {
+      "snippet": "py:astropy/nddata/nddata.py::NDData.mask",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "c7203629a9ee96fa",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:astropy/table/table.py::Table.mask",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "3203b888d8cb83ed",
+      "response_hash": "e6f47d6968cdf7e5",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:astropy/nddata/compat.py::NDDataArray.mask",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "802b2071f6ef0c60",
+      "response_hash": "4a035b555d40a6ea",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "astropy/nddata/tests/test_compat.py",
+        "astropy/nddata/tests/test_nduncertainty.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED",
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 2,
+      "judge_s": 5.1,
+      "diff": "diff --git a/astropy/nddata/compat.py b/astropy/nddata/compat.py\nindex 1e0694d0eb..a1c5ca86fc 100644\n--- a/astropy/nddata/compat.py\n+++ b/astropy/nddata/compat.py\n@@ -161,6 +161,8 @@ class NDDataArray(NDArithmeticMixin, NDSlicingMixin, NDIOMixin, NDData):\n     def mask(self):\n         if self._mask is np.ma.nomask:\n             return None\n+        elif self._mask is None:\n+            return None\n         else:\n             return self._mask\n \n",
+      "new_source": "@property\ndef mask(self):\n    if self._mask is np.ma.nomask:\n        return None\n    elif self._mask is None:\n        return None\n    else:\n        return self._mask\n"
+    },
+    {
+      "snippet": "py:astropy/table/table.py::Table.mask",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "80d76b45d08b1fe1",
+      "response_hash": "c03e148d18b9b81d",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "astropy/cosmology/_io/tests/test_table.py",
+        "astropy/io/fits/tests/test_table.py",
+        "astropy/table/tests/test_table.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED",
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 2,
+      "judge_s": 15.1,
+      "diff": "diff --git a/astropy/table/table.py b/astropy/table/table.py\nindex d51ee0a68a..14386f506c 100644\n--- a/astropy/table/table.py\n+++ b/astropy/table/table.py\n@@ -961,6 +961,8 @@ class Table:\n \n     @mask.setter\n     def mask(self, val):\n+        if val is None:\n+            return\n         self.mask[:] = val\n \n     @property\n",
+      "new_source": "@mask.setter\ndef mask(self, val):\n    if val is None:\n        return\n    self.mask[:] = val\n"
+    },
+    {
+      "snippet": "py:astropy/time/core.py::TimeBase.mask",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "5358f0bb45151e53",
+      "response_hash": "bc3315f44db6a3ba",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:astropy/nddata/compat.py::NDDataArray.mask",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "3d8b57a14a0d4342",
+      "response_hash": "1b67e0c94aa3efc9",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "astropy/nddata/tests/test_compat.py",
+        "astropy/nddata/tests/test_nduncertainty.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED",
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 5,
+      "judge_s": 5.1,
+      "diff": "diff --git a/astropy/nddata/compat.py b/astropy/nddata/compat.py\nindex 1e0694d0eb..2006edba34 100644\n--- a/astropy/nddata/compat.py\n+++ b/astropy/nddata/compat.py\n@@ -176,8 +176,9 @@ class NDDataArray(NDArithmeticMixin, NDSlicingMixin, NDIOMixin, NDData):\n             else:\n                 self._mask = mask\n         else:\n-            # internal representation should be one numpy understands\n-            self._mask = np.ma.nomask\n+            # internal representation should be None, so arithmetic mask\n+            # handling can distinguish a missing mask\n+            self._mask = None\n \n     @property\n     def shape(self):\n",
+      "new_source": "@mask.setter\ndef mask(self, value):\n    # Check that value is not either type of null mask.\n    if (value is not None) and (value is not np.ma.nomask):\n        mask = np.array(value, dtype=np.bool_, copy=False)\n        if mask.shape != self.data.shape:\n            raise ValueError(\n                f\"dimensions of mask {mask.shape} and data {self.data.shape} do not match\"\n            )\n        else:\n            self._mask = mask\n    else:\n        # internal representation should be None, so arithmetic mask\n        # handling can distinguish a missing mask\n        self._mask = None\n"
+    },
+    {
+      "snippet": "py:astropy/nddata/nddata.py::NDData.mask",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "c7203629a9ee96fa",
+      "response_hash": "3a19d2019cf9934f",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "astropy/nddata/tests/test_nddata.py",
+        "astropy/nddata/tests/test_compat.py",
+        "astropy/nddata/tests/test_decorators.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED",
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 4,
+      "judge_s": 21.4,
+      "diff": "diff --git a/astropy/nddata/nddata.py b/astropy/nddata/nddata.py\nindex 8201a5fa55..8f8c02ac2c 100644\n--- a/astropy/nddata/nddata.py\n+++ b/astropy/nddata/nddata.py\n@@ -323,6 +323,10 @@ class NDData(NDDataBase):\n         Masks should follow the ``numpy`` convention that valid data points are\n         marked by ``False`` and invalid ones with ``True``.\n         \"\"\"\n+        if self._mask is None:\n+            return None\n+        if isinstance(self._mask, Masked):\n+            return self._mask.mask\n         return self._mask\n \n     @mask.setter\n",
+      "new_source": "@property\ndef mask(self):\n    \"\"\"\n    any type : Mask for the dataset, if any.\n\n    Masks should follow the ``numpy`` convention that valid data points are\n    marked by ``False`` and invalid ones with ``True``.\n    \"\"\"\n    if self._mask is None:\n        return None\n    if isinstance(self._mask, Masked):\n        return self._mask.mask\n    return self._mask\n"
+    },
+    {
+      "snippet": "py:astropy/table/table.py::Table.mask",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "3203b888d8cb83ed",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:astropy/nddata/compat.py::NDDataArray.mask",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "802b2071f6ef0c60",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:astropy/table/table.py::Table.mask",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "80d76b45d08b1fe1",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:astropy/time/core.py::TimeBase.mask",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "5358f0bb45151e53",
+      "response_hash": "bc3315f44db6a3ba",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:astropy/nddata/compat.py::NDDataArray.mask",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "ae3a49732890311d",
+      "response_hash": "7dbe6373fa5ad970",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "astropy/nddata/tests/test_compat.py",
+        "astropy/nddata/tests/test_nduncertainty.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED",
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 7,
+      "judge_s": 5.1,
+      "diff": "diff --git a/astropy/nddata/compat.py b/astropy/nddata/compat.py\nindex 1e0694d0eb..5ae7e2a6b9 100644\n--- a/astropy/nddata/compat.py\n+++ b/astropy/nddata/compat.py\n@@ -171,13 +171,14 @@ class NDDataArray(NDArithmeticMixin, NDSlicingMixin, NDIOMixin, NDData):\n             mask = np.array(value, dtype=np.bool_, copy=False)\n             if mask.shape != self.data.shape:\n                 raise ValueError(\n-                    f\"dimensions of mask {mask.shape} and data {self.data.shape} do not match\"\n+                    \"dimensions of mask do not match dimensions of data\"\n                 )\n             else:\n                 self._mask = mask\n         else:\n-            # internal representation should be one numpy understands\n-            self._mask = np.ma.nomask\n+            # internal representation should be one the arithmetic mixin\n+            # understands (``None``), not ``np.ma.nomask``\n+            self._mask = None\n \n     @property\n     def shape(self):\n",
+      "new_source": "@mask.setter\ndef mask(self, value):\n    # Check that value is not either type of null mask.\n    if (value is not None) and (value is not np.ma.nomask):\n        mask = np.array(value, dtype=np.bool_, copy=False)\n        if mask.shape != self.data.shape:\n            raise ValueError(\n                \"dimensions of mask do not match dimensions of data\"\n            )\n        else:\n            self._mask = mask\n    else:\n        # internal representation should be one the arithmetic mixin\n        # understands (``None``), not ``np.ma.nomask``\n        self._mask = None\n"
+    },
+    {
+      "snippet": "py:astropy/nddata/nddata.py::NDData.mask",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "ec83f1cec207dc21",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    }
+  ],
+  "validated_repro": 2,
+  "stop": "budget",
+  "submission": {
+    "snippet": "py:astropy/nddata/compat.py::NDDataArray.mask",
+    "model": "moonshotai/kimi-k3",
+    "template": "fix",
+    "diff": "diff --git a/astropy/nddata/compat.py b/astropy/nddata/compat.py\nindex 1e0694d0eb..a1c5ca86fc 100644\n--- a/astropy/nddata/compat.py\n+++ b/astropy/nddata/compat.py\n@@ -161,6 +161,8 @@ class NDDataArray(NDArithmeticMixin, NDSlicingMixin, NDIOMixin, NDData):\n     def mask(self):\n         if self._mask is np.ma.nomask:\n             return None\n+        elif self._mask is None:\n+            return None\n         else:\n             return self._mask\n \n",
+    "votes": 0,
+    "changed_lines": 2,
+    "new_source": "@property\ndef mask(self):\n    if self._mask is np.ma.nomask:\n        return None\n    elif self._mask is None:\n        return None\n    else:\n        return self._mask\n",
+    "prompt_hash": "802b2071f6ef0c60",
+    "response_hash": "4a035b555d40a6ea"
+  },
+  "search_s": 249.3,
+  "llm_calls": 16,
+  "tokens_in": 18408,
+  "tokens_out": 3755,
+  "calls": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 16.66,
+      "tokens_in": 944,
+      "tokens_out": 362,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 13.97,
+      "tokens_in": 944,
+      "tokens_out": 278,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 25.08,
+      "tokens_in": 1196,
+      "tokens_out": 503,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 4.18,
+      "tokens_in": 1138,
+      "tokens_out": 34,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 13.24,
+      "tokens_in": 1325,
+      "tokens_out": 271,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 17.68,
+      "tokens_in": 1100,
+      "tokens_out": 370,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 12.99,
+      "tokens_in": 1198,
+      "tokens_out": 403,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 4.33,
+      "tokens_in": 1126,
+      "tokens_out": 111,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 6.04,
+      "tokens_in": 1196,
+      "tokens_out": 181,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 23.13,
+      "tokens_in": 1138,
+      "tokens_out": 677,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 5.95,
+      "tokens_in": 1325,
+      "tokens_out": 34,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 7.01,
+      "tokens_in": 1100,
+      "tokens_out": 32,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 5.05,
+      "tokens_in": 1198,
+      "tokens_out": 33,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 7.03,
+      "tokens_in": 1126,
+      "tokens_out": 185,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 9.71,
+      "tokens_in": 1206,
+      "tokens_out": 246,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 11.4,
+      "tokens_in": 1148,
+      "tokens_out": 35,
+      "finish_reason": "stop",
+      "empty": true
+    }
+  ],
+  "arms": {
+    "moonshotai/kimi-k3/fix": 0.15,
+    "moonshotai/kimi-k3/fix_think": 0.22499999999999998
+  },
+  "grade": {
+    "resolved": false,
+    "applied": true,
+    "fail_to_pass": {
+      "success": 0,
+      "failure": 1
+    },
+    "pass_to_pass": {
+      "success": 179,
+      "failure": 0
+    }
+  },
+  "grade_s": 1.2,
+  "wall_s": 280.0,
+  "diagnosis": {
+    "gold_files": [
+      "astropy/nddata/mixins/ndarithmetic.py"
+    ],
+    "localised_file_hit": false,
+    "localised_line_hit": false,
+    "submission_files": [
+      "astropy/nddata/compat.py"
+    ],
+    "submission_in_gold_file": false,
+    "gold_changed_lines": 4
+  }
+}

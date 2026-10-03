@@ -1,0 +1,442 @@
+{
+  "instance_id": "django__django-12276",
+  "repo": "django/django",
+  "version": "3.1",
+  "base_commit": "53d8646f799de7f92ab9defe9dc56c6125448102",
+  "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.django__django-12276:latest",
+  "started_at": "2026-10-03T03:40:13.665551+00:00",
+  "image_digest": "ghcr.io/epoch-research/swe-bench.eval.x86_64.django__django-12276@sha256:5eda6a8e10810ddbaac8b2763ee96916ac4545ed532083c7ee6dbd2bd3550216",
+  "pull_s": 13.3,
+  "files_considered": 825,
+  "ranked_files": [
+    {
+      "file": "django/forms/widgets.py",
+      "score": 2.5
+    },
+    {
+      "file": "django/forms/forms.py",
+      "score": 0.833
+    },
+    {
+      "file": "django/forms/formsets.py",
+      "score": 0.726
+    },
+    {
+      "file": "django/forms/fields.py",
+      "score": 0.726
+    },
+    {
+      "file": "django/forms/models.py",
+      "score": 0.689
+    },
+    {
+      "file": "django/forms/boundfield.py",
+      "score": 0.66
+    },
+    {
+      "file": "django/contrib/admin/widgets.py",
+      "score": 0.586
+    },
+    {
+      "file": "django/contrib/staticfiles/management/commands/collectstatic.py",
+      "score": 0.476
+    }
+  ],
+  "localised": [
+    {
+      "file": "django/forms/widgets.py",
+      "name": "ClearableFileInput.use_required_attribute",
+      "kind": "function",
+      "start": 454,
+      "end": 455,
+      "score": 4.406
+    },
+    {
+      "file": "django/forms/widgets.py",
+      "name": "Select.use_required_attribute",
+      "kind": "function",
+      "start": 689,
+      "end": 700,
+      "score": 3.417
+    },
+    {
+      "file": "django/forms/widgets.py",
+      "name": "CheckboxSelectMultiple.use_required_attribute",
+      "kind": "function",
+      "start": 769,
+      "end": 772,
+      "score": 3.377
+    },
+    {
+      "file": "django/forms/widgets.py",
+      "name": "Widget.use_required_attribute",
+      "kind": "function",
+      "start": 275,
+      "end": 276,
+      "score": 3.293
+    },
+    {
+      "file": "django/forms/widgets.py",
+      "name": "ClearableFileInput.<L395-398>",
+      "kind": "block",
+      "start": 395,
+      "end": 398,
+      "score": 2.5
+    },
+    {
+      "file": "django/forms/widgets.py",
+      "name": "FileInput.<L375-377>",
+      "kind": "block",
+      "start": 375,
+      "end": 377,
+      "score": 2.464
+    }
+  ],
+  "repro": [
+    {
+      "model": "qwen2.5-coder-7b",
+      "outcome": "unparseable",
+      "script_hash": null
+    },
+    {
+      "model": "qwen2.5-coder-3b",
+      "outcome": "NONE",
+      "script_hash": "58402393033c8735"
+    }
+  ],
+  "candidates": [
+    {
+      "snippet": "py:django/forms/widgets.py::ClearableFileInput.use_required_attribute",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "b6a6aacc15825fbc",
+      "response_hash": "f66216e1e57f4828",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/forms_tests/tests/test_widgets.py",
+        "tests/forms_tests/field_tests/test_splitdatetimefield.py",
+        "tests/forms_tests/tests/test_formsets.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 5.9,
+      "diff": "diff --git a/django/forms/widgets.py b/django/forms/widgets.py\nindex 338d54d72f..522b7e1f8b 100644\n--- a/django/forms/widgets.py\n+++ b/django/forms/widgets.py\n@@ -452,7 +452,7 @@ class ClearableFileInput(FileInput):\n         return upload\n \n     def use_required_attribute(self, initial):\n-        return super().use_required_attribute(initial) and not initial\n+        return not initial\n \n     def value_omitted_from_data(self, data, files, name):\n         return (\n",
+      "new_source": "def use_required_attribute(self, initial):\n    return not initial\n"
+    },
+    {
+      "snippet": "py:django/forms/widgets.py::Select.use_required_attribute",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "bdf3d81eb426dce2",
+      "response_hash": "222421fc07885b6d",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/forms_tests/tests/test_widgets.py",
+        "tests/forms_tests/field_tests/test_splitdatetimefield.py",
+        "tests/forms_tests/tests/test_formsets.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 8,
+      "judge_s": 3.2,
+      "diff": "diff --git a/django/forms/widgets.py b/django/forms/widgets.py\nindex 338d54d72f..d81eae018e 100644\n--- a/django/forms/widgets.py\n+++ b/django/forms/widgets.py\n@@ -691,13 +691,7 @@ class Select(ChoiceWidget):\n         Don't render 'required' if the first <option> has a value, as that's\n         invalid HTML.\n         \"\"\"\n-        use_required_attribute = super().use_required_attribute(initial)\n-        # 'required' is always okay for <select multiple>.\n-        if self.allow_multiple_selected:\n-            return use_required_attribute\n-\n-        first_choice = next(iter(self.choices), None)\n-        return use_required_attribute and first_choice is not None and self._choice_has_empty_value(first_choice)\n+        return super().use_required_attribute(initial) and not self.allow_multiple_selected and self._choice_has_empty_value(next(iter(self.choices), None))\n \n \n class NullBooleanSelect(Select):\n",
+      "new_source": "def use_required_attribute(self, initial):\n    \"\"\"\n    Don't render 'required' if the first <option> has a value, as that's\n    invalid HTML.\n    \"\"\"\n    return super().use_required_attribute(initial) and not self.allow_multiple_selected and self._choice_has_empty_value(next(iter(self.choices), None))\n"
+    },
+    {
+      "snippet": "py:django/forms/widgets.py::CheckboxSelectMultiple.use_required_attribute",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "da17d4f3ad80ab9e",
+      "response_hash": "d61ed17ae52ccf06",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/forms_tests/tests/test_widgets.py",
+        "tests/forms_tests/field_tests/test_splitdatetimefield.py",
+        "tests/forms_tests/tests/test_formsets.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 5,
+      "judge_s": 3.3,
+      "diff": "diff --git a/django/forms/widgets.py b/django/forms/widgets.py\nindex 338d54d72f..dfd117f033 100644\n--- a/django/forms/widgets.py\n+++ b/django/forms/widgets.py\n@@ -767,9 +767,8 @@ class CheckboxSelectMultiple(ChoiceWidget):\n     option_template_name = 'django/forms/widgets/checkbox_option.html'\n \n     def use_required_attribute(self, initial):\n-        # Don't use the 'required' attribute because browser validation would\n-        # require all checkboxes to be checked instead of at least one.\n-        return False\n+        # Always return True to allow the 'required' attribute to be used.\n+        return True\n \n     def value_omitted_from_data(self, data, files, name):\n         # HTML checkboxes don't appear in POST data if not checked, so it's\n",
+      "new_source": "def use_required_attribute(self, initial):\n    # Always return True to allow the 'required' attribute to be used.\n    return True\n"
+    },
+    {
+      "snippet": "py:django/forms/widgets.py::Widget.use_required_attribute",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "b7f569ecb4bf8cff",
+      "response_hash": "dd8501b35735b3f7",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/forms_tests/tests/test_widgets.py",
+        "tests/forms_tests/field_tests/test_splitdatetimefield.py",
+        "tests/forms_tests/tests/test_formsets.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 3.2,
+      "diff": "diff --git a/django/forms/widgets.py b/django/forms/widgets.py\nindex 338d54d72f..9525bdaccf 100644\n--- a/django/forms/widgets.py\n+++ b/django/forms/widgets.py\n@@ -273,7 +273,7 @@ class Widget(metaclass=MediaDefiningClass):\n         return id_\n \n     def use_required_attribute(self, initial):\n-        return not self.is_hidden\n+        return not self.is_hidden and not initial\n \n \n class Input(Widget):\n",
+      "new_source": "def use_required_attribute(self, initial):\n    return not self.is_hidden and not initial\n"
+    },
+    {
+      "snippet": "py:django/forms/widgets.py::ClearableFileInput.<L395-398>",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "52f8bb81a9db95fc",
+      "response_hash": "81590c2c982b8937",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/forms_tests/tests/test_widgets.py",
+        "tests/forms_tests/field_tests/test_splitdatetimefield.py",
+        "tests/forms_tests/tests/test_formsets.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 1,
+      "judge_s": 3.2,
+      "diff": "diff --git a/django/forms/widgets.py b/django/forms/widgets.py\nindex 338d54d72f..37fe73faba 100644\n--- a/django/forms/widgets.py\n+++ b/django/forms/widgets.py\n@@ -396,6 +396,7 @@ class ClearableFileInput(FileInput):\n     initial_text = _('Currently')\n     input_text = _('Change')\n     template_name = 'django/forms/widgets/clearable_file_input.html'\n+    use_required_attribute = False  # Move this line to FileInput.use_required_attribute()\n \n     def clear_checkbox_name(self, name):\n         \"\"\"\n",
+      "new_source": "clear_checkbox_label = _('Clear')\ninitial_text = _('Currently')\ninput_text = _('Change')\ntemplate_name = 'django/forms/widgets/clearable_file_input.html'\nuse_required_attribute = False  # Move this line to FileInput.use_required_attribute()\n"
+    },
+    {
+      "snippet": "py:django/forms/widgets.py::FileInput.<L375-377>",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "119632c450ec4796",
+      "response_hash": "648cb22dc215494c",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "1 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "tests/forms_tests/tests/test_widgets.py",
+        "tests/forms_tests/field_tests/test_splitdatetimefield.py",
+        "tests/forms_tests/tests/test_formsets.py"
+      ],
+      "regressions": 1,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 9,
+      "judge_s": 3.2
+    },
+    {
+      "snippet": "py:django/forms/widgets.py::ClearableFileInput.use_required_attribute",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "b6a6aacc15825fbc",
+      "response_hash": "f66216e1e57f4828",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/forms_tests/tests/test_widgets.py",
+        "tests/forms_tests/field_tests/test_splitdatetimefield.py",
+        "tests/forms_tests/tests/test_formsets.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 3.1,
+      "diff": "diff --git a/django/forms/widgets.py b/django/forms/widgets.py\nindex 338d54d72f..522b7e1f8b 100644\n--- a/django/forms/widgets.py\n+++ b/django/forms/widgets.py\n@@ -452,7 +452,7 @@ class ClearableFileInput(FileInput):\n         return upload\n \n     def use_required_attribute(self, initial):\n-        return super().use_required_attribute(initial) and not initial\n+        return not initial\n \n     def value_omitted_from_data(self, data, files, name):\n         return (\n",
+      "new_source": "def use_required_attribute(self, initial):\n    return not initial\n"
+    },
+    {
+      "snippet": "py:django/forms/widgets.py::Select.use_required_attribute",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "bdf3d81eb426dce2",
+      "response_hash": "5d237b2fd6287048",
+      "stage": "parse",
+      "reason": "response does not define use_required_attribute()"
+    },
+    {
+      "snippet": "py:django/forms/widgets.py::CheckboxSelectMultiple.use_required_attribute",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "da17d4f3ad80ab9e",
+      "response_hash": "70b195a313dc4dc0",
+      "stage": "parse",
+      "reason": "syntax error: '(' was never closed (line 16)"
+    },
+    {
+      "snippet": "py:django/forms/widgets.py::Widget.use_required_attribute",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "b7f569ecb4bf8cff",
+      "response_hash": "77843e99a809d77e",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/forms_tests/tests/test_widgets.py",
+        "tests/forms_tests/field_tests/test_splitdatetimefield.py",
+        "tests/forms_tests/tests/test_formsets.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 3.1,
+      "diff": "diff --git a/django/forms/widgets.py b/django/forms/widgets.py\nindex 338d54d72f..d4324fe44d 100644\n--- a/django/forms/widgets.py\n+++ b/django/forms/widgets.py\n@@ -273,7 +273,7 @@ class Widget(metaclass=MediaDefiningClass):\n         return id_\n \n     def use_required_attribute(self, initial):\n-        return not self.is_hidden\n+        return not self.is_hidden and initial is None\n \n \n class Input(Widget):\n",
+      "new_source": "def use_required_attribute(self, initial):\n    return not self.is_hidden and initial is None\n"
+    },
+    {
+      "snippet": "py:django/forms/widgets.py::ClearableFileInput.<L395-398>",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "52f8bb81a9db95fc",
+      "response_hash": "cf7881f853fae56c",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/forms_tests/tests/test_widgets.py",
+        "tests/forms_tests/field_tests/test_splitdatetimefield.py",
+        "tests/forms_tests/tests/test_formsets.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 10,
+      "judge_s": 3.2,
+      "diff": "diff --git a/django/forms/widgets.py b/django/forms/widgets.py\nindex 338d54d72f..be559ba2f0 100644\n--- a/django/forms/widgets.py\n+++ b/django/forms/widgets.py\n@@ -392,10 +392,12 @@ FILE_INPUT_CONTRADICTION = object()\n \n \n class ClearableFileInput(FileInput):\n-    clear_checkbox_label = _('Clear')\n-    initial_text = _('Currently')\n-    input_text = _('Change')\n-    template_name = 'django/forms/widgets/clearable_file_input.html'\n+    class ClearableFileInput(FileInput):\n+        clear_checkbox_label = _('Clear')\n+        initial_text = _('Initial')\n+        input_text = _('Change')\n+        template_name = 'django/forms/widgets/clearable_file_input.html'\n+        use_required_attribute = False  # Set this to False to prevent required attribute from being displayed\n \n     def clear_checkbox_name(self, name):\n         \"\"\"\n",
+      "new_source": "class ClearableFileInput(FileInput):\n    clear_checkbox_label = _('Clear')\n    initial_text = _('Initial')\n    input_text = _('Change')\n    template_name = 'django/forms/widgets/clearable_file_input.html'\n    use_required_attribute = False  # Set this to False to prevent required attribute from being displayed\n"
+    },
+    {
+      "snippet": "py:django/forms/widgets.py::FileInput.<L375-377>",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "119632c450ec4796",
+      "response_hash": "7804bd325d35d076",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/forms_tests/tests/test_widgets.py",
+        "tests/forms_tests/field_tests/test_splitdatetimefield.py",
+        "tests/forms_tests/tests/test_formsets.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 4,
+      "judge_s": 3.0,
+      "diff": "diff --git a/django/forms/widgets.py b/django/forms/widgets.py\nindex 338d54d72f..ad8067b7ef 100644\n--- a/django/forms/widgets.py\n+++ b/django/forms/widgets.py\n@@ -375,6 +375,10 @@ class FileInput(Input):\n     input_type = 'file'\n     needs_multipart_form = True\n     template_name = 'django/forms/widgets/file.html'\n+    use_required_attribute = False  # Move this line to the desired location\n+\n+    class FileInput(Input):\n+        ...\n \n     def format_value(self, value):\n         \"\"\"File input never renders a value.\"\"\"\n",
+      "new_source": "input_type = 'file'\nneeds_multipart_form = True\ntemplate_name = 'django/forms/widgets/file.html'\nuse_required_attribute = False  # Move this line to the desired location\n\nclass FileInput(Input):\n    ...\n"
+    },
+    {
+      "snippet": "py:django/forms/widgets.py::ClearableFileInput.use_required_attribute",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "b6a6aacc15825fbc",
+      "response_hash": "5729db69a6267c00",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/forms_tests/tests/test_widgets.py",
+        "tests/forms_tests/field_tests/test_splitdatetimefield.py",
+        "tests/forms_tests/tests/test_formsets.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 3.1,
+      "diff": "diff --git a/django/forms/widgets.py b/django/forms/widgets.py\nindex 338d54d72f..41d3eab91e 100644\n--- a/django/forms/widgets.py\n+++ b/django/forms/widgets.py\n@@ -452,7 +452,7 @@ class ClearableFileInput(FileInput):\n         return upload\n \n     def use_required_attribute(self, initial):\n-        return super().use_required_attribute(initial) and not initial\n+        return super().use_required_attribute(initial) and not self.is_file_input() and not initial\n \n     def value_omitted_from_data(self, data, files, name):\n         return (\n",
+      "new_source": "def use_required_attribute(self, initial):\n    return super().use_required_attribute(initial) and not self.is_file_input() and not initial\n"
+    },
+    {
+      "snippet": "py:django/forms/widgets.py::Select.use_required_attribute",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "bdf3d81eb426dce2",
+      "response_hash": "7d99d185c4a89e5a",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/forms_tests/tests/test_widgets.py",
+        "tests/forms_tests/field_tests/test_splitdatetimefield.py",
+        "tests/forms_tests/tests/test_formsets.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 8,
+      "judge_s": 3.0,
+      "diff": "diff --git a/django/forms/widgets.py b/django/forms/widgets.py\nindex 338d54d72f..819fed2ae4 100644\n--- a/django/forms/widgets.py\n+++ b/django/forms/widgets.py\n@@ -691,13 +691,7 @@ class Select(ChoiceWidget):\n         Don't render 'required' if the first <option> has a value, as that's\n         invalid HTML.\n         \"\"\"\n-        use_required_attribute = super().use_required_attribute(initial)\n-        # 'required' is always okay for <select multiple>.\n-        if self.allow_multiple_selected:\n-            return use_required_attribute\n-\n-        first_choice = next(iter(self.choices), None)\n-        return use_required_attribute and first_choice is not None and self._choice_has_empty_value(first_choice)\n+        return super().use_required_attribute(initial)  # Keep the original behavior\n \n \n class NullBooleanSelect(Select):\n",
+      "new_source": "def use_required_attribute(self, initial):\n    \"\"\"\n    Don't render 'required' if the first <option> has a value, as that's\n    invalid HTML.\n    \"\"\"\n    return super().use_required_attribute(initial)  # Keep the original behavior\n"
+    }
+  ],
+  "validated_repro": 0,
+  "stop": "budget",
+  "submission": {
+    "snippet": "py:django/forms/widgets.py::ClearableFileInput.<L395-398>",
+    "model": "qwen2.5-coder-1.5b",
+    "template": "fix",
+    "diff": "diff --git a/django/forms/widgets.py b/django/forms/widgets.py\nindex 338d54d72f..37fe73faba 100644\n--- a/django/forms/widgets.py\n+++ b/django/forms/widgets.py\n@@ -396,6 +396,7 @@ class ClearableFileInput(FileInput):\n     initial_text = _('Currently')\n     input_text = _('Change')\n     template_name = 'django/forms/widgets/clearable_file_input.html'\n+    use_required_attribute = False  # Move this line to FileInput.use_required_attribute()\n \n     def clear_checkbox_name(self, name):\n         \"\"\"\n",
+    "votes": 0,
+    "changed_lines": 1,
+    "new_source": "clear_checkbox_label = _('Clear')\ninitial_text = _('Currently')\ninput_text = _('Change')\ntemplate_name = 'django/forms/widgets/clearable_file_input.html'\nuse_required_attribute = False  # Move this line to FileInput.use_required_attribute()\n",
+    "prompt_hash": "52f8bb81a9db95fc",
+    "response_hash": "81590c2c982b8937"
+  },
+  "search_s": 235.8,
+  "llm_calls": 16,
+  "tokens_in": 7341,
+  "tokens_out": 1217,
+  "arms": {
+    "qwen2.5-coder-7b/fix": 0.3,
+    "qwen2.5-coder-7b/fix_think": 0.3,
+    "qwen2.5-coder-3b/fix": 0.3,
+    "qwen2.5-coder-3b/fix_think": 0.3,
+    "qwen2.5-coder-1.5b/fix": 0.725,
+    "qwen2.5-coder-1.5b/fix_think": 0.3
+  },
+  "grade": {
+    "resolved": false,
+    "applied": true,
+    "fail_to_pass": {
+      "success": 0,
+      "failure": 2
+    },
+    "pass_to_pass": {
+      "success": 117,
+      "failure": 0
+    }
+  },
+  "grade_s": 23.1,
+  "wall_s": 279.3,
+  "diagnosis": {
+    "gold_files": [
+      "django/forms/widgets.py"
+    ],
+    "localised_file_hit": true,
+    "localised_line_hit": true,
+    "submission_files": [
+      "django/forms/widgets.py"
+    ],
+    "submission_in_gold_file": true,
+    "gold_changed_lines": 6
+  }
+}

@@ -230,6 +230,10 @@ def listing(lake: LakeStore) -> list[dict[str, Any]]:
             row["what"] = r.content["explain"]
         elif e.kind == "rule":
             row["what"] = f"CRL rule {r.content['name']} v{r.content['version']} ({len(r.content['evidence'])} evidence)"
+        elif "instance_id" in r.content:  # a repair (SWE-bench): correctness, judged by the official grader
+            probe = (r.content.get("memorisation_probe") or {}).get("verdict", "not probed")
+            row["what"] = (f"{len(r.content['genes'])} genes, {r.content['status']}, resolves {r.content['instance_id']} "
+                           f"({r.content['holdout'].get('grader')}), memorisation probe: {probe}")
         else:
             cost = r.content["effects"].get("cost") or {}
             row["what"] = (f"{len(r.content['genes'])} genes, {r.content['status']}, cost {cost.get('gain_pct')}% "

@@ -1,0 +1,12 @@
+diff --git a/lib/matplotlib/pyplot.py b/lib/matplotlib/pyplot.py
+index e5ae9a0cc1..6dd1f609df 100644
+--- a/lib/matplotlib/pyplot.py
++++ b/lib/matplotlib/pyplot.py
+@@ -957,7 +957,6 @@ if Figure.legend.__doc__:
+ 
+ ## Axes ##
+ 
+-@_docstring.dedent_interpd
+ def axes(arg=None, **kwargs):
+     """
+     Add an Axes to the current figure and make it the current Axes.

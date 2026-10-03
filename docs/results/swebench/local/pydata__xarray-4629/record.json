@@ -1,0 +1,427 @@
+{
+  "instance_id": "pydata__xarray-4629",
+  "repo": "pydata/xarray",
+  "version": "0.12",
+  "base_commit": "a41edc7bf5302f2ea327943c0c48c532b12009bc",
+  "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.pydata__xarray-4629:latest",
+  "started_at": "2026-10-03T07:18:50.134176+00:00",
+  "image_digest": "ghcr.io/epoch-research/swe-bench.eval.x86_64.pydata__xarray-4629@sha256:16954d37403c734dcd26bf944c68152b89afd909771c3477f4cb33336cd1d104",
+  "pull_s": 41.3,
+  "files_considered": 80,
+  "ranked_files": [
+    {
+      "file": "xarray/core/dataset.py",
+      "score": 2.004
+    },
+    {
+      "file": "xarray/util/print_versions.py",
+      "score": 1.5
+    },
+    {
+      "file": "xarray/core/merge.py",
+      "score": 1.092
+    },
+    {
+      "file": "xarray/core/dataarray.py",
+      "score": 0.971
+    },
+    {
+      "file": "xarray/core/variable.py",
+      "score": 0.911
+    },
+    {
+      "file": "xarray/core/coordinates.py",
+      "score": 0.826
+    },
+    {
+      "file": "xarray/backends/api.py",
+      "score": 0.732
+    },
+    {
+      "file": "xarray/core/combine.py",
+      "score": 0.596
+    }
+  ],
+  "localised": [
+    {
+      "file": "xarray/core/dataset.py",
+      "name": "Dataset.merge",
+      "kind": "function",
+      "start": 3790,
+      "end": 3859,
+      "score": 3.815
+    },
+    {
+      "file": "xarray/core/dataset.py",
+      "name": "Dataset.attrs",
+      "kind": "function",
+      "start": 672,
+      "end": 674,
+      "score": 3.765
+    },
+    {
+      "file": "xarray/core/dataset.py",
+      "name": "Dataset.attrs",
+      "kind": "function",
+      "start": 665,
+      "end": 670,
+      "score": 3.719
+    },
+    {
+      "file": "xarray/util/print_versions.py",
+      "name": "show_versions",
+      "kind": "function",
+      "start": 80,
+      "end": 156,
+      "score": 3.218
+    },
+    {
+      "file": "xarray/core/dataarray.py",
+      "name": "DataArray.attrs",
+      "kind": "function",
+      "start": 750,
+      "end": 753,
+      "score": 2.736
+    },
+    {
+      "file": "xarray/core/dataarray.py",
+      "name": "DataArray.attrs",
+      "kind": "function",
+      "start": 745,
+      "end": 748,
+      "score": 2.495
+    }
+  ],
+  "repro": [
+    {
+      "model": "qwen2.5-coder-7b",
+      "outcome": "ISSUE REPRODUCED",
+      "script_hash": "011cc1c0eaba996c"
+    },
+    {
+      "model": "qwen2.5-coder-3b",
+      "outcome": "ISSUE REPRODUCED",
+      "script_hash": "3506bdc5949391f1"
+    }
+  ],
+  "candidates": [
+    {
+      "snippet": "py:xarray/core/dataset.py::Dataset.merge",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "5e1b4d63aa42c033",
+      "response_hash": "d24bd8a2df804f75",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:xarray/core/dataset.py::Dataset.attrs",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "739d162d0204d87a",
+      "response_hash": "7da58d4f8a08b246",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "xarray/tests/test_dataset.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED",
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 2,
+      "judge_s": 45.5,
+      "diff": "diff --git a/xarray/core/dataset.py b/xarray/core/dataset.py\nindex b352fd3d..de081a6a 100644\n--- a/xarray/core/dataset.py\n+++ b/xarray/core/dataset.py\n@@ -671,7 +671,7 @@ class Dataset(Mapping, ImplementsDatasetReduce, DataWithCoords):\n \n     @attrs.setter\n     def attrs(self, value: Mapping[Hashable, Any]) -> None:\n-        self._attrs = dict(value)\n+        self._attrs = copy.deepcopy(value)\n \n     @property\n     def encoding(self) -> Dict:\n",
+      "new_source": "@attrs.setter\ndef attrs(self, value: Mapping[Hashable, Any]) -> None:\n    self._attrs = copy.deepcopy(value)\n"
+    },
+    {
+      "snippet": "py:xarray/core/dataset.py::Dataset.attrs",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "1408d966eed93e37",
+      "response_hash": "2eca110cfc3c98d7",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "6 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "xarray/tests/test_dataset.py"
+      ],
+      "regressions": 6,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 22.2
+    },
+    {
+      "snippet": "py:xarray/util/print_versions.py::show_versions",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix_think",
+      "prompt_hash": "d0df0723939563c7",
+      "response_hash": "f25aa81282b18e41",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "xarray/tests/test_print_versions.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED",
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 8,
+      "judge_s": 12.3,
+      "diff": "diff --git a/xarray/util/print_versions.py b/xarray/util/print_versions.py\nindex d643d768..53549524 100755\n--- a/xarray/util/print_versions.py\n+++ b/xarray/util/print_versions.py\n@@ -77,6 +77,14 @@ def netcdf_and_hdf5_versions():\n     return [(\"libhdf5\", libhdf5_version), (\"libnetcdf\", libnetcdf_version)]\n \n \n+import importlib\n+import locale\n+import os\n+import platform\n+import struct\n+import subprocess\n+import sys\n+\n def show_versions(file=sys.stdout):\n     \"\"\"print the versions of xarray and its dependencies\n \n",
+      "new_source": "import importlib\nimport locale\nimport os\nimport platform\nimport struct\nimport subprocess\nimport sys\n\ndef show_versions(file=sys.stdout):\n    \"\"\"print the versions of xarray and its dependencies\n\n    Parameters\n    ----------\n    file : file-like, optional\n        print to the given file-like object. Defaults to sys.stdout.\n    \"\"\"\n    sys_info = get_sys_info()\n\n    try:\n        sys_info.extend(netcdf_and_hdf5_versions())\n    except Exception as e:\n        print(f\"Error collecting netcdf / hdf5 version: {e}\")\n\n    deps = [\n        # (MODULE_NAME, f(mod) -> mod version)\n        (\"xarray\", lambda mod: mod.__version__),\n        (\"pandas\", lambda mod: mod.__version__),\n        (\"numpy\", lambda mod: mod.__version__),\n        (\"scipy\", lambda mod: mod.__version__),\n        # xarray optionals\n        (\"netCDF4\", lambda mod: mod.__version__),\n        (\"pydap\", lambda mod: mod.__version__),\n        (\"h5netcdf\", lambda mod: mod.__version__),\n        (\"h5py\", lambda mod: mod.__version__),\n        (\"Nio\", lambda mod: mod.__version__),\n        (\"zarr\", lambda mod: mod.__version__),\n        (\"cftime\", lambda mod: mod.__version__),\n        (\"nc_time_axis\", lambda mod: mod.__version__),\n        (\"PseudoNetCDF\", lambda mod: mod.__version__),\n        (\"rasterio\", lambda mod: mod.__version__),\n        (\"cfgrib\", lambda mod: mod.__version__),\n        (\"iris\", lambda mod: mod.__version__),\n        (\"bottleneck\", lambda mod: mod.__version__),\n        (\"dask\", lambda mod: mod.__version__),\n        (\"distributed\", lambda mod: mod.__version__),\n        (\"matplotlib\", lambda mod: mod.__version__),\n        (\"cartopy\", lambda mod: mod.__version__),\n        (\"seaborn\", lambda mod: mod.__version__),\n        (\"numbagg\", lambda mod: mod.__version__),\n        (\"pint\", lambda mod: mod.__version__),\n        # xarray setup/test\n        (\"setuptools\", lambda mod: mod.__version__),\n        (\"pip\", lambda mod: mod.__version__),\n        (\"conda\", lambda mod: mod.__version__),\n        (\"pytest\", lambda mod: mod.__version__),\n        # Misc.\n        (\"IPython\", lambda mod: mod.__version__),\n        (\"sphinx\", lambda mod: mod.__version__),\n    ]\n\n    deps_blob = []\n    for (modname, ver_f) in deps:\n        try:\n            if modname in sys.modules:\n                mod = sys.modules[modname]\n            else:\n                mod = importlib.import_module(modname)\n        except Exception:\n            deps_blob.append((modname, None))\n        else:\n            try:\n                ver = ver_f(mod)\n                deps_blob.append((modname, ver))\n            except Exception:\n                deps_blob.append((modname, \"installed\"))\n\n    print(\"\\nINSTALLED VERSIONS\", file=file)\n    print(\"------------------\", file=file)\n\n    for k, stat in sys_info:\n        print(f\"{k}: {stat}\", file=file)\n\n    print(\"\", file=file)\n    for k, stat in deps_blob:\n        print(f\"{k}: {stat}\", file=file)\n"
+    },
+    {
+      "snippet": "py:xarray/core/dataarray.py::DataArray.attrs",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix",
+      "prompt_hash": "41d273a6f7bcb939",
+      "response_hash": "23886f0ffb4392a1",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "xarray/tests/test_dataarray.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED",
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 2,
+      "judge_s": 32.8,
+      "diff": "diff --git a/xarray/core/dataarray.py b/xarray/core/dataarray.py\nindex dc075991..d088e956 100644\n--- a/xarray/core/dataarray.py\n+++ b/xarray/core/dataarray.py\n@@ -750,7 +750,7 @@ class DataArray(AbstractArray, DataWithCoords):\n     @attrs.setter\n     def attrs(self, value: Mapping[Hashable, Any]) -> None:\n         # Disable type checking to work around mypy bug - see mypy#4167\n-        self.variable.attrs = value  # type: ignore\n+        self.variable.attrs = dict(value)  # type: ignore\n \n     @property\n     def encoding(self) -> Dict[Hashable, Any]:\n",
+      "new_source": "@attrs.setter\ndef attrs(self, value: Mapping[Hashable, Any]) -> None:\n    # Disable type checking to work around mypy bug - see mypy#4167\n    self.variable.attrs = dict(value)  # type: ignore\n"
+    },
+    {
+      "snippet": "py:xarray/core/dataarray.py::DataArray.attrs",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix",
+      "prompt_hash": "3a3dbbd37b7d6162",
+      "response_hash": "04e86a9aa5f877a4",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "4 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "xarray/tests/test_dataarray.py"
+      ],
+      "regressions": 4,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 15.6
+    },
+    {
+      "snippet": "py:xarray/core/dataset.py::Dataset.merge",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix",
+      "prompt_hash": "5a000d3454f43e88",
+      "response_hash": "5ecac8993d2c379b",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "xarray/tests/test_dataset.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED",
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 6,
+      "judge_s": 23.8,
+      "diff": "diff --git a/xarray/core/dataset.py b/xarray/core/dataset.py\nindex b352fd3d..3ae139d8 100644\n--- a/xarray/core/dataset.py\n+++ b/xarray/core/dataset.py\n@@ -3856,7 +3856,11 @@ class Dataset(Mapping, ImplementsDatasetReduce, DataWithCoords):\n             join=join,\n             fill_value=fill_value,\n         )\n-        return self._replace(**merge_result._asdict())\n+\n+        # Fix for the issue: return a deep copy of merged_result.attrs\n+        merged_result = merge_result._replace(attrs=copy.deepcopy(merge_result.attrs))\n+\n+        return self._replace(**merged_result._asdict())\n \n     def _assert_all_in_dataset(\n         self, names: Iterable[Hashable], virtual_okay: bool = False\n",
+      "new_source": "def merge(\n    self,\n    other: Union[\"CoercibleMapping\", \"DataArray\"],\n    inplace: bool = None,\n    overwrite_vars: Union[Hashable, Iterable[Hashable]] = frozenset(),\n    compat: str = \"no_conflicts\",\n    join: str = \"outer\",\n    fill_value: Any = dtypes.NA,\n) -> \"Dataset\":\n    \"\"\"Merge the arrays of two datasets into a single dataset.\n\n    This method generally does not allow for overriding data, with the\n    exception of attributes, which are ignored on the second dataset.\n    Variables with the same name are checked for conflicts via the equals\n    or identical methods.\n\n    Parameters\n    ----------\n    other : Dataset or mapping\n        Dataset or variables to merge with this dataset.\n    overwrite_vars : hashable or iterable of hashable, optional\n        If provided, update variables of these name(s) without checking for\n        conflicts in this dataset.\n    compat : {\"broadcast_equals\", \"equals\", \"identical\", \\\n              \"no_conflicts\"}, optional\n        String indicating how to compare variables of the same name for\n        potential conflicts:\n\n        - 'broadcast_equals': all values must be equal when variables are\n          broadcast against each other to ensure common dimensions.\n        - 'equals': all values and dimensions must be the same.\n        - 'identical': all values, dimensions and attributes must be the\n          same.\n        - 'no_conflicts': only values which are not null in both datasets\n          must be equal. The returned dataset then contains the combination\n          of all non-null values.\n\n    join : {\"outer\", \"inner\", \"left\", \"right\", \"exact\"}, optional\n        Method for joining ``self`` and ``other`` along shared dimensions:\n\n        - 'outer': use the union of the indexes\n        - 'inner': use the intersection of the indexes\n        - 'left': use indexes from ``self``\n        - 'right': use indexes from ``other``\n        - 'exact': error instead of aligning non-equal indexes\n    fill_value : scalar or dict-like, optional\n        Value to use for newly missing values. If a dict-like, maps\n        variable names (including coordinates) to fill values.\n\n    Returns\n    -------\n    merged : Dataset\n        Merged dataset.\n\n    Raises\n    ------\n    MergeError\n        If any variables conflict (see ``compat``).\n    \"\"\"\n    _check_inplace(inplace)\n    other = other.to_dataset() if isinstance(other, xr.DataArray) else other\n    merge_result = dataset_merge_method(\n        self,\n        other,\n        overwrite_vars=overwrite_vars,\n        compat=compat,\n        join=join,\n        fill_value=fill_value,\n    )\n\n    # Fix for the issue: return a deep copy of merged_result.attrs\n    merged_result = merge_result._replace(attrs=copy.deepcopy(merge_result.attrs))\n\n    return self._replace(**merged_result._asdict())\n"
+    },
+    {
+      "snippet": "py:xarray/core/dataset.py::Dataset.attrs",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "739d162d0204d87a",
+      "response_hash": "bafaee4dabdf09a4",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "xarray/tests/test_dataset.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED",
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 2,
+      "judge_s": 23.6,
+      "diff": "diff --git a/xarray/core/dataset.py b/xarray/core/dataset.py\nindex b352fd3d..de081a6a 100644\n--- a/xarray/core/dataset.py\n+++ b/xarray/core/dataset.py\n@@ -671,7 +671,7 @@ class Dataset(Mapping, ImplementsDatasetReduce, DataWithCoords):\n \n     @attrs.setter\n     def attrs(self, value: Mapping[Hashable, Any]) -> None:\n-        self._attrs = dict(value)\n+        self._attrs = copy.deepcopy(value)\n \n     @property\n     def encoding(self) -> Dict:\n",
+      "new_source": "@attrs.setter\ndef attrs(self, value: Mapping[Hashable, Any]) -> None:\n    self._attrs = copy.deepcopy(value)\n"
+    },
+    {
+      "snippet": "py:xarray/core/dataset.py::Dataset.attrs",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix",
+      "prompt_hash": "ddbc8943c9a1b382",
+      "response_hash": "7212b759a563c9c0",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "6 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "xarray/tests/test_dataset.py"
+      ],
+      "regressions": 6,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 21.7
+    },
+    {
+      "snippet": "py:xarray/util/print_versions.py::show_versions",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix",
+      "prompt_hash": "57ba4b5182092eb7",
+      "response_hash": "2254feb1e7e6104e",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "1 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "xarray/tests/test_print_versions.py"
+      ],
+      "regressions": 1,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 17,
+      "judge_s": 4.9
+    },
+    {
+      "snippet": "py:xarray/core/dataarray.py::DataArray.attrs",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "7ec17b344377e425",
+      "response_hash": "e088a2419027aaeb",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "876 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "xarray/tests/test_dataarray.py"
+      ],
+      "regressions": 876,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 5,
+      "judge_s": 3.8
+    },
+    {
+      "snippet": "py:xarray/core/dataarray.py::DataArray.attrs",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "f8c59e150e0e56b2",
+      "response_hash": "f98a79178bbc1160",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "4 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "xarray/tests/test_dataarray.py"
+      ],
+      "regressions": 4,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 16.3
+    },
+    {
+      "snippet": "py:xarray/core/dataset.py::Dataset.merge",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "5e1b4d63aa42c033",
+      "response_hash": "ba687a36587e9175",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "xarray/tests/test_dataset.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED",
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 50,
+      "judge_s": 23.8,
+      "diff": "diff --git a/xarray/core/dataset.py b/xarray/core/dataset.py\nindex b352fd3d..0073af98 100644\n--- a/xarray/core/dataset.py\n+++ b/xarray/core/dataset.py\n@@ -3796,56 +3796,6 @@ class Dataset(Mapping, ImplementsDatasetReduce, DataWithCoords):\n         join: str = \"outer\",\n         fill_value: Any = dtypes.NA,\n     ) -> \"Dataset\":\n-        \"\"\"Merge the arrays of two datasets into a single dataset.\n-\n-        This method generally does not allow for overriding data, with the\n-        exception of attributes, which are ignored on the second dataset.\n-        Variables with the same name are checked for conflicts via the equals\n-        or identical methods.\n-\n-        Parameters\n-        ----------\n-        other : Dataset or mapping\n-            Dataset or variables to merge with this dataset.\n-        overwrite_vars : hashable or iterable of hashable, optional\n-            If provided, update variables of these name(s) without checking for\n-            conflicts in this dataset.\n-        compat : {\"broadcast_equals\", \"equals\", \"identical\", \\\n-                  \"no_conflicts\"}, optional\n-            String indicating how to compare variables of the same name for\n-            potential conflicts:\n-\n-            - 'broadcast_equals': all values must be equal when variables are\n-              broadcast against each other to ensure common dimensions.\n-            - 'equals': all values and dimensions must be the same.\n-            - 'identical': all values, dimensions and attributes must be the\n-              same.\n-            - 'no_conflicts': only values which are not null in both datasets\n-              must be equal. The returned dataset then contains the combination\n-              of all non-null values.\n-\n-        join : {\"outer\", \"inner\", \"left\", \"right\", \"exact\"}, optional\n-            Method for joining ``self`` and ``other`` along shared dimensions:\n-\n-            - 'outer': use the union of the indexes\n-            - 'inner': use the intersection of the indexes\n-            - 'left': use indexes from ``self``\n-            - 'right': use indexes from ``other``\n-            - 'exact': error instead of aligning non-equal indexes\n-        fill_value : scalar or dict-like, optional\n-            Value to use for newly missing values. If a dict-like, maps\n-            variable names (including coordinates) to fill values.\n-\n-        Returns\n-        -------\n-        merged : Dataset\n-            Merged dataset.\n-\n-        Raises\n-        ------\n-        MergeError\n-            If any variables conflict (see ``compat``).\n-        \"\"\"\n         _check_inplace(inplace)\n         other = other.to_dataset() if isinstance(other, xr.DataArray) else other\n         merge_result = dataset_merge_method(\n",
+      "new_source": "def merge(\n    self,\n    other: Union[\"CoercibleMapping\", \"DataArray\"],\n    inplace: bool = None,\n    overwrite_vars: Union[Hashable, Iterable[Hashable]] = frozenset(),\n    compat: str = \"no_conflicts\",\n    join: str = \"outer\",\n    fill_value: Any = dtypes.NA,\n) -> \"Dataset\":\n    _check_inplace(inplace)\n    other = other.to_dataset() if isinstance(other, xr.DataArray) else other\n    merge_result = dataset_merge_method(\n        self,\n        other,\n        overwrite_vars=overwrite_vars,\n        compat=compat,\n        join=join,\n        fill_value=fill_value,\n    )\n    return self._replace(**merge_result._asdict())\n"
+    }
+  ],
+  "validated_repro": 2,
+  "stop": "budget",
+  "submission": {
+    "snippet": "py:xarray/core/dataset.py::Dataset.attrs",
+    "model": "qwen2.5-coder-1.5b",
+    "template": "fix_think",
+    "diff": "diff --git a/xarray/core/dataset.py b/xarray/core/dataset.py\nindex b352fd3d..de081a6a 100644\n--- a/xarray/core/dataset.py\n+++ b/xarray/core/dataset.py\n@@ -671,7 +671,7 @@ class Dataset(Mapping, ImplementsDatasetReduce, DataWithCoords):\n \n     @attrs.setter\n     def attrs(self, value: Mapping[Hashable, Any]) -> None:\n-        self._attrs = dict(value)\n+        self._attrs = copy.deepcopy(value)\n \n     @property\n     def encoding(self) -> Dict:\n",
+    "votes": 0,
+    "changed_lines": 2,
+    "new_source": "@attrs.setter\ndef attrs(self, value: Mapping[Hashable, Any]) -> None:\n    self._attrs = copy.deepcopy(value)\n",
+    "prompt_hash": "739d162d0204d87a",
+    "response_hash": "7da58d4f8a08b246"
+  },
+  "search_s": 1229.5,
+  "llm_calls": 15,
+  "tokens_in": 21212,
+  "tokens_out": 4222,
+  "arms": {
+    "qwen2.5-coder-7b/fix": 0.24,
+    "qwen2.5-coder-7b/fix_think": 0.3,
+    "qwen2.5-coder-3b/fix": 0.15,
+    "qwen2.5-coder-3b/fix_think": 0.3,
+    "qwen2.5-coder-1.5b/fix": 0.3,
+    "qwen2.5-coder-1.5b/fix_think": 0.16666666666666666
+  },
+  "grade": {
+    "resolved": false,
+    "applied": true,
+    "fail_to_pass": {
+      "success": 0,
+      "failure": 1
+    },
+    "pass_to_pass": {
+      "success": 32,
+      "failure": 0
+    }
+  },
+  "grade_s": 23.7,
+  "wall_s": 1312.9,
+  "diagnosis": {
+    "gold_files": [
+      "xarray/core/merge.py"
+    ],
+    "localised_file_hit": false,
+    "localised_line_hit": false,
+    "submission_files": [
+      "xarray/core/dataset.py"
+    ],
+    "submission_in_gold_file": false,
+    "gold_changed_lines": 2
+  }
+}

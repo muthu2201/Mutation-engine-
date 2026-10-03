@@ -1,0 +1,30 @@
+diff --git a/lib/matplotlib/legend.py b/lib/matplotlib/legend.py
+index ff6abdb958..f9e6ce82ac 100644
+--- a/lib/matplotlib/legend.py
++++ b/lib/matplotlib/legend.py
+@@ -1193,6 +1193,25 @@ class Legend(Artist):
+             If *state* is ``True`` this returns the `.DraggableLegend` helper
+             instance. Otherwise this returns *None*.
+         """
++        # Make .DraggableLegend picklable: it holds a strong reference to the
++        # (unpicklable) canvas, which would otherwise make pickling a figure
++        # with a draggable legend fail.  When unpickled, the canvas is
++        # restored from the legend's figure.  This is installed once, lazily,
++        # so that no change occurs unless dragging is actually enabled.
++        if not getattr(DraggableLegend, "_pickle_safe", False):
++            def _draggable_getstate(self):
++                d = self.__dict__.copy()
++                d["canvas"] = None  # Canvases cannot be pickled.
++                return d
++
++            def _draggable_setstate(self, state):
++                self.__dict__.update(state)
++                self.canvas = self.ref_artist.figure.canvas
++
++            DraggableLegend.__getstate__ = _draggable_getstate
++            DraggableLegend.__setstate__ = _draggable_setstate
++            DraggableLegend._pickle_safe = True
++
+         if state:
+             if self._draggable is None:
+                 self._draggable = DraggableLegend(self,

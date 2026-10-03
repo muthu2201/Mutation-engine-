@@ -1,0 +1,204 @@
+{
+  "instance_id": "pytest-dev__pytest-7982",
+  "repo": "pytest-dev/pytest",
+  "version": "6.2",
+  "base_commit": "a7e38c5c61928033a2dc1915cbee8caa8544a4d0",
+  "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.pytest-dev__pytest-7982:latest",
+  "started_at": "2026-10-03T14:54:21.503645+00:00",
+  "image_digest": "ghcr.io/epoch-research/swe-bench.eval.x86_64.pytest-dev__pytest-7982@sha256:230c229decf51a0ebe131f3271dae67cd04dce119332d6240bd6a3d71115e069",
+  "pull_s": 19.7,
+  "files_considered": 75,
+  "ranked_files": [
+    {
+      "file": "src/_pytest/pathlib.py",
+      "score": 1.0
+    },
+    {
+      "file": "src/_pytest/cacheprovider.py",
+      "score": 0.632
+    },
+    {
+      "file": "src/_pytest/hookspec.py",
+      "score": 0.604
+    },
+    {
+      "file": "src/_pytest/main.py",
+      "score": 0.602
+    },
+    {
+      "file": "src/_pytest/config/__init__.py",
+      "score": 0.602
+    },
+    {
+      "file": "src/_pytest/pytester.py",
+      "score": 0.57
+    },
+    {
+      "file": "src/_pytest/python.py",
+      "score": 0.464
+    },
+    {
+      "file": "src/_pytest/assertion/rewrite.py",
+      "score": 0.456
+    }
+  ],
+  "localised": [
+    {
+      "file": "src/_pytest/pathlib.py",
+      "name": "visit",
+      "kind": "function",
+      "start": 551,
+      "end": 562,
+      "score": 1.5
+    },
+    {
+      "file": "src/_pytest/pathlib.py",
+      "name": "symlink_or_skip",
+      "kind": "function",
+      "start": 411,
+      "end": 416,
+      "score": 1.259
+    },
+    {
+      "file": "src/_pytest/pathlib.py",
+      "name": "ensure_deletable",
+      "kind": "function",
+      "start": 278,
+      "end": 303,
+      "score": 1.064
+    },
+    {
+      "file": "src/_pytest/pytester.py",
+      "name": "Pytester._finalize",
+      "kind": "function",
+      "start": 693,
+      "end": 704,
+      "score": 0.954
+    },
+    {
+      "file": "src/_pytest/python.py",
+      "name": "pytest_pycollect_makeitem",
+      "kind": "function",
+      "start": 218,
+      "end": 250,
+      "score": 0.944
+    },
+    {
+      "file": "src/_pytest/pytester.py",
+      "name": "Pytester.<L625-645>",
+      "kind": "block",
+      "start": 625,
+      "end": 645,
+      "score": 0.937
+    }
+  ],
+  "repro": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "ISSUE RESOLVED",
+      "script_hash": "568fac6deeea6778"
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "ISSUE REPRODUCED",
+      "script_hash": "a0775784cef2efbf"
+    }
+  ],
+  "candidates": [
+    {
+      "snippet": "py:src/_pytest/pathlib.py::visit",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "77841b0a1a7ee3dc",
+      "response_hash": "c8485022cb6ea85f",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "testing/test_pathlib.py"
+      ],
+      "regressions": 0,
+      "votes": 1,
+      "repro": [
+        "ISSUE RESOLVED"
+      ],
+      "changed_lines": 2,
+      "judge_s": 5.2,
+      "diff": "diff --git a/src/_pytest/pathlib.py b/src/_pytest/pathlib.py\nindex f0bdb1481..b96cba069 100644\n--- a/src/_pytest/pathlib.py\n+++ b/src/_pytest/pathlib.py\n@@ -558,7 +558,7 @@ def visit(\n     entries = sorted(os.scandir(path), key=lambda entry: entry.name)\n     yield from entries\n     for entry in entries:\n-        if entry.is_dir(follow_symlinks=False) and recurse(entry):\n+        if entry.is_dir() and recurse(entry):\n             yield from visit(entry.path, recurse)\n \n \n",
+      "new_source": "def visit(\n    path: str, recurse: Callable[[\"os.DirEntry[str]\"], bool]\n) -> Iterator[\"os.DirEntry[str]\"]:\n    \"\"\"Walk a directory recursively, in breadth-first order.\n\n    Entries at each directory level are sorted.\n    \"\"\"\n    entries = sorted(os.scandir(path), key=lambda entry: entry.name)\n    yield from entries\n    for entry in entries:\n        if entry.is_dir() and recurse(entry):\n            yield from visit(entry.path, recurse)\n"
+    }
+  ],
+  "validated_repro": 1,
+  "stop": "every validated reproduction resolved",
+  "submission": {
+    "snippet": "py:src/_pytest/pathlib.py::visit",
+    "model": "moonshotai/kimi-k3",
+    "template": "fix_think",
+    "diff": "diff --git a/src/_pytest/pathlib.py b/src/_pytest/pathlib.py\nindex f0bdb1481..b96cba069 100644\n--- a/src/_pytest/pathlib.py\n+++ b/src/_pytest/pathlib.py\n@@ -558,7 +558,7 @@ def visit(\n     entries = sorted(os.scandir(path), key=lambda entry: entry.name)\n     yield from entries\n     for entry in entries:\n-        if entry.is_dir(follow_symlinks=False) and recurse(entry):\n+        if entry.is_dir() and recurse(entry):\n             yield from visit(entry.path, recurse)\n \n \n",
+    "votes": 1,
+    "changed_lines": 2,
+    "new_source": "def visit(\n    path: str, recurse: Callable[[\"os.DirEntry[str]\"], bool]\n) -> Iterator[\"os.DirEntry[str]\"]:\n    \"\"\"Walk a directory recursively, in breadth-first order.\n\n    Entries at each directory level are sorted.\n    \"\"\"\n    entries = sorted(os.scandir(path), key=lambda entry: entry.name)\n    yield from entries\n    for entry in entries:\n        if entry.is_dir() and recurse(entry):\n            yield from visit(entry.path, recurse)\n",
+    "prompt_hash": "77841b0a1a7ee3dc",
+    "response_hash": "c8485022cb6ea85f"
+  },
+  "search_s": 56.7,
+  "llm_calls": 3,
+  "tokens_in": 1268,
+  "tokens_out": 937,
+  "calls": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 17.07,
+      "tokens_in": 331,
+      "tokens_out": 367,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 22.17,
+      "tokens_in": 331,
+      "tokens_out": 398,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 10.73,
+      "tokens_in": 606,
+      "tokens_out": 172,
+      "finish_reason": "stop",
+      "empty": false
+    }
+  ],
+  "arms": {
+    "moonshotai/kimi-k3/fix": 0.3,
+    "moonshotai/kimi-k3/fix_think": 0.5333333333333333
+  },
+  "grade": {
+    "resolved": false,
+    "applied": true,
+    "fail_to_pass": {
+      "success": 0,
+      "failure": 1
+    },
+    "pass_to_pass": {
+      "success": 0,
+      "failure": 78
+    }
+  },
+  "grade_s": 1.4,
+  "wall_s": 85.9,
+  "diagnosis": {
+    "gold_files": [
+      "src/_pytest/pathlib.py"
+    ],
+    "localised_file_hit": true,
+    "localised_line_hit": true,
+    "submission_files": [
+      "src/_pytest/pathlib.py"
+    ],
+    "submission_in_gold_file": true,
+    "gold_changed_lines": 2
+  }
+}

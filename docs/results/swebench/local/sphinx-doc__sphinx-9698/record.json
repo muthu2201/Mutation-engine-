@@ -1,0 +1,389 @@
+{
+  "instance_id": "sphinx-doc__sphinx-9698",
+  "repo": "sphinx-doc/sphinx",
+  "version": "4.3",
+  "base_commit": "f050a7775dfc9000f55d023d36d925a8d02ccfa8",
+  "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.sphinx-doc__sphinx-9698:latest",
+  "started_at": "2026-10-03T08:53:20.044831+00:00",
+  "image_digest": "ghcr.io/epoch-research/swe-bench.eval.x86_64.sphinx-doc__sphinx-9698@sha256:0d43c00c294ab70068279346b14f3a2906e94c4fabc7bc8e684d2d6ddfe8f54a",
+  "pull_s": 21.0,
+  "files_considered": 177,
+  "ranked_files": [
+    {
+      "file": "sphinx/ext/autodoc/__init__.py",
+      "score": 1.174
+    },
+    {
+      "file": "sphinx/domains/python.py",
+      "score": 1.0
+    },
+    {
+      "file": "sphinx/addnodes.py",
+      "score": 0.943
+    },
+    {
+      "file": "sphinx/application.py",
+      "score": 0.918
+    },
+    {
+      "file": "sphinx/domains/javascript.py",
+      "score": 0.842
+    },
+    {
+      "file": "sphinx/environment/__init__.py",
+      "score": 0.793
+    },
+    {
+      "file": "sphinx/domains/__init__.py",
+      "score": 0.711
+    },
+    {
+      "file": "sphinx/builders/html/__init__.py",
+      "score": 0.704
+    }
+  ],
+  "localised": [
+    {
+      "file": "sphinx/addnodes.py",
+      "name": "index.<L381-392>",
+      "kind": "block",
+      "start": 381,
+      "end": 392,
+      "score": 1.857
+    },
+    {
+      "file": "sphinx/domains/python.py",
+      "name": "PythonDomain.<L1160-1208>",
+      "kind": "block",
+      "start": 1160,
+      "end": 1208,
+      "score": 1.426
+    },
+    {
+      "file": "sphinx/domains/python.py",
+      "name": "PyMethod.get_index_text",
+      "kind": "function",
+      "start": 784,
+      "end": 803,
+      "score": 1.188
+    },
+    {
+      "file": "sphinx/domains/python.py",
+      "name": "PythonDomain.resolve_xref",
+      "kind": "function",
+      "start": 1321,
+      "end": 1366,
+      "score": 1.152
+    },
+    {
+      "file": "sphinx/domains/python.py",
+      "name": "PythonDomain.objects",
+      "kind": "function",
+      "start": 1210,
+      "end": 1212,
+      "score": 1.141
+    },
+    {
+      "file": "sphinx/domains/python.py",
+      "name": "PythonDomain.modules",
+      "kind": "function",
+      "start": 1235,
+      "end": 1237,
+      "score": 1.141
+    }
+  ],
+  "repro": [
+    {
+      "model": "qwen2.5-coder-7b",
+      "outcome": "NONE",
+      "script_hash": "7bd879004c222712"
+    },
+    {
+      "model": "qwen2.5-coder-3b",
+      "outcome": "unparseable",
+      "script_hash": null
+    }
+  ],
+  "candidates": [
+    {
+      "snippet": "py:sphinx/addnodes.py::index.<L381-392>",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix_think",
+      "prompt_hash": "614939c7ddae15aa",
+      "response_hash": "697f30fd6492742b",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/test_domain_c.py",
+        "tests/test_domain_cpp.py",
+        "tests/test_domain_js.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 38,
+      "judge_s": 26.5,
+      "diff": "diff --git a/sphinx/addnodes.py b/sphinx/addnodes.py\nindex b43aa8152..0a58e0fbe 100644\n--- a/sphinx/addnodes.py\n+++ b/sphinx/addnodes.py\n@@ -378,18 +378,38 @@ class production(nodes.Part, nodes.Inline, nodes.FixedTextElement):\n # other directive-level nodes\n \n class index(nodes.Invisible, nodes.Inline, nodes.TextElement):\n-    \"\"\"Node for index entries.\n+    from typing import TYPE_CHECKING, Any, Dict, List, Sequence\n+    from docutils import nodes\n+    from docutils.nodes import Element\n+    from sphinx.util import docutils\n \n-    This node is created by the ``index`` directive and has one attribute,\n-    ``entries``.  Its value is a list of 5-tuples of ``(entrytype, entryname,\n-    target, ignored, key)``.\n+    class index(nodes.Invisible, nodes.Inline, nodes.TextElement):\n+        \"\"\"\n+        Node for index entries.\n \n-    *entrytype* is one of \"single\", \"pair\", \"double\", \"triple\".\n+        This node is created by the ``index`` directive and has one attribute,\n+        ``entries``.  Its value is a list of 5-tuples of ``(entrytype, entryname,\n+        target, ignored, key)``.\n \n-    *key* is categorization characters (usually a single character) for\n-    general index page. For the details of this, please see also:\n-    :rst:dir:`glossary` and issue #2320.\n-    \"\"\"\n+        *entrytype* is one of \"single\", \"pair\", \"double\", \"triple\".\n+\n+        *key* is categorization characters (usually a single character) for\n+        general index page. For the details of this, please see also:\n+        :rst:dir:`glossary` and issue #2320.\n+        \"\"\"\n+        def __init__(self, entries=None):\n+            super().__init__()\n+            self.entries = entries or []\n+\n+        def add_entry(self, entrytype, entryname, target=None, ignored=False, key=''):\n+            if entrytype == 'property':\n+                entryname = entryname.replace('()', '')  # Remove parentheses\n+            self.entries.append((entrytype, entryname, target, ignored, key))\n+\n+    # Example usage:\n+    index_node = index()\n+    index_node.add_entry('property', 'Foo.baz')\n+    print(index_node.entries)  # Output should be [('property', 'Foo.baz')]\n \n \n class centered(nodes.Part, nodes.TextElement):\n",
+      "new_source": "from typing import TYPE_CHECKING, Any, Dict, List, Sequence\nfrom docutils import nodes\nfrom docutils.nodes import Element\nfrom sphinx.util import docutils\n\nclass index(nodes.Invisible, nodes.Inline, nodes.TextElement):\n    \"\"\"\n    Node for index entries.\n\n    This node is created by the ``index`` directive and has one attribute,\n    ``entries``.  Its value is a list of 5-tuples of ``(entrytype, entryname,\n    target, ignored, key)``.\n\n    *entrytype* is one of \"single\", \"pair\", \"double\", \"triple\".\n\n    *key* is categorization characters (usually a single character) for\n    general index page. For the details of this, please see also:\n    :rst:dir:`glossary` and issue #2320.\n    \"\"\"\n    def __init__(self, entries=None):\n        super().__init__()\n        self.entries = entries or []\n\n    def add_entry(self, entrytype, entryname, target=None, ignored=False, key=''):\n        if entrytype == 'property':\n            entryname = entryname.replace('()', '')  # Remove parentheses\n        self.entries.append((entrytype, entryname, target, ignored, key))\n\n# Example usage:\nindex_node = index()\nindex_node.add_entry('property', 'Foo.baz')\nprint(index_node.entries)  # Output should be [('property', 'Foo.baz')]\n"
+    },
+    {
+      "snippet": "py:sphinx/domains/python.py::PythonDomain.<L1160-1208>",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix",
+      "prompt_hash": "a1ee5aa31464f0b5",
+      "response_hash": "4755b7b65e747448",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:sphinx/domains/python.py::PyMethod.get_index_text",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix_think",
+      "prompt_hash": "e5a75b217ba4e5b8",
+      "response_hash": "00b87757a7507b52",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/test_domain_py.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 12,
+      "judge_s": 9.8,
+      "diff": "diff --git a/sphinx/domains/python.py b/sphinx/domains/python.py\nindex cd02eaad5..a43534744 100644\n--- a/sphinx/domains/python.py\n+++ b/sphinx/domains/python.py\n@@ -789,18 +789,18 @@ class PyMethod(PyObject):\n                 clsname = '.'.join([modname, clsname])\n         except ValueError:\n             if modname:\n-                return _('%s() (in module %s)') % (name, modname)\n+                return _('%s (in module %s)') % (name, modname)\n             else:\n-                return '%s()' % name\n+                return name\n \n         if 'classmethod' in self.options:\n-            return _('%s() (%s class method)') % (methname, clsname)\n+            return _('%s (%s class method)') % (methname, clsname)\n         elif 'property' in self.options:\n-            return _('%s() (%s property)') % (methname, clsname)\n+            return _('%s (%s property)') % (methname, clsname)\n         elif 'staticmethod' in self.options:\n-            return _('%s() (%s static method)') % (methname, clsname)\n+            return _('%s (%s static method)') % (methname, clsname)\n         else:\n-            return _('%s() (%s method)') % (methname, clsname)\n+            return _('%s (%s method)') % (methname, clsname)\n \n \n class PyClassMethod(PyMethod):\n",
+      "new_source": "def get_index_text(self, modname: str, name_cls: Tuple[str, str]) -> str:\n    name, cls = name_cls\n    try:\n        clsname, methname = name.rsplit('.', 1)\n        if modname and self.env.config.add_module_names:\n            clsname = '.'.join([modname, clsname])\n    except ValueError:\n        if modname:\n            return _('%s (in module %s)') % (name, modname)\n        else:\n            return name\n\n    if 'classmethod' in self.options:\n        return _('%s (%s class method)') % (methname, clsname)\n    elif 'property' in self.options:\n        return _('%s (%s property)') % (methname, clsname)\n    elif 'staticmethod' in self.options:\n        return _('%s (%s static method)') % (methname, clsname)\n    else:\n        return _('%s (%s method)') % (methname, clsname)\n"
+    },
+    {
+      "snippet": "py:sphinx/domains/python.py::PythonDomain.resolve_xref",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "24c970c82ba199bc",
+      "response_hash": "7c2134876f90d623",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:sphinx/domains/python.py::PythonDomain.objects",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix_think",
+      "prompt_hash": "9ff293a8bba24ce9",
+      "response_hash": "e0f99e9c864352ff",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:sphinx/domains/python.py::PythonDomain.modules",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "2f11c7ef1bc382a7",
+      "response_hash": "861f4c2cf0ac11e9",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/test_domain_py.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 5.2,
+      "diff": "diff --git a/sphinx/domains/python.py b/sphinx/domains/python.py\nindex cd02eaad5..3172743f2 100644\n--- a/sphinx/domains/python.py\n+++ b/sphinx/domains/python.py\n@@ -1234,7 +1234,7 @@ class PythonDomain(Domain):\n \n     @property\n     def modules(self) -> Dict[str, ModuleEntry]:\n-        return self.data.setdefault('modules', {})  # modname -> ModuleEntry\n+        return self.data.setdefault('modules', {})\n \n     def note_module(self, name: str, node_id: str, synopsis: str,\n                     platform: str, deprecated: bool) -> None:\n",
+      "new_source": "@property\ndef modules(self) -> Dict[str, ModuleEntry]:\n    return self.data.setdefault('modules', {})\n"
+    },
+    {
+      "snippet": "py:sphinx/addnodes.py::index.<L381-392>",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix_think",
+      "prompt_hash": "614939c7ddae15aa",
+      "response_hash": "f7c700412b246ed4",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:sphinx/domains/python.py::PythonDomain.<L1160-1208>",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "a1ee5aa31464f0b5",
+      "response_hash": "4cabfc2f9ce3db38",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/test_domain_py.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 99,
+      "judge_s": 3.3,
+      "diff": "diff --git a/sphinx/domains/python.py b/sphinx/domains/python.py\nindex cd02eaad5..da5a7b689 100644\n--- a/sphinx/domains/python.py\n+++ b/sphinx/domains/python.py\n@@ -1157,55 +1157,56 @@ class PythonModuleIndex(Index):\n \n \n class PythonDomain(Domain):\n-    \"\"\"Python language domain.\"\"\"\n-    name = 'py'\n-    label = 'Python'\n-    object_types: Dict[str, ObjType] = {\n-        'function':     ObjType(_('function'),      'func', 'obj'),\n-        'data':         ObjType(_('data'),          'data', 'obj'),\n-        'class':        ObjType(_('class'),         'class', 'exc', 'obj'),\n-        'exception':    ObjType(_('exception'),     'exc', 'class', 'obj'),\n-        'method':       ObjType(_('method'),        'meth', 'obj'),\n-        'classmethod':  ObjType(_('class method'),  'meth', 'obj'),\n-        'staticmethod': ObjType(_('static method'), 'meth', 'obj'),\n-        'attribute':    ObjType(_('attribute'),     'attr', 'obj'),\n-        'property':     ObjType(_('property'),      'attr', '_prop', 'obj'),\n-        'module':       ObjType(_('module'),        'mod', 'obj'),\n-    }\n-\n-    directives = {\n-        'function':        PyFunction,\n-        'data':            PyVariable,\n-        'class':           PyClasslike,\n-        'exception':       PyClasslike,\n-        'method':          PyMethod,\n-        'classmethod':     PyClassMethod,\n-        'staticmethod':    PyStaticMethod,\n-        'attribute':       PyAttribute,\n-        'property':        PyProperty,\n-        'module':          PyModule,\n-        'currentmodule':   PyCurrentModule,\n-        'decorator':       PyDecoratorFunction,\n-        'decoratormethod': PyDecoratorMethod,\n-    }\n-    roles = {\n-        'data':  PyXRefRole(),\n-        'exc':   PyXRefRole(),\n-        'func':  PyXRefRole(fix_parens=True),\n-        'class': PyXRefRole(),\n-        'const': PyXRefRole(),\n-        'attr':  PyXRefRole(),\n-        'meth':  PyXRefRole(fix_parens=True),\n-        'mod':   PyXRefRole(),\n-        'obj':   PyXRefRole(),\n-    }\n-    initial_data: Dict[str, Dict[str, Tuple[Any]]] = {\n-        'objects': {},  # fullname -> docname, objtype\n-        'modules': {},  # modname -> docname, synopsis, platform, deprecated\n-    }\n-    indices = [\n-        PythonModuleIndex,\n-    ]\n+    from sphinx.domains.python import PythonDomain, ObjType, IndexEntry\n+\n+    class PythonDomain(Domain):\n+        ...\n+        object_types: Dict[str, ObjType] = {\n+            'function':     ObjType(_('function'),      'func', 'obj'),\n+            'data':         ObjType(_('data'),          'data', 'obj'),\n+            'class':        ObjType(_('class'),         'class', 'exc', 'obj'),\n+            'exception':    ObjType(_('exception'),     'exc', 'class', 'obj'),\n+            'method':       ObjType(_('method'),        'meth', 'obj'),\n+            'classmethod':  ObjType(_('class method'),  'meth', 'obj'),\n+            'staticmethod': ObjType(_('static method'), 'meth', 'obj'),\n+            'attribute':    ObjType(_('attribute'),     'attr', 'obj'),\n+            'property':     ObjType(_('property'),      'attr', '_prop', 'obj'),\n+            'module':       ObjType(_('module'),        'mod', 'obj'),\n+        }\n+\n+        directives = {\n+            'function':        PyFunction,\n+            'data':            PyVariable,\n+            'class':           PyClasslike,\n+            'exception':       PyClasslike,\n+            'method':          PyMethod,\n+            'classmethod':     PyClassMethod,\n+            'staticmethod':    PyStaticMethod,\n+            'attribute':       PyAttribute,\n+            'property':        PyProperty,\n+            'module':          PyModule,\n+            'currentmodule':   PyCurrentModule,\n+            'decorator':       PyDecoratorFunction,\n+            'decoratormethod': PyDecoratorMethod,\n+        }\n+        roles = {\n+            'data':  PyXRefRole(),\n+            'exc':   PyXRefRole(),\n+            'func':  PyXRefRole(fix_parens=False),\n+            'class': PyXRefRole(),\n+            'const': PyXRefRole(),\n+            'attr':  PyXRefRole(),\n+            'meth':  PyXRefRole(fix_parens=False),\n+            'mod':   PyXRefRole(),\n+            'obj':   PyXRefRole(),\n+        }\n+        initial_data: Dict[str, Dict[str, Tuple[Any]]] = {\n+            'objects': {},  # fullname -> docname, objtype\n+            'modules': {},  # modname -> docname, synopsis, platform, deprecated\n+        }\n+        indices = [\n+            PythonModuleIndex,\n+        ]\n \n     @property\n     def objects(self) -> Dict[str, ObjectEntry]:\n",
+      "new_source": "from sphinx.domains.python import PythonDomain, ObjType, IndexEntry\n\nclass PythonDomain(Domain):\n    ...\n    object_types: Dict[str, ObjType] = {\n        'function':     ObjType(_('function'),      'func', 'obj'),\n        'data':         ObjType(_('data'),          'data', 'obj'),\n        'class':        ObjType(_('class'),         'class', 'exc', 'obj'),\n        'exception':    ObjType(_('exception'),     'exc', 'class', 'obj'),\n        'method':       ObjType(_('method'),        'meth', 'obj'),\n        'classmethod':  ObjType(_('class method'),  'meth', 'obj'),\n        'staticmethod': ObjType(_('static method'), 'meth', 'obj'),\n        'attribute':    ObjType(_('attribute'),     'attr', 'obj'),\n        'property':     ObjType(_('property'),      'attr', '_prop', 'obj'),\n        'module':       ObjType(_('module'),        'mod', 'obj'),\n    }\n\n    directives = {\n        'function':        PyFunction,\n        'data':            PyVariable,\n        'class':           PyClasslike,\n        'exception':       PyClasslike,\n        'method':          PyMethod,\n        'classmethod':     PyClassMethod,\n        'staticmethod':    PyStaticMethod,\n        'attribute':       PyAttribute,\n        'property':        PyProperty,\n        'module':          PyModule,\n        'currentmodule':   PyCurrentModule,\n        'decorator':       PyDecoratorFunction,\n        'decoratormethod': PyDecoratorMethod,\n    }\n    roles = {\n        'data':  PyXRefRole(),\n        'exc':   PyXRefRole(),\n        'func':  PyXRefRole(fix_parens=False),\n        'class': PyXRefRole(),\n        'const': PyXRefRole(),\n        'attr':  PyXRefRole(),\n        'meth':  PyXRefRole(fix_parens=False),\n        'mod':   PyXRefRole(),\n        'obj':   PyXRefRole(),\n    }\n    initial_data: Dict[str, Dict[str, Tuple[Any]]] = {\n        'objects': {},  # fullname -> docname, objtype\n        'modules': {},  # modname -> docname, synopsis, platform, deprecated\n    }\n    indices = [\n        PythonModuleIndex,\n    ]\n"
+    },
+    {
+      "snippet": "py:sphinx/domains/python.py::PyMethod.get_index_text",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "cca620b8a72481b3",
+      "response_hash": "1f33538ed54d6edf",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/test_domain_py.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 5.5,
+      "diff": "diff --git a/sphinx/domains/python.py b/sphinx/domains/python.py\nindex cd02eaad5..4e4ba1999 100644\n--- a/sphinx/domains/python.py\n+++ b/sphinx/domains/python.py\n@@ -795,8 +795,6 @@ class PyMethod(PyObject):\n \n         if 'classmethod' in self.options:\n             return _('%s() (%s class method)') % (methname, clsname)\n-        elif 'property' in self.options:\n-            return _('%s() (%s property)') % (methname, clsname)\n         elif 'staticmethod' in self.options:\n             return _('%s() (%s static method)') % (methname, clsname)\n         else:\n",
+      "new_source": "def get_index_text(self, modname: str, name_cls: Tuple[str, str]) -> str:\n    name, cls = name_cls\n    try:\n        clsname, methname = name.rsplit('.', 1)\n        if modname and self.env.config.add_module_names:\n            clsname = '.'.join([modname, clsname])\n    except ValueError:\n        if modname:\n            return _('%s() (in module %s)') % (name, modname)\n        else:\n            return '%s()' % name\n\n    if 'classmethod' in self.options:\n        return _('%s() (%s class method)') % (methname, clsname)\n    elif 'staticmethod' in self.options:\n        return _('%s() (%s static method)') % (methname, clsname)\n    else:\n        return _('%s() (%s method)') % (methname, clsname)\n"
+    },
+    {
+      "snippet": "py:sphinx/domains/python.py::PythonDomain.resolve_xref",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "24c970c82ba199bc",
+      "response_hash": "ee6b1c82432e77a6",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/test_domain_py.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 9,
+      "judge_s": 5.0,
+      "diff": "diff --git a/sphinx/domains/python.py b/sphinx/domains/python.py\nindex cd02eaad5..9ae9c7396 100644\n--- a/sphinx/domains/python.py\n+++ b/sphinx/domains/python.py\n@@ -1342,14 +1342,7 @@ class PythonDomain(Domain):\n \n         if not matches:\n             return None\n-        elif len(matches) > 1:\n-            canonicals = [m for m in matches if not m[1].aliased]\n-            if len(canonicals) == 1:\n-                matches = canonicals\n-            else:\n-                logger.warning(__('more than one target found for cross-reference %r: %s'),\n-                               target, ', '.join(match[0] for match in matches),\n-                               type='ref', subtype='python', location=node)\n+\n         name, obj = matches[0]\n \n         if obj[2] == 'module':\n",
+      "new_source": "def resolve_xref(self, env: BuildEnvironment, fromdocname: str, builder: Builder,\n                 type: str, target: str, node: pending_xref, contnode: Element\n                 ) -> Optional[Element]:\n    modname = node.get('py:module')\n    clsname = node.get('py:class')\n    searchmode = 1 if node.hasattr('refspecific') else 0\n    matches = self.find_obj(env, modname, clsname, target,\n                            type, searchmode)\n\n    if not matches and type == 'attr':\n        # fallback to meth (for property; Sphinx-2.4.x)\n        # this ensures that `:attr:` role continues to refer to the old property entry\n        # that defined by ``method`` directive in old reST files.\n        matches = self.find_obj(env, modname, clsname, target, 'meth', searchmode)\n    if not matches and type == 'meth':\n        # fallback to attr (for property)\n        # this ensures that `:meth:` in the old reST files can refer to the property\n        # entry that defined by ``property`` directive.\n        #\n        # Note: _prop is a secret role only for internal look-up.\n        matches = self.find_obj(env, modname, clsname, target, '_prop', searchmode)\n\n    if not matches:\n        return None\n\n    name, obj = matches[0]\n\n    if obj[2] == 'module':\n        return self._make_module_refnode(builder, fromdocname, name, contnode)\n    else:\n        # determine the content of the reference by conditions\n        content = find_pending_xref_condition(node, 'resolved')\n        if content:\n            children = content.children\n        else:\n            # if not found, use contnode\n            children = [contnode]\n\n        return make_refnode(builder, fromdocname, obj[0], obj[1], children, name)\n"
+    },
+    {
+      "snippet": "py:sphinx/domains/python.py::PythonDomain.objects",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "be26cc496c9ecb1a",
+      "response_hash": "75065228162bc38b",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:sphinx/domains/python.py::PythonDomain.modules",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "2f11c7ef1bc382a7",
+      "response_hash": "861f4c2cf0ac11e9",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/test_domain_py.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 5.3,
+      "diff": "diff --git a/sphinx/domains/python.py b/sphinx/domains/python.py\nindex cd02eaad5..3172743f2 100644\n--- a/sphinx/domains/python.py\n+++ b/sphinx/domains/python.py\n@@ -1234,7 +1234,7 @@ class PythonDomain(Domain):\n \n     @property\n     def modules(self) -> Dict[str, ModuleEntry]:\n-        return self.data.setdefault('modules', {})  # modname -> ModuleEntry\n+        return self.data.setdefault('modules', {})\n \n     def note_module(self, name: str, node_id: str, synopsis: str,\n                     platform: str, deprecated: bool) -> None:\n",
+      "new_source": "@property\ndef modules(self) -> Dict[str, ModuleEntry]:\n    return self.data.setdefault('modules', {})\n"
+    },
+    {
+      "snippet": "py:sphinx/addnodes.py::index.<L381-392>",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "d06af2feaf639fb1",
+      "response_hash": "1ad48b1fec6f3556",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/test_domain_c.py",
+        "tests/test_domain_cpp.py",
+        "tests/test_domain_js.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 13.9,
+      "diff": "diff --git a/sphinx/addnodes.py b/sphinx/addnodes.py\nindex b43aa8152..a554a7975 100644\n--- a/sphinx/addnodes.py\n+++ b/sphinx/addnodes.py\n@@ -382,7 +382,7 @@ class index(nodes.Invisible, nodes.Inline, nodes.TextElement):\n \n     This node is created by the ``index`` directive and has one attribute,\n     ``entries``.  Its value is a list of 5-tuples of ``(entrytype, entryname,\n-    target, ignored, key)``.\n+    target, ignored)``.\n \n     *entrytype* is one of \"single\", \"pair\", \"double\", \"triple\".\n \n",
+      "new_source": "\"\"\"Node for index entries.\n\nThis node is created by the ``index`` directive and has one attribute,\n``entries``.  Its value is a list of 5-tuples of ``(entrytype, entryname,\ntarget, ignored)``.\n\n*entrytype* is one of \"single\", \"pair\", \"double\", \"triple\".\n\n*key* is categorization characters (usually a single character) for\ngeneral index page. For the details of this, please see also:\n:rst:dir:`glossary` and issue #2320.\n\"\"\"\n"
+    },
+    {
+      "snippet": "py:sphinx/domains/python.py::PythonDomain.<L1160-1208>",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "a1ee5aa31464f0b5",
+      "response_hash": "bc2827c8f44b2793",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/test_domain_py.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 6,
+      "judge_s": 5.3,
+      "diff": "diff --git a/sphinx/domains/python.py b/sphinx/domains/python.py\nindex cd02eaad5..2cf3ea21c 100644\n--- a/sphinx/domains/python.py\n+++ b/sphinx/domains/python.py\n@@ -1169,7 +1169,7 @@ class PythonDomain(Domain):\n         'classmethod':  ObjType(_('class method'),  'meth', 'obj'),\n         'staticmethod': ObjType(_('static method'), 'meth', 'obj'),\n         'attribute':    ObjType(_('attribute'),     'attr', 'obj'),\n-        'property':     ObjType(_('property'),      'attr', '_prop', 'obj'),\n+        'property':     ObjType(_('property'),      '_prop', 'obj'),\n         'module':       ObjType(_('module'),        'mod', 'obj'),\n     }\n \n@@ -1191,11 +1191,11 @@ class PythonDomain(Domain):\n     roles = {\n         'data':  PyXRefRole(),\n         'exc':   PyXRefRole(),\n-        'func':  PyXRefRole(fix_parens=True),\n+        'func':  PyXRefRole(fix_parens=False),\n         'class': PyXRefRole(),\n         'const': PyXRefRole(),\n         'attr':  PyXRefRole(),\n-        'meth':  PyXRefRole(fix_parens=True),\n+        'meth':  PyXRefRole(fix_parens=False),\n         'mod':   PyXRefRole(),\n         'obj':   PyXRefRole(),\n     }\n",
+      "new_source": "\"\"\"Python language domain.\"\"\"\nname = 'py'\nlabel = 'Python'\nobject_types: Dict[str, ObjType] = {\n    'function':     ObjType(_('function'),      'func', 'obj'),\n    'data':         ObjType(_('data'),          'data', 'obj'),\n    'class':        ObjType(_('class'),         'class', 'exc', 'obj'),\n    'exception':    ObjType(_('exception'),     'exc', 'class', 'obj'),\n    'method':       ObjType(_('method'),        'meth', 'obj'),\n    'classmethod':  ObjType(_('class method'),  'meth', 'obj'),\n    'staticmethod': ObjType(_('static method'), 'meth', 'obj'),\n    'attribute':    ObjType(_('attribute'),     'attr', 'obj'),\n    'property':     ObjType(_('property'),      '_prop', 'obj'),\n    'module':       ObjType(_('module'),        'mod', 'obj'),\n}\n\ndirectives = {\n    'function':        PyFunction,\n    'data':            PyVariable,\n    'class':           PyClasslike,\n    'exception':       PyClasslike,\n    'method':          PyMethod,\n    'classmethod':     PyClassMethod,\n    'staticmethod':    PyStaticMethod,\n    'attribute':       PyAttribute,\n    'property':        PyProperty,\n    'module':          PyModule,\n    'currentmodule':   PyCurrentModule,\n    'decorator':       PyDecoratorFunction,\n    'decoratormethod': PyDecoratorMethod,\n}\nroles = {\n    'data':  PyXRefRole(),\n    'exc':   PyXRefRole(),\n    'func':  PyXRefRole(fix_parens=False),\n    'class': PyXRefRole(),\n    'const': PyXRefRole(),\n    'attr':  PyXRefRole(),\n    'meth':  PyXRefRole(fix_parens=False),\n    'mod':   PyXRefRole(),\n    'obj':   PyXRefRole(),\n}\ninitial_data: Dict[str, Dict[str, Tuple[Any]]] = {\n    'objects': {},  # fullname -> docname, objtype\n    'modules': {},  # modname -> docname, synopsis, platform, deprecated\n}\nindices = [\n    PythonModuleIndex,\n]\n"
+    }
+  ],
+  "validated_repro": 0,
+  "stop": "budget",
+  "submission": {
+    "snippet": "py:sphinx/domains/python.py::PythonDomain.modules",
+    "model": "qwen2.5-coder-1.5b",
+    "template": "fix",
+    "diff": "diff --git a/sphinx/domains/python.py b/sphinx/domains/python.py\nindex cd02eaad5..3172743f2 100644\n--- a/sphinx/domains/python.py\n+++ b/sphinx/domains/python.py\n@@ -1234,7 +1234,7 @@ class PythonDomain(Domain):\n \n     @property\n     def modules(self) -> Dict[str, ModuleEntry]:\n-        return self.data.setdefault('modules', {})  # modname -> ModuleEntry\n+        return self.data.setdefault('modules', {})\n \n     def note_module(self, name: str, node_id: str, synopsis: str,\n                     platform: str, deprecated: bool) -> None:\n",
+    "votes": 0,
+    "changed_lines": 2,
+    "new_source": "@property\ndef modules(self) -> Dict[str, ModuleEntry]:\n    return self.data.setdefault('modules', {})\n",
+    "prompt_hash": "2f11c7ef1bc382a7",
+    "response_hash": "861f4c2cf0ac11e9"
+  },
+  "search_s": 934.6,
+  "llm_calls": 16,
+  "tokens_in": 13043,
+  "tokens_out": 4165,
+  "arms": {
+    "qwen2.5-coder-7b/fix": 0.19999999999999998,
+    "qwen2.5-coder-7b/fix_think": 0.43333333333333335,
+    "qwen2.5-coder-3b/fix": 0.3,
+    "qwen2.5-coder-3b/fix_think": 0.3,
+    "qwen2.5-coder-1.5b/fix": 0.6909090909090909,
+    "qwen2.5-coder-1.5b/fix_think": 0.3
+  },
+  "grade": {
+    "resolved": false,
+    "applied": true,
+    "fail_to_pass": {
+      "success": 0,
+      "failure": 1
+    },
+    "pass_to_pass": {
+      "success": 45,
+      "failure": 0
+    }
+  },
+  "grade_s": 22.7,
+  "wall_s": 986.7,
+  "diagnosis": {
+    "gold_files": [
+      "sphinx/domains/python.py"
+    ],
+    "localised_file_hit": true,
+    "localised_line_hit": true,
+    "submission_files": [
+      "sphinx/domains/python.py"
+    ],
+    "submission_in_gold_file": true,
+    "gold_changed_lines": 2
+  }
+}

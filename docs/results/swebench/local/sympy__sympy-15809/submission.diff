@@ -1,0 +1,13 @@
+diff --git a/sympy/functions/elementary/miscellaneous.py b/sympy/functions/elementary/miscellaneous.py
+index 5f9fe73c5c..c52571199b 100644
+--- a/sympy/functions/elementary/miscellaneous.py
++++ b/sympy/functions/elementary/miscellaneous.py
+@@ -730,7 +730,7 @@ class Max(MinMaxBase, Application):
+     zero = S.Infinity
+     identity = S.NegativeInfinity
+ 
+-    def fdiff( self, argindex ):
++    def fdiff(self, argindex):
+         from sympy import Heaviside
+         n = len(self.args)
+         if 0 < argindex and argindex <= n:

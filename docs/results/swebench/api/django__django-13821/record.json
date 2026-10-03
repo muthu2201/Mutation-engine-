@@ -1,0 +1,425 @@
+{
+  "instance_id": "django__django-13821",
+  "repo": "django/django",
+  "version": "3.2",
+  "base_commit": "e64c1d8055a3e476122633da141f16b50f0c4a2d",
+  "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.django__django-13821:latest",
+  "started_at": "2026-10-03T13:15:44.136827+00:00",
+  "image_digest": "ghcr.io/epoch-research/swe-bench.eval.x86_64.django__django-13821@sha256:a327258389aff5cdd112c9de464918e9f72f5591aa37d4901527eb7a664418ef",
+  "pull_s": 22.9,
+  "files_considered": 852,
+  "ranked_files": [
+    {
+      "file": "django/db/backends/sqlite3/features.py",
+      "score": 1.0
+    },
+    {
+      "file": "django/db/backends/sqlite3/operations.py",
+      "score": 0.93
+    },
+    {
+      "file": "django/db/models/functions/comparison.py",
+      "score": 0.924
+    },
+    {
+      "file": "django/db/backends/sqlite3/introspection.py",
+      "score": 0.851
+    },
+    {
+      "file": "django/db/backends/sqlite3/schema.py",
+      "score": 0.813
+    },
+    {
+      "file": "django/db/backends/sqlite3/base.py",
+      "score": 0.809
+    },
+    {
+      "file": "django/contrib/gis/db/models/functions.py",
+      "score": 0.732
+    },
+    {
+      "file": "django/contrib/gis/db/backends/spatialite/base.py",
+      "score": 0.729
+    }
+  ],
+  "localised": [
+    {
+      "file": "django/db/backends/sqlite3/features.py",
+      "name": "DatabaseFeatures.supports_atomic_references_rename",
+      "kind": "function",
+      "start": 84,
+      "end": 90,
+      "score": 1.478
+    },
+    {
+      "file": "django/db/backends/sqlite3/operations.py",
+      "name": "DatabaseOperations.adapt_timefield_value",
+      "kind": "function",
+      "start": 253,
+      "end": 265,
+      "score": 1.418
+    },
+    {
+      "file": "django/db/backends/sqlite3/schema.py",
+      "name": "DatabaseSchemaEditor.__enter__",
+      "kind": "function",
+      "start": 21,
+      "end": 32,
+      "score": 1.406
+    },
+    {
+      "file": "django/db/backends/sqlite3/operations.py",
+      "name": "DatabaseOperations.adapt_datetimefield_value",
+      "kind": "function",
+      "start": 236,
+      "end": 251,
+      "score": 1.351
+    },
+    {
+      "file": "django/db/backends/sqlite3/operations.py",
+      "name": "DatabaseOperations.check_expression_support",
+      "kind": "function",
+      "start": 40,
+      "end": 66,
+      "score": 1.286
+    },
+    {
+      "file": "django/db/backends/sqlite3/introspection.py",
+      "name": "DatabaseIntrospection.get_field_type",
+      "kind": "function",
+      "start": 60,
+      "end": 68,
+      "score": 1.261
+    }
+  ],
+  "repro": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "NONE",
+      "script_hash": "a5beb8aa3a3387c2"
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "NONE",
+      "script_hash": "9411db0cff0cee1c"
+    }
+  ],
+  "candidates": [
+    {
+      "snippet": "py:django/db/backends/sqlite3/features.py::DatabaseFeatures.supports_atomic_references_rename",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "ece3bcd0b08b3aac",
+      "response_hash": "0a8b91340f521236",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/backends/base/test_features.py",
+        "tests/backends/mysql/test_features.py",
+        "tests/backends/sqlite/test_features.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 3,
+      "judge_s": 6.2,
+      "diff": "diff --git a/django/db/backends/sqlite3/features.py b/django/db/backends/sqlite3/features.py\nindex 3348256c74..595145ced8 100644\n--- a/django/db/backends/sqlite3/features.py\n+++ b/django/db/backends/sqlite3/features.py\n@@ -84,7 +84,8 @@ class DatabaseFeatures(BaseDatabaseFeatures):\n     @cached_property\n     def supports_atomic_references_rename(self):\n         # SQLite 3.28.0 bundled with MacOS 10.15 does not support renaming\n-        # references atomically.\n+        # references atomically. SQLite 3.9.0 is the minimum supported\n+        # version, but atomic reference renaming still requires 3.26.0+.\n         if platform.mac_ver()[0].startswith('10.15.') and Database.sqlite_version_info == (3, 28, 0):\n             return False\n         return Database.sqlite_version_info >= (3, 26, 0)\n",
+      "new_source": "@cached_property\ndef supports_atomic_references_rename(self):\n    # SQLite 3.28.0 bundled with MacOS 10.15 does not support renaming\n    # references atomically. SQLite 3.9.0 is the minimum supported\n    # version, but atomic reference renaming still requires 3.26.0+.\n    if platform.mac_ver()[0].startswith('10.15.') and Database.sqlite_version_info == (3, 28, 0):\n        return False\n    return Database.sqlite_version_info >= (3, 26, 0)\n"
+    },
+    {
+      "snippet": "py:django/db/backends/sqlite3/operations.py::DatabaseOperations.adapt_timefield_value",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "bc8364731eec9e65",
+      "response_hash": "5ba8b7b18806f94c",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/db/backends/sqlite3/schema.py::DatabaseSchemaEditor.__enter__",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "5e8124a399d358ca",
+      "response_hash": "8593ac1b37993a7c",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/db/backends/sqlite3/operations.py::DatabaseOperations.adapt_datetimefield_value",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "d7146b93de88589e",
+      "response_hash": "07b2c96de15e0ff3",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/db/backends/sqlite3/operations.py::DatabaseOperations.check_expression_support",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "6f6b369bd3791d8f",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:django/db/backends/sqlite3/introspection.py::DatabaseIntrospection.get_field_type",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "c682a48cb53db33e",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:django/db/backends/sqlite3/features.py::DatabaseFeatures.supports_atomic_references_rename",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "3d3e70dea84f819e",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:django/db/backends/sqlite3/operations.py::DatabaseOperations.adapt_timefield_value",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "67464e497e734043",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:django/db/backends/sqlite3/schema.py::DatabaseSchemaEditor.__enter__",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "f61c8d5a93c67c99",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:django/db/backends/sqlite3/operations.py::DatabaseOperations.adapt_datetimefield_value",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "b7d7af377919c8b1",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:django/db/backends/sqlite3/operations.py::DatabaseOperations.check_expression_support",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "4c71045c15e6896d",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:django/db/backends/sqlite3/introspection.py::DatabaseIntrospection.get_field_type",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "c682a48cb53db33e",
+      "response_hash": "c3164c12a66d0a75",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/db/backends/sqlite3/features.py::DatabaseFeatures.supports_atomic_references_rename",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "3d3e70dea84f819e",
+      "response_hash": "991b6c7c737257dc",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/db/backends/sqlite3/operations.py::DatabaseOperations.adapt_timefield_value",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "bc8364731eec9e65",
+      "response_hash": "9e6a71e76b3b9f39",
+      "stage": "parse",
+      "reason": "identical to the original"
+    }
+  ],
+  "validated_repro": 0,
+  "stop": "budget",
+  "submission": {
+    "snippet": "py:django/db/backends/sqlite3/features.py::DatabaseFeatures.supports_atomic_references_rename",
+    "model": "moonshotai/kimi-k3",
+    "template": "fix_think",
+    "diff": "diff --git a/django/db/backends/sqlite3/features.py b/django/db/backends/sqlite3/features.py\nindex 3348256c74..595145ced8 100644\n--- a/django/db/backends/sqlite3/features.py\n+++ b/django/db/backends/sqlite3/features.py\n@@ -84,7 +84,8 @@ class DatabaseFeatures(BaseDatabaseFeatures):\n     @cached_property\n     def supports_atomic_references_rename(self):\n         # SQLite 3.28.0 bundled with MacOS 10.15 does not support renaming\n-        # references atomically.\n+        # references atomically. SQLite 3.9.0 is the minimum supported\n+        # version, but atomic reference renaming still requires 3.26.0+.\n         if platform.mac_ver()[0].startswith('10.15.') and Database.sqlite_version_info == (3, 28, 0):\n             return False\n         return Database.sqlite_version_info >= (3, 26, 0)\n",
+    "votes": 0,
+    "changed_lines": 3,
+    "new_source": "@cached_property\ndef supports_atomic_references_rename(self):\n    # SQLite 3.28.0 bundled with MacOS 10.15 does not support renaming\n    # references atomically. SQLite 3.9.0 is the minimum supported\n    # version, but atomic reference renaming still requires 3.26.0+.\n    if platform.mac_ver()[0].startswith('10.15.') and Database.sqlite_version_info == (3, 28, 0):\n        return False\n    return Database.sqlite_version_info >= (3, 26, 0)\n",
+    "prompt_hash": "ece3bcd0b08b3aac",
+    "response_hash": "0a8b91340f521236"
+  },
+  "search_s": 366.3,
+  "llm_calls": 16,
+  "tokens_in": 8705,
+  "tokens_out": 5288,
+  "calls": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 13.34,
+      "tokens_in": 380,
+      "tokens_out": 310,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 45.51,
+      "tokens_in": 380,
+      "tokens_out": 780,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 28.04,
+      "tokens_in": 514,
+      "tokens_out": 581,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 25.86,
+      "tokens_in": 557,
+      "tokens_out": 760,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 17.32,
+      "tokens_in": 560,
+      "tokens_out": 449,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 51.51,
+      "tokens_in": 589,
+      "tokens_out": 1023,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 13.46,
+      "tokens_in": 704,
+      "tokens_out": 32,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 6.83,
+      "tokens_in": 533,
+      "tokens_out": 33,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 12.36,
+      "tokens_in": 504,
+      "tokens_out": 33,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 3.93,
+      "tokens_in": 547,
+      "tokens_out": 35,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 5.84,
+      "tokens_in": 570,
+      "tokens_out": 32,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 26.72,
+      "tokens_in": 579,
+      "tokens_out": 32,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 23.47,
+      "tokens_in": 694,
+      "tokens_out": 33,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 21.07,
+      "tokens_in": 533,
+      "tokens_out": 457,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 24.71,
+      "tokens_in": 504,
+      "tokens_out": 347,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 12.69,
+      "tokens_in": 557,
+      "tokens_out": 351,
+      "finish_reason": "stop",
+      "empty": false
+    }
+  ],
+  "arms": {
+    "moonshotai/kimi-k3/fix": 0.075,
+    "moonshotai/kimi-k3/fix_think": 0.16
+  },
+  "grade": {
+    "resolved": false,
+    "applied": true,
+    "fail_to_pass": {
+      "success": 0,
+      "failure": 1
+    },
+    "pass_to_pass": {
+      "success": 14,
+      "failure": 0
+    }
+  },
+  "grade_s": 1.8,
+  "wall_s": 403.8,
+  "diagnosis": {
+    "gold_files": [
+      "django/db/backends/sqlite3/base.py"
+    ],
+    "localised_file_hit": false,
+    "localised_line_hit": false,
+    "submission_files": [
+      "django/db/backends/sqlite3/features.py"
+    ],
+    "submission_in_gold_file": false,
+    "gold_changed_lines": 6
+  }
+}

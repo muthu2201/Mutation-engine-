@@ -1,0 +1,345 @@
+{
+  "instance_id": "sympy__sympy-12096",
+  "repo": "sympy/sympy",
+  "version": "1.0",
+  "base_commit": "d7c3045115693e887bcd03599b7ca4650ac5f2cb",
+  "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.sympy__sympy-12096:latest",
+  "started_at": "2026-10-03T15:20:05.926478+00:00",
+  "image_digest": "ghcr.io/epoch-research/swe-bench.eval.x86_64.sympy__sympy-12096@sha256:ae0ccc3b2f7e85a1567307d7a79fa1c6661b5985f0d9913925550e65fa70efe1",
+  "pull_s": 20.1,
+  "files_considered": 586,
+  "ranked_files": [
+    {
+      "file": "sympy/utilities/lambdify.py",
+      "score": 5.0
+    },
+    {
+      "file": "sympy/__init__.py",
+      "score": 3.318
+    },
+    {
+      "file": "sympy/utilities/__init__.py",
+      "score": 3.092
+    },
+    {
+      "file": "sympy/core/function.py",
+      "score": 2.208
+    },
+    {
+      "file": "sympy/core/evalf.py",
+      "score": 1.688
+    },
+    {
+      "file": "sympy/plotting/experimental_lambdify.py",
+      "score": 1.181
+    },
+    {
+      "file": "sympy/sets/sets.py",
+      "score": 1.156
+    },
+    {
+      "file": "sympy/core/operations.py",
+      "score": 1.074
+    }
+  ],
+  "localised": [
+    {
+      "file": "sympy/core/function.py",
+      "name": "Function._eval_evalf",
+      "kind": "function",
+      "start": 500,
+      "end": 547,
+      "score": 3.64
+    },
+    {
+      "file": "sympy/utilities/lambdify.py",
+      "name": "implemented_function",
+      "kind": "function",
+      "start": 653,
+      "end": 699,
+      "score": 3.5
+    },
+    {
+      "file": "sympy/core/operations.py",
+      "name": "AssocOp._eval_evalf",
+      "kind": "function",
+      "start": 295,
+      "end": 349,
+      "score": 2.771
+    },
+    {
+      "file": "sympy/core/evalf.py",
+      "name": "EvalfMixin.evalf",
+      "kind": "function",
+      "start": 1330,
+      "end": 1409,
+      "score": 2.64
+    },
+    {
+      "file": "sympy/core/evalf.py",
+      "name": "evalf",
+      "kind": "function",
+      "start": 1274,
+      "end": 1322,
+      "score": 2.627
+    },
+    {
+      "file": "sympy/core/evalf.py",
+      "name": "EvalfMixin._eval_evalf",
+      "kind": "function",
+      "start": 1420,
+      "end": 1421,
+      "score": 2.568
+    }
+  ],
+  "repro": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "ISSUE RESOLVED",
+      "script_hash": "cfbaed6b2228d999"
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "ISSUE REPRODUCED",
+      "script_hash": "e695c4b39ba66924"
+    }
+  ],
+  "candidates": [
+    {
+      "snippet": "py:sympy/core/function.py::Function._eval_evalf",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "8ac330f346a5d9ac",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:sympy/utilities/lambdify.py::implemented_function",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "cf748d4007b8123f",
+      "response_hash": "273b700f89873fb1",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "2 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "sympy/utilities/tests/test_lambdify.py",
+        "sympy/core/tests/test_evalf.py",
+        "sympy/external/tests/test_numpy.py"
+      ],
+      "regressions": 2,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 12,
+      "judge_s": 16.2
+    },
+    {
+      "snippet": "py:sympy/core/operations.py::AssocOp._eval_evalf",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "74ffb3711fdfc8ee",
+      "response_hash": "a2747210f3a00ac9",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:sympy/core/evalf.py::EvalfMixin.evalf",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "c9c55876449cab41",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:sympy/core/evalf.py::evalf",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "408720a10105c2e8",
+      "response_hash": "60fa829d98399903",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "3 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "sympy/core/tests/test_evalf.py"
+      ],
+      "regressions": 3,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 35,
+      "judge_s": 20.8
+    },
+    {
+      "snippet": "py:sympy/core/evalf.py::EvalfMixin._eval_evalf",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "a9455ab26cd98e92",
+      "response_hash": "244e7487f1774ab5",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "sympy/core/tests/test_evalf.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 7,
+      "judge_s": 8.0,
+      "diff": "diff --git a/sympy/core/evalf.py b/sympy/core/evalf.py\nindex 9e75733a05..31133a3b1f 100644\n--- a/sympy/core/evalf.py\n+++ b/sympy/core/evalf.py\n@@ -1418,6 +1418,13 @@ def _evalf(self, prec):\n         return r\n \n     def _eval_evalf(self, prec):\n+        func = getattr(self, 'func', None)\n+        imp = getattr(func, '_imp_', None)\n+        if imp is not None:\n+            try:\n+                return imp(*self.args)._eval_evalf(prec)\n+            except (AttributeError, TypeError):\n+                pass\n         return\n \n     def _to_mpmath(self, prec, allow_ints=True):\n",
+      "new_source": "def _eval_evalf(self, prec):\n    func = getattr(self, 'func', None)\n    imp = getattr(func, '_imp_', None)\n    if imp is not None:\n        try:\n            return imp(*self.args)._eval_evalf(prec)\n        except (AttributeError, TypeError):\n            pass\n    return\n"
+    },
+    {
+      "snippet": "py:sympy/core/function.py::Function._eval_evalf",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "8ac330f346a5d9ac",
+      "response_hash": "da37b3213a666929",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "sympy/core/tests/test_function.py",
+        "sympy/core/tests/test_args.py",
+        "sympy/simplify/tests/test_function.py"
+      ],
+      "regressions": 0,
+      "votes": 1,
+      "repro": [
+        "ISSUE RESOLVED"
+      ],
+      "changed_lines": 2,
+      "judge_s": 22.7,
+      "diff": "diff --git a/sympy/core/function.py b/sympy/core/function.py\nindex 1b8005e1d2..992054efa3 100644\n--- a/sympy/core/function.py\n+++ b/sympy/core/function.py\n@@ -507,7 +507,7 @@ def _eval_evalf(self, prec):\n             func = getattr(mpmath, fname)\n         except (AttributeError, KeyError):\n             try:\n-                return Float(self._imp_(*self.args), prec)\n+                return Float(self._imp_(*[a.evalf(prec) for a in self.args])._eval_evalf(prec), prec)\n             except (AttributeError, TypeError, ValueError):\n                 return\n \n",
+      "new_source": "def _eval_evalf(self, prec):\n    # Lookup mpmath function based on name\n    fname = self.func.__name__\n    try:\n        if not hasattr(mpmath, fname):\n            from sympy.utilities.lambdify import MPMATH_TRANSLATIONS\n            fname = MPMATH_TRANSLATIONS[fname]\n        func = getattr(mpmath, fname)\n    except (AttributeError, KeyError):\n        try:\n            return Float(self._imp_(*[a.evalf(prec) for a in self.args])._eval_evalf(prec), prec)\n        except (AttributeError, TypeError, ValueError):\n            return\n\n    # Convert all args to mpf or mpc\n    # Convert the arguments to *higher* precision than requested for the\n    # final result.\n    # XXX + 5 is a guess, it is similar to what is used in evalf.py. Should\n    #     we be more intelligent about it?\n    try:\n        args = [arg._to_mpmath(prec + 5) for arg in self.args]\n        def bad(m):\n            from mpmath import mpf, mpc\n            # the precision of an mpf value is the last element\n            # if that is 1 (and m[1] is not 1 which would indicate a\n            # power of 2), then the eval failed; so check that none of\n            # the arguments failed to compute to a finite precision.\n            # Note: An mpc value has two parts, the re and imag tuple;\n            # check each of those parts, too. Anything else is allowed to\n            # pass\n            if isinstance(m, mpf):\n                m = m._mpf_\n                return m[1] !=1 and m[-1] == 1\n            elif isinstance(m, mpc):\n                m, n = m._mpc_\n                return m[1] !=1 and m[-1] == 1 and \\\n                    n[1] !=1 and n[-1] == 1\n            else:\n                return False\n        if any(bad(a) for a in args):\n            raise ValueError  # one or more args failed to compute with significance\n    except ValueError:\n        return\n\n    with mpmath.workprec(prec):\n        v = func(*args)\n\n    return Expr._from_mpmath(v, prec)\n"
+    }
+  ],
+  "validated_repro": 1,
+  "stop": "every validated reproduction resolved",
+  "submission": {
+    "snippet": "py:sympy/core/function.py::Function._eval_evalf",
+    "model": "moonshotai/kimi-k3",
+    "template": "fix",
+    "diff": "diff --git a/sympy/core/function.py b/sympy/core/function.py\nindex 1b8005e1d2..992054efa3 100644\n--- a/sympy/core/function.py\n+++ b/sympy/core/function.py\n@@ -507,7 +507,7 @@ def _eval_evalf(self, prec):\n             func = getattr(mpmath, fname)\n         except (AttributeError, KeyError):\n             try:\n-                return Float(self._imp_(*self.args), prec)\n+                return Float(self._imp_(*[a.evalf(prec) for a in self.args])._eval_evalf(prec), prec)\n             except (AttributeError, TypeError, ValueError):\n                 return\n \n",
+    "votes": 1,
+    "changed_lines": 2,
+    "new_source": "def _eval_evalf(self, prec):\n    # Lookup mpmath function based on name\n    fname = self.func.__name__\n    try:\n        if not hasattr(mpmath, fname):\n            from sympy.utilities.lambdify import MPMATH_TRANSLATIONS\n            fname = MPMATH_TRANSLATIONS[fname]\n        func = getattr(mpmath, fname)\n    except (AttributeError, KeyError):\n        try:\n            return Float(self._imp_(*[a.evalf(prec) for a in self.args])._eval_evalf(prec), prec)\n        except (AttributeError, TypeError, ValueError):\n            return\n\n    # Convert all args to mpf or mpc\n    # Convert the arguments to *higher* precision than requested for the\n    # final result.\n    # XXX + 5 is a guess, it is similar to what is used in evalf.py. Should\n    #     we be more intelligent about it?\n    try:\n        args = [arg._to_mpmath(prec + 5) for arg in self.args]\n        def bad(m):\n            from mpmath import mpf, mpc\n            # the precision of an mpf value is the last element\n            # if that is 1 (and m[1] is not 1 which would indicate a\n            # power of 2), then the eval failed; so check that none of\n            # the arguments failed to compute to a finite precision.\n            # Note: An mpc value has two parts, the re and imag tuple;\n            # check each of those parts, too. Anything else is allowed to\n            # pass\n            if isinstance(m, mpf):\n                m = m._mpf_\n                return m[1] !=1 and m[-1] == 1\n            elif isinstance(m, mpc):\n                m, n = m._mpc_\n                return m[1] !=1 and m[-1] == 1 and \\\n                    n[1] !=1 and n[-1] == 1\n            else:\n                return False\n        if any(bad(a) for a in args):\n            raise ValueError  # one or more args failed to compute with significance\n    except ValueError:\n        return\n\n    with mpmath.workprec(prec):\n        v = func(*args)\n\n    return Expr._from_mpmath(v, prec)\n",
+    "prompt_hash": "8ac330f346a5d9ac",
+    "response_hash": "da37b3213a666929"
+  },
+  "search_s": 405.1,
+  "llm_calls": 9,
+  "tokens_in": 7541,
+  "tokens_out": 4672,
+  "calls": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 53.81,
+      "tokens_in": 379,
+      "tokens_out": 419,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 22.59,
+      "tokens_in": 379,
+      "tokens_out": 213,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 27.03,
+      "tokens_in": 1066,
+      "tokens_out": 33,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 35.44,
+      "tokens_in": 825,
+      "tokens_out": 851,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 73.77,
+      "tokens_in": 1016,
+      "tokens_out": 1048,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 16.99,
+      "tokens_in": 1213,
+      "tokens_out": 33,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 48.54,
+      "tokens_in": 1015,
+      "tokens_out": 999,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 25.45,
+      "tokens_in": 582,
+      "tokens_out": 549,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 30.17,
+      "tokens_in": 1066,
+      "tokens_out": 527,
+      "finish_reason": "stop",
+      "empty": false
+    }
+  ],
+  "arms": {
+    "moonshotai/kimi-k3/fix": 0.2714285714285714,
+    "moonshotai/kimi-k3/fix_think": 0.15
+  },
+  "grade": {
+    "resolved": false,
+    "applied": true,
+    "fail_to_pass": {
+      "success": 0,
+      "failure": 1
+    },
+    "pass_to_pass": {
+      "success": 43,
+      "failure": 0
+    }
+  },
+  "grade_s": 1.4,
+  "wall_s": 436.6,
+  "diagnosis": {
+    "gold_files": [
+      "sympy/core/function.py"
+    ],
+    "localised_file_hit": true,
+    "localised_line_hit": true,
+    "submission_files": [
+      "sympy/core/function.py"
+    ],
+    "submission_in_gold_file": true,
+    "gold_changed_lines": 2
+  }
+}

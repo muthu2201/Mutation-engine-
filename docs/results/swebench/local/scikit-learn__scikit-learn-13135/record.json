@@ -1,0 +1,338 @@
+{
+  "instance_id": "scikit-learn__scikit-learn-13135",
+  "repo": "scikit-learn/scikit-learn",
+  "version": "0.21",
+  "base_commit": "a061ada48efccf0845acae17009553e01764452b",
+  "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.scikit-learn__scikit-learn-13135:latest",
+  "started_at": "2026-10-03T08:04:43.600029+00:00",
+  "image_digest": "ghcr.io/epoch-research/swe-bench.eval.x86_64.scikit-learn__scikit-learn-13135@sha256:e8ba84389704f805108e775499ca78f55f13ad03722279b2a4440586e2c40e31",
+  "pull_s": 29.2,
+  "files_considered": 266,
+  "ranked_files": [
+    {
+      "file": "sklearn/preprocessing/__init__.py",
+      "score": 3.424
+    },
+    {
+      "file": "sklearn/__init__.py",
+      "score": 3.155
+    },
+    {
+      "file": "sklearn/preprocessing/_discretization.py",
+      "score": 2.5
+    },
+    {
+      "file": "sklearn/preprocessing/label.py",
+      "score": 1.754
+    },
+    {
+      "file": "sklearn/feature_extraction/text.py",
+      "score": 1.754
+    },
+    {
+      "file": "sklearn/preprocessing/data.py",
+      "score": 1.74
+    },
+    {
+      "file": "sklearn/cluster/k_means_.py",
+      "score": 1.723
+    },
+    {
+      "file": "sklearn/pipeline.py",
+      "score": 1.721
+    }
+  ],
+  "localised": [
+    {
+      "file": "sklearn/preprocessing/_discretization.py",
+      "name": "KBinsDiscretizer.fit",
+      "kind": "function",
+      "start": 116,
+      "end": 189,
+      "score": 4.265
+    },
+    {
+      "file": "sklearn/preprocessing/_discretization.py",
+      "name": "KBinsDiscretizer.transform",
+      "kind": "function",
+      "start": 225,
+      "end": 261,
+      "score": 4.119
+    },
+    {
+      "file": "sklearn/pipeline.py",
+      "name": "Pipeline.fit_transform",
+      "kind": "function",
+      "start": 283,
+      "end": 317,
+      "score": 2.486
+    },
+    {
+      "file": "sklearn/pipeline.py",
+      "name": "FeatureUnion.fit_transform",
+      "kind": "function",
+      "start": 782,
+      "end": 814,
+      "score": 2.451
+    },
+    {
+      "file": "sklearn/pipeline.py",
+      "name": "Pipeline.fit",
+      "kind": "function",
+      "start": 252,
+      "end": 281,
+      "score": 2.426
+    },
+    {
+      "file": "sklearn/feature_extraction/text.py",
+      "name": "CountVectorizer.fit_transform",
+      "kind": "function",
+      "start": 998,
+      "end": 1054,
+      "score": 2.416
+    }
+  ],
+  "repro": [
+    {
+      "model": "qwen2.5-coder-7b",
+      "outcome": "ISSUE RESOLVED",
+      "script_hash": "85fd1d823f1aef17"
+    },
+    {
+      "model": "qwen2.5-coder-3b",
+      "outcome": "unparseable",
+      "script_hash": null
+    }
+  ],
+  "candidates": [
+    {
+      "snippet": "py:sklearn/preprocessing/_discretization.py::KBinsDiscretizer.fit",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix",
+      "prompt_hash": "17b2f8625f397757",
+      "response_hash": "4651391dc4ed7721",
+      "stage": "parse",
+      "reason": "response does not define fit()"
+    },
+    {
+      "snippet": "py:sklearn/preprocessing/_discretization.py::KBinsDiscretizer.transform",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "9f6004734ad608b8",
+      "response_hash": "e096c89644f41b94",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 5,
+      "judge_s": 0.8,
+      "diff": "diff --git a/sklearn/preprocessing/_discretization.py b/sklearn/preprocessing/_discretization.py\nindex dd969c12b..e24ee2c48 100644\n--- a/sklearn/preprocessing/_discretization.py\n+++ b/sklearn/preprocessing/_discretization.py\n@@ -258,6 +258,11 @@ class KBinsDiscretizer(BaseEstimator, TransformerMixin):\n         if self.encode == 'ordinal':\n             return Xt\n \n+        # Ensure bin_edges are sorted\n+        for jj in range(len(bin_edges)):\n+            if not (bin_edges[jj][0] <= bin_edges[jj][-1]):\n+                raise ValueError(\"Bin edges must be monotonically increasing or decreasing\")\n+\n         return self._encoder.transform(Xt)\n \n     def inverse_transform(self, Xt):\n",
+      "new_source": "def transform(self, X):\n    \"\"\"Discretizes the data.\n\n    Parameters\n    ----------\n    X : numeric array-like, shape (n_samples, n_features)\n        Data to be discretized.\n\n    Returns\n    -------\n    Xt : numeric array-like or sparse matrix\n        Data in the binned space.\n    \"\"\"\n    check_is_fitted(self, [\"bin_edges_\"])\n\n    Xt = check_array(X, copy=True, dtype=FLOAT_DTYPES)\n    n_features = self.n_bins_.shape[0]\n    if Xt.shape[1] != n_features:\n        raise ValueError(\"Incorrect number of features. Expecting {}, \"\n                         \"received {}.\".format(n_features, Xt.shape[1]))\n\n    bin_edges = self.bin_edges_\n    for jj in range(Xt.shape[1]):\n        # Values which are close to a bin edge are susceptible to numeric\n        # instability. Add eps to X so these values are binned correctly\n        # with respect to their decimal truncation. See documentation of\n        # numpy.isclose for an explanation of ``rtol`` and ``atol``.\n        rtol = 1.e-5\n        atol = 1.e-8\n        eps = atol + rtol * np.abs(Xt[:, jj])\n        Xt[:, jj] = np.digitize(Xt[:, jj] + eps, bin_edges[jj][1:])\n    np.clip(Xt, 0, self.n_bins_ - 1, out=Xt)\n\n    if self.encode == 'ordinal':\n        return Xt\n\n    # Ensure bin_edges are sorted\n    for jj in range(len(bin_edges)):\n        if not (bin_edges[jj][0] <= bin_edges[jj][-1]):\n            raise ValueError(\"Bin edges must be monotonically increasing or decreasing\")\n\n    return self._encoder.transform(Xt)\n"
+    },
+    {
+      "snippet": "py:sklearn/pipeline.py::Pipeline.fit_transform",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "40b6b065d388822f",
+      "response_hash": "638f44a4bc404da7",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "1 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "sklearn/tests/test_pipeline.py",
+        "sklearn/tests/test_docstring_parameters.py",
+        "sklearn/tests/test_impute.py"
+      ],
+      "regressions": 1,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 11.9
+    },
+    {
+      "snippet": "py:sklearn/pipeline.py::FeatureUnion.fit_transform",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "0800909aaa648cf5",
+      "response_hash": "46f8bab100653b32",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "9 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "sklearn/tests/test_pipeline.py",
+        "sklearn/tests/test_docstring_parameters.py",
+        "sklearn/tests/test_impute.py"
+      ],
+      "regressions": 9,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 6,
+      "judge_s": 5.5
+    },
+    {
+      "snippet": "py:sklearn/pipeline.py::Pipeline.fit",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix",
+      "prompt_hash": "18cd6b7e3cc79c98",
+      "response_hash": "6a8331fc2df1d836",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:sklearn/feature_extraction/text.py::CountVectorizer.fit_transform",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "197e6e525450e964",
+      "response_hash": "4d2575c870d8000d",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "sklearn/feature_extraction/tests/test_text.py",
+        "sklearn/tests/test_pipeline.py",
+        "sklearn/utils/tests/test_pprint.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 8,
+      "judge_s": 8.9,
+      "diff": "diff --git a/sklearn/feature_extraction/text.py b/sklearn/feature_extraction/text.py\nindex c630155f9..a18170f46 100644\n--- a/sklearn/feature_extraction/text.py\n+++ b/sklearn/feature_extraction/text.py\n@@ -1026,7 +1026,7 @@ class CountVectorizer(BaseEstimator, VectorizerMixin):\n         max_features = self.max_features\n \n         vocabulary, X = self._count_vocab(raw_documents,\n-                                          self.fixed_vocabulary_)\n+     self.fixed_vocabulary_)\n \n         if self.binary:\n             X.data.fill(1)\n@@ -1045,9 +1045,9 @@ class CountVectorizer(BaseEstimator, VectorizerMixin):\n                 raise ValueError(\n                     \"max_df corresponds to < documents than min_df\")\n             X, self.stop_words_ = self._limit_features(X, vocabulary,\n-                                                       max_doc_count,\n-                                                       min_doc_count,\n-                                                       max_features)\n+     max_doc_count,\n+     min_doc_count,\n+     max_features)\n \n             self.vocabulary_ = vocabulary\n \n",
+      "new_source": "def fit_transform(self, raw_documents, y=None):\n    \"\"\"Learn the vocabulary dictionary and return term-document matrix.\n\n    This is equivalent to fit followed by transform, but more efficiently\n    implemented.\n\n    Parameters\n    ----------\n    raw_documents : iterable\n        An iterable which yields either str, unicode or file objects.\n\n    Returns\n    -------\n    X : array, [n_samples, n_features]\n        Document-term matrix.\n    \"\"\"\n    # We intentionally don't call the transform method to make\n    # fit_transform overridable without unwanted side effects in\n    # TfidfVectorizer.\n    if isinstance(raw_documents, str):\n        raise ValueError(\n            \"Iterable over raw text documents expected, \"\n            \"string object received.\")\n\n    self._validate_params()\n    self._validate_vocabulary()\n    max_df = self.max_df\n    min_df = self.min_df\n    max_features = self.max_features\n\n    vocabulary, X = self._count_vocab(raw_documents,\n self.fixed_vocabulary_)\n\n    if self.binary:\n        X.data.fill(1)\n\n    if not self.fixed_vocabulary_:\n        X = self._sort_features(X, vocabulary)\n\n        n_doc = X.shape[0]\n        max_doc_count = (max_df\n                         if isinstance(max_df, numbers.Integral)\n                         else max_df * n_doc)\n        min_doc_count = (min_df\n                         if isinstance(min_df, numbers.Integral)\n                         else min_df * n_doc)\n        if max_doc_count < min_doc_count:\n            raise ValueError(\n                \"max_df corresponds to < documents than min_df\")\n        X, self.stop_words_ = self._limit_features(X, vocabulary,\n max_doc_count,\n min_doc_count,\n max_features)\n\n        self.vocabulary_ = vocabulary\n\n    return X\n"
+    },
+    {
+      "snippet": "py:sklearn/preprocessing/_discretization.py::KBinsDiscretizer.fit",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "17b2f8625f397757",
+      "response_hash": "45d18d8b4d0a8ca4",
+      "stage": "parse",
+      "reason": "response does not define fit()"
+    },
+    {
+      "snippet": "py:sklearn/preprocessing/_discretization.py::KBinsDiscretizer.transform",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix",
+      "prompt_hash": "9f6004734ad608b8",
+      "response_hash": "521b420e66110824",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 5,
+      "judge_s": 0.7,
+      "diff": "diff --git a/sklearn/preprocessing/_discretization.py b/sklearn/preprocessing/_discretization.py\nindex dd969c12b..1575a5be2 100644\n--- a/sklearn/preprocessing/_discretization.py\n+++ b/sklearn/preprocessing/_discretization.py\n@@ -253,6 +253,11 @@ class KBinsDiscretizer(BaseEstimator, TransformerMixin):\n             atol = 1.e-8\n             eps = atol + rtol * np.abs(Xt[:, jj])\n             Xt[:, jj] = np.digitize(Xt[:, jj] + eps, bin_edges[jj][1:])\n+\n+            # Ensure bin edges are sorted\n+            if not np.all(np.diff(bin_edges[jj]) > 0):\n+                bin_edges[jj] = np.sort(bin_edges[jj])\n+\n         np.clip(Xt, 0, self.n_bins_ - 1, out=Xt)\n \n         if self.encode == 'ordinal':\n",
+      "new_source": "def transform(self, X):\n    \"\"\"Discretizes the data.\n\n    Parameters\n    ----------\n    X : numeric array-like, shape (n_samples, n_features)\n        Data to be discretized.\n\n    Returns\n    -------\n    Xt : numeric array-like or sparse matrix\n        Data in the binned space.\n    \"\"\"\n    check_is_fitted(self, [\"bin_edges_\"])\n\n    Xt = check_array(X, copy=True, dtype=FLOAT_DTYPES)\n    n_features = self.n_bins_.shape[0]\n    if Xt.shape[1] != n_features:\n        raise ValueError(\"Incorrect number of features. Expecting {}, \"\n                         \"received {}.\".format(n_features, Xt.shape[1]))\n\n    bin_edges = self.bin_edges_\n    for jj in range(Xt.shape[1]):\n        # Values which are close to a bin edge are susceptible to numeric\n        # instability. Add eps to X so these values are binned correctly\n        # with respect to their decimal truncation. See documentation of\n        # numpy.isclose for an explanation of ``rtol`` and ``atol``.\n        rtol = 1.e-5\n        atol = 1.e-8\n        eps = atol + rtol * np.abs(Xt[:, jj])\n        Xt[:, jj] = np.digitize(Xt[:, jj] + eps, bin_edges[jj][1:])\n\n        # Ensure bin edges are sorted\n        if not np.all(np.diff(bin_edges[jj]) > 0):\n            bin_edges[jj] = np.sort(bin_edges[jj])\n\n    np.clip(Xt, 0, self.n_bins_ - 1, out=Xt)\n\n    if self.encode == 'ordinal':\n        return Xt\n\n    return self._encoder.transform(Xt)\n"
+    },
+    {
+      "snippet": "py:sklearn/pipeline.py::Pipeline.fit_transform",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "40b6b065d388822f",
+      "response_hash": "517552a2af58b85b",
+      "stage": "parse",
+      "reason": "response does not define fit_transform()"
+    },
+    {
+      "snippet": "py:sklearn/pipeline.py::FeatureUnion.fit_transform",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "0800909aaa648cf5",
+      "response_hash": "3acd5746ad94bdf4",
+      "stage": "parse",
+      "reason": "response does not define fit_transform()"
+    },
+    {
+      "snippet": "py:sklearn/pipeline.py::Pipeline.fit",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "18cd6b7e3cc79c98",
+      "response_hash": "0b841869438fd34e",
+      "stage": "parse",
+      "reason": "response does not define fit()"
+    },
+    {
+      "snippet": "py:sklearn/feature_extraction/text.py::CountVectorizer.fit_transform",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix_think",
+      "prompt_hash": "0cea3262a426eac9",
+      "response_hash": "42acf80bd36b8248",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "sklearn/feature_extraction/tests/test_text.py",
+        "sklearn/tests/test_pipeline.py",
+        "sklearn/utils/tests/test_pprint.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 8,
+      "judge_s": 4.9,
+      "diff": "diff --git a/sklearn/feature_extraction/text.py b/sklearn/feature_extraction/text.py\nindex c630155f9..a18170f46 100644\n--- a/sklearn/feature_extraction/text.py\n+++ b/sklearn/feature_extraction/text.py\n@@ -1026,7 +1026,7 @@ class CountVectorizer(BaseEstimator, VectorizerMixin):\n         max_features = self.max_features\n \n         vocabulary, X = self._count_vocab(raw_documents,\n-                                          self.fixed_vocabulary_)\n+     self.fixed_vocabulary_)\n \n         if self.binary:\n             X.data.fill(1)\n@@ -1045,9 +1045,9 @@ class CountVectorizer(BaseEstimator, VectorizerMixin):\n                 raise ValueError(\n                     \"max_df corresponds to < documents than min_df\")\n             X, self.stop_words_ = self._limit_features(X, vocabulary,\n-                                                       max_doc_count,\n-                                                       min_doc_count,\n-                                                       max_features)\n+     max_doc_count,\n+     min_doc_count,\n+     max_features)\n \n             self.vocabulary_ = vocabulary\n \n",
+      "new_source": "def fit_transform(self, raw_documents, y=None):\n    \"\"\"Learn the vocabulary dictionary and return term-document matrix.\n\n    This is equivalent to fit followed by transform, but more efficiently\n    implemented.\n\n    Parameters\n    ----------\n    raw_documents : iterable\n        An iterable which yields either str, unicode or file objects.\n\n    Returns\n    -------\n    X : array, [n_samples, n_features]\n        Document-term matrix.\n    \"\"\"\n    # We intentionally don't call the transform method to make\n    # fit_transform overridable without unwanted side effects in\n    # TfidfVectorizer.\n    if isinstance(raw_documents, str):\n        raise ValueError(\n            \"Iterable over raw text documents expected, \"\n            \"string object received.\")\n\n    self._validate_params()\n    self._validate_vocabulary()\n    max_df = self.max_df\n    min_df = self.min_df\n    max_features = self.max_features\n\n    vocabulary, X = self._count_vocab(raw_documents,\n self.fixed_vocabulary_)\n\n    if self.binary:\n        X.data.fill(1)\n\n    if not self.fixed_vocabulary_:\n        X = self._sort_features(X, vocabulary)\n\n        n_doc = X.shape[0]\n        max_doc_count = (max_df\n                         if isinstance(max_df, numbers.Integral)\n                         else max_df * n_doc)\n        min_doc_count = (min_df\n                         if isinstance(min_df, numbers.Integral)\n                         else min_df * n_doc)\n        if max_doc_count < min_doc_count:\n            raise ValueError(\n                \"max_df corresponds to < documents than min_df\")\n        X, self.stop_words_ = self._limit_features(X, vocabulary,\n max_doc_count,\n min_doc_count,\n max_features)\n\n        self.vocabulary_ = vocabulary\n\n    return X\n"
+    }
+  ],
+  "validated_repro": 0,
+  "stop": "budget",
+  "submission": {
+    "snippet": "py:sklearn/preprocessing/_discretization.py::KBinsDiscretizer.transform",
+    "model": "qwen2.5-coder-1.5b",
+    "template": "fix",
+    "diff": "diff --git a/sklearn/preprocessing/_discretization.py b/sklearn/preprocessing/_discretization.py\nindex dd969c12b..e24ee2c48 100644\n--- a/sklearn/preprocessing/_discretization.py\n+++ b/sklearn/preprocessing/_discretization.py\n@@ -258,6 +258,11 @@ class KBinsDiscretizer(BaseEstimator, TransformerMixin):\n         if self.encode == 'ordinal':\n             return Xt\n \n+        # Ensure bin_edges are sorted\n+        for jj in range(len(bin_edges)):\n+            if not (bin_edges[jj][0] <= bin_edges[jj][-1]):\n+                raise ValueError(\"Bin edges must be monotonically increasing or decreasing\")\n+\n         return self._encoder.transform(Xt)\n \n     def inverse_transform(self, Xt):\n",
+    "votes": 0,
+    "changed_lines": 5,
+    "new_source": "def transform(self, X):\n    \"\"\"Discretizes the data.\n\n    Parameters\n    ----------\n    X : numeric array-like, shape (n_samples, n_features)\n        Data to be discretized.\n\n    Returns\n    -------\n    Xt : numeric array-like or sparse matrix\n        Data in the binned space.\n    \"\"\"\n    check_is_fitted(self, [\"bin_edges_\"])\n\n    Xt = check_array(X, copy=True, dtype=FLOAT_DTYPES)\n    n_features = self.n_bins_.shape[0]\n    if Xt.shape[1] != n_features:\n        raise ValueError(\"Incorrect number of features. Expecting {}, \"\n                         \"received {}.\".format(n_features, Xt.shape[1]))\n\n    bin_edges = self.bin_edges_\n    for jj in range(Xt.shape[1]):\n        # Values which are close to a bin edge are susceptible to numeric\n        # instability. Add eps to X so these values are binned correctly\n        # with respect to their decimal truncation. See documentation of\n        # numpy.isclose for an explanation of ``rtol`` and ``atol``.\n        rtol = 1.e-5\n        atol = 1.e-8\n        eps = atol + rtol * np.abs(Xt[:, jj])\n        Xt[:, jj] = np.digitize(Xt[:, jj] + eps, bin_edges[jj][1:])\n    np.clip(Xt, 0, self.n_bins_ - 1, out=Xt)\n\n    if self.encode == 'ordinal':\n        return Xt\n\n    # Ensure bin_edges are sorted\n    for jj in range(len(bin_edges)):\n        if not (bin_edges[jj][0] <= bin_edges[jj][-1]):\n            raise ValueError(\"Bin edges must be monotonically increasing or decreasing\")\n\n    return self._encoder.transform(Xt)\n",
+    "prompt_hash": "9f6004734ad608b8",
+    "response_hash": "e096c89644f41b94"
+  },
+  "search_s": 1244.3,
+  "llm_calls": 14,
+  "tokens_in": 30016,
+  "tokens_out": 5445,
+  "arms": {
+    "qwen2.5-coder-7b/fix": 0.4,
+    "qwen2.5-coder-7b/fix_think": 0.5333333333333333,
+    "qwen2.5-coder-3b/fix": 0.19999999999999998,
+    "qwen2.5-coder-3b/fix_think": 0.3,
+    "qwen2.5-coder-1.5b/fix": 0.26,
+    "qwen2.5-coder-1.5b/fix_think": 0.3
+  },
+  "grade": {
+    "resolved": false,
+    "applied": true,
+    "fail_to_pass": {
+      "success": 0,
+      "failure": 1
+    },
+    "pass_to_pass": {
+      "success": 33,
+      "failure": 0
+    }
+  },
+  "grade_s": 20.5,
+  "wall_s": 1305.2,
+  "diagnosis": {
+    "gold_files": [
+      "sklearn/preprocessing/_discretization.py"
+    ],
+    "localised_file_hit": true,
+    "localised_line_hit": true,
+    "submission_files": [
+      "sklearn/preprocessing/_discretization.py"
+    ],
+    "submission_in_gold_file": true,
+    "gold_changed_lines": 2
+  }
+}

@@ -1,0 +1,163 @@
+{
+  "dataset": "SWE-bench/SWE-bench_Verified",
+  "parquet_sha256": "030cfd7f2a704c4c0226e7f104c725a3b41230b1d3517f9c915ad7ea5be3fa25",
+  "stratum": "<15 min fix",
+  "stratum_size": 194,
+  "seed": 20261002,
+  "n": 30,
+  "draw": "numpy.random.default_rng(20261002).choice(194, 30, replace=False)",
+  "instances": [
+    "astropy__astropy-7336",
+    "django__django-11099",
+    "django__django-11451",
+    "django__django-11490",
+    "django__django-11951",
+    "django__django-12276",
+    "django__django-12304",
+    "django__django-13109",
+    "django__django-13112",
+    "django__django-13821",
+    "django__django-13933",
+    "django__django-14580",
+    "django__django-15569",
+    "matplotlib__matplotlib-20859",
+    "matplotlib__matplotlib-24177",
+    "matplotlib__matplotlib-25287",
+    "matplotlib__matplotlib-25311",
+    "pydata__xarray-4075",
+    "pydata__xarray-4629",
+    "pytest-dev__pytest-7205",
+    "pytest-dev__pytest-7982",
+    "scikit-learn__scikit-learn-13135",
+    "sphinx-doc__sphinx-8621",
+    "sphinx-doc__sphinx-9281",
+    "sphinx-doc__sphinx-9698",
+    "sphinx-doc__sphinx-9711",
+    "sympy__sympy-12096",
+    "sympy__sympy-12481",
+    "sympy__sympy-15809",
+    "sympy__sympy-16886"
+  ],
+  "checks": [
+    {
+      "instance_id": "astropy__astropy-7336",
+      "test_cmd_matches": true
+    },
+    {
+      "instance_id": "django__django-11099",
+      "test_cmd_matches": true
+    },
+    {
+      "instance_id": "django__django-11451",
+      "test_cmd_matches": true
+    },
+    {
+      "instance_id": "django__django-11490",
+      "test_cmd_matches": true
+    },
+    {
+      "instance_id": "django__django-11951",
+      "test_cmd_matches": true
+    },
+    {
+      "instance_id": "django__django-12276",
+      "test_cmd_matches": true
+    },
+    {
+      "instance_id": "django__django-12304",
+      "test_cmd_matches": true
+    },
+    {
+      "instance_id": "django__django-13109",
+      "test_cmd_matches": true
+    },
+    {
+      "instance_id": "django__django-13112",
+      "test_cmd_matches": true
+    },
+    {
+      "instance_id": "django__django-13821",
+      "test_cmd_matches": true
+    },
+    {
+      "instance_id": "django__django-13933",
+      "test_cmd_matches": true
+    },
+    {
+      "instance_id": "django__django-14580",
+      "test_cmd_matches": true
+    },
+    {
+      "instance_id": "django__django-15569",
+      "test_cmd_matches": true
+    },
+    {
+      "instance_id": "matplotlib__matplotlib-20859",
+      "test_cmd_matches": true
+    },
+    {
+      "instance_id": "matplotlib__matplotlib-24177",
+      "test_cmd_matches": true
+    },
+    {
+      "instance_id": "matplotlib__matplotlib-25287",
+      "test_cmd_matches": true
+    },
+    {
+      "instance_id": "matplotlib__matplotlib-25311",
+      "test_cmd_matches": true
+    },
+    {
+      "instance_id": "pydata__xarray-4075",
+      "test_cmd_matches": true
+    },
+    {
+      "instance_id": "pydata__xarray-4629",
+      "test_cmd_matches": true
+    },
+    {
+      "instance_id": "pytest-dev__pytest-7205",
+      "test_cmd_matches": true
+    },
+    {
+      "instance_id": "pytest-dev__pytest-7982",
+      "test_cmd_matches": true
+    },
+    {
+      "instance_id": "scikit-learn__scikit-learn-13135",
+      "test_cmd_matches": true
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-8621",
+      "test_cmd_matches": true
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-9281",
+      "test_cmd_matches": true
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-9698",
+      "test_cmd_matches": true
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-9711",
+      "test_cmd_matches": true
+    },
+    {
+      "instance_id": "sympy__sympy-12096",
+      "test_cmd_matches": true
+    },
+    {
+      "instance_id": "sympy__sympy-12481",
+      "test_cmd_matches": true
+    },
+    {
+      "instance_id": "sympy__sympy-15809",
+      "test_cmd_matches": true
+    },
+    {
+      "instance_id": "sympy__sympy-16886",
+      "test_cmd_matches": true
+    }
+  ]
+}

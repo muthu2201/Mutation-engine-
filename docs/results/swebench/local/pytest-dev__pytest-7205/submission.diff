@@ -1,0 +1,21 @@
+diff --git a/src/_pytest/setuponly.py b/src/_pytest/setuponly.py
+index c9cc589ff..14b996b79 100644
+--- a/src/_pytest/setuponly.py
++++ b/src/_pytest/setuponly.py
+@@ -17,6 +17,8 @@ def pytest_addoption(parser):
+     )
+ 
+ 
++import pytest
++
+ @pytest.hookimpl(hookwrapper=True)
+ def pytest_fixture_setup(fixturedef, request):
+     yield
+@@ -31,6 +33,7 @@ def pytest_fixture_setup(fixturedef, request):
+                     fixturedef.cached_param = fixturedef.ids[request.param_index]
+             else:
+                 fixturedef.cached_param = request.param
++        # Use saferepr instead of str() to safely represent the bytes object
+         _show_fixture_action(fixturedef, "SETUP")
+ 
+ 

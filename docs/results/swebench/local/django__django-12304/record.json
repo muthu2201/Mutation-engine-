@@ -1,0 +1,334 @@
+{
+  "instance_id": "django__django-12304",
+  "repo": "django/django",
+  "version": "3.1",
+  "base_commit": "4c1b401e8250f9f520b3c7dc369554477ce8b15a",
+  "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.django__django-12304:latest",
+  "started_at": "2026-10-03T03:44:52.975780+00:00",
+  "image_digest": "ghcr.io/epoch-research/swe-bench.eval.x86_64.django__django-12304@sha256:eb8f6db293283f46061a90aed4fbd49e33362ee5ed8059b0a5b4b721b94d2b34",
+  "pull_s": 11.6,
+  "files_considered": 825,
+  "ranked_files": [
+    {
+      "file": "django/utils/functional.py",
+      "score": 1.0
+    },
+    {
+      "file": "django/contrib/admin/templatetags/admin_list.py",
+      "score": 0.953
+    },
+    {
+      "file": "django/db/backends/base/operations.py",
+      "score": 0.916
+    },
+    {
+      "file": "django/forms/models.py",
+      "score": 0.892
+    },
+    {
+      "file": "django/forms/forms.py",
+      "score": 0.861
+    },
+    {
+      "file": "django/core/management/__init__.py",
+      "score": 0.845
+    },
+    {
+      "file": "django/db/models/fields/__init__.py",
+      "score": 0.843
+    },
+    {
+      "file": "django/forms/widgets.py",
+      "score": 0.821
+    }
+  ],
+  "localised": [
+    {
+      "file": "django/contrib/admin/templatetags/admin_list.py",
+      "name": "ResultList.<L302-306>",
+      "kind": "block",
+      "start": 302,
+      "end": 306,
+      "score": 1.477
+    },
+    {
+      "file": "django/forms/forms.py",
+      "name": "BaseForm.hidden_fields",
+      "kind": "function",
+      "start": 467,
+      "end": 472,
+      "score": 1.39
+    },
+    {
+      "file": "django/utils/functional.py",
+      "name": "SimpleLazyObject.__init__",
+      "kind": "function",
+      "start": 359,
+      "end": 369,
+      "score": 1.292
+    },
+    {
+      "file": "django/db/models/fields/__init__.py",
+      "name": "Field.deconstruct",
+      "kind": "function",
+      "start": 414,
+      "end": 501,
+      "score": 1.288
+    },
+    {
+      "file": "django/contrib/admin/templatetags/admin_list.py",
+      "name": "date_hierarchy",
+      "kind": "function",
+      "start": 356,
+      "end": 428,
+      "score": 1.286
+    },
+    {
+      "file": "django/forms/widgets.py",
+      "name": "SelectDateWidget.get_context",
+      "kind": "function",
+      "start": 970,
+      "end": 1004,
+      "score": 1.251
+    }
+  ],
+  "repro": [
+    {
+      "model": "qwen2.5-coder-7b",
+      "outcome": "unparseable",
+      "script_hash": null
+    },
+    {
+      "model": "qwen2.5-coder-3b",
+      "outcome": "NONE",
+      "script_hash": "f4e8440eb5612393"
+    }
+  ],
+  "candidates": [
+    {
+      "snippet": "py:django/contrib/admin/templatetags/admin_list.py::ResultList.<L302-306>",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix_think",
+      "prompt_hash": "ed2280bcb48d5a8f",
+      "response_hash": "00a52a367b4d0503",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/admin_changelist/tests.py",
+        "tests/admin_views/test_templatetags.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 3,
+      "judge_s": 9.3,
+      "diff": "diff --git a/django/contrib/admin/templatetags/admin_list.py b/django/contrib/admin/templatetags/admin_list.py\nindex 4fd9c45a57..2d22dd236a 100644\n--- a/django/contrib/admin/templatetags/admin_list.py\n+++ b/django/contrib/admin/templatetags/admin_list.py\n@@ -304,6 +304,9 @@ class ResultList(list):\n     with the form object for error reporting purposes. Needed to maintain\n     backwards compatibility with existing admin templates.\n     \"\"\"\n+\n+    class ResultList(list):\n+        ...\n     def __init__(self, form, *items):\n         self.form = form\n         super().__init__(*items)\n",
+      "new_source": "\"\"\"\nWrapper class used to return items in a list_editable changelist, annotated\nwith the form object for error reporting purposes. Needed to maintain\nbackwards compatibility with existing admin templates.\n\"\"\"\n\nclass ResultList(list):\n    ...\n"
+    },
+    {
+      "snippet": "py:django/forms/forms.py::BaseForm.hidden_fields",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix_think",
+      "prompt_hash": "d77da09310c0c74d",
+      "response_hash": "b74271eedb00b648",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/admin_views/test_forms.py",
+        "tests/auth_tests/test_forms.py",
+        "tests/flatpages_tests/test_forms.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 7.0,
+      "diff": "diff --git a/django/forms/forms.py b/django/forms/forms.py\nindex a601467e18..adaeada451 100644\n--- a/django/forms/forms.py\n+++ b/django/forms/forms.py\n@@ -469,7 +469,7 @@ class BaseForm:\n         Return a list of all the BoundField objects that are hidden fields.\n         Useful for manual form layout in templates.\n         \"\"\"\n-        return [field for field in self if field.is_hidden]\n+        return [field for field in self if isinstance(field, Field) and field.is_hidden]\n \n     def visible_fields(self):\n         \"\"\"\n",
+      "new_source": "def hidden_fields(self):\n    \"\"\"\n    Return a list of all the BoundField objects that are hidden fields.\n    Useful for manual form layout in templates.\n    \"\"\"\n    return [field for field in self if isinstance(field, Field) and field.is_hidden]\n"
+    },
+    {
+      "snippet": "py:django/utils/functional.py::SimpleLazyObject.__init__",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix_think",
+      "prompt_hash": "ec42eb796bd45393",
+      "response_hash": "31dfc46b92fbbdbb",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/db/models/fields/__init__.py::Field.deconstruct",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix_think",
+      "prompt_hash": "0940b3504a04e13d",
+      "response_hash": "f5bfe23bcaf136a4",
+      "stage": "parse",
+      "reason": "syntax error: '(' was never closed (line 19)"
+    },
+    {
+      "snippet": "py:django/contrib/admin/templatetags/admin_list.py::date_hierarchy",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix_think",
+      "prompt_hash": "d2ac422cbd18e47a",
+      "response_hash": "be7f0928b52c6afa",
+      "stage": "parse",
+      "reason": "syntax error: invalid syntax (line 3)"
+    },
+    {
+      "snippet": "py:django/forms/widgets.py::SelectDateWidget.get_context",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "d59e3bf5c394bd2b",
+      "response_hash": "589caaafe2b53f8c",
+      "stage": "parse",
+      "reason": "response does not define get_context()"
+    },
+    {
+      "snippet": "py:django/contrib/admin/templatetags/admin_list.py::ResultList.<L302-306>",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix_think",
+      "prompt_hash": "ed2280bcb48d5a8f",
+      "response_hash": "ffbea46389da98f2",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/admin_changelist/tests.py",
+        "tests/admin_views/test_templatetags.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 29,
+      "judge_s": 5.3,
+      "diff": "diff --git a/django/contrib/admin/templatetags/admin_list.py b/django/contrib/admin/templatetags/admin_list.py\nindex 4fd9c45a57..52625035f4 100644\n--- a/django/contrib/admin/templatetags/admin_list.py\n+++ b/django/contrib/admin/templatetags/admin_list.py\n@@ -299,11 +299,30 @@ def items_for_result(cl, result, form):\n \n \n class ResultList(list):\n-    \"\"\"\n-    Wrapper class used to return items in a list_editable changelist, annotated\n-    with the form object for error reporting purposes. Needed to maintain\n-    backwards compatibility with existing admin templates.\n-    \"\"\"\n+    class ResultList(list):\n+        def __init__(self, *args, **kwargs):\n+            super().__init__(*args, **kwargs)\n+            # Check if any elements are callable and set do_not_call_in_templates on them\n+            for item in self:\n+                if isinstance(item, type) and hasattr(item, 'do_not_call_in_templates'):\n+                    item.do_not_call_in_templates = True\n+\n+        def __getitem__(self, key):\n+            value = super().__getitem__(key)\n+            # Handle callable items by converting them to strings\n+            if callable(value):\n+                try:\n+                    return str(value())  # Try calling the callable first\n+                except Exception:\n+                    return str(value)  # Fall back to string representation\n+            return value\n+\n+        def __iter__(self):\n+            for item in self:\n+                yield from super().__iter__()\n+\n+        def __str__(self):\n+            return super().__str__()\n     def __init__(self, form, *items):\n         self.form = form\n         super().__init__(*items)\n",
+      "new_source": "class ResultList(list):\n    def __init__(self, *args, **kwargs):\n        super().__init__(*args, **kwargs)\n        # Check if any elements are callable and set do_not_call_in_templates on them\n        for item in self:\n            if isinstance(item, type) and hasattr(item, 'do_not_call_in_templates'):\n                item.do_not_call_in_templates = True\n\n    def __getitem__(self, key):\n        value = super().__getitem__(key)\n        # Handle callable items by converting them to strings\n        if callable(value):\n            try:\n                return str(value())  # Try calling the callable first\n            except Exception:\n                return str(value)  # Fall back to string representation\n        return value\n\n    def __iter__(self):\n        for item in self:\n            yield from super().__iter__()\n\n    def __str__(self):\n        return super().__str__()\n"
+    },
+    {
+      "snippet": "py:django/forms/forms.py::BaseForm.hidden_fields",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix_think",
+      "prompt_hash": "d77da09310c0c74d",
+      "response_hash": "819e7900942802ed",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/admin_views/test_forms.py",
+        "tests/auth_tests/test_forms.py",
+        "tests/flatpages_tests/test_forms.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 4.2,
+      "diff": "diff --git a/django/forms/forms.py b/django/forms/forms.py\nindex a601467e18..80a84bb3b1 100644\n--- a/django/forms/forms.py\n+++ b/django/forms/forms.py\n@@ -469,7 +469,7 @@ class BaseForm:\n         Return a list of all the BoundField objects that are hidden fields.\n         Useful for manual form layout in templates.\n         \"\"\"\n-        return [field for field in self if field.is_hidden]\n+        return [field for field in self if not isinstance(field, ChoiceField) and field.is_hidden]\n \n     def visible_fields(self):\n         \"\"\"\n",
+      "new_source": "def hidden_fields(self):\n    \"\"\"\n    Return a list of all the BoundField objects that are hidden fields.\n    Useful for manual form layout in templates.\n    \"\"\"\n    return [field for field in self if not isinstance(field, ChoiceField) and field.is_hidden]\n"
+    },
+    {
+      "snippet": "py:django/utils/functional.py::SimpleLazyObject.__init__",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix_think",
+      "prompt_hash": "ec42eb796bd45393",
+      "response_hash": "c5d490fb4fa1520f",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/utils_tests/test_functional.py",
+        "tests/decorators/tests.py",
+        "django/test/testcases.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 6,
+      "judge_s": 5.0,
+      "diff": "diff --git a/django/utils/functional.py b/django/utils/functional.py\nindex bc3b65b709..d248691508 100644\n--- a/django/utils/functional.py\n+++ b/django/utils/functional.py\n@@ -368,6 +368,12 @@ class SimpleLazyObject(LazyObject):\n         self.__dict__['_setupfunc'] = func\n         super().__init__()\n \n+    # Ensure the callable returns a value on each call\n+    def __call__(self):\n+        if not hasattr(self, '_value'):\n+            self._value = self._setupfunc()\n+        return self._value\n+\n     def _setup(self):\n         self._wrapped = self._setupfunc()\n \n",
+      "new_source": "def __init__(self, func):\n    \"\"\"\n    Pass in a callable that returns the object to be wrapped.\n\n    If copies are made of the resulting SimpleLazyObject, which can happen\n    in various circumstances within Django, then you must ensure that the\n    callable can be safely run more than once and will return the same\n    value.\n    \"\"\"\n    self.__dict__['_setupfunc'] = func\n    super().__init__()\n\n# Ensure the callable returns a value on each call\ndef __call__(self):\n    if not hasattr(self, '_value'):\n        self._value = self._setupfunc()\n    return self._value\n"
+    },
+    {
+      "snippet": "py:django/db/models/fields/__init__.py::Field.deconstruct",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix_think",
+      "prompt_hash": "0940b3504a04e13d",
+      "response_hash": "9ffa66dd39acb8c1",
+      "stage": "parse",
+      "reason": "syntax error: '(' was never closed (line 19)"
+    },
+    {
+      "snippet": "py:django/contrib/admin/templatetags/admin_list.py::date_hierarchy",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix",
+      "prompt_hash": "b1eca70022b3ccec",
+      "response_hash": "3ccf003107282f86",
+      "stage": "L0",
+      "ok": false,
+      "reasons": [
+        "216 changed lines (cap 200)"
+      ],
+      "tests": [
+        "tests/admin_changelist/tests.py",
+        "tests/admin_views/test_templatetags.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 216,
+      "judge_s": 0.7
+    }
+  ],
+  "validated_repro": 0,
+  "stop": "budget",
+  "submission": {
+    "snippet": "py:django/forms/forms.py::BaseForm.hidden_fields",
+    "model": "qwen2.5-coder-7b",
+    "template": "fix_think",
+    "diff": "diff --git a/django/forms/forms.py b/django/forms/forms.py\nindex a601467e18..adaeada451 100644\n--- a/django/forms/forms.py\n+++ b/django/forms/forms.py\n@@ -469,7 +469,7 @@ class BaseForm:\n         Return a list of all the BoundField objects that are hidden fields.\n         Useful for manual form layout in templates.\n         \"\"\"\n-        return [field for field in self if field.is_hidden]\n+        return [field for field in self if isinstance(field, Field) and field.is_hidden]\n \n     def visible_fields(self):\n         \"\"\"\n",
+    "votes": 0,
+    "changed_lines": 2,
+    "new_source": "def hidden_fields(self):\n    \"\"\"\n    Return a list of all the BoundField objects that are hidden fields.\n    Useful for manual form layout in templates.\n    \"\"\"\n    return [field for field in self if isinstance(field, Field) and field.is_hidden]\n",
+    "prompt_hash": "d77da09310c0c74d",
+    "response_hash": "b74271eedb00b648"
+  },
+  "search_s": 1352.4,
+  "llm_calls": 13,
+  "tokens_in": 8346,
+  "tokens_out": 5864,
+  "arms": {
+    "qwen2.5-coder-7b/fix": 0.19999999999999998,
+    "qwen2.5-coder-7b/fix_think": 0.37142857142857144,
+    "qwen2.5-coder-3b/fix": 0.3,
+    "qwen2.5-coder-3b/fix_think": 0.6,
+    "qwen2.5-coder-1.5b/fix": 0.19999999999999998,
+    "qwen2.5-coder-1.5b/fix_think": 0.3
+  },
+  "grade": {
+    "resolved": false,
+    "applied": true,
+    "fail_to_pass": {
+      "success": 0,
+      "failure": 1
+    },
+    "pass_to_pass": {
+      "success": 17,
+      "failure": 0
+    }
+  },
+  "grade_s": 23.5,
+  "wall_s": 1395.0,
+  "diagnosis": {
+    "gold_files": [
+      "django/db/models/enums.py"
+    ],
+    "localised_file_hit": false,
+    "localised_line_hit": false,
+    "submission_files": [
+      "django/forms/forms.py"
+    ],
+    "submission_in_gold_file": false,
+    "gold_changed_lines": 1
+  }
+}

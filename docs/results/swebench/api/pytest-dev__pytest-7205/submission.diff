@@ -1,0 +1,18 @@
+diff --git a/src/_pytest/fixtures.py b/src/_pytest/fixtures.py
+index 638ed89b1..1f95877db 100644
+--- a/src/_pytest/fixtures.py
++++ b/src/_pytest/fixtures.py
+@@ -922,6 +922,13 @@ class FixtureDef:
+             assert self.cached_result is None
+ 
+         hook = self._fixturemanager.session.gethookproxy(request.node.fspath)
++        if hasattr(request, "param"):
++            # Use a safe repr so that consumers displaying the parameter
++            # (e.g. --setup-show) do not trigger BytesWarning when calling
++            # str() on a bytes instance.
++            from _pytest._io.saferepr import saferepr
++
++            self.cached_param = saferepr(request.param)
+         return hook.pytest_fixture_setup(fixturedef=self, request=request)
+ 
+     def cache_key(self, request):

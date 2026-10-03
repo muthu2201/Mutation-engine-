@@ -35,6 +35,13 @@ import sys
 from pathlib import Path
 from typing import Any
 
+MODEL_FILES = {
+    "qwen2.5-coder-7b": "/opt/colloid/models/qwen2.5-coder-7b-instruct-q4_k_m.gguf",
+    "qwen2.5-coder-3b": "/opt/colloid/models/qwen2.5-coder-3b-instruct-q4_k_m.gguf",
+    "qwen2.5-coder-1.5b": "/opt/colloid/models/qwen2.5-coder-1.5b-instruct-q4_k_m.gguf",
+}
+SWEBENCH = Path("/opt/colloid/state/swebench")
+
 
 def _providers(cfg: Any) -> dict[str, Any]:
     from colloid.adapters.llm.anthropic_provider import AnthropicProvider
@@ -44,11 +51,7 @@ def _providers(cfg: Any) -> dict[str, Any]:
     providers: dict[str, Any] = {}
     local_models = [a.model for a in cfg.llm_arms if a.provider == "local"]
     if local_models:
-        model_files = {
-            "qwen2.5-coder-3b": "/opt/colloid/models/qwen2.5-coder-3b-instruct-q4_k_m.gguf",
-            "qwen2.5-coder-1.5b": "/opt/colloid/models/qwen2.5-coder-1.5b-instruct-q4_k_m.gguf",
-        }
-        wanted = {m: model_files[m] for m in local_models if m in model_files}
+        wanted = {m: MODEL_FILES[m] for m in local_models if m in MODEL_FILES}
         server = LlamaServer(wanted)
         server.start()
         providers["local"] = OpenAICompatProvider(server.base_url, list(wanted), name="local")
@@ -100,6 +103,157 @@ def cmd_redteam_recheck(args: argparse.Namespace) -> int:
     out = recheck_breaches(args.run)
     print(json.dumps(out, indent=2, default=str))
     return 1 if any(r.get("verdict") == "genuine breach" for r in out) else 0
+
+
+HOSTED_DEFAULTS = {  # provider -> (model, reasoning effort, extra max_tokens); ADR 0012 and its amendment 2
+    "openrouter": ("qwen/qwen3.8-27b:free", "medium", 6000),
+    "nvidia": ("moonshotai/kimi-k3", "high", 16000),
+    # no default model: choose one from `colloid llm models --provider P` and pass --api-model (a new arm needs its own amendment)
+    "gemini": ("", None, 8000),
+    "groq": ("", None, 8000),
+    "xkiro": ("", None, 8000),
+    "bedrock": ("", None, 8000),
+}
+
+
+def _hosted(args: argparse.Namespace) -> tuple[Any, str, Any, int]:
+    """(provider, model, pace, extra max_tokens) for a hosted API arm; keys come only from the environment."""
+    model_d, effort_d, extra_d = HOSTED_DEFAULTS[args.provider]
+    model, effort = args.api_model or model_d, args.reasoning_effort or effort_d
+    if effort == "none":  # send no reasoning setting at all (the provider's default)
+        effort = None
+    extra = extra_d if args.max_tokens_extra is None else args.max_tokens_extra
+    if not model:
+        raise SystemExit(f"--api-model is required for --provider {args.provider} (list them: colloid llm models --provider {args.provider})")
+    if args.provider == "openrouter":
+        from colloid.adapters.llm import openrouter
+
+        return openrouter.provider(model, effort), model, openrouter.pace, extra
+    if args.provider in ("gemini", "groq", "xkiro", "bedrock"):
+        from colloid.adapters.llm import hosted
+
+        p = hosted.provider(args.provider, model, effort)
+    else:
+        from colloid.adapters.llm import nvidia
+
+        p = nvidia.provider(model, effort)  # no daily cap; requests are spaced per minute instead
+    if getattr(args, "no_thinking", False):  # chat-template switch for models that think by default (GLM 5.3; ADR 0014 amendment 2)
+        p.extra_body["chat_template_kwargs"] = {"thinking": False, "enable_thinking": False}
+    return p, model, None, extra
+
+
+def cmd_swebench(args: argparse.Namespace) -> int:
+    import subprocess
+
+    from colloid.services import swebench as swe
+    from colloid_evaluator.swebench.judge import GRADER
+
+    data = Path(args.data)
+    if args.action == "prepare":
+        return subprocess.run([args.grader_python, str(GRADER), "prepare", "--parquet", args.parquet, "--out", str(data)], check=False).returncode
+    if args.action == "ingest":
+        from colloid.adapters.lake import open_lake
+
+        probe_path = Path(args.probe_out or f"docs/results/swebench/contamination_{'local' if args.provider == 'local' else 'api'}.json")
+        if probe_path.exists():
+            probes = json.loads(probe_path.read_text())
+        else:
+            probes = None
+            print(f"note: no probe report at {probe_path}; ingesting without memorisation verdicts (run `colloid swebench probe` first)")
+        swe.ingest(Path(args.out), open_lake(args.lake), probes=probes)
+        return 0
+    if args.action == "probe":  # post-hoc memorisation probes (ADR 0011 addendum); reads gold, after grading only
+        from colloid_evaluator.swebench import contamination
+
+        tasks, gold = contamination.load_jsonl(data / "tasks.jsonl"), contamination.load_jsonl(data / "gold.jsonl")
+        sample = args.instance or json.loads((data / "sample.json").read_text())["instances"]
+        if args.provider != "local":  # ADR 0012 amendment: the same probes for the API model, 2 requests per instance
+            api, api_model, api_pace, extra = _hosted(args)
+
+            def ask_api(model: str, prompt: str) -> str:
+                return str(api.complete(model, "You are a helpful assistant.", [{"role": "user", "content": prompt}],
+                                        max_tokens=600 + extra, temperature=0.0, timeout_s=900.0).text)
+
+            report = contamination.run(sample, tasks, gold, Path(args.out), ask_api, [api_model], pace=api_pace)
+        else:
+            from colloid.adapters.llm.llama_server import LlamaServer
+            from colloid.adapters.llm.openai_compat import OpenAICompatProvider
+
+            models = [m for m in (args.model or list(MODEL_FILES)) if Path(MODEL_FILES[m]).exists()]
+            server = LlamaServer({m: MODEL_FILES[m] for m in models})
+            server.start()
+            try:
+                llm = OpenAICompatProvider(server.base_url, models, name="local")
+
+                def ask(model: str, prompt: str) -> str:
+                    return str(llm.complete(model, "You are a helpful assistant.", [{"role": "user", "content": prompt}], max_tokens=600,
+                                            temperature=0.0, timeout_s=900.0).text)
+
+                report = contamination.run(sample, tasks, gold, Path(args.out), ask, models)
+            finally:
+                server.stop()
+        out = Path(args.probe_out or f"docs/results/swebench/contamination_{'local' if args.provider == 'local' else 'api'}.json")
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(json.dumps(report, indent=2))
+        print(f"wrote {out}")
+        return 0
+    from colloid.adapters.llm.llama_server import LlamaServer
+    from colloid.adapters.llm.openai_compat import OpenAICompatProvider
+
+    tasks = swe.load_tasks(data / "tasks.jsonl")
+    sample = args.instance or json.loads((data / "sample.json").read_text())["instances"]
+    run_args = {"gold": data / "gold.jsonl", "grader_python": args.grader_python, "keep_images": args.keep_images}
+    if args.provider != "local":  # the API arm (ADR 0012): the same search, a hosted model
+        api, api_model, api_pace, extra = _hosted(args)
+        budget = swe.Budget(search_s=args.search_minutes * 60, llm_calls=args.llm_calls, max_tokens_extra=extra, protocol=args.protocol)
+        swe.run(sample, tasks, Path(args.out), api, [api_model], budget=budget, pace=api_pace, **run_args)
+        return 0
+    models = [m for m in (args.model or list(MODEL_FILES)) if Path(MODEL_FILES[m]).exists()]
+    server = LlamaServer({m: MODEL_FILES[m] for m in models})
+    server.start()
+    try:
+        llm = OpenAICompatProvider(server.base_url, models, name="local")
+        budget = swe.Budget(search_s=args.search_minutes * 60, llm_calls=args.llm_calls, protocol=args.protocol)
+        swe.run(sample, tasks, Path(args.out), llm, models, budget=budget, **run_args)
+    finally:
+        server.stop()
+    return 0
+
+
+def cmd_llm(args: argparse.Namespace) -> int:
+    """Hosted providers: list a key's models, or send one tiny request (never a benchmark prompt)."""
+    from colloid.adapters.llm import hosted, nvidia, openrouter
+
+    if args.action == "models":
+        if args.provider in hosted.PROVIDERS:
+            print("\n".join(hosted.list_models(args.provider)))
+        else:
+            base = {"nvidia": nvidia.BASE_URL, "openrouter": openrouter.BASE_URL}[args.provider]
+            key = (nvidia if args.provider == "nvidia" else openrouter).api_key()
+            r = httpx_get(f"{base}/v1/models", key)
+            print("\n".join(sorted(m["id"] for m in r.get("data", []))))
+        return 0
+    if not args.model:
+        raise SystemExit("--model is required for smoke")
+    if args.provider in hosted.PROVIDERS:
+        p = hosted.provider(args.provider, args.model, args.reasoning_effort)
+    elif args.provider == "nvidia":
+        p = nvidia.provider(args.model, args.reasoning_effort)
+    else:
+        p = openrouter.provider(args.model, args.reasoning_effort)
+    c = p.complete(args.model, "You are a helpful assistant.", [{"role": "user", "content": "Reply with the single word OK."}],
+                   max_tokens=2000, temperature=0.0, timeout_s=240.0)
+    print(json.dumps({"provider": args.provider, "model": args.model, "text": c.text[:80], "finish_reason": c.finish_reason,
+                      "tokens_in": c.tokens_in, "tokens_out": c.tokens_out, "latency_s": round(c.latency_s, 2)}))
+    return 0 if c.text.strip() else 1
+
+
+def httpx_get(url: str, key: str) -> dict[str, Any]:
+    import httpx
+
+    r = httpx.get(url, headers={"Authorization": f"Bearer {key}"}, timeout=30.0)
+    r.raise_for_status()
+    return dict(r.json())
 
 
 def cmd_lake(args: argparse.Namespace) -> int:
@@ -360,6 +514,34 @@ def main(argv: list[str] | None = None) -> int:
     bo = sub.add_parser("bakeoff"); bo.add_argument("--impl", action="append"); bo.add_argument("--rate", type=float)
     bo.add_argument("--cycles", type=int, default=4); bo.add_argument("--no-capacity", action="store_true"); bo.add_argument("--out")
     bo.set_defaults(fn=cmd_bakeoff)
+    lm = sub.add_parser("llm", help="hosted model providers: list models, smoke-test a key")
+    lm.add_argument("action", choices=["models", "smoke"])
+    lm.add_argument("--provider", required=True, choices=["nvidia", "openrouter", "gemini", "groq", "xkiro", "bedrock"])
+    lm.add_argument("--model")
+    lm.add_argument("--reasoning-effort")
+    lm.set_defaults(fn=cmd_llm)
+    sw = sub.add_parser("swebench", help="repair real issues (SWE-bench Verified, ADR 0011)")
+    sw.add_argument("action", choices=["prepare", "run", "ingest", "probe"])
+    sw.add_argument("--probe-out", help="default docs/results/swebench/contamination_{local,api}.json")
+    sw.add_argument("--data", default=str(SWEBENCH / "data"))
+    sw.add_argument("--parquet", default=str(SWEBENCH / "verified.parquet"))
+    sw.add_argument("--grader-python", default=str(SWEBENCH / "venv/bin/python"))
+    sw.add_argument("--out", default="runs/swebench")
+    sw.add_argument("--instance", action="append", help="run these instances instead of the pre-registered sample (pilot)")
+    sw.add_argument("--model", action="append", choices=list(MODEL_FILES))
+    sw.add_argument("--search-minutes", type=float, default=20.0)
+    sw.add_argument("--llm-calls", type=int, default=16)
+    sw.add_argument("--keep-images", action="store_true")
+    sw.add_argument("--protocol", choices=["v1", "v2"], default="v1", help="v2: the engine changes of ADR 0014 (v1 is ADR 0011/0012)")
+    sw.add_argument("--lake", default="git:colloid/datalake")
+    sw.add_argument("--provider", choices=["local", "openrouter", "nvidia", "gemini", "groq", "xkiro", "bedrock"], default="local",
+                    help="hosted arms read their key (e.g. NVIDIA_API_KEY, GEMINI_API_KEY, GROQ_API_KEY) from the environment")
+    sw.add_argument("--api-model", help="default: qwen/qwen3.8-27b:free (openrouter), moonshotai/kimi-k3 (nvidia)")
+    sw.add_argument("--reasoning-effort", choices=["none", "low", "medium", "high", "xhigh", "max"],
+                    help="default: medium (openrouter), high (nvidia); none sends no reasoning setting")
+    sw.add_argument("--no-thinking", action="store_true", help="turn a model's default thinking off via its chat template")
+    sw.add_argument("--max-tokens-extra", type=int, help="added to every request's cap for a hosted reasoning model (default 6000 / 16000)")
+    sw.set_defaults(fn=cmd_swebench)
     d = sub.add_parser("dashboard"); d.add_argument("run"); d.add_argument("--port", type=int, default=8080); d.set_defaults(fn=cmd_dashboard)
     from colloid.adapters.target import DEFAULT_TARGET, TARGETS
 

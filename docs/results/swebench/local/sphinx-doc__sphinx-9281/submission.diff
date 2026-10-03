@@ -1,0 +1,13 @@
+diff --git a/sphinx/util/inspect.py b/sphinx/util/inspect.py
+index a415a7074..545c513a1 100644
+--- a/sphinx/util/inspect.py
++++ b/sphinx/util/inspect.py
+@@ -226,7 +226,7 @@ def isenumclass(x: Any) -> bool:
+ 
+ def isenumattribute(x: Any) -> bool:
+     """Check if the object is attribute of enum."""
+-    return isinstance(x, enum.Enum)
++    return isinstance(x, (enum.Enum, type))
+ 
+ 
+ def unpartial(obj: Any) -> Any:

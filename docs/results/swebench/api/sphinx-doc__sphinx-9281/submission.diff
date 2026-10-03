@@ -1,0 +1,18 @@
+diff --git a/sphinx/util/inspect.py b/sphinx/util/inspect.py
+index a415a7074..aca125c71 100644
+--- a/sphinx/util/inspect.py
++++ b/sphinx/util/inspect.py
+@@ -220,8 +220,11 @@ def isNewType(obj: Any) -> bool:
+ 
+ 
+ def isenumclass(x: Any) -> bool:
+-    """Check if the object is subclass of enum."""
+-    return inspect.isclass(x) and issubclass(x, enum.Enum)
++    """Check if the object is a subclass of enum or an enum member."""
++    if inspect.isclass(x):
++        return issubclass(x, enum.Enum)
++    else:
++        return isinstance(x, enum.Enum)
+ 
+ 
+ def isenumattribute(x: Any) -> bool:

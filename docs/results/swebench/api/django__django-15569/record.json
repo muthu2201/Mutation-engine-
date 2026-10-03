@@ -1,0 +1,204 @@
+{
+  "instance_id": "django__django-15569",
+  "repo": "django/django",
+  "version": "4.1",
+  "base_commit": "884b4c27f506b3c29d58509fc83a35c30ea10d94",
+  "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.django__django-15569:latest",
+  "started_at": "2026-10-03T13:42:29.844350+00:00",
+  "image_digest": "ghcr.io/epoch-research/swe-bench.eval.x86_64.django__django-15569@sha256:7bbe9d7468157dd52baea00b628d1e2f3bc49743be3a3b18c63c15c84c807fad",
+  "pull_s": 23.6,
+  "files_considered": 857,
+  "ranked_files": [
+    {
+      "file": "django/db/models/query_utils.py",
+      "score": 2.5
+    },
+    {
+      "file": "django/contrib/postgres/apps.py",
+      "score": 0.908
+    },
+    {
+      "file": "django/db/models/lookups.py",
+      "score": 0.745
+    },
+    {
+      "file": "django/db/models/sql/query.py",
+      "score": 0.685
+    },
+    {
+      "file": "django/db/models/query.py",
+      "score": 0.679
+    },
+    {
+      "file": "django/apps/registry.py",
+      "score": 0.639
+    },
+    {
+      "file": "django/db/backends/sqlite3/features.py",
+      "score": 0.603
+    },
+    {
+      "file": "django/contrib/gis/db/backends/mysql/features.py",
+      "score": 0.602
+    }
+  ],
+  "localised": [
+    {
+      "file": "django/db/models/query_utils.py",
+      "name": "RegisterLookupMixin._unregister_lookup",
+      "kind": "function",
+      "start": 211,
+      "end": 219,
+      "score": 4.039
+    },
+    {
+      "file": "django/db/models/query_utils.py",
+      "name": "RegisterLookupMixin.register_lookup",
+      "kind": "function",
+      "start": 201,
+      "end": 209,
+      "score": 3.877
+    },
+    {
+      "file": "django/db/models/query_utils.py",
+      "name": "RegisterLookupMixin.get_lookup",
+      "kind": "function",
+      "start": 165,
+      "end": 173,
+      "score": 1.993
+    },
+    {
+      "file": "django/db/models/query_utils.py",
+      "name": "RegisterLookupMixin.get_transform",
+      "kind": "function",
+      "start": 175,
+      "end": 183,
+      "score": 1.98
+    },
+    {
+      "file": "django/db/models/query_utils.py",
+      "name": "RegisterLookupMixin._get_lookup",
+      "kind": "function",
+      "start": 153,
+      "end": 155,
+      "score": 1.682
+    },
+    {
+      "file": "django/db/models/query_utils.py",
+      "name": "RegisterLookupMixin._clear_cached_lookups",
+      "kind": "function",
+      "start": 196,
+      "end": 199,
+      "score": 1.653
+    }
+  ],
+  "repro": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "OTHER",
+      "script_hash": "898d1fe0ee0b4a41"
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "ISSUE REPRODUCED",
+      "script_hash": "0c1f06b0747bc217"
+    }
+  ],
+  "candidates": [
+    {
+      "snippet": "py:django/db/models/query_utils.py::RegisterLookupMixin._unregister_lookup",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "dda8011b2ae5fd0a",
+      "response_hash": "dddf81742e3a5be2",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/model_inheritance/tests.py"
+      ],
+      "regressions": 0,
+      "votes": 1,
+      "repro": [
+        "ISSUE RESOLVED"
+      ],
+      "changed_lines": 1,
+      "judge_s": 6.1,
+      "diff": "diff --git a/django/db/models/query_utils.py b/django/db/models/query_utils.py\nindex 0caa165e15..6917820604 100644\n--- a/django/db/models/query_utils.py\n+++ b/django/db/models/query_utils.py\n@@ -217,6 +217,7 @@ class RegisterLookupMixin:\n         if lookup_name is None:\n             lookup_name = lookup.lookup_name\n         del cls.class_lookups[lookup_name]\n+        cls._clear_cached_lookups()\n \n \n def select_related_descend(field, restricted, requested, load_fields, reverse=False):\n",
+      "new_source": "@classmethod\ndef _unregister_lookup(cls, lookup, lookup_name=None):\n    \"\"\"\n    Remove given lookup from cls lookups. For use in tests only as it's\n    not thread-safe.\n    \"\"\"\n    if lookup_name is None:\n        lookup_name = lookup.lookup_name\n    del cls.class_lookups[lookup_name]\n    cls._clear_cached_lookups()\n"
+    }
+  ],
+  "validated_repro": 1,
+  "stop": "every validated reproduction resolved",
+  "submission": {
+    "snippet": "py:django/db/models/query_utils.py::RegisterLookupMixin._unregister_lookup",
+    "model": "moonshotai/kimi-k3",
+    "template": "fix_think",
+    "diff": "diff --git a/django/db/models/query_utils.py b/django/db/models/query_utils.py\nindex 0caa165e15..6917820604 100644\n--- a/django/db/models/query_utils.py\n+++ b/django/db/models/query_utils.py\n@@ -217,6 +217,7 @@ class RegisterLookupMixin:\n         if lookup_name is None:\n             lookup_name = lookup.lookup_name\n         del cls.class_lookups[lookup_name]\n+        cls._clear_cached_lookups()\n \n \n def select_related_descend(field, restricted, requested, load_fields, reverse=False):\n",
+    "votes": 1,
+    "changed_lines": 1,
+    "new_source": "@classmethod\ndef _unregister_lookup(cls, lookup, lookup_name=None):\n    \"\"\"\n    Remove given lookup from cls lookups. For use in tests only as it's\n    not thread-safe.\n    \"\"\"\n    if lookup_name is None:\n        lookup_name = lookup.lookup_name\n    del cls.class_lookups[lookup_name]\n    cls._clear_cached_lookups()\n",
+    "prompt_hash": "dda8011b2ae5fd0a",
+    "response_hash": "dddf81742e3a5be2"
+  },
+  "search_s": 98.0,
+  "llm_calls": 3,
+  "tokens_in": 1250,
+  "tokens_out": 853,
+  "calls": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 13.15,
+      "tokens_in": 384,
+      "tokens_out": 295,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 43.06,
+      "tokens_in": 384,
+      "tokens_out": 365,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 32.48,
+      "tokens_in": 482,
+      "tokens_out": 193,
+      "finish_reason": "stop",
+      "empty": false
+    }
+  ],
+  "arms": {
+    "moonshotai/kimi-k3/fix": 0.3,
+    "moonshotai/kimi-k3/fix_think": 0.5333333333333333
+  },
+  "grade": {
+    "resolved": false,
+    "applied": true,
+    "fail_to_pass": {
+      "success": 0,
+      "failure": 2
+    },
+    "pass_to_pass": {
+      "success": 224,
+      "failure": 18
+    }
+  },
+  "grade_s": 1.4,
+  "wall_s": 135.7,
+  "diagnosis": {
+    "gold_files": [
+      "django/db/models/query_utils.py"
+    ],
+    "localised_file_hit": true,
+    "localised_line_hit": true,
+    "submission_files": [
+      "django/db/models/query_utils.py"
+    ],
+    "submission_in_gold_file": true,
+    "gold_changed_lines": 1
+  }
+}

@@ -1,0 +1,13 @@
+diff --git a/sympy/crypto/crypto.py b/sympy/crypto/crypto.py
+index ca552191c0..c2f4081f52 100644
+--- a/sympy/crypto/crypto.py
++++ b/sympy/crypto/crypto.py
+@@ -1586,7 +1586,7 @@ def encode_morse(msg, sep='|', mapping=None):
+ def decode_morse(msg, sep='|', mapping=None):
+     """
+     Decodes a Morse Code with letters separated by `sep`
+-    (default is '|') and words by `word_sep` (default is '||)
++    (default is '|') and words by `word_sep` (default is '||')
+     into plaintext.
+ 
+     References

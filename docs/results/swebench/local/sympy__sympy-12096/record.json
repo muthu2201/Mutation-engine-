@@ -1,0 +1,327 @@
+{
+  "instance_id": "sympy__sympy-12096",
+  "repo": "sympy/sympy",
+  "version": "1.0",
+  "base_commit": "d7c3045115693e887bcd03599b7ca4650ac5f2cb",
+  "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.sympy__sympy-12096:latest",
+  "started_at": "2026-10-03T09:30:58.899880+00:00",
+  "image_digest": "ghcr.io/epoch-research/swe-bench.eval.x86_64.sympy__sympy-12096@sha256:ae0ccc3b2f7e85a1567307d7a79fa1c6661b5985f0d9913925550e65fa70efe1",
+  "pull_s": 21.2,
+  "files_considered": 586,
+  "ranked_files": [
+    {
+      "file": "sympy/utilities/lambdify.py",
+      "score": 5.0
+    },
+    {
+      "file": "sympy/__init__.py",
+      "score": 3.318
+    },
+    {
+      "file": "sympy/utilities/__init__.py",
+      "score": 3.092
+    },
+    {
+      "file": "sympy/core/function.py",
+      "score": 2.208
+    },
+    {
+      "file": "sympy/core/evalf.py",
+      "score": 1.688
+    },
+    {
+      "file": "sympy/plotting/experimental_lambdify.py",
+      "score": 1.181
+    },
+    {
+      "file": "sympy/sets/sets.py",
+      "score": 1.156
+    },
+    {
+      "file": "sympy/core/operations.py",
+      "score": 1.074
+    }
+  ],
+  "localised": [
+    {
+      "file": "sympy/core/function.py",
+      "name": "Function._eval_evalf",
+      "kind": "function",
+      "start": 500,
+      "end": 547,
+      "score": 3.64
+    },
+    {
+      "file": "sympy/utilities/lambdify.py",
+      "name": "implemented_function",
+      "kind": "function",
+      "start": 653,
+      "end": 699,
+      "score": 3.5
+    },
+    {
+      "file": "sympy/core/operations.py",
+      "name": "AssocOp._eval_evalf",
+      "kind": "function",
+      "start": 295,
+      "end": 349,
+      "score": 2.771
+    },
+    {
+      "file": "sympy/core/evalf.py",
+      "name": "EvalfMixin.evalf",
+      "kind": "function",
+      "start": 1330,
+      "end": 1409,
+      "score": 2.64
+    },
+    {
+      "file": "sympy/core/evalf.py",
+      "name": "evalf",
+      "kind": "function",
+      "start": 1274,
+      "end": 1322,
+      "score": 2.627
+    },
+    {
+      "file": "sympy/core/evalf.py",
+      "name": "EvalfMixin._eval_evalf",
+      "kind": "function",
+      "start": 1420,
+      "end": 1421,
+      "score": 2.568
+    }
+  ],
+  "repro": [
+    {
+      "model": "qwen2.5-coder-7b",
+      "outcome": "ISSUE REPRODUCED",
+      "script_hash": "4697659c086793b4"
+    },
+    {
+      "model": "qwen2.5-coder-3b",
+      "outcome": "unparseable",
+      "script_hash": null
+    }
+  ],
+  "candidates": [
+    {
+      "snippet": "py:sympy/core/function.py::Function._eval_evalf",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "8ac330f346a5d9ac",
+      "response_hash": "ab952217f8ca6366",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:sympy/utilities/lambdify.py::implemented_function",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "cf748d4007b8123f",
+      "response_hash": "2734b045022bf253",
+      "stage": "parse",
+      "reason": "syntax error: '(' was never closed (line 4)"
+    },
+    {
+      "snippet": "py:sympy/core/operations.py::AssocOp._eval_evalf",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix",
+      "prompt_hash": "74ffb3711fdfc8ee",
+      "response_hash": "68ecc2672dc36237",
+      "stage": "parse",
+      "reason": "response does not define _eval_evalf()"
+    },
+    {
+      "snippet": "py:sympy/core/evalf.py::EvalfMixin.evalf",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "7ad7b6558235a666",
+      "response_hash": "fff1f40e30394954",
+      "stage": "parse",
+      "reason": "syntax error: unexpected indent (line 13)"
+    },
+    {
+      "snippet": "py:sympy/core/evalf.py::evalf",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix_think",
+      "prompt_hash": "408720a10105c2e8",
+      "response_hash": "fa94ffc4e5a66421",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "sympy/core/tests/test_evalf.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 6,
+      "judge_s": 15.8,
+      "diff": "diff --git a/sympy/core/evalf.py b/sympy/core/evalf.py\nindex 9e75733a05..98d8e522a0 100644\n--- a/sympy/core/evalf.py\n+++ b/sympy/core/evalf.py\n@@ -1321,6 +1321,12 @@ def evalf(x, prec, options):\n         check_target(x, r, prec)\n     return r\n \n+def _eval_evalf(self, prec):\n+    if isinstance(self.func, implemented_function):\n+        return self.func._imp_(self.args[0]).evalf(prec=prec)\n+    else:\n+        return super(Function, self)._eval_evalf(prec)\n+\n \n class EvalfMixin(object):\n     \"\"\"Mixin class adding evalf capabililty.\"\"\"\n",
+      "new_source": "def evalf(x, prec, options):\n    from sympy import re as re_, im as im_\n    try:\n        rf = evalf_table[x.func]\n        r = rf(x, prec, options)\n    except KeyError:\n        try:\n            # Fall back to ordinary evalf if possible\n            if 'subs' in options:\n                x = x.subs(evalf_subs(prec, options['subs']))\n            xe = x._eval_evalf(prec)\n            re, im = xe.as_real_imag()\n            if re.has(re_) or im.has(im_):\n                raise NotImplementedError\n            if re == 0:\n                re = None\n                reprec = None\n            elif re.is_number:\n                re = re._to_mpmath(prec, allow_ints=False)._mpf_\n                reprec = prec\n            if im == 0:\n                im = None\n                imprec = None\n            elif im.is_number:\n                im = im._to_mpmath(prec, allow_ints=False)._mpf_\n                imprec = prec\n            r = re, im, reprec, imprec\n        except AttributeError:\n            raise NotImplementedError\n    if options.get(\"verbose\"):\n        print(\"### input\", x)\n        print(\"### output\", to_str(r[0] or fzero, 50))\n        print(\"### raw\", r) # r[0], r[2]\n        print()\n    chop = options.get('chop', False)\n    if chop:\n        if chop is True:\n            chop_prec = prec\n        else:\n            # convert (approximately) from given tolerance;\n            # the formula here will will make 1e-i rounds to 0 for\n            # i in the range +/-27 while 2e-i will not be chopped\n            chop_prec = int(round(-3.321*math.log10(chop) + 2.5))\n            if chop_prec == 3:\n                chop_prec -= 1\n        r = chop_parts(r, chop_prec)\n    if options.get(\"strict\"):\n        check_target(x, r, prec)\n    return r\n\ndef _eval_evalf(self, prec):\n    if isinstance(self.func, implemented_function):\n        return self.func._imp_(self.args[0]).evalf(prec=prec)\n    else:\n        return super(Function, self)._eval_evalf(prec)\n"
+    },
+    {
+      "snippet": "py:sympy/core/evalf.py::EvalfMixin._eval_evalf",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix",
+      "prompt_hash": "a9455ab26cd98e92",
+      "response_hash": "53e351c18c41c38d",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "4 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "sympy/core/tests/test_evalf.py"
+      ],
+      "regressions": 4,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 7.6
+    },
+    {
+      "snippet": "py:sympy/core/function.py::Function._eval_evalf",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "8ac330f346a5d9ac",
+      "response_hash": "94b86c145bb63c12",
+      "stage": "parse",
+      "reason": "response does not define _eval_evalf()"
+    },
+    {
+      "snippet": "py:sympy/utilities/lambdify.py::implemented_function",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix",
+      "prompt_hash": "cf748d4007b8123f",
+      "response_hash": "8e7bd32b152c5a66",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "2 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "sympy/utilities/tests/test_lambdify.py",
+        "sympy/core/tests/test_evalf.py",
+        "sympy/external/tests/test_numpy.py"
+      ],
+      "regressions": 2,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 6,
+      "judge_s": 15.9
+    },
+    {
+      "snippet": "py:sympy/core/operations.py::AssocOp._eval_evalf",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "621805efb87b43e9",
+      "response_hash": "8aabbcfa53cdb2b2",
+      "stage": "parse",
+      "reason": "response does not define _eval_evalf()"
+    },
+    {
+      "snippet": "py:sympy/core/evalf.py::EvalfMixin.evalf",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "7ad7b6558235a666",
+      "response_hash": "9bd8504d364edd33",
+      "stage": "parse",
+      "reason": "syntax error: '(' was never closed (line 5)"
+    },
+    {
+      "snippet": "py:sympy/core/evalf.py::evalf",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix_think",
+      "prompt_hash": "408720a10105c2e8",
+      "response_hash": "13ea5b6cafb2e21f",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "4 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "sympy/core/tests/test_evalf.py"
+      ],
+      "regressions": 4,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 10,
+      "judge_s": 7.5
+    },
+    {
+      "snippet": "py:sympy/core/evalf.py::EvalfMixin._eval_evalf",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix_think",
+      "prompt_hash": "e1b2120a55698f09",
+      "response_hash": "0fec9f86beb7c4a2",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "4 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "sympy/core/tests/test_evalf.py"
+      ],
+      "regressions": 4,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 7.4
+    }
+  ],
+  "validated_repro": 1,
+  "stop": "budget",
+  "submission": {
+    "snippet": "py:sympy/core/evalf.py::evalf",
+    "model": "qwen2.5-coder-7b",
+    "template": "fix_think",
+    "diff": "diff --git a/sympy/core/evalf.py b/sympy/core/evalf.py\nindex 9e75733a05..98d8e522a0 100644\n--- a/sympy/core/evalf.py\n+++ b/sympy/core/evalf.py\n@@ -1321,6 +1321,12 @@ def evalf(x, prec, options):\n         check_target(x, r, prec)\n     return r\n \n+def _eval_evalf(self, prec):\n+    if isinstance(self.func, implemented_function):\n+        return self.func._imp_(self.args[0]).evalf(prec=prec)\n+    else:\n+        return super(Function, self)._eval_evalf(prec)\n+\n \n class EvalfMixin(object):\n     \"\"\"Mixin class adding evalf capabililty.\"\"\"\n",
+    "votes": 0,
+    "changed_lines": 6,
+    "new_source": "def evalf(x, prec, options):\n    from sympy import re as re_, im as im_\n    try:\n        rf = evalf_table[x.func]\n        r = rf(x, prec, options)\n    except KeyError:\n        try:\n            # Fall back to ordinary evalf if possible\n            if 'subs' in options:\n                x = x.subs(evalf_subs(prec, options['subs']))\n            xe = x._eval_evalf(prec)\n            re, im = xe.as_real_imag()\n            if re.has(re_) or im.has(im_):\n                raise NotImplementedError\n            if re == 0:\n                re = None\n                reprec = None\n            elif re.is_number:\n                re = re._to_mpmath(prec, allow_ints=False)._mpf_\n                reprec = prec\n            if im == 0:\n                im = None\n                imprec = None\n            elif im.is_number:\n                im = im._to_mpmath(prec, allow_ints=False)._mpf_\n                imprec = prec\n            r = re, im, reprec, imprec\n        except AttributeError:\n            raise NotImplementedError\n    if options.get(\"verbose\"):\n        print(\"### input\", x)\n        print(\"### output\", to_str(r[0] or fzero, 50))\n        print(\"### raw\", r) # r[0], r[2]\n        print()\n    chop = options.get('chop', False)\n    if chop:\n        if chop is True:\n            chop_prec = prec\n        else:\n            # convert (approximately) from given tolerance;\n            # the formula here will will make 1e-i rounds to 0 for\n            # i in the range +/-27 while 2e-i will not be chopped\n            chop_prec = int(round(-3.321*math.log10(chop) + 2.5))\n            if chop_prec == 3:\n                chop_prec -= 1\n        r = chop_parts(r, chop_prec)\n    if options.get(\"strict\"):\n        check_target(x, r, prec)\n    return r\n\ndef _eval_evalf(self, prec):\n    if isinstance(self.func, implemented_function):\n        return self.func._imp_(self.args[0]).evalf(prec=prec)\n    else:\n        return super(Function, self)._eval_evalf(prec)\n",
+    "prompt_hash": "408720a10105c2e8",
+    "response_hash": "fa94ffc4e5a66421"
+  },
+  "search_s": 1205.9,
+  "llm_calls": 14,
+  "tokens_in": 11530,
+  "tokens_out": 6855,
+  "arms": {
+    "qwen2.5-coder-7b/fix": 0.12,
+    "qwen2.5-coder-7b/fix_think": 0.22499999999999998,
+    "qwen2.5-coder-3b/fix": 0.3,
+    "qwen2.5-coder-3b/fix_think": 0.19999999999999998,
+    "qwen2.5-coder-1.5b/fix": 0.08571428571428572,
+    "qwen2.5-coder-1.5b/fix_think": 0.19999999999999998
+  },
+  "grade": {
+    "resolved": false,
+    "applied": true,
+    "fail_to_pass": {
+      "success": 0,
+      "failure": 1
+    },
+    "pass_to_pass": {
+      "success": 43,
+      "failure": 0
+    }
+  },
+  "grade_s": 20.5,
+  "wall_s": 1255.1,
+  "diagnosis": {
+    "gold_files": [
+      "sympy/core/function.py"
+    ],
+    "localised_file_hit": true,
+    "localised_line_hit": true,
+    "submission_files": [
+      "sympy/core/evalf.py"
+    ],
+    "submission_in_gold_file": false,
+    "gold_changed_lines": 2
+  }
+}

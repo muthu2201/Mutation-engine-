@@ -1,0 +1,478 @@
+{
+  "instance_id": "pydata__xarray-4629",
+  "repo": "pydata/xarray",
+  "version": "0.12",
+  "base_commit": "a41edc7bf5302f2ea327943c0c48c532b12009bc",
+  "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.pydata__xarray-4629:latest",
+  "started_at": "2026-10-03T14:34:19.194712+00:00",
+  "image_digest": "ghcr.io/epoch-research/swe-bench.eval.x86_64.pydata__xarray-4629@sha256:16954d37403c734dcd26bf944c68152b89afd909771c3477f4cb33336cd1d104",
+  "pull_s": 41.9,
+  "files_considered": 80,
+  "ranked_files": [
+    {
+      "file": "xarray/core/dataset.py",
+      "score": 2.004
+    },
+    {
+      "file": "xarray/util/print_versions.py",
+      "score": 1.5
+    },
+    {
+      "file": "xarray/core/merge.py",
+      "score": 1.092
+    },
+    {
+      "file": "xarray/core/dataarray.py",
+      "score": 0.971
+    },
+    {
+      "file": "xarray/core/variable.py",
+      "score": 0.911
+    },
+    {
+      "file": "xarray/core/coordinates.py",
+      "score": 0.826
+    },
+    {
+      "file": "xarray/backends/api.py",
+      "score": 0.732
+    },
+    {
+      "file": "xarray/core/combine.py",
+      "score": 0.596
+    }
+  ],
+  "localised": [
+    {
+      "file": "xarray/core/dataset.py",
+      "name": "Dataset.merge",
+      "kind": "function",
+      "start": 3790,
+      "end": 3859,
+      "score": 3.815
+    },
+    {
+      "file": "xarray/core/dataset.py",
+      "name": "Dataset.attrs",
+      "kind": "function",
+      "start": 672,
+      "end": 674,
+      "score": 3.765
+    },
+    {
+      "file": "xarray/core/dataset.py",
+      "name": "Dataset.attrs",
+      "kind": "function",
+      "start": 665,
+      "end": 670,
+      "score": 3.719
+    },
+    {
+      "file": "xarray/util/print_versions.py",
+      "name": "show_versions",
+      "kind": "function",
+      "start": 80,
+      "end": 156,
+      "score": 3.218
+    },
+    {
+      "file": "xarray/core/dataarray.py",
+      "name": "DataArray.attrs",
+      "kind": "function",
+      "start": 750,
+      "end": 753,
+      "score": 2.736
+    },
+    {
+      "file": "xarray/core/dataarray.py",
+      "name": "DataArray.attrs",
+      "kind": "function",
+      "start": 745,
+      "end": 748,
+      "score": 2.495
+    }
+  ],
+  "repro": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "unparseable",
+      "script_hash": null
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "unparseable",
+      "script_hash": null
+    }
+  ],
+  "candidates": [
+    {
+      "snippet": "py:xarray/core/dataset.py::Dataset.merge",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "5a000d3454f43e88",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:xarray/core/dataset.py::Dataset.attrs",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "739d162d0204d87a",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:xarray/core/dataset.py::Dataset.attrs",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "1408d966eed93e37",
+      "response_hash": "9d61b9b1313c1e41",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "xarray/tests/test_dataset.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 4,
+      "judge_s": 44.1,
+      "diff": "diff --git a/xarray/core/dataset.py b/xarray/core/dataset.py\nindex b352fd3d..3e0a6685 100644\n--- a/xarray/core/dataset.py\n+++ b/xarray/core/dataset.py\n@@ -669,6 +669,10 @@ class Dataset(Mapping, ImplementsDatasetReduce, DataWithCoords):\n             self._attrs = {}\n         return self._attrs\n \n+    @attrs.setter\n+    def attrs(self, value: Dict[Hashable, Any]) -> None:\n+        self._attrs = dict(value) if value is not None else None\n+\n     @attrs.setter\n     def attrs(self, value: Mapping[Hashable, Any]) -> None:\n         self._attrs = dict(value)\n",
+      "new_source": "@property\ndef attrs(self) -> Dict[Hashable, Any]:\n    \"\"\"Dictionary of global attributes on this dataset\"\"\"\n    if self._attrs is None:\n        self._attrs = {}\n    return self._attrs\n\n@attrs.setter\ndef attrs(self, value: Dict[Hashable, Any]) -> None:\n    self._attrs = dict(value) if value is not None else None\n"
+    },
+    {
+      "snippet": "py:xarray/util/print_versions.py::show_versions",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "57ba4b5182092eb7",
+      "response_hash": "91b1c8537175d61b",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:xarray/core/dataarray.py::DataArray.attrs",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "7ec17b344377e425",
+      "response_hash": "606c737ef0e8001b",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "xarray/tests/test_dataarray.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 30.4,
+      "diff": "diff --git a/xarray/core/dataarray.py b/xarray/core/dataarray.py\nindex dc075991..d088e956 100644\n--- a/xarray/core/dataarray.py\n+++ b/xarray/core/dataarray.py\n@@ -750,7 +750,7 @@ class DataArray(AbstractArray, DataWithCoords):\n     @attrs.setter\n     def attrs(self, value: Mapping[Hashable, Any]) -> None:\n         # Disable type checking to work around mypy bug - see mypy#4167\n-        self.variable.attrs = value  # type: ignore\n+        self.variable.attrs = dict(value)  # type: ignore\n \n     @property\n     def encoding(self) -> Dict[Hashable, Any]:\n",
+      "new_source": "@attrs.setter\ndef attrs(self, value: Mapping[Hashable, Any]) -> None:\n    # Disable type checking to work around mypy bug - see mypy#4167\n    self.variable.attrs = dict(value)  # type: ignore\n"
+    },
+    {
+      "snippet": "py:xarray/core/dataarray.py::DataArray.attrs",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "f8c59e150e0e56b2",
+      "response_hash": "a4c6bf9b742e75af",
+      "stage": "parse",
+      "reason": "response does not define attrs()"
+    },
+    {
+      "snippet": "py:xarray/core/dataset.py::Dataset.merge",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "5e1b4d63aa42c033",
+      "response_hash": "ca4054cb451ef35a",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:xarray/core/dataset.py::Dataset.attrs",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "739d162d0204d87a",
+      "response_hash": "4ed626d1c04c074f",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "xarray/tests/test_dataset.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 21.5,
+      "diff": "diff --git a/xarray/core/dataset.py b/xarray/core/dataset.py\nindex b352fd3d..d86839f3 100644\n--- a/xarray/core/dataset.py\n+++ b/xarray/core/dataset.py\n@@ -671,7 +671,7 @@ class Dataset(Mapping, ImplementsDatasetReduce, DataWithCoords):\n \n     @attrs.setter\n     def attrs(self, value: Mapping[Hashable, Any]) -> None:\n-        self._attrs = dict(value)\n+        self._attrs = dict(value) if value is not None else None\n \n     @property\n     def encoding(self) -> Dict:\n",
+      "new_source": "@attrs.setter\ndef attrs(self, value: Mapping[Hashable, Any]) -> None:\n    self._attrs = dict(value) if value is not None else None\n"
+    },
+    {
+      "snippet": "py:xarray/core/dataset.py::Dataset.attrs",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "1408d966eed93e37",
+      "response_hash": "7efbdfbdfea79ea7",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "6 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "xarray/tests/test_dataset.py"
+      ],
+      "regressions": 6,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 22.5
+    },
+    {
+      "snippet": "py:xarray/util/print_versions.py::show_versions",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "d0df0723939563c7",
+      "response_hash": "860c0d1787d4df33",
+      "stage": "parse",
+      "reason": "response does not define show_versions()"
+    },
+    {
+      "snippet": "py:xarray/core/dataarray.py::DataArray.attrs",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "7ec17b344377e425",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:xarray/core/dataarray.py::DataArray.attrs",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "3a3dbbd37b7d6162",
+      "response_hash": "04e86a9aa5f877a4",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "4 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "xarray/tests/test_dataarray.py"
+      ],
+      "regressions": 4,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 16.3
+    },
+    {
+      "snippet": "py:xarray/core/dataset.py::Dataset.merge",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "5e1b4d63aa42c033",
+      "response_hash": "fb689b651e6f498a",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "xarray/tests/test_dataset.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 1,
+      "judge_s": 22.3,
+      "diff": "diff --git a/xarray/core/dataset.py b/xarray/core/dataset.py\nindex b352fd3d..93a8f99b 100644\n--- a/xarray/core/dataset.py\n+++ b/xarray/core/dataset.py\n@@ -3856,6 +3856,7 @@ class Dataset(Mapping, ImplementsDatasetReduce, DataWithCoords):\n             join=join,\n             fill_value=fill_value,\n         )\n+        merge_result = merge_result._replace(attrs=dict(merge_result.attrs))\n         return self._replace(**merge_result._asdict())\n \n     def _assert_all_in_dataset(\n",
+      "new_source": "def merge(\n    self,\n    other: Union[\"CoercibleMapping\", \"DataArray\"],\n    inplace: bool = None,\n    overwrite_vars: Union[Hashable, Iterable[Hashable]] = frozenset(),\n    compat: str = \"no_conflicts\",\n    join: str = \"outer\",\n    fill_value: Any = dtypes.NA,\n) -> \"Dataset\":\n    \"\"\"Merge the arrays of two datasets into a single dataset.\n\n    This method generally does not allow for overriding data, with the\n    exception of attributes, which are ignored on the second dataset.\n    Variables with the same name are checked for conflicts via the equals\n    or identical methods.\n\n    Parameters\n    ----------\n    other : Dataset or mapping\n        Dataset or variables to merge with this dataset.\n    overwrite_vars : hashable or iterable of hashable, optional\n        If provided, update variables of these name(s) without checking for\n        conflicts in this dataset.\n    compat : {\"broadcast_equals\", \"equals\", \"identical\", \\\n              \"no_conflicts\"}, optional\n        String indicating how to compare variables of the same name for\n        potential conflicts:\n\n        - 'broadcast_equals': all values must be equal when variables are\n          broadcast against each other to ensure common dimensions.\n        - 'equals': all values and dimensions must be the same.\n        - 'identical': all values, dimensions and attributes must be the\n          same.\n        - 'no_conflicts': only values which are not null in both datasets\n          must be equal. The returned dataset then contains the combination\n          of all non-null values.\n\n    join : {\"outer\", \"inner\", \"left\", \"right\", \"exact\"}, optional\n        Method for joining ``self`` and ``other`` along shared dimensions:\n\n        - 'outer': use the union of the indexes\n        - 'inner': use the intersection of the indexes\n        - 'left': use indexes from ``self``\n        - 'right': use indexes from ``other``\n        - 'exact': error instead of aligning non-equal indexes\n    fill_value : scalar or dict-like, optional\n        Value to use for newly missing values. If a dict-like, maps\n        variable names (including coordinates) to fill values.\n\n    Returns\n    -------\n    merged : Dataset\n        Merged dataset.\n\n    Raises\n    ------\n    MergeError\n        If any variables conflict (see ``compat``).\n    \"\"\"\n    _check_inplace(inplace)\n    other = other.to_dataset() if isinstance(other, xr.DataArray) else other\n    merge_result = dataset_merge_method(\n        self,\n        other,\n        overwrite_vars=overwrite_vars,\n        compat=compat,\n        join=join,\n        fill_value=fill_value,\n    )\n    merge_result = merge_result._replace(attrs=dict(merge_result.attrs))\n    return self._replace(**merge_result._asdict())\n"
+    },
+    {
+      "snippet": "py:xarray/core/dataset.py::Dataset.attrs",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "739d162d0204d87a",
+      "response_hash": "6ce85dc99537b386",
+      "stage": "parse",
+      "reason": "identical to the original"
+    }
+  ],
+  "validated_repro": 0,
+  "stop": "budget",
+  "submission": {
+    "snippet": "py:xarray/core/dataset.py::Dataset.merge",
+    "model": "moonshotai/kimi-k3",
+    "template": "fix_think",
+    "diff": "diff --git a/xarray/core/dataset.py b/xarray/core/dataset.py\nindex b352fd3d..93a8f99b 100644\n--- a/xarray/core/dataset.py\n+++ b/xarray/core/dataset.py\n@@ -3856,6 +3856,7 @@ class Dataset(Mapping, ImplementsDatasetReduce, DataWithCoords):\n             join=join,\n             fill_value=fill_value,\n         )\n+        merge_result = merge_result._replace(attrs=dict(merge_result.attrs))\n         return self._replace(**merge_result._asdict())\n \n     def _assert_all_in_dataset(\n",
+    "votes": 0,
+    "changed_lines": 1,
+    "new_source": "def merge(\n    self,\n    other: Union[\"CoercibleMapping\", \"DataArray\"],\n    inplace: bool = None,\n    overwrite_vars: Union[Hashable, Iterable[Hashable]] = frozenset(),\n    compat: str = \"no_conflicts\",\n    join: str = \"outer\",\n    fill_value: Any = dtypes.NA,\n) -> \"Dataset\":\n    \"\"\"Merge the arrays of two datasets into a single dataset.\n\n    This method generally does not allow for overriding data, with the\n    exception of attributes, which are ignored on the second dataset.\n    Variables with the same name are checked for conflicts via the equals\n    or identical methods.\n\n    Parameters\n    ----------\n    other : Dataset or mapping\n        Dataset or variables to merge with this dataset.\n    overwrite_vars : hashable or iterable of hashable, optional\n        If provided, update variables of these name(s) without checking for\n        conflicts in this dataset.\n    compat : {\"broadcast_equals\", \"equals\", \"identical\", \\\n              \"no_conflicts\"}, optional\n        String indicating how to compare variables of the same name for\n        potential conflicts:\n\n        - 'broadcast_equals': all values must be equal when variables are\n          broadcast against each other to ensure common dimensions.\n        - 'equals': all values and dimensions must be the same.\n        - 'identical': all values, dimensions and attributes must be the\n          same.\n        - 'no_conflicts': only values which are not null in both datasets\n          must be equal. The returned dataset then contains the combination\n          of all non-null values.\n\n    join : {\"outer\", \"inner\", \"left\", \"right\", \"exact\"}, optional\n        Method for joining ``self`` and ``other`` along shared dimensions:\n\n        - 'outer': use the union of the indexes\n        - 'inner': use the intersection of the indexes\n        - 'left': use indexes from ``self``\n        - 'right': use indexes from ``other``\n        - 'exact': error instead of aligning non-equal indexes\n    fill_value : scalar or dict-like, optional\n        Value to use for newly missing values. If a dict-like, maps\n        variable names (including coordinates) to fill values.\n\n    Returns\n    -------\n    merged : Dataset\n        Merged dataset.\n\n    Raises\n    ------\n    MergeError\n        If any variables conflict (see ``compat``).\n    \"\"\"\n    _check_inplace(inplace)\n    other = other.to_dataset() if isinstance(other, xr.DataArray) else other\n    merge_result = dataset_merge_method(\n        self,\n        other,\n        overwrite_vars=overwrite_vars,\n        compat=compat,\n        join=join,\n        fill_value=fill_value,\n    )\n    merge_result = merge_result._replace(attrs=dict(merge_result.attrs))\n    return self._replace(**merge_result._asdict())\n",
+    "prompt_hash": "5e1b4d63aa42c033",
+    "response_hash": "fb689b651e6f498a"
+  },
+  "search_s": 511.5,
+  "llm_calls": 16,
+  "tokens_in": 23144,
+  "tokens_out": 6564,
+  "calls": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 8.94,
+      "tokens_in": 1069,
+      "tokens_out": 34,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 8.99,
+      "tokens_in": 1069,
+      "tokens_out": 33,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 11.26,
+      "tokens_in": 1854,
+      "tokens_out": 33,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 14.08,
+      "tokens_in": 1316,
+      "tokens_out": 33,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 21.07,
+      "tokens_in": 1332,
+      "tokens_out": 651,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 33.77,
+      "tokens_in": 1783,
+      "tokens_out": 854,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 13.96,
+      "tokens_in": 1322,
+      "tokens_out": 296,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 37.01,
+      "tokens_in": 1301,
+      "tokens_out": 818,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 52.7,
+      "tokens_in": 1864,
+      "tokens_out": 972,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 16.45,
+      "tokens_in": 1316,
+      "tokens_out": 327,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 26.03,
+      "tokens_in": 1332,
+      "tokens_out": 491,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 21.82,
+      "tokens_in": 1793,
+      "tokens_out": 539,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 9.06,
+      "tokens_in": 1322,
+      "tokens_out": 35,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 8.57,
+      "tokens_in": 1291,
+      "tokens_out": 157,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 39.01,
+      "tokens_in": 1864,
+      "tokens_out": 958,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 23.76,
+      "tokens_in": 1316,
+      "tokens_out": 333,
+      "finish_reason": "stop",
+      "empty": false
+    }
+  ],
+  "arms": {
+    "moonshotai/kimi-k3/fix": 0.12,
+    "moonshotai/kimi-k3/fix_think": 0.3538461538461538
+  },
+  "grade": {
+    "resolved": false,
+    "applied": true,
+    "fail_to_pass": {
+      "success": 0,
+      "failure": 1
+    },
+    "pass_to_pass": {
+      "success": 32,
+      "failure": 0
+    }
+  },
+  "grade_s": 1.4,
+  "wall_s": 575.5,
+  "diagnosis": {
+    "gold_files": [
+      "xarray/core/merge.py"
+    ],
+    "localised_file_hit": false,
+    "localised_line_hit": false,
+    "submission_files": [
+      "xarray/core/dataset.py"
+    ],
+    "submission_in_gold_file": false,
+    "gold_changed_lines": 2
+  }
+}

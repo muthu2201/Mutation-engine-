@@ -1,0 +1,13 @@
+diff --git a/xarray/core/dataset.py b/xarray/core/dataset.py
+index b352fd3d..de081a6a 100644
+--- a/xarray/core/dataset.py
++++ b/xarray/core/dataset.py
+@@ -671,7 +671,7 @@ class Dataset(Mapping, ImplementsDatasetReduce, DataWithCoords):
+ 
+     @attrs.setter
+     def attrs(self, value: Mapping[Hashable, Any]) -> None:
+-        self._attrs = dict(value)
++        self._attrs = copy.deepcopy(value)
+ 
+     @property
+     def encoding(self) -> Dict:

@@ -1,0 +1,490 @@
+{
+  "instance_id": "django__django-11490",
+  "repo": "django/django",
+  "version": "3.0",
+  "base_commit": "a7038adbd02c916315b16939b835f021c2ee8880",
+  "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.django__django-11490:latest",
+  "started_at": "2026-10-03T12:40:38.484604+00:00",
+  "image_digest": "ghcr.io/epoch-research/swe-bench.eval.x86_64.django__django-11490@sha256:949aec74d05a666d3304b2134874dec670b86908c7a7a3145d26cfcc355ddd26",
+  "pull_s": 23.7,
+  "files_considered": 818,
+  "ranked_files": [
+    {
+      "file": "django/db/models/sql/compiler.py",
+      "score": 3.679
+    },
+    {
+      "file": "django/db/backends/mysql/compiler.py",
+      "score": 3.216
+    },
+    {
+      "file": "django/db/models/query.py",
+      "score": 2.5
+    },
+    {
+      "file": "django/contrib/sessions/backends/base.py",
+      "score": 1.27
+    },
+    {
+      "file": "django/contrib/admin/filters.py",
+      "score": 0.922
+    },
+    {
+      "file": "django/db/models/fields/related_descriptors.py",
+      "score": 0.904
+    },
+    {
+      "file": "django/utils/datastructures.py",
+      "score": 0.844
+    },
+    {
+      "file": "django/contrib/contenttypes/fields.py",
+      "score": 0.843
+    }
+  ],
+  "localised": [
+    {
+      "file": "django/db/models/query.py",
+      "name": "QuerySet.values_list",
+      "kind": "function",
+      "start": 800,
+      "end": 829,
+      "score": 2.993
+    },
+    {
+      "file": "django/db/models/query.py",
+      "name": "QuerySet.union",
+      "kind": "function",
+      "start": 939,
+      "end": 944,
+      "score": 2.779
+    },
+    {
+      "file": "django/db/models/query.py",
+      "name": "QuerySet.values",
+      "kind": "function",
+      "start": 794,
+      "end": 798,
+      "score": 2.732
+    },
+    {
+      "file": "django/contrib/sessions/backends/base.py",
+      "name": "SessionBase.values",
+      "kind": "function",
+      "start": 137,
+      "end": 138,
+      "score": 2.607
+    },
+    {
+      "file": "django/utils/datastructures.py",
+      "name": "MultiValueDict.values",
+      "kind": "function",
+      "start": 183,
+      "end": 186,
+      "score": 2.464
+    },
+    {
+      "file": "django/db/models/query.py",
+      "name": "QuerySet.create",
+      "kind": "function",
+      "start": 423,
+      "end": 431,
+      "score": 2.433
+    }
+  ],
+  "repro": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "unparseable",
+      "script_hash": null
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "unparseable",
+      "script_hash": null
+    }
+  ],
+  "candidates": [
+    {
+      "snippet": "py:django/db/models/query.py::QuerySet.values_list",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "3d4500904eb30d70",
+      "response_hash": "294ab0e64236996e",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/queries/test_query.py",
+        "tests/raw_query/tests.py",
+        "tests/basic/tests.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 8,
+      "judge_s": 6.9,
+      "diff": "diff --git a/django/db/models/query.py b/django/db/models/query.py\nindex 1544beb613..b8a6caac7c 100644\n--- a/django/db/models/query.py\n+++ b/django/db/models/query.py\n@@ -820,7 +820,13 @@ class QuerySet:\n             else:\n                 _fields.append(field)\n \n-        clone = self._values(*_fields, **expressions)\n+        clone = self._chain()\n+        clone.query = clone.query.clone()\n+        if clone.query.combined_queries:\n+            clone.query.combined_queries = tuple(\n+                combined_query.clone() for combined_query in clone.query.combined_queries\n+            )\n+        clone = clone._values(*_fields, **expressions)\n         clone._iterable_class = (\n             NamedValuesListIterable if named\n             else FlatValuesListIterable if flat\n",
+      "new_source": "def values_list(self, *fields, flat=False, named=False):\n    if flat and named:\n        raise TypeError(\"'flat' and 'named' can't be used together.\")\n    if flat and len(fields) > 1:\n        raise TypeError(\"'flat' is not valid when values_list is called with more than one field.\")\n\n    field_names = {f for f in fields if not hasattr(f, 'resolve_expression')}\n    _fields = []\n    expressions = {}\n    counter = 1\n    for field in fields:\n        if hasattr(field, 'resolve_expression'):\n            field_id_prefix = getattr(field, 'default_alias', field.__class__.__name__.lower())\n            while True:\n                field_id = field_id_prefix + str(counter)\n                counter += 1\n                if field_id not in field_names:\n                    break\n            expressions[field_id] = field\n            _fields.append(field_id)\n        else:\n            _fields.append(field)\n\n    clone = self._chain()\n    clone.query = clone.query.clone()\n    if clone.query.combined_queries:\n        clone.query.combined_queries = tuple(\n            combined_query.clone() for combined_query in clone.query.combined_queries\n        )\n    clone = clone._values(*_fields, **expressions)\n    clone._iterable_class = (\n        NamedValuesListIterable if named\n        else FlatValuesListIterable if flat\n        else ValuesListIterable\n    )\n    return clone\n"
+    },
+    {
+      "snippet": "py:django/db/models/query.py::QuerySet.union",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "504d54d56331f0ce",
+      "response_hash": "ed0b851b0a63f77e",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/queries/test_query.py",
+        "tests/raw_query/tests.py",
+        "tests/basic/tests.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 4,
+      "judge_s": 3.5,
+      "diff": "diff --git a/django/db/models/query.py b/django/db/models/query.py\nindex 1544beb613..7506d82a58 100644\n--- a/django/db/models/query.py\n+++ b/django/db/models/query.py\n@@ -941,7 +941,9 @@ class QuerySet:\n         if isinstance(self, EmptyQuerySet):\n             qs = [q for q in other_qs if not isinstance(q, EmptyQuerySet)]\n             return qs[0]._combinator_query('union', *qs[1:], all=all) if qs else self\n-        return self._combinator_query('union', *other_qs, all=all)\n+        return self._combinator_query(\n+            'union', *(qs._chain() for qs in other_qs), all=all\n+        )\n \n     def intersection(self, *other_qs):\n         # If any query is an EmptyQuerySet, return it.\n",
+      "new_source": "def union(self, *other_qs, all=False):\n    # If the query is an EmptyQuerySet, combine all nonempty querysets.\n    if isinstance(self, EmptyQuerySet):\n        qs = [q for q in other_qs if not isinstance(q, EmptyQuerySet)]\n        return qs[0]._combinator_query('union', *qs[1:], all=all) if qs else self\n    return self._combinator_query(\n        'union', *(qs._chain() for qs in other_qs), all=all\n    )\n"
+    },
+    {
+      "snippet": "py:django/db/models/query.py::QuerySet.values",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "850af5ae5cffd8bc",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:django/contrib/sessions/backends/base.py::SessionBase.values",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "f3a252bd8a2706db",
+      "response_hash": "9059fcf334277793",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/utils/datastructures.py::MultiValueDict.values",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "e0bda577270c9006",
+      "response_hash": "6b30825715edc24e",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/db/models/query.py::QuerySet.create",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "80affdab6f80c84c",
+      "response_hash": "deb90b0203e7b4bc",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/db/models/query.py::QuerySet.values_list",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "3d4500904eb30d70",
+      "response_hash": "e223976c196c86d1",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/queries/test_query.py",
+        "tests/raw_query/tests.py",
+        "tests/basic/tests.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 6,
+      "judge_s": 4.4,
+      "diff": "diff --git a/django/db/models/query.py b/django/db/models/query.py\nindex 1544beb613..21ef0a1359 100644\n--- a/django/db/models/query.py\n+++ b/django/db/models/query.py\n@@ -821,6 +821,12 @@ class QuerySet:\n                 _fields.append(field)\n \n         clone = self._values(*_fields, **expressions)\n+        if clone.query.combined_queries:\n+            # Combined queries select their own columns; make sure they match\n+            # the fields requested here so a later values()/values_list() call\n+            # with different fields doesn't reuse the previous selection.\n+            for combined_query in clone.query.combined_queries:\n+                combined_query.set_values(_fields)\n         clone._iterable_class = (\n             NamedValuesListIterable if named\n             else FlatValuesListIterable if flat\n",
+      "new_source": "def values_list(self, *fields, flat=False, named=False):\n    if flat and named:\n        raise TypeError(\"'flat' and 'named' can't be used together.\")\n    if flat and len(fields) > 1:\n        raise TypeError(\"'flat' is not valid when values_list is called with more than one field.\")\n\n    field_names = {f for f in fields if not hasattr(f, 'resolve_expression')}\n    _fields = []\n    expressions = {}\n    counter = 1\n    for field in fields:\n        if hasattr(field, 'resolve_expression'):\n            field_id_prefix = getattr(field, 'default_alias', field.__class__.__name__.lower())\n            while True:\n                field_id = field_id_prefix + str(counter)\n                counter += 1\n                if field_id not in field_names:\n                    break\n            expressions[field_id] = field\n            _fields.append(field_id)\n        else:\n            _fields.append(field)\n\n    clone = self._values(*_fields, **expressions)\n    if clone.query.combined_queries:\n        # Combined queries select their own columns; make sure they match\n        # the fields requested here so a later values()/values_list() call\n        # with different fields doesn't reuse the previous selection.\n        for combined_query in clone.query.combined_queries:\n            combined_query.set_values(_fields)\n    clone._iterable_class = (\n        NamedValuesListIterable if named\n        else FlatValuesListIterable if flat\n        else ValuesListIterable\n    )\n    return clone\n"
+    },
+    {
+      "snippet": "py:django/db/models/query.py::QuerySet.union",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "504d54d56331f0ce",
+      "response_hash": "6c3c9e04adf0068f",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/queries/test_query.py",
+        "tests/raw_query/tests.py",
+        "tests/basic/tests.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 1,
+      "judge_s": 5.2,
+      "diff": "diff --git a/django/db/models/query.py b/django/db/models/query.py\nindex 1544beb613..5fda98e819 100644\n--- a/django/db/models/query.py\n+++ b/django/db/models/query.py\n@@ -941,6 +941,7 @@ class QuerySet:\n         if isinstance(self, EmptyQuerySet):\n             qs = [q for q in other_qs if not isinstance(q, EmptyQuerySet)]\n             return qs[0]._combinator_query('union', *qs[1:], all=all) if qs else self\n+        other_qs = tuple(qs._clone() for qs in other_qs)\n         return self._combinator_query('union', *other_qs, all=all)\n \n     def intersection(self, *other_qs):\n",
+      "new_source": "def union(self, *other_qs, all=False):\n    # If the query is an EmptyQuerySet, combine all nonempty querysets.\n    if isinstance(self, EmptyQuerySet):\n        qs = [q for q in other_qs if not isinstance(q, EmptyQuerySet)]\n        return qs[0]._combinator_query('union', *qs[1:], all=all) if qs else self\n    other_qs = tuple(qs._clone() for qs in other_qs)\n    return self._combinator_query('union', *other_qs, all=all)\n"
+    },
+    {
+      "snippet": "py:django/db/models/query.py::QuerySet.values",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "850af5ae5cffd8bc",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:django/contrib/sessions/backends/base.py::SessionBase.values",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "f3a252bd8a2706db",
+      "response_hash": "f48c56ed76140523",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/backends/base/test_base.py",
+        "tests/forms_tests/field_tests/test_base.py",
+        "tests/generic_views/test_base.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 12.0,
+      "diff": "diff --git a/django/contrib/sessions/backends/base.py b/django/contrib/sessions/backends/base.py\nindex 453f533e90..9c0149b0ff 100644\n--- a/django/contrib/sessions/backends/base.py\n+++ b/django/contrib/sessions/backends/base.py\n@@ -135,7 +135,7 @@ class SessionBase:\n         return self._session.keys()\n \n     def values(self):\n-        return self._session.values()\n+        return list(self._session.values())\n \n     def items(self):\n         return self._session.items()\n",
+      "new_source": "def values(self):\n    return list(self._session.values())\n"
+    },
+    {
+      "snippet": "py:django/utils/datastructures.py::MultiValueDict.values",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "e0bda577270c9006",
+      "response_hash": "c183a88e28ec8c9a",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/db/models/query.py::QuerySet.create",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "80affdab6f80c84c",
+      "response_hash": "e34148ddb283dc0d",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/db/models/query.py::QuerySet.values_list",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "3d4500904eb30d70",
+      "response_hash": "30e69a82ae81a8cb",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/db/models/query.py::QuerySet.union",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "504d54d56331f0ce",
+      "response_hash": "9372653bdeac7451",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/queries/test_query.py",
+        "tests/raw_query/tests.py",
+        "tests/basic/tests.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 5.1,
+      "diff": "diff --git a/django/db/models/query.py b/django/db/models/query.py\nindex 1544beb613..41154006cb 100644\n--- a/django/db/models/query.py\n+++ b/django/db/models/query.py\n@@ -941,7 +941,7 @@ class QuerySet:\n         if isinstance(self, EmptyQuerySet):\n             qs = [q for q in other_qs if not isinstance(q, EmptyQuerySet)]\n             return qs[0]._combinator_query('union', *qs[1:], all=all) if qs else self\n-        return self._combinator_query('union', *other_qs, all=all)\n+        return self._chain()._combinator_query('union', *other_qs, all=all)\n \n     def intersection(self, *other_qs):\n         # If any query is an EmptyQuerySet, return it.\n",
+      "new_source": "def union(self, *other_qs, all=False):\n    # If the query is an EmptyQuerySet, combine all nonempty querysets.\n    if isinstance(self, EmptyQuerySet):\n        qs = [q for q in other_qs if not isinstance(q, EmptyQuerySet)]\n        return qs[0]._combinator_query('union', *qs[1:], all=all) if qs else self\n    return self._chain()._combinator_query('union', *other_qs, all=all)\n"
+    }
+  ],
+  "validated_repro": 0,
+  "stop": "budget",
+  "submission": {
+    "snippet": "py:django/db/models/query.py::QuerySet.union",
+    "model": "moonshotai/kimi-k3",
+    "template": "fix_think",
+    "diff": "diff --git a/django/db/models/query.py b/django/db/models/query.py\nindex 1544beb613..5fda98e819 100644\n--- a/django/db/models/query.py\n+++ b/django/db/models/query.py\n@@ -941,6 +941,7 @@ class QuerySet:\n         if isinstance(self, EmptyQuerySet):\n             qs = [q for q in other_qs if not isinstance(q, EmptyQuerySet)]\n             return qs[0]._combinator_query('union', *qs[1:], all=all) if qs else self\n+        other_qs = tuple(qs._clone() for qs in other_qs)\n         return self._combinator_query('union', *other_qs, all=all)\n \n     def intersection(self, *other_qs):\n",
+    "votes": 0,
+    "changed_lines": 1,
+    "new_source": "def union(self, *other_qs, all=False):\n    # If the query is an EmptyQuerySet, combine all nonempty querysets.\n    if isinstance(self, EmptyQuerySet):\n        qs = [q for q in other_qs if not isinstance(q, EmptyQuerySet)]\n        return qs[0]._combinator_query('union', *qs[1:], all=all) if qs else self\n    other_qs = tuple(qs._clone() for qs in other_qs)\n    return self._combinator_query('union', *other_qs, all=all)\n",
+    "prompt_hash": "504d54d56331f0ce",
+    "response_hash": "6c3c9e04adf0068f"
+  },
+  "search_s": 526.5,
+  "llm_calls": 16,
+  "tokens_in": 8854,
+  "tokens_out": 9796,
+  "calls": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 19.31,
+      "tokens_in": 355,
+      "tokens_out": 32,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 5.62,
+      "tokens_in": 355,
+      "tokens_out": 132,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 35.93,
+      "tokens_in": 767,
+      "tokens_out": 888,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 22.24,
+      "tokens_in": 623,
+      "tokens_out": 622,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 9.28,
+      "tokens_in": 567,
+      "tokens_out": 32,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 16.32,
+      "tokens_in": 450,
+      "tokens_out": 310,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 17.93,
+      "tokens_in": 383,
+      "tokens_out": 389,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 9.56,
+      "tokens_in": 587,
+      "tokens_out": 253,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 158.98,
+      "tokens_in": 767,
+      "tokens_out": 4029,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 29.0,
+      "tokens_in": 623,
+      "tokens_out": 583,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 8.5,
+      "tokens_in": 567,
+      "tokens_out": 32,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 13.26,
+      "tokens_in": 450,
+      "tokens_out": 256,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 34.18,
+      "tokens_in": 383,
+      "tokens_out": 469,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 11.35,
+      "tokens_in": 587,
+      "tokens_out": 296,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 67.25,
+      "tokens_in": 767,
+      "tokens_out": 980,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 20.09,
+      "tokens_in": 623,
+      "tokens_out": 493,
+      "finish_reason": "stop",
+      "empty": false
+    }
+  ],
+  "arms": {
+    "moonshotai/kimi-k3/fix": 0.3,
+    "moonshotai/kimi-k3/fix_think": 0.4125
+  },
+  "grade": {
+    "resolved": false,
+    "applied": true,
+    "fail_to_pass": {
+      "success": 0,
+      "failure": 1
+    },
+    "pass_to_pass": {
+      "success": 23,
+      "failure": 0
+    }
+  },
+  "grade_s": 1.6,
+  "wall_s": 565.0,
+  "diagnosis": {
+    "gold_files": [
+      "django/db/models/sql/compiler.py"
+    ],
+    "localised_file_hit": false,
+    "localised_line_hit": false,
+    "submission_files": [
+      "django/db/models/query.py"
+    ],
+    "submission_in_gold_file": false,
+    "gold_changed_lines": 1
+  }
+}

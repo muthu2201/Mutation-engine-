@@ -1,0 +1,16 @@
+diff --git a/sklearn/preprocessing/_discretization.py b/sklearn/preprocessing/_discretization.py
+index dd969c12b..e24ee2c48 100644
+--- a/sklearn/preprocessing/_discretization.py
++++ b/sklearn/preprocessing/_discretization.py
+@@ -258,6 +258,11 @@ class KBinsDiscretizer(BaseEstimator, TransformerMixin):
+         if self.encode == 'ordinal':
+             return Xt
+ 
++        # Ensure bin_edges are sorted
++        for jj in range(len(bin_edges)):
++            if not (bin_edges[jj][0] <= bin_edges[jj][-1]):
++                raise ValueError("Bin edges must be monotonically increasing or decreasing")
++
+         return self._encoder.transform(Xt)
+ 
+     def inverse_transform(self, Xt):

@@ -1,0 +1,13 @@
+diff --git a/django/db/migrations/operations/models.py b/django/db/migrations/operations/models.py
+index 982816be3a..1f46c9e2a2 100644
+--- a/django/db/migrations/operations/models.py
++++ b/django/db/migrations/operations/models.py
+@@ -46,7 +46,7 @@ class CreateModel(ModelOperation):
+     def __init__(self, name, fields, options=None, bases=None, managers=None):
+         self.fields = fields
+         self.options = options or {}
+-        self.bases = bases or (models.Model,)
++        self.bases = tuple(bases) if bases else (models.Model,)
+         self.managers = managers or []
+         super().__init__(name)
+         # Sanity-check that there are no duplicated field names, bases, or

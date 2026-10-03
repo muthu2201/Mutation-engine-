@@ -1,0 +1,396 @@
+{
+  "instance_id": "django__django-13112",
+  "repo": "django/django",
+  "version": "3.2",
+  "base_commit": "09914ccf688974e068941f55412b930729bafa06",
+  "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.django__django-13112:latest",
+  "started_at": "2026-10-03T04:28:20.601849+00:00",
+  "image_digest": "ghcr.io/epoch-research/swe-bench.eval.x86_64.django__django-13112@sha256:d974a8b4f4f253214b47a856e75890bc4547d5914701a9f9b1d0353b19648e37",
+  "pull_s": 12.8,
+  "files_considered": 844,
+  "ranked_files": [
+    {
+      "file": "django/contrib/auth/apps.py",
+      "score": 3.553
+    },
+    {
+      "file": "django/contrib/postgres/apps.py",
+      "score": 3.508
+    },
+    {
+      "file": "django/contrib/contenttypes/apps.py",
+      "score": 3.485
+    },
+    {
+      "file": "django/contrib/sitemaps/__init__.py",
+      "score": 3.458
+    },
+    {
+      "file": "django/contrib/sites/apps.py",
+      "score": 3.419
+    },
+    {
+      "file": "django/conf/global_settings.py",
+      "score": 3.412
+    },
+    {
+      "file": "django/contrib/auth/__init__.py",
+      "score": 3.389
+    },
+    {
+      "file": "django/contrib/admin/__init__.py",
+      "score": 3.335
+    }
+  ],
+  "localised": [
+    {
+      "file": "django/contrib/contenttypes/apps.py",
+      "name": "<L1-11>",
+      "kind": "block",
+      "start": 1,
+      "end": 11,
+      "score": 1.49
+    },
+    {
+      "file": "django/contrib/auth/apps.py",
+      "name": "AuthConfig.ready",
+      "kind": "function",
+      "start": 17,
+      "end": 28,
+      "score": 1.469
+    },
+    {
+      "file": "django/contrib/postgres/apps.py",
+      "name": "uninstall_if_needed",
+      "kind": "function",
+      "start": 20,
+      "end": 37,
+      "score": 1.393
+    },
+    {
+      "file": "django/contrib/postgres/apps.py",
+      "name": "<L1-17>",
+      "kind": "block",
+      "start": 1,
+      "end": 17,
+      "score": 1.371
+    },
+    {
+      "file": "django/contrib/auth/apps.py",
+      "name": "<L1-10>",
+      "kind": "block",
+      "start": 1,
+      "end": 10,
+      "score": 1.323
+    },
+    {
+      "file": "django/contrib/sites/apps.py",
+      "name": "<L1-5>",
+      "kind": "block",
+      "start": 1,
+      "end": 5,
+      "score": 1.256
+    }
+  ],
+  "repro": [
+    {
+      "model": "qwen2.5-coder-7b",
+      "outcome": "unparseable",
+      "script_hash": null
+    },
+    {
+      "model": "qwen2.5-coder-3b",
+      "outcome": "unparseable",
+      "script_hash": null
+    }
+  ],
+  "candidates": [
+    {
+      "snippet": "py:django/contrib/contenttypes/apps.py::<L1-11>",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix_think",
+      "prompt_hash": "deab10cbfc8957db",
+      "response_hash": "85c85c555a1dc519",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/postgres_tests/test_apps.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 8,
+      "judge_s": 6.4,
+      "diff": "diff --git a/django/contrib/contenttypes/apps.py b/django/contrib/contenttypes/apps.py\nindex 1a8e25b98e..7aaa66f511 100644\n--- a/django/contrib/contenttypes/apps.py\n+++ b/django/contrib/contenttypes/apps.py\n@@ -10,6 +10,14 @@ from .management import (\n     create_contenttypes, inject_rename_contenttypes_operations,\n )\n \n+class DJ_RegLoginConfig(AppConfig):\n+    name = 'DJ_RegLogin'\n+    verbose_name = \"Contents\"\n+\n+    def ready(self):\n+        if self.name in settings.INSTALLED_APPS:\n+            create_contenttypes()\n+\n \n class ContentTypesConfig(AppConfig):\n     name = 'django.contrib.contenttypes'\n",
+      "new_source": "from django.apps import AppConfig\nfrom django.contrib.contenttypes.checks import (\n    check_generic_foreign_keys, check_model_name_lengths,\n)\nfrom django.core import checks\nfrom django.db.models.signals import post_migrate, pre_migrate\nfrom django.utils.translation import gettext_lazy as _\n\nfrom .management import (\n    create_contenttypes, inject_rename_contenttypes_operations,\n)\n\nclass DJ_RegLoginConfig(AppConfig):\n    name = 'DJ_RegLogin'\n    verbose_name = \"Contents\"\n\n    def ready(self):\n        if self.name in settings.INSTALLED_APPS:\n            create_contenttypes()\n"
+    },
+    {
+      "snippet": "py:django/contrib/auth/apps.py::AuthConfig.ready",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix_think",
+      "prompt_hash": "d44f3ff88c9fc43f",
+      "response_hash": "08ed69706cf21ce5",
+      "stage": "parse",
+      "reason": "response does not define ready()"
+    },
+    {
+      "snippet": "py:django/contrib/postgres/apps.py::uninstall_if_needed",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix_think",
+      "prompt_hash": "0085b2c0bc046690",
+      "response_hash": "612d0b51cda988fc",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/postgres_tests/test_apps.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 3.0,
+      "diff": "diff --git a/django/contrib/postgres/apps.py b/django/contrib/postgres/apps.py\nindex 25cfa1a814..0496d7a82a 100644\n--- a/django/contrib/postgres/apps.py\n+++ b/django/contrib/postgres/apps.py\n@@ -22,7 +22,7 @@ def uninstall_if_needed(setting, value, enter, **kwargs):\n     Undo the effects of PostgresConfig.ready() when django.contrib.postgres\n     is \"uninstalled\" by override_settings().\n     \"\"\"\n-    if not enter and setting == 'INSTALLED_APPS' and 'django.contrib.postgres' not in set(value):\n+    if not enter and setting == 'INSTALLED_APPS' and 'django.contrib.postgres' in set(value):\n         connection_created.disconnect(register_type_handlers)\n         CharField._unregister_lookup(Unaccent)\n         TextField._unregister_lookup(Unaccent)\n",
+      "new_source": "def uninstall_if_needed(setting, value, enter, **kwargs):\n    \"\"\"\n    Undo the effects of PostgresConfig.ready() when django.contrib.postgres\n    is \"uninstalled\" by override_settings().\n    \"\"\"\n    if not enter and setting == 'INSTALLED_APPS' and 'django.contrib.postgres' in set(value):\n        connection_created.disconnect(register_type_handlers)\n        CharField._unregister_lookup(Unaccent)\n        TextField._unregister_lookup(Unaccent)\n        CharField._unregister_lookup(SearchLookup)\n        TextField._unregister_lookup(SearchLookup)\n        CharField._unregister_lookup(TrigramSimilar)\n        TextField._unregister_lookup(TrigramSimilar)\n        # Disconnect this receiver until the next time this app is installed\n        # and ready() connects it again to prevent unnecessary processing on\n        # each setting change.\n        setting_changed.disconnect(uninstall_if_needed)\n        MigrationWriter.unregister_serializer(RANGE_TYPES)\n"
+    },
+    {
+      "snippet": "py:django/contrib/postgres/apps.py::<L1-17>",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix_think",
+      "prompt_hash": "7f86fe9b757a9bbe",
+      "response_hash": "e72185de4f6cdc3f",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/postgres_tests/test_apps.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 18,
+      "judge_s": 3.0,
+      "diff": "diff --git a/django/contrib/postgres/apps.py b/django/contrib/postgres/apps.py\nindex 25cfa1a814..e2952a133f 100644\n--- a/django/contrib/postgres/apps.py\n+++ b/django/contrib/postgres/apps.py\n@@ -1,20 +1,4 @@\n-from psycopg2.extras import (\n-    DateRange, DateTimeRange, DateTimeTZRange, NumericRange,\n-)\n-\n-from django.apps import AppConfig\n-from django.db import connections\n-from django.db.backends.signals import connection_created\n-from django.db.migrations.writer import MigrationWriter\n-from django.db.models import CharField, TextField\n-from django.test.signals import setting_changed\n-from django.utils.translation import gettext_lazy as _\n-\n-from .lookups import SearchLookup, TrigramSimilar, Unaccent\n-from .serializers import RangeSerializer\n-from .signals import register_type_handlers\n-\n-RANGE_TYPES = (DateRange, DateTimeRange, DateTimeTZRange, NumericRange)\n+# (no imports)\n \n \n def uninstall_if_needed(setting, value, enter, **kwargs):\n",
+      "new_source": "# (no imports)\n"
+    },
+    {
+      "snippet": "py:django/contrib/auth/apps.py::<L1-10>",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix_think",
+      "prompt_hash": "0258944094f16fa8",
+      "response_hash": "5834e06037ef0c57",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "the test run produced no parseable results: ked\n  File \"<frozen importlib._bootstrap_external>\", line 678, in exec_module\n  File \"<frozen importlib._bootstrap>\", line 219, in _call_with_frames_removed\n  File \"/testbed/django/contrib/auth/apps.py\", line 4, in <module>\n    class AuthConfig(AppConfig):\nNameError: name 'AppConfig' is not defined\n"
+      ],
+      "tests": [
+        "tests/postgres_tests/test_apps.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 11,
+      "judge_s": 2.8
+    },
+    {
+      "snippet": "py:django/contrib/sites/apps.py::<L1-5>",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix_think",
+      "prompt_hash": "c8f471fb0583bdea",
+      "response_hash": "be8a67b2bdd78617",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "the test run produced no parseable results: populate(settings.INSTALLED_APPS)\n  File \"/testbed/django/apps/registry.py\", line 122, in populate\n    app_config.ready()\n  File \"/testbed/django/contrib/sites/apps.py\", line 24, in ready\n    post_migrate.connect(create_default_site, sender=self)\nNameError: name 'create_default_site' is not defined\n"
+      ],
+      "tests": [
+        "tests/postgres_tests/test_apps.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 13,
+      "judge_s": 2.8
+    },
+    {
+      "snippet": "py:django/contrib/contenttypes/apps.py::<L1-11>",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix_think",
+      "prompt_hash": "deab10cbfc8957db",
+      "response_hash": "80b53c18ce66ca40",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/postgres_tests/test_apps.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 3,
+      "judge_s": 3.1,
+      "diff": "diff --git a/django/contrib/contenttypes/apps.py b/django/contrib/contenttypes/apps.py\nindex 1a8e25b98e..6ab6d6ac82 100644\n--- a/django/contrib/contenttypes/apps.py\n+++ b/django/contrib/contenttypes/apps.py\n@@ -10,6 +10,9 @@ from .management import (\n     create_contenttypes, inject_rename_contenttypes_operations,\n )\n \n+class ContentTypeConfig(AppConfig):\n+    name = 'contenttypes'\n+\n \n class ContentTypesConfig(AppConfig):\n     name = 'django.contrib.contenttypes'\n",
+      "new_source": "from django.apps import AppConfig\nfrom django.contrib.contenttypes.checks import (\n    check_generic_foreign_keys, check_model_name_lengths,\n)\nfrom django.core import checks\nfrom django.db.models.signals import post_migrate, pre_migrate\nfrom django.utils.translation import gettext_lazy as _\n\nfrom .management import (\n    create_contenttypes, inject_rename_contenttypes_operations,\n)\n\nclass ContentTypeConfig(AppConfig):\n    name = 'contenttypes'\n"
+    },
+    {
+      "snippet": "py:django/contrib/auth/apps.py::AuthConfig.ready",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix_think",
+      "prompt_hash": "d44f3ff88c9fc43f",
+      "response_hash": "7898ad181edaea38",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/contrib/postgres/apps.py::uninstall_if_needed",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix_think",
+      "prompt_hash": "0085b2c0bc046690",
+      "response_hash": "939a1333b627a696",
+      "stage": "parse",
+      "reason": "syntax error: invalid syntax (line 3)"
+    },
+    {
+      "snippet": "py:django/contrib/postgres/apps.py::<L1-17>",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix_think",
+      "prompt_hash": "7f86fe9b757a9bbe",
+      "response_hash": "afbcae53efbb4612",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/contrib/auth/apps.py::<L1-10>",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "e53adf285ba33d70",
+      "response_hash": "79414982314775d5",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "the test run produced no parseable results: ked\n  File \"<frozen importlib._bootstrap_external>\", line 678, in exec_module\n  File \"<frozen importlib._bootstrap>\", line 219, in _call_with_frames_removed\n  File \"/testbed/django/contrib/auth/apps.py\", line 4, in <module>\n    class AuthConfig(AppConfig):\nNameError: name 'AppConfig' is not defined\n"
+      ],
+      "tests": [
+        "tests/postgres_tests/test_apps.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 11,
+      "judge_s": 2.9
+    },
+    {
+      "snippet": "py:django/contrib/sites/apps.py::<L1-5>",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "90f6f5fb47d87349",
+      "response_hash": "a781dd31d2ba3aa5",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "the test run produced no parseable results: ortlib._bootstrap>\", line 219, in _call_with_frames_removed\n  File \"/testbed/django/contrib/sites/apps.py\", line 11, in <module>\n    class SitesConfig(AppConfig):\n  File \"/testbed/django/contrib/sites/apps.py\", line 13, in SitesConfig\n    verbose_name = _(\"Sites\")\nNameError: name '_' is not defined\n"
+      ],
+      "tests": [
+        "tests/postgres_tests/test_apps.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 9,
+      "judge_s": 2.8
+    },
+    {
+      "snippet": "py:django/contrib/contenttypes/apps.py::<L1-11>",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "e8b5039eb0d638bf",
+      "response_hash": "3352a067d80ea4fe",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "the test run produced no parseable results: call_with_frames_removed\n  File \"/testbed/django/contrib/contenttypes/apps.py\", line 8, in <module>\n    class ContentTypesConfig(AppConfig):\n  File \"/testbed/django/contrib/contenttypes/apps.py\", line 10, in ContentTypesConfig\n    verbose_name = _(\"Content Types\")\nNameError: name '_' is not defined\n"
+      ],
+      "tests": [
+        "tests/postgres_tests/test_apps.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 12,
+      "judge_s": 2.7
+    },
+    {
+      "snippet": "py:django/contrib/auth/apps.py::AuthConfig.ready",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix_think",
+      "prompt_hash": "d44f3ff88c9fc43f",
+      "response_hash": "ec63963d2b580915",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "the test run produced no parseable results:  line 24, in setup\n    apps.populate(settings.INSTALLED_APPS)\n  File \"/testbed/django/apps/registry.py\", line 122, in populate\n    app_config.ready()\n  File \"/testbed/django/contrib/auth/apps.py\", line 24, in ready\n    from .models import Category, Content\nImportError: cannot import name 'Category'\n"
+      ],
+      "tests": [
+        "tests/postgres_tests/test_apps.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 5,
+      "judge_s": 2.7
+    }
+  ],
+  "validated_repro": 0,
+  "stop": "budget",
+  "submission": {
+    "snippet": "py:django/contrib/postgres/apps.py::uninstall_if_needed",
+    "model": "qwen2.5-coder-3b",
+    "template": "fix_think",
+    "diff": "diff --git a/django/contrib/postgres/apps.py b/django/contrib/postgres/apps.py\nindex 25cfa1a814..0496d7a82a 100644\n--- a/django/contrib/postgres/apps.py\n+++ b/django/contrib/postgres/apps.py\n@@ -22,7 +22,7 @@ def uninstall_if_needed(setting, value, enter, **kwargs):\n     Undo the effects of PostgresConfig.ready() when django.contrib.postgres\n     is \"uninstalled\" by override_settings().\n     \"\"\"\n-    if not enter and setting == 'INSTALLED_APPS' and 'django.contrib.postgres' not in set(value):\n+    if not enter and setting == 'INSTALLED_APPS' and 'django.contrib.postgres' in set(value):\n         connection_created.disconnect(register_type_handlers)\n         CharField._unregister_lookup(Unaccent)\n         TextField._unregister_lookup(Unaccent)\n",
+    "votes": 0,
+    "changed_lines": 2,
+    "new_source": "def uninstall_if_needed(setting, value, enter, **kwargs):\n    \"\"\"\n    Undo the effects of PostgresConfig.ready() when django.contrib.postgres\n    is \"uninstalled\" by override_settings().\n    \"\"\"\n    if not enter and setting == 'INSTALLED_APPS' and 'django.contrib.postgres' in set(value):\n        connection_created.disconnect(register_type_handlers)\n        CharField._unregister_lookup(Unaccent)\n        TextField._unregister_lookup(Unaccent)\n        CharField._unregister_lookup(SearchLookup)\n        TextField._unregister_lookup(SearchLookup)\n        CharField._unregister_lookup(TrigramSimilar)\n        TextField._unregister_lookup(TrigramSimilar)\n        # Disconnect this receiver until the next time this app is installed\n        # and ready() connects it again to prevent unnecessary processing on\n        # each setting change.\n        setting_changed.disconnect(uninstall_if_needed)\n        MigrationWriter.unregister_serializer(RANGE_TYPES)\n",
+    "prompt_hash": "0085b2c0bc046690",
+    "response_hash": "612d0b51cda988fc"
+  },
+  "search_s": 722.2,
+  "llm_calls": 16,
+  "tokens_in": 11500,
+  "tokens_out": 3931,
+  "arms": {
+    "qwen2.5-coder-7b/fix": 0.3,
+    "qwen2.5-coder-7b/fix_think": 0.3,
+    "qwen2.5-coder-3b/fix": 0.3,
+    "qwen2.5-coder-3b/fix_think": 0.3538461538461538,
+    "qwen2.5-coder-1.5b/fix": 0.12,
+    "qwen2.5-coder-1.5b/fix_think": 0.3
+  },
+  "grade": {
+    "resolved": false,
+    "applied": true,
+    "fail_to_pass": {
+      "success": 0,
+      "failure": 1
+    },
+    "pass_to_pass": {
+      "success": 63,
+      "failure": 0
+    }
+  },
+  "grade_s": 24.1,
+  "wall_s": 766.0,
+  "diagnosis": {
+    "gold_files": [
+      "django/db/models/fields/related.py"
+    ],
+    "localised_file_hit": false,
+    "localised_line_hit": false,
+    "submission_files": [
+      "django/contrib/postgres/apps.py"
+    ],
+    "submission_in_gold_file": false,
+    "gold_changed_lines": 6
+  }
+}

@@ -1,0 +1,13 @@
+diff --git a/django/contrib/gis/gdal/raster/band.py b/django/contrib/gis/gdal/raster/band.py
+index 61c6535213..8daf91052b 100644
+--- a/django/contrib/gis/gdal/raster/band.py
++++ b/django/contrib/gis/gdal/raster/band.py
+@@ -108,7 +108,7 @@ class GDALBand(GDALRasterBase):
+         """
+         Return the minimum pixel value for this band.
+         """
+-        return self.statistics()[0]
++        return self.statistics()[0] if self.statistics() else None
+ 
+     @property
+     def max(self):

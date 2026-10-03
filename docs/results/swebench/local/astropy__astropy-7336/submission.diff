@@ -1,0 +1,14 @@
+diff --git a/astropy/utils/decorators.py b/astropy/utils/decorators.py
+index 1e6d788a0d..9ab0412892 100644
+--- a/astropy/utils/decorators.py
++++ b/astropy/utils/decorators.py
+@@ -699,7 +699,8 @@ class lazyproperty(property):
+ 
+     def __init__(self, fget, fset=None, fdel=None, doc=None):
+         super().__init__(fget, fset, fdel, doc)
+-        self._key = self.fget.__name__
++        if self.fget is not None:
++            self._key = self.fget.__name__
+ 
+     def __get__(self, obj, owner=None):
+         try:

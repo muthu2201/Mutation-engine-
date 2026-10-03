@@ -1,0 +1,16 @@
+diff --git a/xarray/core/common.py b/xarray/core/common.py
+index e343f342..3177ff86 100644
+--- a/xarray/core/common.py
++++ b/xarray/core/common.py
+@@ -780,7 +780,10 @@ class DataWithCoords(SupportsArithmetic, AttrAccessMixin):
+         Missing values can be replaced by ``weights.fillna(0)``.
+         """
+ 
+-        return self._weighted_cls(self, weights)
++        if weights.dtype != bool:
++            return self._weighted_cls(self, weights)
++
++        return self._weighted_cls(self, weights.astype(float))
+ 
+     def rolling(
+         self,

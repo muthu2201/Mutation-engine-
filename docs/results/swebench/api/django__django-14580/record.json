@@ -1,0 +1,503 @@
+{
+  "instance_id": "django__django-14580",
+  "repo": "django/django",
+  "version": "4.0",
+  "base_commit": "36fa071d6ebd18a61c4d7f1b5c9d17106134bd44",
+  "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.django__django-14580:latest",
+  "started_at": "2026-10-03T13:27:32.735181+00:00",
+  "image_digest": "ghcr.io/epoch-research/swe-bench.eval.x86_64.django__django-14580@sha256:c22405ffef619a6540fa5d46295cd755fe33e46f23d20b23789cdc39b9af6853",
+  "pull_s": 23.2,
+  "files_considered": 851,
+  "ranked_files": [
+    {
+      "file": "django/db/migrations/writer.py",
+      "score": 4.5
+    },
+    {
+      "file": "django/db/migrations/operations/models.py",
+      "score": 4.266
+    },
+    {
+      "file": "django/contrib/auth/models.py",
+      "score": 3.718
+    },
+    {
+      "file": "django/contrib/contenttypes/models.py",
+      "score": 3.611
+    },
+    {
+      "file": "django/contrib/gis/db/backends/spatialite/models.py",
+      "score": 3.594
+    },
+    {
+      "file": "django/contrib/gis/db/backends/postgis/models.py",
+      "score": 3.591
+    },
+    {
+      "file": "django/contrib/gis/db/backends/oracle/models.py",
+      "score": 3.59
+    },
+    {
+      "file": "django/forms/models.py",
+      "score": 3.557
+    }
+  ],
+  "localised": [
+    {
+      "file": "django/db/migrations/operations/models.py",
+      "name": "CreateModel.references_model",
+      "kind": "function",
+      "start": 106,
+      "end": 122,
+      "score": 1.993
+    },
+    {
+      "file": "django/db/migrations/operations/models.py",
+      "name": "CreateModel.deconstruct",
+      "kind": "function",
+      "start": 62,
+      "end": 77,
+      "score": 1.931
+    },
+    {
+      "file": "django/db/migrations/operations/models.py",
+      "name": "CreateModel.__init__",
+      "kind": "function",
+      "start": 46,
+      "end": 60,
+      "score": 1.89
+    },
+    {
+      "file": "django/db/migrations/operations/models.py",
+      "name": "CreateModel.reduce",
+      "kind": "function",
+      "start": 124,
+      "end": 247,
+      "score": 1.801
+    },
+    {
+      "file": "django/db/migrations/operations/models.py",
+      "name": "CreateModel.state_forwards",
+      "kind": "function",
+      "start": 79,
+      "end": 87,
+      "score": 1.745
+    },
+    {
+      "file": "django/db/migrations/operations/models.py",
+      "name": "CreateModel.migration_name_fragment",
+      "kind": "function",
+      "start": 102,
+      "end": 104,
+      "score": 1.74
+    }
+  ],
+  "repro": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "unparseable",
+      "script_hash": null
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "unparseable",
+      "script_hash": null
+    }
+  ],
+  "candidates": [
+    {
+      "snippet": "py:django/db/migrations/operations/models.py::CreateModel.references_model",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "993e5b96d76e3591",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:django/db/migrations/operations/models.py::CreateModel.deconstruct",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "046cc934019f3595",
+      "response_hash": "90304564886b7960",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/db/migrations/operations/models.py::CreateModel.__init__",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "b8897f38cb340ede",
+      "response_hash": "f21364015892318b",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/auth_tests/test_models.py",
+        "tests/contenttypes_tests/test_models.py",
+        "tests/flatpages_tests/test_models.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 8,
+      "judge_s": 9.3,
+      "diff": "diff --git a/django/db/migrations/operations/models.py b/django/db/migrations/operations/models.py\nindex 982816be3a..48698611ea 100644\n--- a/django/db/migrations/operations/models.py\n+++ b/django/db/migrations/operations/models.py\n@@ -58,6 +58,14 @@ class CreateModel(ModelOperation):\n             for base in self.bases\n         ))\n         _check_for_duplicates('managers', (name for name, _ in self.managers))\n+        # The default base, models.Model, doesn't need to be preserved when\n+        # other bases are present; dropping it avoids serializing a\n+        # reference to it that would otherwise be written into the\n+        # migration without a matching import.\n+        if len(self.bases) > 1:\n+            self.bases = tuple(\n+                base for base in self.bases if base is not models.Model\n+            ) or (models.Model,)\n \n     def deconstruct(self):\n         kwargs = {\n",
+      "new_source": "def __init__(self, name, fields, options=None, bases=None, managers=None):\n    self.fields = fields\n    self.options = options or {}\n    self.bases = bases or (models.Model,)\n    self.managers = managers or []\n    super().__init__(name)\n    # Sanity-check that there are no duplicated field names, bases, or\n    # manager names\n    _check_for_duplicates('fields', (name for name, _ in self.fields))\n    _check_for_duplicates('bases', (\n        base._meta.label_lower if hasattr(base, '_meta') else\n        base.lower() if isinstance(base, str) else base\n        for base in self.bases\n    ))\n    _check_for_duplicates('managers', (name for name, _ in self.managers))\n    # The default base, models.Model, doesn't need to be preserved when\n    # other bases are present; dropping it avoids serializing a\n    # reference to it that would otherwise be written into the\n    # migration without a matching import.\n    if len(self.bases) > 1:\n        self.bases = tuple(\n            base for base in self.bases if base is not models.Model\n        ) or (models.Model,)\n"
+    },
+    {
+      "snippet": "py:django/db/migrations/operations/models.py::CreateModel.reduce",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "260a4df66bcd639d",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:django/db/migrations/operations/models.py::CreateModel.state_forwards",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "4b5c2400b857ccab",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:django/db/migrations/operations/models.py::CreateModel.migration_name_fragment",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "9cbbdec9e8ecc252",
+      "response_hash": "a884583d49901c6e",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/db/migrations/operations/models.py::CreateModel.references_model",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "993e5b96d76e3591",
+      "response_hash": "d791961d3856729d",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/auth_tests/test_models.py",
+        "tests/contenttypes_tests/test_models.py",
+        "tests/flatpages_tests/test_models.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 12,
+      "judge_s": 4.2,
+      "diff": "diff --git a/django/db/migrations/operations/models.py b/django/db/migrations/operations/models.py\nindex 982816be3a..3d34a156ae 100644\n--- a/django/db/migrations/operations/models.py\n+++ b/django/db/migrations/operations/models.py\n@@ -111,8 +111,16 @@ class CreateModel(ModelOperation):\n         # Check we didn't inherit from the model\n         reference_model_tuple = (app_label, name_lower)\n         for base in self.bases:\n-            if (base is not models.Model and isinstance(base, (models.base.ModelBase, str)) and\n-                    resolve_relation(base, app_label) == reference_model_tuple):\n+            if base is models.Model:\n+                continue\n+            if isinstance(base, models.base.ModelBase):\n+                base_tuple = (base._meta.app_label, base._meta.model_name)\n+            elif isinstance(base, str):\n+                base_tuple = resolve_relation(base, app_label)\n+            else:\n+                # Non-model mixins are not model references.\n+                continue\n+            if base_tuple == reference_model_tuple:\n                 return True\n \n         # Check we have no FKs/M2Ms with it\n",
+      "new_source": "def references_model(self, name, app_label):\n    name_lower = name.lower()\n    if name_lower == self.name_lower:\n        return True\n\n    # Check we didn't inherit from the model\n    reference_model_tuple = (app_label, name_lower)\n    for base in self.bases:\n        if base is models.Model:\n            continue\n        if isinstance(base, models.base.ModelBase):\n            base_tuple = (base._meta.app_label, base._meta.model_name)\n        elif isinstance(base, str):\n            base_tuple = resolve_relation(base, app_label)\n        else:\n            # Non-model mixins are not model references.\n            continue\n        if base_tuple == reference_model_tuple:\n            return True\n\n    # Check we have no FKs/M2Ms with it\n    for _name, field in self.fields:\n        if field_references((app_label, self.name_lower), field, reference_model_tuple):\n            return True\n    return False\n"
+    },
+    {
+      "snippet": "py:django/db/migrations/operations/models.py::CreateModel.deconstruct",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "046cc934019f3595",
+      "response_hash": "a7b2286ff6f7b8e1",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/auth_tests/test_models.py",
+        "tests/contenttypes_tests/test_models.py",
+        "tests/flatpages_tests/test_models.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 9,
+      "judge_s": 5.2,
+      "diff": "diff --git a/django/db/migrations/operations/models.py b/django/db/migrations/operations/models.py\nindex 982816be3a..f92311813e 100644\n--- a/django/db/migrations/operations/models.py\n+++ b/django/db/migrations/operations/models.py\n@@ -59,14 +59,19 @@ class CreateModel(ModelOperation):\n         ))\n         _check_for_duplicates('managers', (name for name, _ in self.managers))\n \n-    def deconstruct(self):\n+    def deconstruct(self, bases=None):\n         kwargs = {\n             'name': self.name,\n             'fields': self.fields,\n         }\n         if self.options:\n             kwargs['options'] = self.options\n-        if self.bases and self.bases != (models.Model,):\n+        if bases is not None:\n+            kwargs['bases'] = tuple(\n+                base if base is not models.Model else models.Model\n+                for base in bases\n+            )\n+        elif self.bases and self.bases != (models.Model,):\n             kwargs['bases'] = self.bases\n         if self.managers and self.managers != [('objects', models.Manager())]:\n             kwargs['managers'] = self.managers\n",
+      "new_source": "def deconstruct(self, bases=None):\n    kwargs = {\n        'name': self.name,\n        'fields': self.fields,\n    }\n    if self.options:\n        kwargs['options'] = self.options\n    if bases is not None:\n        kwargs['bases'] = tuple(\n            base if base is not models.Model else models.Model\n            for base in bases\n        )\n    elif self.bases and self.bases != (models.Model,):\n        kwargs['bases'] = self.bases\n    if self.managers and self.managers != [('objects', models.Manager())]:\n        kwargs['managers'] = self.managers\n    return (\n        self.__class__.__qualname__,\n        [],\n        kwargs\n    )\n"
+    },
+    {
+      "snippet": "py:django/db/migrations/operations/models.py::CreateModel.__init__",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "b8897f38cb340ede",
+      "response_hash": "f78f9595edbdc772",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/auth_tests/test_models.py",
+        "tests/contenttypes_tests/test_models.py",
+        "tests/flatpages_tests/test_models.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 4.1,
+      "diff": "diff --git a/django/db/migrations/operations/models.py b/django/db/migrations/operations/models.py\nindex 982816be3a..1f46c9e2a2 100644\n--- a/django/db/migrations/operations/models.py\n+++ b/django/db/migrations/operations/models.py\n@@ -46,7 +46,7 @@ class CreateModel(ModelOperation):\n     def __init__(self, name, fields, options=None, bases=None, managers=None):\n         self.fields = fields\n         self.options = options or {}\n-        self.bases = bases or (models.Model,)\n+        self.bases = tuple(bases) if bases else (models.Model,)\n         self.managers = managers or []\n         super().__init__(name)\n         # Sanity-check that there are no duplicated field names, bases, or\n",
+      "new_source": "def __init__(self, name, fields, options=None, bases=None, managers=None):\n    self.fields = fields\n    self.options = options or {}\n    self.bases = tuple(bases) if bases else (models.Model,)\n    self.managers = managers or []\n    super().__init__(name)\n    # Sanity-check that there are no duplicated field names, bases, or\n    # manager names\n    _check_for_duplicates('fields', (name for name, _ in self.fields))\n    _check_for_duplicates('bases', (\n        base._meta.label_lower if hasattr(base, '_meta') else\n        base.lower() if isinstance(base, str) else base\n        for base in self.bases\n    ))\n    _check_for_duplicates('managers', (name for name, _ in self.managers))\n"
+    },
+    {
+      "snippet": "py:django/db/migrations/operations/models.py::CreateModel.reduce",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "260a4df66bcd639d",
+      "response_hash": "1d27653a36cf213b",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/auth_tests/test_models.py",
+        "tests/contenttypes_tests/test_models.py",
+        "tests/flatpages_tests/test_models.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 8,
+      "judge_s": 4.1,
+      "diff": "diff --git a/django/db/migrations/operations/models.py b/django/db/migrations/operations/models.py\nindex 982816be3a..78572f942d 100644\n--- a/django/db/migrations/operations/models.py\n+++ b/django/db/migrations/operations/models.py\n@@ -122,9 +122,11 @@ class CreateModel(ModelOperation):\n         return False\n \n     def reduce(self, operation, app_label):\n-        if (isinstance(operation, DeleteModel) and\n-                self.name_lower == operation.name_lower and\n-                not self.options.get(\"proxy\", False)):\n+        if (\n+            isinstance(operation, DeleteModel)\n+            and self.name_lower == operation.name_lower\n+            and not self.options.get(\"proxy\", False)\n+        ):\n             return []\n         elif isinstance(operation, RenameModel) and self.name_lower == operation.old_name_lower:\n             return [\n",
+      "new_source": "def reduce(self, operation, app_label):\n    if (\n        isinstance(operation, DeleteModel)\n        and self.name_lower == operation.name_lower\n        and not self.options.get(\"proxy\", False)\n    ):\n        return []\n    elif isinstance(operation, RenameModel) and self.name_lower == operation.old_name_lower:\n        return [\n            CreateModel(\n                operation.new_name,\n                fields=self.fields,\n                options=self.options,\n                bases=self.bases,\n                managers=self.managers,\n            ),\n        ]\n    elif isinstance(operation, AlterModelOptions) and self.name_lower == operation.name_lower:\n        options = {**self.options, **operation.options}\n        for key in operation.ALTER_OPTION_KEYS:\n            if key not in operation.options:\n                options.pop(key, None)\n        return [\n            CreateModel(\n                self.name,\n                fields=self.fields,\n                options=options,\n                bases=self.bases,\n                managers=self.managers,\n            ),\n        ]\n    elif isinstance(operation, AlterTogetherOptionOperation) and self.name_lower == operation.name_lower:\n        return [\n            CreateModel(\n                self.name,\n                fields=self.fields,\n                options={**self.options, **{operation.option_name: operation.option_value}},\n                bases=self.bases,\n                managers=self.managers,\n            ),\n        ]\n    elif isinstance(operation, AlterOrderWithRespectTo) and self.name_lower == operation.name_lower:\n        return [\n            CreateModel(\n                self.name,\n                fields=self.fields,\n                options={**self.options, 'order_with_respect_to': operation.order_with_respect_to},\n                bases=self.bases,\n                managers=self.managers,\n            ),\n        ]\n    elif isinstance(operation, FieldOperation) and self.name_lower == operation.model_name_lower:\n        if isinstance(operation, AddField):\n            return [\n                CreateModel(\n                    self.name,\n                    fields=self.fields + [(operation.name, operation.field)],\n                    options=self.options,\n                    bases=self.bases,\n                    managers=self.managers,\n                ),\n            ]\n        elif isinstance(operation, AlterField):\n            return [\n                CreateModel(\n                    self.name,\n                    fields=[\n                        (n, operation.field if n == operation.name else v)\n                        for n, v in self.fields\n                    ],\n                    options=self.options,\n                    bases=self.bases,\n                    managers=self.managers,\n                ),\n            ]\n        elif isinstance(operation, RemoveField):\n            options = self.options.copy()\n            for option_name in ('unique_together', 'index_together'):\n                option = options.pop(option_name, None)\n                if option:\n                    option = set(filter(bool, (\n                        tuple(f for f in fields if f != operation.name_lower) for fields in option\n                    )))\n                    if option:\n                        options[option_name] = option\n            order_with_respect_to = options.get('order_with_respect_to')\n            if order_with_respect_to == operation.name_lower:\n                del options['order_with_respect_to']\n            return [\n                CreateModel(\n                    self.name,\n                    fields=[\n                        (n, v)\n                        for n, v in self.fields\n                        if n.lower() != operation.name_lower\n                    ],\n                    options=options,\n                    bases=self.bases,\n                    managers=self.managers,\n                ),\n            ]\n        elif isinstance(operation, RenameField):\n            options = self.options.copy()\n            for option_name in ('unique_together', 'index_together'):\n                option = options.get(option_name)\n                if option:\n                    options[option_name] = {\n                        tuple(operation.new_name if f == operation.old_name else f for f in fields)\n                        for fields in option\n                    }\n            order_with_respect_to = options.get('order_with_respect_to')\n            if order_with_respect_to == operation.old_name:\n                options['order_with_respect_to'] = operation.new_name\n            return [\n                CreateModel(\n                    self.name,\n                    fields=[\n                        (operation.new_name if n == operation.old_name else n, v)\n                        for n, v in self.fields\n                    ],\n                    options=options,\n                    bases=self.bases,\n                    managers=self.managers,\n                ),\n            ]\n    return super().reduce(operation, app_label)\n"
+    },
+    {
+      "snippet": "py:django/db/migrations/operations/models.py::CreateModel.state_forwards",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "4b5c2400b857ccab",
+      "response_hash": "81e350d72c7f50f6",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/db/migrations/operations/models.py::CreateModel.migration_name_fragment",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "9cbbdec9e8ecc252",
+      "response_hash": "137b99eb002b6dab",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/db/migrations/operations/models.py::CreateModel.references_model",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "993e5b96d76e3591",
+      "response_hash": "189ef7d4eece6369",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/auth_tests/test_models.py",
+        "tests/contenttypes_tests/test_models.py",
+        "tests/flatpages_tests/test_models.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 7,
+      "judge_s": 5.3,
+      "diff": "diff --git a/django/db/migrations/operations/models.py b/django/db/migrations/operations/models.py\nindex 982816be3a..fe1fadd7f7 100644\n--- a/django/db/migrations/operations/models.py\n+++ b/django/db/migrations/operations/models.py\n@@ -111,7 +111,12 @@ class CreateModel(ModelOperation):\n         # Check we didn't inherit from the model\n         reference_model_tuple = (app_label, name_lower)\n         for base in self.bases:\n-            if (base is not models.Model and isinstance(base, (models.base.ModelBase, str)) and\n+            if base is models.Model:\n+                continue\n+            # Ignore non-model mixins such as plain Python classes.\n+            if isinstance(base, type) and not isinstance(base, models.base.ModelBase):\n+                continue\n+            if (isinstance(base, (models.base.ModelBase, str)) and\n                     resolve_relation(base, app_label) == reference_model_tuple):\n                 return True\n \n",
+      "new_source": "def references_model(self, name, app_label):\n    name_lower = name.lower()\n    if name_lower == self.name_lower:\n        return True\n\n    # Check we didn't inherit from the model\n    reference_model_tuple = (app_label, name_lower)\n    for base in self.bases:\n        if base is models.Model:\n            continue\n        # Ignore non-model mixins such as plain Python classes.\n        if isinstance(base, type) and not isinstance(base, models.base.ModelBase):\n            continue\n        if (isinstance(base, (models.base.ModelBase, str)) and\n                resolve_relation(base, app_label) == reference_model_tuple):\n            return True\n\n    # Check we have no FKs/M2Ms with it\n    for _name, field in self.fields:\n        if field_references((app_label, self.name_lower), field, reference_model_tuple):\n            return True\n    return False\n"
+    },
+    {
+      "snippet": "py:django/db/migrations/operations/models.py::CreateModel.deconstruct",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "046cc934019f3595",
+      "response_hash": "84f2647bf52c0475",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/auth_tests/test_models.py",
+        "tests/contenttypes_tests/test_models.py",
+        "tests/flatpages_tests/test_models.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 4,
+      "judge_s": 4.0,
+      "diff": "diff --git a/django/db/migrations/operations/models.py b/django/db/migrations/operations/models.py\nindex 982816be3a..506c8ecedb 100644\n--- a/django/db/migrations/operations/models.py\n+++ b/django/db/migrations/operations/models.py\n@@ -67,7 +67,9 @@ class CreateModel(ModelOperation):\n         if self.options:\n             kwargs['options'] = self.options\n         if self.bases and self.bases != (models.Model,):\n-            kwargs['bases'] = self.bases\n+            kwargs['bases'] = tuple(\n+                base for base in self.bases if base is not models.Model\n+            )\n         if self.managers and self.managers != [('objects', models.Manager())]:\n             kwargs['managers'] = self.managers\n         return (\n",
+      "new_source": "def deconstruct(self):\n    kwargs = {\n        'name': self.name,\n        'fields': self.fields,\n    }\n    if self.options:\n        kwargs['options'] = self.options\n    if self.bases and self.bases != (models.Model,):\n        kwargs['bases'] = tuple(\n            base for base in self.bases if base is not models.Model\n        )\n    if self.managers and self.managers != [('objects', models.Manager())]:\n        kwargs['managers'] = self.managers\n    return (\n        self.__class__.__qualname__,\n        [],\n        kwargs\n    )\n"
+    }
+  ],
+  "validated_repro": 0,
+  "stop": "budget",
+  "submission": {
+    "snippet": "py:django/db/migrations/operations/models.py::CreateModel.__init__",
+    "model": "moonshotai/kimi-k3",
+    "template": "fix_think",
+    "diff": "diff --git a/django/db/migrations/operations/models.py b/django/db/migrations/operations/models.py\nindex 982816be3a..1f46c9e2a2 100644\n--- a/django/db/migrations/operations/models.py\n+++ b/django/db/migrations/operations/models.py\n@@ -46,7 +46,7 @@ class CreateModel(ModelOperation):\n     def __init__(self, name, fields, options=None, bases=None, managers=None):\n         self.fields = fields\n         self.options = options or {}\n-        self.bases = bases or (models.Model,)\n+        self.bases = tuple(bases) if bases else (models.Model,)\n         self.managers = managers or []\n         super().__init__(name)\n         # Sanity-check that there are no duplicated field names, bases, or\n",
+    "votes": 0,
+    "changed_lines": 2,
+    "new_source": "def __init__(self, name, fields, options=None, bases=None, managers=None):\n    self.fields = fields\n    self.options = options or {}\n    self.bases = tuple(bases) if bases else (models.Model,)\n    self.managers = managers or []\n    super().__init__(name)\n    # Sanity-check that there are no duplicated field names, bases, or\n    # manager names\n    _check_for_duplicates('fields', (name for name, _ in self.fields))\n    _check_for_duplicates('bases', (\n        base._meta.label_lower if hasattr(base, '_meta') else\n        base.lower() if isinstance(base, str) else base\n        for base in self.bases\n    ))\n    _check_for_duplicates('managers', (name for name, _ in self.managers))\n",
+    "prompt_hash": "b8897f38cb340ede",
+    "response_hash": "f78f9595edbdc772"
+  },
+  "search_s": 858.7,
+  "llm_calls": 16,
+  "tokens_in": 13717,
+  "tokens_out": 18538,
+  "calls": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 4.82,
+      "tokens_in": 620,
+      "tokens_out": 33,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 4.89,
+      "tokens_in": 620,
+      "tokens_out": 32,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 7.77,
+      "tokens_in": 831,
+      "tokens_out": 32,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 50.26,
+      "tokens_in": 792,
+      "tokens_out": 1045,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 59.89,
+      "tokens_in": 848,
+      "tokens_out": 1355,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 14.92,
+      "tokens_in": 1530,
+      "tokens_out": 33,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 12.82,
+      "tokens_in": 731,
+      "tokens_out": 39,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 10.7,
+      "tokens_in": 695,
+      "tokens_out": 303,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 47.91,
+      "tokens_in": 831,
+      "tokens_out": 1097,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 296.36,
+      "tokens_in": 792,
+      "tokens_out": 7197,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 63.52,
+      "tokens_in": 848,
+      "tokens_out": 1637,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 60.7,
+      "tokens_in": 1530,
+      "tokens_out": 1448,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 37.37,
+      "tokens_in": 731,
+      "tokens_out": 791,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 15.76,
+      "tokens_in": 695,
+      "tokens_out": 375,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 87.68,
+      "tokens_in": 831,
+      "tokens_out": 2061,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 36.52,
+      "tokens_in": 792,
+      "tokens_out": 1060,
+      "finish_reason": "stop",
+      "empty": false
+    }
+  ],
+  "arms": {
+    "moonshotai/kimi-k3/fix": 0.3,
+    "moonshotai/kimi-k3/fix_think": 0.475
+  },
+  "grade": {
+    "resolved": false,
+    "applied": true,
+    "fail_to_pass": {
+      "success": 0,
+      "failure": 1
+    },
+    "pass_to_pass": {
+      "success": 49,
+      "failure": 0
+    }
+  },
+  "grade_s": 1.5,
+  "wall_s": 897.1,
+  "diagnosis": {
+    "gold_files": [
+      "django/db/migrations/serializer.py"
+    ],
+    "localised_file_hit": false,
+    "localised_line_hit": false,
+    "submission_files": [
+      "django/db/migrations/operations/models.py"
+    ],
+    "submission_in_gold_file": false,
+    "gold_changed_lines": 2
+  }
+}

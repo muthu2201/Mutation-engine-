@@ -1,0 +1,12 @@
+diff --git a/xarray/core/dataset.py b/xarray/core/dataset.py
+index b352fd3d..93a8f99b 100644
+--- a/xarray/core/dataset.py
++++ b/xarray/core/dataset.py
+@@ -3856,6 +3856,7 @@ class Dataset(Mapping, ImplementsDatasetReduce, DataWithCoords):
+             join=join,
+             fill_value=fill_value,
+         )
++        merge_result = merge_result._replace(attrs=dict(merge_result.attrs))
+         return self._replace(**merge_result._asdict())
+ 
+     def _assert_all_in_dataset(

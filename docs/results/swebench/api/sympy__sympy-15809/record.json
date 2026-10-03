@@ -1,0 +1,342 @@
+{
+  "instance_id": "sympy__sympy-15809",
+  "repo": "sympy/sympy",
+  "version": "1.4",
+  "base_commit": "28d913d3cead6c5646307ffa6540b21d65059dfd",
+  "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.sympy__sympy-15809:latest",
+  "started_at": "2026-10-03T15:47:38.964579+00:00",
+  "image_digest": "ghcr.io/epoch-research/swe-bench.eval.x86_64.sympy__sympy-15809@sha256:31d77a85853d61a34f3cedec1588c6ca4247e3a26a65b2eaceaa6ebee7ab0f90",
+  "pull_s": 22.0,
+  "files_considered": 708,
+  "ranked_files": [
+    {
+      "file": "sympy/functions/elementary/miscellaneous.py",
+      "score": 1.951
+    },
+    {
+      "file": "sympy/sets/sets.py",
+      "score": 1.0
+    },
+    {
+      "file": "sympy/calculus/util.py",
+      "score": 0.979
+    },
+    {
+      "file": "sympy/integrals/prde.py",
+      "score": 0.948
+    },
+    {
+      "file": "sympy/combinatorics/permutations.py",
+      "score": 0.935
+    },
+    {
+      "file": "sympy/matrices/matrices.py",
+      "score": 0.922
+    },
+    {
+      "file": "sympy/core/numbers.py",
+      "score": 0.904
+    },
+    {
+      "file": "sympy/ntheory/generate.py",
+      "score": 0.882
+    }
+  ],
+  "localised": [
+    {
+      "file": "sympy/functions/elementary/miscellaneous.py",
+      "name": "Max.<L646-705>",
+      "kind": "block",
+      "start": 646,
+      "end": 705,
+      "score": 2.201
+    },
+    {
+      "file": "sympy/functions/elementary/miscellaneous.py",
+      "name": "Min.<L766-796>",
+      "kind": "block",
+      "start": 766,
+      "end": 796,
+      "score": 2.183
+    },
+    {
+      "file": "sympy/functions/elementary/miscellaneous.py",
+      "name": "Max.<L706-731>",
+      "kind": "block",
+      "start": 706,
+      "end": 731,
+      "score": 2.163
+    },
+    {
+      "file": "sympy/functions/elementary/miscellaneous.py",
+      "name": "Min.fdiff",
+      "kind": "function",
+      "start": 798,
+      "end": 808,
+      "score": 1.856
+    },
+    {
+      "file": "sympy/functions/elementary/miscellaneous.py",
+      "name": "Max.fdiff",
+      "kind": "function",
+      "start": 733,
+      "end": 743,
+      "score": 1.826
+    },
+    {
+      "file": "sympy/functions/elementary/miscellaneous.py",
+      "name": "Max._eval_rewrite_as_Piecewise",
+      "kind": "function",
+      "start": 750,
+      "end": 753,
+      "score": 1.599
+    }
+  ],
+  "repro": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "ISSUE REPRODUCED",
+      "script_hash": "13c58153ccfcf94a"
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "ISSUE REPRODUCED",
+      "script_hash": "a5c59fab99427541"
+    }
+  ],
+  "candidates": [
+    {
+      "snippet": "py:sympy/functions/elementary/miscellaneous.py::Max.<L646-705>",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "ea963d0fd800d8ff",
+      "response_hash": "3c4ba03dbbafccd9",
+      "stage": "parse",
+      "reason": "file does not parse after the splice: invalid decimal literal (line 672)"
+    },
+    {
+      "snippet": "py:sympy/functions/elementary/miscellaneous.py::Min.<L766-796>",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "6cde51110749e5d7",
+      "response_hash": "7c0d7bbe19c19680",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "sympy/functions/elementary/tests/test_miscellaneous.py",
+        "sympy/core/tests/test_args.py",
+        "sympy/assumptions/tests/test_query.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED",
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 5,
+      "judge_s": 605.4,
+      "diff": "diff --git a/sympy/functions/elementary/miscellaneous.py b/sympy/functions/elementary/miscellaneous.py\nindex 5f9fe73c5c..22dd4c57dd 100644\n--- a/sympy/functions/elementary/miscellaneous.py\n+++ b/sympy/functions/elementary/miscellaneous.py\n@@ -795,6 +795,11 @@ class Min(MinMaxBase, Application):\n     zero = S.NegativeInfinity\n     identity = S.Infinity\n \n+    def __new__(cls, *args, **assumptions):\n+        if not args:\n+            return S.Infinity\n+        return Application.__new__(cls, *args, **assumptions)\n+\n     def fdiff( self, argindex ):\n         from sympy import Heaviside\n         n = len(self.args)\n",
+      "new_source": "\"\"\"\nReturn, if possible, the minimum value of the list.\nIt is named ``Min`` and not ``min`` to avoid conflicts\nwith the built-in function ``min``.\n\nExamples\n========\n\n>>> from sympy import Min, Symbol, oo\n>>> from sympy.abc import x, y\n>>> p = Symbol('p', positive=True)\n>>> n = Symbol('n', negative=True)\n\n>>> Min(x, -2)                  #doctest: +SKIP\nMin(x, -2)\n>>> Min(x, -2).subs(x, 3)\n-2\n>>> Min(p, -3)\n-3\n>>> Min(x, y)                   #doctest: +SKIP\nMin(x, y)\n>>> Min(n, 8, p, -7, p, oo)     #doctest: +SKIP\nMin(n, -7)\n\nSee Also\n========\n\nMax : find maximum values\n\"\"\"\nzero = S.NegativeInfinity\nidentity = S.Infinity\n\ndef __new__(cls, *args, **assumptions):\n    if not args:\n        return S.Infinity\n    return Application.__new__(cls, *args, **assumptions)\n"
+    },
+    {
+      "snippet": "py:sympy/functions/elementary/miscellaneous.py::Max.<L706-731>",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "56eb5dccb38f4e01",
+      "response_hash": "1ad2628f9c663358",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:sympy/functions/elementary/miscellaneous.py::Min.fdiff",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "3a3ab39f944cac0e",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:sympy/functions/elementary/miscellaneous.py::Max.fdiff",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "e822078efc78d418",
+      "response_hash": "d76fd719ac7e147a",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:sympy/functions/elementary/miscellaneous.py::Max._eval_rewrite_as_Piecewise",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "911c56f74addb314",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:sympy/functions/elementary/miscellaneous.py::Max.<L646-705>",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "ea963d0fd800d8ff",
+      "response_hash": "3a18ea3c4a47615c",
+      "stage": "parse",
+      "reason": "file does not parse after the splice: invalid decimal literal (line 729)"
+    },
+    {
+      "snippet": "py:sympy/functions/elementary/miscellaneous.py::Min.<L766-796>",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "1bdabc94d0067226",
+      "response_hash": "9c97ba9b2f97349c",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "sympy/functions/elementary/tests/test_miscellaneous.py",
+        "sympy/core/tests/test_args.py",
+        "sympy/assumptions/tests/test_query.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED",
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 60,
+      "judge_s": 304.8,
+      "diff": "diff --git a/sympy/functions/elementary/miscellaneous.py b/sympy/functions/elementary/miscellaneous.py\nindex 5f9fe73c5c..7c4b6ab80c 100644\n--- a/sympy/functions/elementary/miscellaneous.py\n+++ b/sympy/functions/elementary/miscellaneous.py\n@@ -763,37 +763,43 @@ def _eval_is_negative(self):\n \n \n class Min(MinMaxBase, Application):\n-    \"\"\"\n-    Return, if possible, the minimum value of the list.\n-    It is named ``Min`` and not ``min`` to avoid conflicts\n-    with the built-in function ``min``.\n-\n-    Examples\n-    ========\n+    class Min(MinMaxBase, Application):\n+        \"\"\"\n+        Return, if possible, the minimum value of the list.\n+        It is named ``Min`` and not ``min`` to avoid conflicts\n+        with the built-in function ``min``.\n \n-    >>> from sympy import Min, Symbol, oo\n-    >>> from sympy.abc import x, y\n-    >>> p = Symbol('p', positive=True)\n-    >>> n = Symbol('n', negative=True)\n+        Examples\n+        ========\n \n-    >>> Min(x, -2)                  #doctest: +SKIP\n-    Min(x, -2)\n-    >>> Min(x, -2).subs(x, 3)\n-    -2\n-    >>> Min(p, -3)\n-    -3\n-    >>> Min(x, y)                   #doctest: +SKIP\n-    Min(x, y)\n-    >>> Min(n, 8, p, -7, p, oo)     #doctest: +SKIP\n-    Min(n, -7)\n+        >>> from sympy import Min, Symbol, oo\n+        >>> from sympy.abc import x, y\n+        >>> p = Symbol('p', positive=True)\n+        >>> n = Symbol('n', negative=True)\n+\n+        >>> Min(x, -2)                  #doctest: +SKIP\n+        Min(x, -2)\n+        >>> Min(x, -2).subs(x, 3)\n+        -2\n+        >>> Min(p, -3)\n+        -3\n+        >>> Min(x, y)                   #doctest: +SKIP\n+        Min(x, y)\n+        >>> Min(n, 8, p, -7, p, oo)     #doctest: +SKIP\n+        Min(n, -7)\n+\n+        See Also\n+        ========\n \n-    See Also\n-    ========\n+        Max : find maximum values\n+        \"\"\"\n+        zero = S.NegativeInfinity\n+        identity = S.Infinity\n \n-    Max : find maximum values\n-    \"\"\"\n-    zero = S.NegativeInfinity\n-    identity = S.Infinity\n+        def __new__(cls, *args, **assumptions):\n+            if not args:\n+                return cls.identity\n+            return super(Min, cls).__new__(cls, *args, **assumptions)\n \n     def fdiff( self, argindex ):\n         from sympy import Heaviside\n",
+      "new_source": "class Min(MinMaxBase, Application):\n    \"\"\"\n    Return, if possible, the minimum value of the list.\n    It is named ``Min`` and not ``min`` to avoid conflicts\n    with the built-in function ``min``.\n\n    Examples\n    ========\n\n    >>> from sympy import Min, Symbol, oo\n    >>> from sympy.abc import x, y\n    >>> p = Symbol('p', positive=True)\n    >>> n = Symbol('n', negative=True)\n\n    >>> Min(x, -2)                  #doctest: +SKIP\n    Min(x, -2)\n    >>> Min(x, -2).subs(x, 3)\n    -2\n    >>> Min(p, -3)\n    -3\n    >>> Min(x, y)                   #doctest: +SKIP\n    Min(x, y)\n    >>> Min(n, 8, p, -7, p, oo)     #doctest: +SKIP\n    Min(n, -7)\n\n    See Also\n    ========\n\n    Max : find maximum values\n    \"\"\"\n    zero = S.NegativeInfinity\n    identity = S.Infinity\n\n    def __new__(cls, *args, **assumptions):\n        if not args:\n            return cls.identity\n        return super(Min, cls).__new__(cls, *args, **assumptions)\n"
+    }
+  ],
+  "validated_repro": 2,
+  "stop": "budget",
+  "submission": {
+    "snippet": "py:sympy/functions/elementary/miscellaneous.py::Min.<L766-796>",
+    "model": "moonshotai/kimi-k3",
+    "template": "fix",
+    "diff": "diff --git a/sympy/functions/elementary/miscellaneous.py b/sympy/functions/elementary/miscellaneous.py\nindex 5f9fe73c5c..22dd4c57dd 100644\n--- a/sympy/functions/elementary/miscellaneous.py\n+++ b/sympy/functions/elementary/miscellaneous.py\n@@ -795,6 +795,11 @@ class Min(MinMaxBase, Application):\n     zero = S.NegativeInfinity\n     identity = S.Infinity\n \n+    def __new__(cls, *args, **assumptions):\n+        if not args:\n+            return S.Infinity\n+        return Application.__new__(cls, *args, **assumptions)\n+\n     def fdiff( self, argindex ):\n         from sympy import Heaviside\n         n = len(self.args)\n",
+    "votes": 0,
+    "changed_lines": 5,
+    "new_source": "\"\"\"\nReturn, if possible, the minimum value of the list.\nIt is named ``Min`` and not ``min`` to avoid conflicts\nwith the built-in function ``min``.\n\nExamples\n========\n\n>>> from sympy import Min, Symbol, oo\n>>> from sympy.abc import x, y\n>>> p = Symbol('p', positive=True)\n>>> n = Symbol('n', negative=True)\n\n>>> Min(x, -2)                  #doctest: +SKIP\nMin(x, -2)\n>>> Min(x, -2).subs(x, 3)\n-2\n>>> Min(p, -3)\n-3\n>>> Min(x, y)                   #doctest: +SKIP\nMin(x, y)\n>>> Min(n, 8, p, -7, p, oo)     #doctest: +SKIP\nMin(n, -7)\n\nSee Also\n========\n\nMax : find maximum values\n\"\"\"\nzero = S.NegativeInfinity\nidentity = S.Infinity\n\ndef __new__(cls, *args, **assumptions):\n    if not args:\n        return S.Infinity\n    return Application.__new__(cls, *args, **assumptions)\n",
+    "prompt_hash": "6cde51110749e5d7",
+    "response_hash": "7c0d7bbe19c19680"
+  },
+  "search_s": 1220.2,
+  "llm_calls": 10,
+  "tokens_in": 6156,
+  "tokens_out": 5734,
+  "calls": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 24.35,
+      "tokens_in": 287,
+      "tokens_out": 179,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 17.86,
+      "tokens_in": 287,
+      "tokens_out": 137,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 59.82,
+      "tokens_in": 897,
+      "tokens_out": 1247,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 23.71,
+      "tokens_in": 676,
+      "tokens_out": 488,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 45.04,
+      "tokens_in": 677,
+      "tokens_out": 1154,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 9.57,
+      "tokens_in": 609,
+      "tokens_out": 33,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 29.26,
+      "tokens_in": 606,
+      "tokens_out": 673,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 14.6,
+      "tokens_in": 534,
+      "tokens_out": 33,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 43.57,
+      "tokens_in": 897,
+      "tokens_out": 1099,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 30.15,
+      "tokens_in": 686,
+      "tokens_out": 691,
+      "finish_reason": "stop",
+      "empty": false
+    }
+  ],
+  "arms": {
+    "moonshotai/kimi-k3/fix": 0.3,
+    "moonshotai/kimi-k3/fix_think": 0.09999999999999999
+  },
+  "grade": {
+    "resolved": false,
+    "applied": true,
+    "fail_to_pass": {
+      "success": 0,
+      "failure": 2
+    },
+    "pass_to_pass": {
+      "success": 10,
+      "failure": 0
+    }
+  },
+  "grade_s": 1.5,
+  "wall_s": 1254.7,
+  "diagnosis": {
+    "gold_files": [
+      "sympy/functions/elementary/miscellaneous.py"
+    ],
+    "localised_file_hit": true,
+    "localised_line_hit": false,
+    "submission_files": [
+      "sympy/functions/elementary/miscellaneous.py"
+    ],
+    "submission_in_gold_file": true,
+    "gold_changed_lines": 2
+  }
+}

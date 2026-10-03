@@ -1,0 +1,13 @@
+diff --git a/astropy/table/table.py b/astropy/table/table.py
+index d51ee0a68a..14386f506c 100644
+--- a/astropy/table/table.py
++++ b/astropy/table/table.py
+@@ -961,6 +961,8 @@ class Table:
+ 
+     @mask.setter
+     def mask(self, val):
++        if val is None:
++            return
+         self.mask[:] = val
+ 
+     @property

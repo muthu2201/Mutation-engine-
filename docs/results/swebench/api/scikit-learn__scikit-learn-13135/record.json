@@ -1,0 +1,219 @@
+{
+  "instance_id": "scikit-learn__scikit-learn-13135",
+  "repo": "scikit-learn/scikit-learn",
+  "version": "0.21",
+  "base_commit": "a061ada48efccf0845acae17009553e01764452b",
+  "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.scikit-learn__scikit-learn-13135:latest",
+  "started_at": "2026-10-03T14:55:47.420845+00:00",
+  "image_digest": "ghcr.io/epoch-research/swe-bench.eval.x86_64.scikit-learn__scikit-learn-13135@sha256:e8ba84389704f805108e775499ca78f55f13ad03722279b2a4440586e2c40e31",
+  "pull_s": 29.3,
+  "files_considered": 266,
+  "ranked_files": [
+    {
+      "file": "sklearn/preprocessing/__init__.py",
+      "score": 3.424
+    },
+    {
+      "file": "sklearn/__init__.py",
+      "score": 3.155
+    },
+    {
+      "file": "sklearn/preprocessing/_discretization.py",
+      "score": 2.5
+    },
+    {
+      "file": "sklearn/preprocessing/label.py",
+      "score": 1.754
+    },
+    {
+      "file": "sklearn/feature_extraction/text.py",
+      "score": 1.754
+    },
+    {
+      "file": "sklearn/preprocessing/data.py",
+      "score": 1.74
+    },
+    {
+      "file": "sklearn/cluster/k_means_.py",
+      "score": 1.723
+    },
+    {
+      "file": "sklearn/pipeline.py",
+      "score": 1.721
+    }
+  ],
+  "localised": [
+    {
+      "file": "sklearn/preprocessing/_discretization.py",
+      "name": "KBinsDiscretizer.fit",
+      "kind": "function",
+      "start": 116,
+      "end": 189,
+      "score": 4.265
+    },
+    {
+      "file": "sklearn/preprocessing/_discretization.py",
+      "name": "KBinsDiscretizer.transform",
+      "kind": "function",
+      "start": 225,
+      "end": 261,
+      "score": 4.119
+    },
+    {
+      "file": "sklearn/pipeline.py",
+      "name": "Pipeline.fit_transform",
+      "kind": "function",
+      "start": 283,
+      "end": 317,
+      "score": 2.486
+    },
+    {
+      "file": "sklearn/pipeline.py",
+      "name": "FeatureUnion.fit_transform",
+      "kind": "function",
+      "start": 782,
+      "end": 814,
+      "score": 2.451
+    },
+    {
+      "file": "sklearn/pipeline.py",
+      "name": "Pipeline.fit",
+      "kind": "function",
+      "start": 252,
+      "end": 281,
+      "score": 2.426
+    },
+    {
+      "file": "sklearn/feature_extraction/text.py",
+      "name": "CountVectorizer.fit_transform",
+      "kind": "function",
+      "start": 998,
+      "end": 1054,
+      "score": 2.416
+    }
+  ],
+  "repro": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "ISSUE REPRODUCED",
+      "script_hash": "f3fb5d5d84d28732"
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "unparseable",
+      "script_hash": null
+    }
+  ],
+  "candidates": [
+    {
+      "snippet": "py:sklearn/preprocessing/_discretization.py::KBinsDiscretizer.fit",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "17b2f8625f397757",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:sklearn/preprocessing/_discretization.py::KBinsDiscretizer.transform",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "9f6004734ad608b8",
+      "response_hash": "7baabc091082aef9",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [],
+      "regressions": 0,
+      "votes": 1,
+      "repro": [
+        "ISSUE RESOLVED"
+      ],
+      "changed_lines": 6,
+      "judge_s": 1.8,
+      "diff": "diff --git a/sklearn/preprocessing/_discretization.py b/sklearn/preprocessing/_discretization.py\nindex dd969c12b..f8ed842f7 100644\n--- a/sklearn/preprocessing/_discretization.py\n+++ b/sklearn/preprocessing/_discretization.py\n@@ -252,7 +252,11 @@ class KBinsDiscretizer(BaseEstimator, TransformerMixin):\n             rtol = 1.e-5\n             atol = 1.e-8\n             eps = atol + rtol * np.abs(Xt[:, jj])\n-            Xt[:, jj] = np.digitize(Xt[:, jj] + eps, bin_edges[jj][1:])\n+            # bin edges may not be monotonically increasing (e.g. kmeans can\n+            # return unsorted centers). Sort them so np.digitize works\n+            # correctly.\n+            sorted_edges = np.sort(bin_edges[jj])\n+            Xt[:, jj] = np.digitize(Xt[:, jj] + eps, sorted_edges[1:])\n         np.clip(Xt, 0, self.n_bins_ - 1, out=Xt)\n \n         if self.encode == 'ordinal':\n",
+      "new_source": "def transform(self, X):\n    \"\"\"Discretizes the data.\n\n    Parameters\n    ----------\n    X : numeric array-like, shape (n_samples, n_features)\n        Data to be discretized.\n\n    Returns\n    -------\n    Xt : numeric array-like or sparse matrix\n        Data in the binned space.\n    \"\"\"\n    check_is_fitted(self, [\"bin_edges_\"])\n\n    Xt = check_array(X, copy=True, dtype=FLOAT_DTYPES)\n    n_features = self.n_bins_.shape[0]\n    if Xt.shape[1] != n_features:\n        raise ValueError(\"Incorrect number of features. Expecting {}, \"\n                         \"received {}.\".format(n_features, Xt.shape[1]))\n\n    bin_edges = self.bin_edges_\n    for jj in range(Xt.shape[1]):\n        # Values which are close to a bin edge are susceptible to numeric\n        # instability. Add eps to X so these values are binned correctly\n        # with respect to their decimal truncation. See documentation of\n        # numpy.isclose for an explanation of ``rtol`` and ``atol``.\n        rtol = 1.e-5\n        atol = 1.e-8\n        eps = atol + rtol * np.abs(Xt[:, jj])\n        # bin edges may not be monotonically increasing (e.g. kmeans can\n        # return unsorted centers). Sort them so np.digitize works\n        # correctly.\n        sorted_edges = np.sort(bin_edges[jj])\n        Xt[:, jj] = np.digitize(Xt[:, jj] + eps, sorted_edges[1:])\n    np.clip(Xt, 0, self.n_bins_ - 1, out=Xt)\n\n    if self.encode == 'ordinal':\n        return Xt\n\n    return self._encoder.transform(Xt)\n"
+    }
+  ],
+  "validated_repro": 1,
+  "stop": "every validated reproduction resolved",
+  "submission": {
+    "snippet": "py:sklearn/preprocessing/_discretization.py::KBinsDiscretizer.transform",
+    "model": "moonshotai/kimi-k3",
+    "template": "fix",
+    "diff": "diff --git a/sklearn/preprocessing/_discretization.py b/sklearn/preprocessing/_discretization.py\nindex dd969c12b..f8ed842f7 100644\n--- a/sklearn/preprocessing/_discretization.py\n+++ b/sklearn/preprocessing/_discretization.py\n@@ -252,7 +252,11 @@ class KBinsDiscretizer(BaseEstimator, TransformerMixin):\n             rtol = 1.e-5\n             atol = 1.e-8\n             eps = atol + rtol * np.abs(Xt[:, jj])\n-            Xt[:, jj] = np.digitize(Xt[:, jj] + eps, bin_edges[jj][1:])\n+            # bin edges may not be monotonically increasing (e.g. kmeans can\n+            # return unsorted centers). Sort them so np.digitize works\n+            # correctly.\n+            sorted_edges = np.sort(bin_edges[jj])\n+            Xt[:, jj] = np.digitize(Xt[:, jj] + eps, sorted_edges[1:])\n         np.clip(Xt, 0, self.n_bins_ - 1, out=Xt)\n \n         if self.encode == 'ordinal':\n",
+    "votes": 1,
+    "changed_lines": 6,
+    "new_source": "def transform(self, X):\n    \"\"\"Discretizes the data.\n\n    Parameters\n    ----------\n    X : numeric array-like, shape (n_samples, n_features)\n        Data to be discretized.\n\n    Returns\n    -------\n    Xt : numeric array-like or sparse matrix\n        Data in the binned space.\n    \"\"\"\n    check_is_fitted(self, [\"bin_edges_\"])\n\n    Xt = check_array(X, copy=True, dtype=FLOAT_DTYPES)\n    n_features = self.n_bins_.shape[0]\n    if Xt.shape[1] != n_features:\n        raise ValueError(\"Incorrect number of features. Expecting {}, \"\n                         \"received {}.\".format(n_features, Xt.shape[1]))\n\n    bin_edges = self.bin_edges_\n    for jj in range(Xt.shape[1]):\n        # Values which are close to a bin edge are susceptible to numeric\n        # instability. Add eps to X so these values are binned correctly\n        # with respect to their decimal truncation. See documentation of\n        # numpy.isclose for an explanation of ``rtol`` and ``atol``.\n        rtol = 1.e-5\n        atol = 1.e-8\n        eps = atol + rtol * np.abs(Xt[:, jj])\n        # bin edges may not be monotonically increasing (e.g. kmeans can\n        # return unsorted centers). Sort them so np.digitize works\n        # correctly.\n        sorted_edges = np.sort(bin_edges[jj])\n        Xt[:, jj] = np.digitize(Xt[:, jj] + eps, sorted_edges[1:])\n    np.clip(Xt, 0, self.n_bins_ - 1, out=Xt)\n\n    if self.encode == 'ordinal':\n        return Xt\n\n    return self._encoder.transform(Xt)\n",
+    "prompt_hash": "9f6004734ad608b8",
+    "response_hash": "7baabc091082aef9"
+  },
+  "search_s": 60.0,
+  "llm_calls": 4,
+  "tokens_in": 8065,
+  "tokens_out": 643,
+  "calls": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 13.53,
+      "tokens_in": 1729,
+      "tokens_out": 161,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 11.9,
+      "tokens_in": 1729,
+      "tokens_out": 32,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 13.09,
+      "tokens_in": 2477,
+      "tokens_out": 33,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 15.36,
+      "tokens_in": 2130,
+      "tokens_out": 417,
+      "finish_reason": "stop",
+      "empty": false
+    }
+  ],
+  "arms": {
+    "moonshotai/kimi-k3/fix": 0.4,
+    "moonshotai/kimi-k3/fix_think": 0.3
+  },
+  "grade": {
+    "resolved": false,
+    "applied": true,
+    "fail_to_pass": {
+      "success": 0,
+      "failure": 1
+    },
+    "pass_to_pass": {
+      "success": 33,
+      "failure": 0
+    }
+  },
+  "grade_s": 1.4,
+  "wall_s": 104.0,
+  "diagnosis": {
+    "gold_files": [
+      "sklearn/preprocessing/_discretization.py"
+    ],
+    "localised_file_hit": true,
+    "localised_line_hit": true,
+    "submission_files": [
+      "sklearn/preprocessing/_discretization.py"
+    ],
+    "submission_in_gold_file": true,
+    "gold_changed_lines": 2
+  }
+}

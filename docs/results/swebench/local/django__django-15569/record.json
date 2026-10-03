@@ -1,0 +1,374 @@
+{
+  "instance_id": "django__django-15569",
+  "repo": "django/django",
+  "version": "4.1",
+  "base_commit": "884b4c27f506b3c29d58509fc83a35c30ea10d94",
+  "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.django__django-15569:latest",
+  "started_at": "2026-10-03T05:08:14.225270+00:00",
+  "image_digest": "ghcr.io/epoch-research/swe-bench.eval.x86_64.django__django-15569@sha256:7bbe9d7468157dd52baea00b628d1e2f3bc49743be3a3b18c63c15c84c807fad",
+  "pull_s": 15.2,
+  "files_considered": 857,
+  "ranked_files": [
+    {
+      "file": "django/db/models/query_utils.py",
+      "score": 2.5
+    },
+    {
+      "file": "django/contrib/postgres/apps.py",
+      "score": 0.908
+    },
+    {
+      "file": "django/db/models/lookups.py",
+      "score": 0.745
+    },
+    {
+      "file": "django/db/models/sql/query.py",
+      "score": 0.685
+    },
+    {
+      "file": "django/db/models/query.py",
+      "score": 0.679
+    },
+    {
+      "file": "django/apps/registry.py",
+      "score": 0.639
+    },
+    {
+      "file": "django/db/backends/sqlite3/features.py",
+      "score": 0.603
+    },
+    {
+      "file": "django/contrib/gis/db/backends/mysql/features.py",
+      "score": 0.602
+    }
+  ],
+  "localised": [
+    {
+      "file": "django/db/models/query_utils.py",
+      "name": "RegisterLookupMixin._unregister_lookup",
+      "kind": "function",
+      "start": 211,
+      "end": 219,
+      "score": 4.039
+    },
+    {
+      "file": "django/db/models/query_utils.py",
+      "name": "RegisterLookupMixin.register_lookup",
+      "kind": "function",
+      "start": 201,
+      "end": 209,
+      "score": 3.877
+    },
+    {
+      "file": "django/db/models/query_utils.py",
+      "name": "RegisterLookupMixin.get_lookup",
+      "kind": "function",
+      "start": 165,
+      "end": 173,
+      "score": 1.993
+    },
+    {
+      "file": "django/db/models/query_utils.py",
+      "name": "RegisterLookupMixin.get_transform",
+      "kind": "function",
+      "start": 175,
+      "end": 183,
+      "score": 1.98
+    },
+    {
+      "file": "django/db/models/query_utils.py",
+      "name": "RegisterLookupMixin._get_lookup",
+      "kind": "function",
+      "start": 153,
+      "end": 155,
+      "score": 1.682
+    },
+    {
+      "file": "django/db/models/query_utils.py",
+      "name": "RegisterLookupMixin._clear_cached_lookups",
+      "kind": "function",
+      "start": 196,
+      "end": 199,
+      "score": 1.653
+    }
+  ],
+  "repro": [
+    {
+      "model": "qwen2.5-coder-7b",
+      "outcome": "NONE",
+      "script_hash": "ef73dd5fa65dc4e9"
+    },
+    {
+      "model": "qwen2.5-coder-3b",
+      "outcome": "unparseable",
+      "script_hash": null
+    }
+  ],
+  "candidates": [
+    {
+      "snippet": "py:django/db/models/query_utils.py::RegisterLookupMixin._unregister_lookup",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix_think",
+      "prompt_hash": "dda8011b2ae5fd0a",
+      "response_hash": "a292053301339fde",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/model_inheritance/tests.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 1,
+      "judge_s": 5.8,
+      "diff": "diff --git a/django/db/models/query_utils.py b/django/db/models/query_utils.py\nindex 0caa165e15..477ff4ed4d 100644\n--- a/django/db/models/query_utils.py\n+++ b/django/db/models/query_utils.py\n@@ -217,6 +217,7 @@ class RegisterLookupMixin:\n         if lookup_name is None:\n             lookup_name = lookup.lookup_name\n         del cls.class_lookups[lookup_name]\n+        cls.clear_cache()\n \n \n def select_related_descend(field, restricted, requested, load_fields, reverse=False):\n",
+      "new_source": "@classmethod\ndef _unregister_lookup(cls, lookup, lookup_name=None):\n    \"\"\"\n    Remove given lookup from cls lookups. For use in tests only as it's\n    not thread-safe.\n    \"\"\"\n    if lookup_name is None:\n        lookup_name = lookup.lookup_name\n    del cls.class_lookups[lookup_name]\n    cls.clear_cache()\n"
+    },
+    {
+      "snippet": "py:django/db/models/query_utils.py::RegisterLookupMixin.register_lookup",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix_think",
+      "prompt_hash": "47729449c9626762",
+      "response_hash": "055aae9e9dd6cdeb",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/model_inheritance/tests.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 6,
+      "judge_s": 2.9,
+      "diff": "diff --git a/django/db/models/query_utils.py b/django/db/models/query_utils.py\nindex 0caa165e15..2037e0cb2e 100644\n--- a/django/db/models/query_utils.py\n+++ b/django/db/models/query_utils.py\n@@ -208,6 +208,12 @@ class RegisterLookupMixin:\n         cls._clear_cached_lookups()\n         return lookup\n \n+    @classmethod\n+    def _unregister_lookup(cls, lookup_name):\n+        if lookup_name in cls.class_lookups:\n+            del cls.class_lookups[lookup_name]\n+            cls._clear_cached_lookups()\n+\n     @classmethod\n     def _unregister_lookup(cls, lookup, lookup_name=None):\n         \"\"\"\n",
+      "new_source": "@classmethod\ndef register_lookup(cls, lookup, lookup_name=None):\n    if lookup_name is None:\n        lookup_name = lookup.lookup_name\n    if \"class_lookups\" not in cls.__dict__:\n        cls.class_lookups = {}\n    cls.class_lookups[lookup_name] = lookup\n    cls._clear_cached_lookups()\n    return lookup\n\n@classmethod\ndef _unregister_lookup(cls, lookup_name):\n    if lookup_name in cls.class_lookups:\n        del cls.class_lookups[lookup_name]\n        cls._clear_cached_lookups()\n"
+    },
+    {
+      "snippet": "py:django/db/models/query_utils.py::RegisterLookupMixin.get_lookup",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix_think",
+      "prompt_hash": "6a7c4e6dac6c6008",
+      "response_hash": "dcdf70c52b7926fe",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/db/models/query_utils.py::RegisterLookupMixin.get_transform",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix_think",
+      "prompt_hash": "f18cf2879ee07731",
+      "response_hash": "1cda23bbb0e01fad",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/db/models/query_utils.py::RegisterLookupMixin._get_lookup",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix_think",
+      "prompt_hash": "bae55c6dcaecfb86",
+      "response_hash": "93994c385c881bea",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/db/models/query_utils.py::RegisterLookupMixin._clear_cached_lookups",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix_think",
+      "prompt_hash": "45be312ff7d27395",
+      "response_hash": "eaf1e74e2fff054d",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/model_inheritance/tests.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 5,
+      "judge_s": 3.2,
+      "diff": "diff --git a/django/db/models/query_utils.py b/django/db/models/query_utils.py\nindex 0caa165e15..842db80e13 100644\n--- a/django/db/models/query_utils.py\n+++ b/django/db/models/query_utils.py\n@@ -193,6 +193,11 @@ class RegisterLookupMixin:\n             merged.update(d)\n         return merged\n \n+    @classmethod\n+    def _unregister_lookup(cls, lookup_name):\n+        super()._unregister_lookup(lookup_name)\n+        cls._clear_cached_lookups()\n+\n     @classmethod\n     def _clear_cached_lookups(cls):\n         for subclass in subclasses(cls):\n",
+      "new_source": "@classmethod\ndef _unregister_lookup(cls, lookup_name):\n    super()._unregister_lookup(lookup_name)\n    cls._clear_cached_lookups()\n\n@classmethod\ndef _clear_cached_lookups(cls):\n    for subclass in subclasses(cls):\n        subclass.get_lookups.cache_clear()\n"
+    },
+    {
+      "snippet": "py:django/db/models/query_utils.py::RegisterLookupMixin._unregister_lookup",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix",
+      "prompt_hash": "be86d1663d373b2f",
+      "response_hash": "057c30ee45d1197b",
+      "stage": "parse",
+      "reason": "response does not define _unregister_lookup()"
+    },
+    {
+      "snippet": "py:django/db/models/query_utils.py::RegisterLookupMixin.register_lookup",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix_think",
+      "prompt_hash": "47729449c9626762",
+      "response_hash": "4f3e4013c185e5a8",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/model_inheritance/tests.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 11,
+      "judge_s": 3.0,
+      "diff": "diff --git a/django/db/models/query_utils.py b/django/db/models/query_utils.py\nindex 0caa165e15..354437ba84 100644\n--- a/django/db/models/query_utils.py\n+++ b/django/db/models/query_utils.py\n@@ -198,6 +198,11 @@ class RegisterLookupMixin:\n         for subclass in subclasses(cls):\n             subclass.get_lookups.cache_clear()\n \n+    @classmethod\n+    def _clear_cached_lookups(cls):\n+        if hasattr(cls, 'class_lookups_cache'):\n+            del cls.class_lookups_cache\n+\n     @classmethod\n     def register_lookup(cls, lookup, lookup_name=None):\n         if lookup_name is None:\n@@ -208,6 +213,12 @@ class RegisterLookupMixin:\n         cls._clear_cached_lookups()\n         return lookup\n \n+    @classmethod\n+    def _unregister_lookup(cls, lookup):\n+        if lookup.lookup_name in cls.class_lookups:\n+            del cls.class_lookups[lookup.lookup_name]\n+        cls._clear_cached_lookups()\n+\n     @classmethod\n     def _unregister_lookup(cls, lookup, lookup_name=None):\n         \"\"\"\n",
+      "new_source": "@classmethod\ndef _clear_cached_lookups(cls):\n    if hasattr(cls, 'class_lookups_cache'):\n        del cls.class_lookups_cache\n\n@classmethod\ndef register_lookup(cls, lookup, lookup_name=None):\n    if lookup_name is None:\n        lookup_name = lookup.lookup_name\n    if \"class_lookups\" not in cls.__dict__:\n        cls.class_lookups = {}\n    cls.class_lookups[lookup_name] = lookup\n    cls._clear_cached_lookups()\n    return lookup\n\n@classmethod\ndef _unregister_lookup(cls, lookup):\n    if lookup.lookup_name in cls.class_lookups:\n        del cls.class_lookups[lookup.lookup_name]\n    cls._clear_cached_lookups()\n"
+    },
+    {
+      "snippet": "py:django/db/models/query_utils.py::RegisterLookupMixin.get_lookup",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix_think",
+      "prompt_hash": "6a7c4e6dac6c6008",
+      "response_hash": "01df290d815e1dcf",
+      "stage": "parse",
+      "reason": "response does not define get_lookup()"
+    },
+    {
+      "snippet": "py:django/db/models/query_utils.py::RegisterLookupMixin.get_transform",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix_think",
+      "prompt_hash": "f18cf2879ee07731",
+      "response_hash": "5a626bfdd6740aa0",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/db/models/query_utils.py::RegisterLookupMixin._get_lookup",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix_think",
+      "prompt_hash": "bae55c6dcaecfb86",
+      "response_hash": "afa4e31a516a0621",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "38 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "tests/model_inheritance/tests.py"
+      ],
+      "regressions": 38,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 1,
+      "judge_s": 2.9
+    },
+    {
+      "snippet": "py:django/db/models/query_utils.py::RegisterLookupMixin._clear_cached_lookups",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "45be312ff7d27395",
+      "response_hash": "2feee4e18aaba845",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/model_inheritance/tests.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 4,
+      "judge_s": 3.2,
+      "diff": "diff --git a/django/db/models/query_utils.py b/django/db/models/query_utils.py\nindex 0caa165e15..51cc91d561 100644\n--- a/django/db/models/query_utils.py\n+++ b/django/db/models/query_utils.py\n@@ -195,7 +195,9 @@ class RegisterLookupMixin:\n \n     @classmethod\n     def _clear_cached_lookups(cls):\n-        for subclass in subclasses(cls):\n+        # Get all subclasses of RegisterLookupMixin\n+        for subclass in cls.__subclasses__():\n+            # Clear the lookup cache for each subclass\n             subclass.get_lookups.cache_clear()\n \n     @classmethod\n",
+      "new_source": "@classmethod\ndef _clear_cached_lookups(cls):\n    # Get all subclasses of RegisterLookupMixin\n    for subclass in cls.__subclasses__():\n        # Clear the lookup cache for each subclass\n        subclass.get_lookups.cache_clear()\n"
+    },
+    {
+      "snippet": "py:django/db/models/query_utils.py::RegisterLookupMixin._unregister_lookup",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "dda8011b2ae5fd0a",
+      "response_hash": "897d49c559fccd97",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/model_inheritance/tests.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 6,
+      "judge_s": 3.2,
+      "diff": "diff --git a/django/db/models/query_utils.py b/django/db/models/query_utils.py\nindex 0caa165e15..95c7020980 100644\n--- a/django/db/models/query_utils.py\n+++ b/django/db/models/query_utils.py\n@@ -218,6 +218,12 @@ class RegisterLookupMixin:\n             lookup_name = lookup.lookup_name\n         del cls.class_lookups[lookup_name]\n \n+        # Clear the lookup cache\n+        for key, value in copy.deepcopy(cls.lookup_cache).items():\n+            if isinstance(value, LookupCacheEntry):\n+                if lookup_name in [v.name for v in value.values()]:\n+                    lookup_cache[key] = None\n+\n \n def select_related_descend(field, restricted, requested, load_fields, reverse=False):\n     \"\"\"\n",
+      "new_source": "@classmethod\ndef _unregister_lookup(cls, lookup, lookup_name=None):\n    \"\"\"\n    Remove given lookup from cls lookups. For use in tests only as it's\n    not thread-safe.\n    \"\"\"\n    if lookup_name is None:\n        lookup_name = lookup.lookup_name\n    del cls.class_lookups[lookup_name]\n\n    # Clear the lookup cache\n    for key, value in copy.deepcopy(cls.lookup_cache).items():\n        if isinstance(value, LookupCacheEntry):\n            if lookup_name in [v.name for v in value.values()]:\n                lookup_cache[key] = None\n"
+    },
+    {
+      "snippet": "py:django/db/models/query_utils.py::RegisterLookupMixin.register_lookup",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "47729449c9626762",
+      "response_hash": "d02c4ddb0edeac15",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/model_inheritance/tests.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 9,
+      "judge_s": 3.1,
+      "diff": "diff --git a/django/db/models/query_utils.py b/django/db/models/query_utils.py\nindex 0caa165e15..1aea06c746 100644\n--- a/django/db/models/query_utils.py\n+++ b/django/db/models/query_utils.py\n@@ -204,10 +204,17 @@ class RegisterLookupMixin:\n             lookup_name = lookup.lookup_name\n         if \"class_lookups\" not in cls.__dict__:\n             cls.class_lookups = {}\n-        cls.class_lookups[lookup_name] = lookup\n         cls._clear_cached_lookups()\n+        cls.class_lookups[lookup_name] = lookup\n         return lookup\n \n+    @classmethod\n+    def unregister_lookup(cls, lookup_name):\n+        if \"class_lookups\" not in cls.__dict__ or lookup_name not in cls.class_lookups:\n+            raise FieldError(f\"No such lookup: {lookup_name}\")\n+        del cls.class_lookups[lookup_name]\n+        cls._clear_cached_lookups()\n+\n     @classmethod\n     def _unregister_lookup(cls, lookup, lookup_name=None):\n         \"\"\"\n",
+      "new_source": "@classmethod\ndef register_lookup(cls, lookup, lookup_name=None):\n    if lookup_name is None:\n        lookup_name = lookup.lookup_name\n    if \"class_lookups\" not in cls.__dict__:\n        cls.class_lookups = {}\n    cls._clear_cached_lookups()\n    cls.class_lookups[lookup_name] = lookup\n    return lookup\n\n@classmethod\ndef unregister_lookup(cls, lookup_name):\n    if \"class_lookups\" not in cls.__dict__ or lookup_name not in cls.class_lookups:\n        raise FieldError(f\"No such lookup: {lookup_name}\")\n    del cls.class_lookups[lookup_name]\n    cls._clear_cached_lookups()\n"
+    }
+  ],
+  "validated_repro": 0,
+  "stop": "budget",
+  "submission": {
+    "snippet": "py:django/db/models/query_utils.py::RegisterLookupMixin._unregister_lookup",
+    "model": "qwen2.5-coder-7b",
+    "template": "fix_think",
+    "diff": "diff --git a/django/db/models/query_utils.py b/django/db/models/query_utils.py\nindex 0caa165e15..477ff4ed4d 100644\n--- a/django/db/models/query_utils.py\n+++ b/django/db/models/query_utils.py\n@@ -217,6 +217,7 @@ class RegisterLookupMixin:\n         if lookup_name is None:\n             lookup_name = lookup.lookup_name\n         del cls.class_lookups[lookup_name]\n+        cls.clear_cache()\n \n \n def select_related_descend(field, restricted, requested, load_fields, reverse=False):\n",
+    "votes": 0,
+    "changed_lines": 1,
+    "new_source": "@classmethod\ndef _unregister_lookup(cls, lookup, lookup_name=None):\n    \"\"\"\n    Remove given lookup from cls lookups. For use in tests only as it's\n    not thread-safe.\n    \"\"\"\n    if lookup_name is None:\n        lookup_name = lookup.lookup_name\n    del cls.class_lookups[lookup_name]\n    cls.clear_cache()\n",
+    "prompt_hash": "dda8011b2ae5fd0a",
+    "response_hash": "a292053301339fde"
+  },
+  "search_s": 802.1,
+  "llm_calls": 16,
+  "tokens_in": 6274,
+  "tokens_out": 3412,
+  "arms": {
+    "qwen2.5-coder-7b/fix": 0.3,
+    "qwen2.5-coder-7b/fix_think": 0.3833333333333333,
+    "qwen2.5-coder-3b/fix": 0.19999999999999998,
+    "qwen2.5-coder-3b/fix_think": 0.3,
+    "qwen2.5-coder-1.5b/fix": 0.3,
+    "qwen2.5-coder-1.5b/fix_think": 0.72
+  },
+  "grade": {
+    "resolved": false,
+    "applied": true,
+    "fail_to_pass": {
+      "success": 0,
+      "failure": 2
+    },
+    "pass_to_pass": {
+      "success": 224,
+      "failure": 18
+    }
+  },
+  "grade_s": 29.7,
+  "wall_s": 853.7,
+  "diagnosis": {
+    "gold_files": [
+      "django/db/models/query_utils.py"
+    ],
+    "localised_file_hit": true,
+    "localised_line_hit": true,
+    "submission_files": [
+      "django/db/models/query_utils.py"
+    ],
+    "submission_in_gold_file": true,
+    "gold_changed_lines": 1
+  }
+}

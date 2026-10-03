@@ -1,0 +1,32 @@
+{
+  "rule": {
+    "median_latency_s_max": 75.0,
+    "unusable_share_max": 0.25,
+    "order": [
+      "max",
+      "high",
+      "medium",
+      "low"
+    ]
+  },
+  "efforts": {
+    "high": {
+      "calls": 7,
+      "errors": [],
+      "median_latency_s": 25.8,
+      "p90_latency_s": 211.6,
+      "unusable_share": 0.286,
+      "median_tokens_out": 752
+    },
+    "low": {
+      "calls": 19,
+      "errors": [],
+      "median_latency_s": 9.7,
+      "p90_latency_s": 23.1,
+      "unusable_share": 0.263,
+      "median_tokens_out": 185
+    }
+  },
+  "chosen": "low",
+  "why": "none fits; the lowest effort runs and the time budget binds"
+}

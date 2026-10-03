@@ -1,0 +1,14 @@
+diff --git a/lib/matplotlib/transforms.py b/lib/matplotlib/transforms.py
+index f545bd7a1f..457263f931 100644
+--- a/lib/matplotlib/transforms.py
++++ b/lib/matplotlib/transforms.py
+@@ -2337,7 +2337,8 @@ def blended_transform_factory(x_transform, y_transform):
+     if (isinstance(x_transform, Affine2DBase) and
+             isinstance(y_transform, Affine2DBase)):
+         return BlendedAffine2D(x_transform, y_transform)
+-    return BlendedGenericTransform(x_transform, y_transform)
++    else:
++        return BlendedGenericTransform(x_transform, y_transform)
+ 
+ 
+ class CompositeGenericTransform(Transform):

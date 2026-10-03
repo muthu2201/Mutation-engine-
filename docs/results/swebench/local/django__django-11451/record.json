@@ -1,0 +1,388 @@
+{
+  "instance_id": "django__django-11451",
+  "repo": "django/django",
+  "version": "3.0",
+  "base_commit": "e065b293878b1e3ea56655aa9d33e87576cd77ff",
+  "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.django__django-11451:latest",
+  "started_at": "2026-10-03T02:59:19.122724+00:00",
+  "image_digest": "ghcr.io/epoch-research/swe-bench.eval.x86_64.django__django-11451@sha256:17a27176af8d2bd58d5fd2baa884d800a4b41dcfa250ae668a3c00a1001915a6",
+  "pull_s": 13.6,
+  "files_considered": 818,
+  "ranked_files": [
+    {
+      "file": "django/contrib/auth/backends.py",
+      "score": 2.0
+    },
+    {
+      "file": "django/contrib/auth/models.py",
+      "score": 1.855
+    },
+    {
+      "file": "django/contrib/auth/base_user.py",
+      "score": 1.694
+    },
+    {
+      "file": "django/contrib/auth/__init__.py",
+      "score": 1.108
+    },
+    {
+      "file": "django/contrib/auth/forms.py",
+      "score": 0.759
+    },
+    {
+      "file": "django/contrib/auth/handlers/modwsgi.py",
+      "score": 0.746
+    },
+    {
+      "file": "django/core/mail/__init__.py",
+      "score": 0.745
+    },
+    {
+      "file": "django/contrib/auth/admin.py",
+      "score": 0.729
+    }
+  ],
+  "localised": [
+    {
+      "file": "django/contrib/auth/backends.py",
+      "name": "ModelBackend.authenticate",
+      "kind": "function",
+      "start": 39,
+      "end": 50,
+      "score": 4.5
+    },
+    {
+      "file": "django/contrib/auth/backends.py",
+      "name": "RemoteUserBackend.authenticate",
+      "kind": "function",
+      "start": 148,
+      "end": 186,
+      "score": 3.011
+    },
+    {
+      "file": "django/contrib/auth/base_user.py",
+      "name": "BaseUserManager.get_by_natural_key",
+      "kind": "function",
+      "start": 43,
+      "end": 44,
+      "score": 2.734
+    },
+    {
+      "file": "django/contrib/auth/models.py",
+      "name": "AnonymousUser.set_password",
+      "kind": "function",
+      "start": 397,
+      "end": 398,
+      "score": 2.671
+    },
+    {
+      "file": "django/contrib/auth/backends.py",
+      "name": "BaseBackend.authenticate",
+      "kind": "function",
+      "start": 12,
+      "end": 13,
+      "score": 2.624
+    },
+    {
+      "file": "django/contrib/auth/__init__.py",
+      "name": "authenticate",
+      "kind": "function",
+      "start": 61,
+      "end": 83,
+      "score": 2.612
+    }
+  ],
+  "repro": [
+    {
+      "model": "qwen2.5-coder-7b",
+      "outcome": "NONE",
+      "script_hash": "ca4f8328ebecdb67"
+    },
+    {
+      "model": "qwen2.5-coder-3b",
+      "outcome": "unparseable",
+      "script_hash": null
+    }
+  ],
+  "candidates": [
+    {
+      "snippet": "py:django/contrib/auth/backends.py::ModelBackend.authenticate",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix_think",
+      "prompt_hash": "579654584d1f28ce",
+      "response_hash": "d339fcc267d91ce4",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/test_client/tests.py",
+        "tests/auth_tests/test_auth_backends.py",
+        "tests/auth_tests/test_forms.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 6.6,
+      "diff": "diff --git a/django/contrib/auth/backends.py b/django/contrib/auth/backends.py\nindex f4b1722757..a3765ae0f1 100644\n--- a/django/contrib/auth/backends.py\n+++ b/django/contrib/auth/backends.py\n@@ -39,6 +39,8 @@ class ModelBackend(BaseBackend):\n     def authenticate(self, request, username=None, password=None, **kwargs):\n         if username is None:\n             username = kwargs.get(UserModel.USERNAME_FIELD)\n+        if username is None or password is None:\n+            return\n         try:\n             user = UserModel._default_manager.get_by_natural_key(username)\n         except UserModel.DoesNotExist:\n",
+      "new_source": "def authenticate(self, request, username=None, password=None, **kwargs):\n    if username is None:\n        username = kwargs.get(UserModel.USERNAME_FIELD)\n    if username is None or password is None:\n        return\n    try:\n        user = UserModel._default_manager.get_by_natural_key(username)\n    except UserModel.DoesNotExist:\n        # Run the default password hasher once to reduce the timing\n        # difference between an existing and a nonexistent user (#20760).\n        UserModel().set_password(password)\n    else:\n        if user.check_password(password) and self.user_can_authenticate(user):\n            return user\n"
+    },
+    {
+      "snippet": "py:django/contrib/auth/backends.py::RemoteUserBackend.authenticate",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix_think",
+      "prompt_hash": "a873f1053ff6a5ef",
+      "response_hash": "fca4bf47a6c45adf",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/contrib/auth/base_user.py::BaseUserManager.get_by_natural_key",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix",
+      "prompt_hash": "dea320289c6ac980",
+      "response_hash": "d82145d6a75c6a31",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/auth_tests/test_models.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 5.9,
+      "diff": "diff --git a/django/contrib/auth/base_user.py b/django/contrib/auth/base_user.py\nindex f39c12a350..3fe9cdacc6 100644\n--- a/django/contrib/auth/base_user.py\n+++ b/django/contrib/auth/base_user.py\n@@ -41,6 +41,8 @@ class BaseUserManager(models.Manager):\n         return get_random_string(length, allowed_chars)\n \n     def get_by_natural_key(self, username):\n+        if username is None:\n+            return None\n         return self.get(**{self.model.USERNAME_FIELD: username})\n \n \n",
+      "new_source": "def get_by_natural_key(self, username):\n    if username is None:\n        return None\n    return self.get(**{self.model.USERNAME_FIELD: username})\n"
+    },
+    {
+      "snippet": "py:django/contrib/auth/models.py::AnonymousUser.set_password",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix",
+      "prompt_hash": "a9148eb942d5298e",
+      "response_hash": "6acb98dbb2a72a2d",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/contrib/auth/backends.py::BaseBackend.authenticate",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix",
+      "prompt_hash": "5bf2ad404f579480",
+      "response_hash": "9348b6572aa0995d",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/test_client/tests.py",
+        "tests/auth_tests/test_auth_backends.py",
+        "tests/auth_tests/test_forms.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 23,
+      "judge_s": 3.6,
+      "diff": "diff --git a/django/contrib/auth/backends.py b/django/contrib/auth/backends.py\nindex f4b1722757..4bada62b36 100644\n--- a/django/contrib/auth/backends.py\n+++ b/django/contrib/auth/backends.py\n@@ -9,8 +9,27 @@ UserModel = get_user_model()\n \n \n class BaseBackend:\n-    def authenticate(self, request, **kwargs):\n-        return None\n+    def authenticate(self, request, username=None, password=None, **kwargs):\n+        if username is None:\n+            username = kwargs.get(UserModel.USERNAME_FIELD)\n+        if username is None or password is None:\n+            return\n+        try:\n+            user = UserModel._default_manager.get_by_natural_key(username)\n+        except UserModel.DoesNotExist:\n+            # Run the default password hasher once to reduce the timing\n+            # difference between an existing and a nonexistent user (#20760).\n+            UserModel().set_password(password)\n+        else:\n+            if self.user_can_authenticate(user):\n+                return user\n+\n+    def user_can_authenticate(self, user):\n+        \"\"\"\n+        Determine if the user can authenticate.\n+        \"\"\"\n+        is_active = getattr(user, 'is_active', None)\n+        return is_active or is_active is None\n \n     def get_user(self, user_id):\n         return None\n",
+      "new_source": "def authenticate(self, request, username=None, password=None, **kwargs):\n    if username is None:\n        username = kwargs.get(UserModel.USERNAME_FIELD)\n    if username is None or password is None:\n        return\n    try:\n        user = UserModel._default_manager.get_by_natural_key(username)\n    except UserModel.DoesNotExist:\n        # Run the default password hasher once to reduce the timing\n        # difference between an existing and a nonexistent user (#20760).\n        UserModel().set_password(password)\n    else:\n        if self.user_can_authenticate(user):\n            return user\n\ndef user_can_authenticate(self, user):\n    \"\"\"\n    Determine if the user can authenticate.\n    \"\"\"\n    is_active = getattr(user, 'is_active', None)\n    return is_active or is_active is None\n"
+    },
+    {
+      "snippet": "py:django/contrib/auth/__init__.py::authenticate",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix",
+      "prompt_hash": "5eaae69cd04a104b",
+      "response_hash": "3b155f60adc9591b",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/contrib/auth/backends.py::ModelBackend.authenticate",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix",
+      "prompt_hash": "01b4065351a35f3f",
+      "response_hash": "d039e8e5ac0f5cfb",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/test_client/tests.py",
+        "tests/auth_tests/test_auth_backends.py",
+        "tests/auth_tests/test_forms.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 3.5,
+      "diff": "diff --git a/django/contrib/auth/backends.py b/django/contrib/auth/backends.py\nindex f4b1722757..a3765ae0f1 100644\n--- a/django/contrib/auth/backends.py\n+++ b/django/contrib/auth/backends.py\n@@ -39,6 +39,8 @@ class ModelBackend(BaseBackend):\n     def authenticate(self, request, username=None, password=None, **kwargs):\n         if username is None:\n             username = kwargs.get(UserModel.USERNAME_FIELD)\n+        if username is None or password is None:\n+            return\n         try:\n             user = UserModel._default_manager.get_by_natural_key(username)\n         except UserModel.DoesNotExist:\n",
+      "new_source": "def authenticate(self, request, username=None, password=None, **kwargs):\n    if username is None:\n        username = kwargs.get(UserModel.USERNAME_FIELD)\n    if username is None or password is None:\n        return\n    try:\n        user = UserModel._default_manager.get_by_natural_key(username)\n    except UserModel.DoesNotExist:\n        # Run the default password hasher once to reduce the timing\n        # difference between an existing and a nonexistent user (#20760).\n        UserModel().set_password(password)\n    else:\n        if user.check_password(password) and self.user_can_authenticate(user):\n            return user\n"
+    },
+    {
+      "snippet": "py:django/contrib/auth/backends.py::RemoteUserBackend.authenticate",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix",
+      "prompt_hash": "4a425cd5c26c88da",
+      "response_hash": "ebc04cfefb3e39d4",
+      "stage": "parse",
+      "reason": "response does not define authenticate()"
+    },
+    {
+      "snippet": "py:django/contrib/auth/base_user.py::BaseUserManager.get_by_natural_key",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "dea320289c6ac980",
+      "response_hash": "7905d5dd4401b537",
+      "stage": "parse",
+      "reason": "response does not define get_by_natural_key()"
+    },
+    {
+      "snippet": "py:django/contrib/auth/models.py::AnonymousUser.set_password",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "a9148eb942d5298e",
+      "response_hash": "4148d18c5d7f4031",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "1 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "tests/auth_tests/test_models.py",
+        "tests/contenttypes_tests/test_models.py",
+        "tests/flatpages_tests/test_models.py"
+      ],
+      "regressions": 1,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 3,
+      "judge_s": 5.9
+    },
+    {
+      "snippet": "py:django/contrib/auth/backends.py::BaseBackend.authenticate",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "5bf2ad404f579480",
+      "response_hash": "007b794561a42fb5",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/test_client/tests.py",
+        "tests/auth_tests/test_auth_backends.py",
+        "tests/auth_tests/test_forms.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 12,
+      "judge_s": 3.7,
+      "diff": "diff --git a/django/contrib/auth/backends.py b/django/contrib/auth/backends.py\nindex f4b1722757..6f762d866c 100644\n--- a/django/contrib/auth/backends.py\n+++ b/django/contrib/auth/backends.py\n@@ -9,8 +9,16 @@ UserModel = get_user_model()\n \n \n class BaseBackend:\n-    def authenticate(self, request, **kwargs):\n-        return None\n+    def authenticate(self, request, username=None, password=None, **kwargs):\n+        if username is None or password is None:\n+            return None\n+\n+        try:\n+            user = UserModel._default_manager.get_by_natural_key(username)\n+        except UserModel.DoesNotExist:\n+            pass\n+        else:\n+            ...\n \n     def get_user(self, user_id):\n         return None\n",
+      "new_source": "def authenticate(self, request, username=None, password=None, **kwargs):\n    if username is None or password is None:\n        return None\n\n    try:\n        user = UserModel._default_manager.get_by_natural_key(username)\n    except UserModel.DoesNotExist:\n        pass\n    else:\n        ...\n"
+    },
+    {
+      "snippet": "py:django/contrib/auth/__init__.py::authenticate",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "5eaae69cd04a104b",
+      "response_hash": "552034ffd4272903",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "12 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "tests/admin_scripts/tests.py",
+        "tests/auth_tests/test_forms.py",
+        "tests/auth_tests/test_hashers.py"
+      ],
+      "regressions": 12,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 10,
+      "judge_s": 86.3
+    },
+    {
+      "snippet": "py:django/contrib/auth/backends.py::ModelBackend.authenticate",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix",
+      "prompt_hash": "01b4065351a35f3f",
+      "response_hash": "ffba60ece5c80c50",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "1 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "tests/test_client/tests.py",
+        "tests/auth_tests/test_auth_backends.py",
+        "tests/auth_tests/test_forms.py"
+      ],
+      "regressions": 1,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 3.8
+    },
+    {
+      "snippet": "py:django/contrib/auth/backends.py::RemoteUserBackend.authenticate",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix",
+      "prompt_hash": "4a425cd5c26c88da",
+      "response_hash": "4068842a123f4989",
+      "stage": "parse",
+      "reason": "response does not define authenticate()"
+    }
+  ],
+  "validated_repro": 0,
+  "stop": "budget",
+  "submission": {
+    "snippet": "py:django/contrib/auth/backends.py::ModelBackend.authenticate",
+    "model": "qwen2.5-coder-7b",
+    "template": "fix_think",
+    "diff": "diff --git a/django/contrib/auth/backends.py b/django/contrib/auth/backends.py\nindex f4b1722757..a3765ae0f1 100644\n--- a/django/contrib/auth/backends.py\n+++ b/django/contrib/auth/backends.py\n@@ -39,6 +39,8 @@ class ModelBackend(BaseBackend):\n     def authenticate(self, request, username=None, password=None, **kwargs):\n         if username is None:\n             username = kwargs.get(UserModel.USERNAME_FIELD)\n+        if username is None or password is None:\n+            return\n         try:\n             user = UserModel._default_manager.get_by_natural_key(username)\n         except UserModel.DoesNotExist:\n",
+    "votes": 0,
+    "changed_lines": 2,
+    "new_source": "def authenticate(self, request, username=None, password=None, **kwargs):\n    if username is None:\n        username = kwargs.get(UserModel.USERNAME_FIELD)\n    if username is None or password is None:\n        return\n    try:\n        user = UserModel._default_manager.get_by_natural_key(username)\n    except UserModel.DoesNotExist:\n        # Run the default password hasher once to reduce the timing\n        # difference between an existing and a nonexistent user (#20760).\n        UserModel().set_password(password)\n    else:\n        if user.check_password(password) and self.user_can_authenticate(user):\n            return user\n",
+    "prompt_hash": "579654584d1f28ce",
+    "response_hash": "d339fcc267d91ce4"
+  },
+  "search_s": 918.9,
+  "llm_calls": 16,
+  "tokens_in": 11846,
+  "tokens_out": 2864,
+  "arms": {
+    "qwen2.5-coder-7b/fix": 0.36,
+    "qwen2.5-coder-7b/fix_think": 0.4,
+    "qwen2.5-coder-3b/fix": 0.3,
+    "qwen2.5-coder-3b/fix_think": 0.3,
+    "qwen2.5-coder-1.5b/fix": 0.26666666666666666,
+    "qwen2.5-coder-1.5b/fix_think": 0.3
+  },
+  "grade": {
+    "resolved": true,
+    "applied": true,
+    "fail_to_pass": {
+      "success": 6,
+      "failure": 0
+    },
+    "pass_to_pass": {
+      "success": 45,
+      "failure": 0
+    }
+  },
+  "grade_s": 25.0,
+  "wall_s": 964.1,
+  "diagnosis": {
+    "gold_files": [
+      "django/contrib/auth/backends.py"
+    ],
+    "localised_file_hit": true,
+    "localised_line_hit": true,
+    "submission_files": [
+      "django/contrib/auth/backends.py"
+    ],
+    "submission_in_gold_file": true,
+    "gold_changed_lines": 2
+  }
+}

@@ -1,0 +1,13 @@
+diff --git a/astropy/nddata/compat.py b/astropy/nddata/compat.py
+index 1e0694d0eb..a1c5ca86fc 100644
+--- a/astropy/nddata/compat.py
++++ b/astropy/nddata/compat.py
+@@ -161,6 +161,8 @@ class NDDataArray(NDArithmeticMixin, NDSlicingMixin, NDIOMixin, NDData):
+     def mask(self):
+         if self._mask is np.ma.nomask:
+             return None
++        elif self._mask is None:
++            return None
+         else:
+             return self._mask
+ 

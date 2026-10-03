@@ -1,0 +1,455 @@
+{
+  "instance_id": "sphinx-doc__sphinx-9281",
+  "repo": "sphinx-doc/sphinx",
+  "version": "4.1",
+  "base_commit": "8ec06e9a1bd862cd713b9db748e039ccc7b3e15b",
+  "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.sphinx-doc__sphinx-9281:latest",
+  "started_at": "2026-10-03T15:00:40.083066+00:00",
+  "image_digest": "ghcr.io/epoch-research/swe-bench.eval.x86_64.sphinx-doc__sphinx-9281@sha256:8dcf7b055e0224a1dbc68da02c7cc100023e8d1d520ab78c8ca0ec0be3ccf32a",
+  "pull_s": 19.8,
+  "files_considered": 177,
+  "ranked_files": [
+    {
+      "file": "sphinx/util/inspect.py",
+      "score": 1.0
+    },
+    {
+      "file": "sphinx/domains/__init__.py",
+      "score": 0.816
+    },
+    {
+      "file": "sphinx/ext/autodoc/__init__.py",
+      "score": 0.808
+    },
+    {
+      "file": "sphinx/config.py",
+      "score": 0.806
+    },
+    {
+      "file": "sphinx/addnodes.py",
+      "score": 0.795
+    },
+    {
+      "file": "sphinx/builders/epub3.py",
+      "score": 0.781
+    },
+    {
+      "file": "sphinx/domains/c.py",
+      "score": 0.769
+    },
+    {
+      "file": "sphinx/domains/cpp.py",
+      "score": 0.755
+    }
+  ],
+  "localised": [
+    {
+      "file": "sphinx/addnodes.py",
+      "name": "index.<L379-390>",
+      "kind": "block",
+      "start": 379,
+      "end": 390,
+      "score": 1.534
+    },
+    {
+      "file": "sphinx/util/inspect.py",
+      "name": "isenumattribute",
+      "kind": "function",
+      "start": 227,
+      "end": 229,
+      "score": 1.5
+    },
+    {
+      "file": "sphinx/util/inspect.py",
+      "name": "isenumclass",
+      "kind": "function",
+      "start": 222,
+      "end": 224,
+      "score": 1.489
+    },
+    {
+      "file": "sphinx/config.py",
+      "name": "ENUM.<L59-63>",
+      "kind": "block",
+      "start": 59,
+      "end": 63,
+      "score": 1.387
+    },
+    {
+      "file": "sphinx/domains/c.py",
+      "name": "DefinitionParser._parse_enum",
+      "kind": "function",
+      "start": 3004,
+      "end": 3006,
+      "score": 1.356
+    },
+    {
+      "file": "sphinx/ext/autodoc/__init__.py",
+      "name": "setup",
+      "kind": "function",
+      "start": 2714,
+      "end": 2753,
+      "score": 1.326
+    }
+  ],
+  "repro": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "ISSUE REPRODUCED",
+      "script_hash": "d2c1d9746243225a"
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "outcome": "OTHER",
+      "script_hash": "972fb94c7d57f845"
+    }
+  ],
+  "candidates": [
+    {
+      "snippet": "py:sphinx/addnodes.py::index.<L379-390>",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "4aef259df81ea200",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:sphinx/util/inspect.py::isenumattribute",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "8b4edd17b2747465",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:sphinx/util/inspect.py::isenumclass",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "fa1f4993f893f44e",
+      "response_hash": "94c7db0cfadf1af2",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/test_util_inspect.py",
+        "tests/test_pycode_parser.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 7,
+      "judge_s": 7.7,
+      "diff": "diff --git a/sphinx/util/inspect.py b/sphinx/util/inspect.py\nindex a415a7074..aca125c71 100644\n--- a/sphinx/util/inspect.py\n+++ b/sphinx/util/inspect.py\n@@ -220,8 +220,11 @@ def isNewType(obj: Any) -> bool:\n \n \n def isenumclass(x: Any) -> bool:\n-    \"\"\"Check if the object is subclass of enum.\"\"\"\n-    return inspect.isclass(x) and issubclass(x, enum.Enum)\n+    \"\"\"Check if the object is a subclass of enum or an enum member.\"\"\"\n+    if inspect.isclass(x):\n+        return issubclass(x, enum.Enum)\n+    else:\n+        return isinstance(x, enum.Enum)\n \n \n def isenumattribute(x: Any) -> bool:\n",
+      "new_source": "def isenumclass(x: Any) -> bool:\n    \"\"\"Check if the object is a subclass of enum or an enum member.\"\"\"\n    if inspect.isclass(x):\n        return issubclass(x, enum.Enum)\n    else:\n        return isinstance(x, enum.Enum)\n"
+    },
+    {
+      "snippet": "py:sphinx/config.py::ENUM.<L59-63>",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "db4ae2bb1b35da0f",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:sphinx/domains/c.py::DefinitionParser._parse_enum",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "d93aae36208edfc8",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:sphinx/ext/autodoc/__init__.py::setup",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "5ba60a6b9a9f5448",
+      "response_hash": "bca320dd411066b8",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/test_environment.py",
+        "tests/test_ext_autodoc.py",
+        "tests/test_ext_autodoc_events.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 15,
+      "judge_s": 17.0,
+      "diff": "diff --git a/sphinx/ext/autodoc/__init__.py b/sphinx/ext/autodoc/__init__.py\nindex ec1472e20..b110173a8 100644\n--- a/sphinx/ext/autodoc/__init__.py\n+++ b/sphinx/ext/autodoc/__init__.py\n@@ -2746,6 +2746,21 @@ def setup(app: Sphinx) -> Dict[str, Any]:\n \n     app.connect('config-inited', migrate_autodoc_member_order, priority=800)\n \n+    # Render Enum instances nicely (e.g. \"MyEnum.ValueA\") instead of their\n+    # repr (e.g. \"<MyEnum.ValueA: 10>\") when used as default values in\n+    # signatures.\n+    import enum\n+    import sphinx.util.inspect as _inspect\n+\n+    _orig_object_description = _inspect.object_description\n+\n+    def object_description(obj: Any) -> str:\n+        if isinstance(obj, enum.Enum):\n+            return '%s.%s' % (obj.__class__.__name__, obj.name)\n+        return _orig_object_description(obj)\n+\n+    _inspect.object_description = object_description\n+\n     app.setup_extension('sphinx.ext.autodoc.preserve_defaults')\n     app.setup_extension('sphinx.ext.autodoc.type_comment')\n     app.setup_extension('sphinx.ext.autodoc.typehints')\n",
+      "new_source": "def setup(app: Sphinx) -> Dict[str, Any]:\n    app.add_autodocumenter(ModuleDocumenter)\n    app.add_autodocumenter(ClassDocumenter)\n    app.add_autodocumenter(ExceptionDocumenter)\n    app.add_autodocumenter(DataDocumenter)\n    app.add_autodocumenter(NewTypeDataDocumenter)\n    app.add_autodocumenter(FunctionDocumenter)\n    app.add_autodocumenter(DecoratorDocumenter)\n    app.add_autodocumenter(MethodDocumenter)\n    app.add_autodocumenter(AttributeDocumenter)\n    app.add_autodocumenter(PropertyDocumenter)\n    app.add_autodocumenter(NewTypeAttributeDocumenter)\n\n    app.add_config_value('autoclass_content', 'class', True, ENUM('both', 'class', 'init'))\n    app.add_config_value('autodoc_member_order', 'alphabetical', True,\n                         ENUM('alphabetic', 'alphabetical', 'bysource', 'groupwise'))\n    app.add_config_value('autodoc_class_signature', 'mixed', True, ENUM('mixed', 'separated'))\n    app.add_config_value('autodoc_default_options', {}, True)\n    app.add_config_value('autodoc_docstring_signature', True, True)\n    app.add_config_value('autodoc_mock_imports', [], True)\n    app.add_config_value('autodoc_typehints', \"signature\", True,\n                         ENUM(\"signature\", \"description\", \"none\", \"both\"))\n    app.add_config_value('autodoc_typehints_description_target', 'all', True,\n                         ENUM('all', 'documented'))\n    app.add_config_value('autodoc_type_aliases', {}, True)\n    app.add_config_value('autodoc_warningiserror', True, True)\n    app.add_config_value('autodoc_inherit_docstrings', True, True)\n    app.add_event('autodoc-before-process-signature')\n    app.add_event('autodoc-process-docstring')\n    app.add_event('autodoc-process-signature')\n    app.add_event('autodoc-skip-member')\n    app.add_event('autodoc-process-bases')\n\n    app.connect('config-inited', migrate_autodoc_member_order, priority=800)\n\n    # Render Enum instances nicely (e.g. \"MyEnum.ValueA\") instead of their\n    # repr (e.g. \"<MyEnum.ValueA: 10>\") when used as default values in\n    # signatures.\n    import enum\n    import sphinx.util.inspect as _inspect\n\n    _orig_object_description = _inspect.object_description\n\n    def object_description(obj: Any) -> str:\n        if isinstance(obj, enum.Enum):\n            return '%s.%s' % (obj.__class__.__name__, obj.name)\n        return _orig_object_description(obj)\n\n    _inspect.object_description = object_description\n\n    app.setup_extension('sphinx.ext.autodoc.preserve_defaults')\n    app.setup_extension('sphinx.ext.autodoc.type_comment')\n    app.setup_extension('sphinx.ext.autodoc.typehints')\n\n    return {'version': sphinx.__display_version__, 'parallel_read_safe': True}\n"
+    },
+    {
+      "snippet": "py:sphinx/addnodes.py::index.<L379-390>",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "f71d8459f804e827",
+      "response_hash": "e5bce07d959a4a2a",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:sphinx/util/inspect.py::isenumattribute",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "58b622c451a2895f",
+      "response_hash": "f26eee5aa1763253",
+      "stage": "parse",
+      "reason": "response does not define isenumattribute()"
+    },
+    {
+      "snippet": "py:sphinx/util/inspect.py::isenumclass",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "09c0c8b7b8c754fe",
+      "response_hash": "6eb4b3b8846c9c75",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/test_util_inspect.py",
+        "tests/test_pycode_parser.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 31,
+      "judge_s": 4.3,
+      "diff": "diff --git a/sphinx/util/inspect.py b/sphinx/util/inspect.py\nindex a415a7074..8c3a5b9ad 100644\n--- a/sphinx/util/inspect.py\n+++ b/sphinx/util/inspect.py\n@@ -224,6 +224,37 @@ def isenumclass(x: Any) -> bool:\n     return inspect.isclass(x) and issubclass(x, enum.Enum)\n \n \n+def isenumattribute(x: Any) -> bool:\n+    \"\"\"Check if the object is an attribute of enum.\"\"\"\n+    return isinstance(x, enum.Enum)\n+\n+\n+def object_description(object: Any) -> str:\n+    \"\"\"A description of an object.\"\"\"\n+    if isinstance(object, enum.Enum):\n+        cls = object.__class__\n+        if cls.__module__ == 'builtins':\n+            return \"%s.%s\" % (cls.__name__, object.name)\n+        return \"%s.%s.%s\" % (cls.__module__, cls.__name__, object.name)\n+\n+    try:\n+        s = repr(object)\n+    except Exception as exc:\n+        logger.warning(__('An exception was raised while obtaining the repr '\n+                          'of %r: %s'), object, exc)\n+        s = object.__class__.__name__\n+\n+    # Strip non-printable characters from string\n+    s = ''.join(c if c.isprintable() else '?' for c in s)\n+\n+    if isinstance(object, type):\n+        return s.replace(\"<class '\", \"\").replace(\"'>\", \"\")\n+    if isinstance(object, types.MethodType) and object.__self__ is not None:\n+        # Class method\n+        return methodrepr(object)\n+    return s\n+\n+\n def isenumattribute(x: Any) -> bool:\n     \"\"\"Check if the object is attribute of enum.\"\"\"\n     return isinstance(x, enum.Enum)\n",
+      "new_source": "def isenumclass(x: Any) -> bool:\n    \"\"\"Check if the object is subclass of enum.\"\"\"\n    return inspect.isclass(x) and issubclass(x, enum.Enum)\n\n\ndef isenumattribute(x: Any) -> bool:\n    \"\"\"Check if the object is an attribute of enum.\"\"\"\n    return isinstance(x, enum.Enum)\n\n\ndef object_description(object: Any) -> str:\n    \"\"\"A description of an object.\"\"\"\n    if isinstance(object, enum.Enum):\n        cls = object.__class__\n        if cls.__module__ == 'builtins':\n            return \"%s.%s\" % (cls.__name__, object.name)\n        return \"%s.%s.%s\" % (cls.__module__, cls.__name__, object.name)\n\n    try:\n        s = repr(object)\n    except Exception as exc:\n        logger.warning(__('An exception was raised while obtaining the repr '\n                          'of %r: %s'), object, exc)\n        s = object.__class__.__name__\n\n    # Strip non-printable characters from string\n    s = ''.join(c if c.isprintable() else '?' for c in s)\n\n    if isinstance(object, type):\n        return s.replace(\"<class '\", \"\").replace(\"'>\", \"\")\n    if isinstance(object, types.MethodType) and object.__self__ is not None:\n        # Class method\n        return methodrepr(object)\n    return s\n"
+    },
+    {
+      "snippet": "py:sphinx/config.py::ENUM.<L59-63>",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "db4ae2bb1b35da0f",
+      "response_hash": "25fab27df1942a45",
+      "stage": "parse",
+      "reason": "file does not parse after the splice: '(' was never closed (line 65)"
+    },
+    {
+      "snippet": "py:sphinx/domains/c.py::DefinitionParser._parse_enum",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "11644dc183676b3a",
+      "response_hash": "d06a951737eaced1",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:sphinx/ext/autodoc/__init__.py::setup",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "9e4b867f477c96dd",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:sphinx/addnodes.py::index.<L379-390>",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix",
+      "prompt_hash": "4aef259df81ea200",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:sphinx/util/inspect.py::isenumattribute",
+      "model": "moonshotai/kimi-k3",
+      "template": "fix_think",
+      "prompt_hash": "58b622c451a2895f",
+      "response_hash": "e3b0c44298fc1c14",
+      "stage": "parse",
+      "reason": "no code block in response"
+    }
+  ],
+  "validated_repro": 1,
+  "stop": "budget",
+  "submission": {
+    "snippet": "py:sphinx/util/inspect.py::isenumclass",
+    "model": "moonshotai/kimi-k3",
+    "template": "fix",
+    "diff": "diff --git a/sphinx/util/inspect.py b/sphinx/util/inspect.py\nindex a415a7074..aca125c71 100644\n--- a/sphinx/util/inspect.py\n+++ b/sphinx/util/inspect.py\n@@ -220,8 +220,11 @@ def isNewType(obj: Any) -> bool:\n \n \n def isenumclass(x: Any) -> bool:\n-    \"\"\"Check if the object is subclass of enum.\"\"\"\n-    return inspect.isclass(x) and issubclass(x, enum.Enum)\n+    \"\"\"Check if the object is a subclass of enum or an enum member.\"\"\"\n+    if inspect.isclass(x):\n+        return issubclass(x, enum.Enum)\n+    else:\n+        return isinstance(x, enum.Enum)\n \n \n def isenumattribute(x: Any) -> bool:\n",
+    "votes": 0,
+    "changed_lines": 7,
+    "new_source": "def isenumclass(x: Any) -> bool:\n    \"\"\"Check if the object is a subclass of enum or an enum member.\"\"\"\n    if inspect.isclass(x):\n        return issubclass(x, enum.Enum)\n    else:\n        return isinstance(x, enum.Enum)\n",
+    "prompt_hash": "fa1f4993f893f44e",
+    "response_hash": "94c7db0cfadf1af2"
+  },
+  "search_s": 540.4,
+  "llm_calls": 16,
+  "tokens_in": 10687,
+  "tokens_out": 5701,
+  "calls": [
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 21.7,
+      "tokens_in": 417,
+      "tokens_out": 170,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 27.25,
+      "tokens_in": 417,
+      "tokens_out": 209,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 31.41,
+      "tokens_in": 570,
+      "tokens_out": 33,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 16.59,
+      "tokens_in": 605,
+      "tokens_out": 33,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 23.45,
+      "tokens_in": 613,
+      "tokens_out": 233,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 55.26,
+      "tokens_in": 561,
+      "tokens_out": 33,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 18.86,
+      "tokens_in": 672,
+      "tokens_out": 33,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 73.55,
+      "tokens_in": 1288,
+      "tokens_out": 1043,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 29.5,
+      "tokens_in": 580,
+      "tokens_out": 547,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 39.96,
+      "tokens_in": 615,
+      "tokens_out": 881,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 22.21,
+      "tokens_in": 623,
+      "tokens_out": 442,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 49.33,
+      "tokens_in": 561,
+      "tokens_out": 1259,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 35.92,
+      "tokens_in": 682,
+      "tokens_out": 686,
+      "finish_reason": "stop",
+      "empty": false
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 15.69,
+      "tokens_in": 1298,
+      "tokens_out": 32,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 19.5,
+      "tokens_in": 570,
+      "tokens_out": 33,
+      "finish_reason": "stop",
+      "empty": true
+    },
+    {
+      "model": "moonshotai/kimi-k3",
+      "latency_s": 17.06,
+      "tokens_in": 615,
+      "tokens_out": 34,
+      "finish_reason": "stop",
+      "empty": true
+    }
+  ],
+  "arms": {
+    "moonshotai/kimi-k3/fix": 0.12,
+    "moonshotai/kimi-k3/fix_think": 0.11249999999999999
+  },
+  "grade": {
+    "resolved": false,
+    "applied": true,
+    "fail_to_pass": {
+      "success": 0,
+      "failure": 1
+    },
+    "pass_to_pass": {
+      "success": 38,
+      "failure": 0
+    }
+  },
+  "grade_s": 1.8,
+  "wall_s": 572.1,
+  "diagnosis": {
+    "gold_files": [
+      "sphinx/util/inspect.py"
+    ],
+    "localised_file_hit": true,
+    "localised_line_hit": false,
+    "submission_files": [
+      "sphinx/util/inspect.py"
+    ],
+    "submission_in_gold_file": true,
+    "gold_changed_lines": 7
+  }
+}

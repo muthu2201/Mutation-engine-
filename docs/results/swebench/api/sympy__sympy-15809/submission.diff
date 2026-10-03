@@ -1,0 +1,16 @@
+diff --git a/sympy/functions/elementary/miscellaneous.py b/sympy/functions/elementary/miscellaneous.py
+index 5f9fe73c5c..22dd4c57dd 100644
+--- a/sympy/functions/elementary/miscellaneous.py
++++ b/sympy/functions/elementary/miscellaneous.py
+@@ -795,6 +795,11 @@ class Min(MinMaxBase, Application):
+     zero = S.NegativeInfinity
+     identity = S.Infinity
+ 
++    def __new__(cls, *args, **assumptions):
++        if not args:
++            return S.Infinity
++        return Application.__new__(cls, *args, **assumptions)
++
+     def fdiff( self, argindex ):
+         from sympy import Heaviside
+         n = len(self.args)

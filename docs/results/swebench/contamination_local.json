@@ -1,0 +1,1546 @@
+{
+  "models": [
+    "qwen2.5-coder-7b",
+    "qwen2.5-coder-3b",
+    "qwen2.5-coder-1.5b"
+  ],
+  "rule": {
+    "overlap": 0.5,
+    "min_gold_tokens": 12,
+    "min_line_tokens": 4
+  },
+  "probes": [
+    {
+      "instance_id": "astropy__astropy-7336",
+      "model": "qwen2.5-coder-7b",
+      "gold_files": [
+        "astropy/units/decorators.py"
+      ],
+      "path_prediction": "astropy/utils/decorators.py",
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 16,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "astropy__astropy-7336",
+      "model": "qwen2.5-coder-3b",
+      "gold_files": [
+        "astropy/units/decorators.py"
+      ],
+      "path_prediction": "astropy/units/decorators.py",
+      "path_hit": true,
+      "path_mentioned_in_issue": true,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 16,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "astropy__astropy-7336",
+      "model": "qwen2.5-coder-1.5b",
+      "gold_files": [
+        "astropy/units/decorators.py"
+      ],
+      "path_prediction": "astropy/astropy/utils/decorators.py",
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 16,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "django__django-11099",
+      "model": "qwen2.5-coder-7b",
+      "gold_files": [
+        "django/contrib/auth/validators.py"
+      ],
+      "path_prediction": "django/contrib/auth/validators.py",
+      "path_hit": true,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 34,
+      "verdict": "path-only"
+    },
+    {
+      "instance_id": "django__django-11099",
+      "model": "qwen2.5-coder-3b",
+      "gold_files": [
+        "django/contrib/auth/validators.py"
+      ],
+      "path_prediction": "django/contrib/auth/validators.py",
+      "path_hit": true,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 34,
+      "verdict": "path-only"
+    },
+    {
+      "instance_id": "django__django-11099",
+      "model": "qwen2.5-coder-1.5b",
+      "gold_files": [
+        "django/contrib/auth/validators.py"
+      ],
+      "path_prediction": "django/django/contrib/auth/validators.py",
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 34,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "django__django-11451",
+      "model": "qwen2.5-coder-7b",
+      "gold_files": [
+        "django/contrib/auth/backends.py"
+      ],
+      "path_prediction": null,
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 10,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "django__django-11451",
+      "model": "qwen2.5-coder-3b",
+      "gold_files": [
+        "django/contrib/auth/backends.py"
+      ],
+      "path_prediction": "django/contrib/auth/backends.py",
+      "path_hit": true,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 10,
+      "verdict": "path-only"
+    },
+    {
+      "instance_id": "django__django-11451",
+      "model": "qwen2.5-coder-1.5b",
+      "gold_files": [
+        "django/contrib/auth/backends.py"
+      ],
+      "path_prediction": "django/django/core/auth/backends.py",
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 10,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "django__django-11490",
+      "model": "qwen2.5-coder-7b",
+      "gold_files": [
+        "django/db/models/sql/compiler.py"
+      ],
+      "path_prediction": "compiler.py",
+      "path_hit": true,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 11,
+      "verdict": "path-only"
+    },
+    {
+      "instance_id": "django__django-11490",
+      "model": "qwen2.5-coder-3b",
+      "gold_files": [
+        "django/db/models/sql/compiler.py"
+      ],
+      "path_prediction": "django/db/models/query.py",
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 11,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "django__django-11490",
+      "model": "qwen2.5-coder-1.5b",
+      "gold_files": [
+        "django/db/models/sql/compiler.py"
+      ],
+      "path_prediction": "django/django/db/models/sql/compiler.py",
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 11,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "django__django-11951",
+      "model": "qwen2.5-coder-7b",
+      "gold_files": [
+        "django/db/models/query.py"
+      ],
+      "path_prediction": "django/db/models/query.py",
+      "path_hit": true,
+      "path_mentioned_in_issue": true,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 27,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "django__django-11951",
+      "model": "qwen2.5-coder-3b",
+      "gold_files": [
+        "django/db/models/query.py"
+      ],
+      "path_prediction": "django/db/models/query.py",
+      "path_hit": true,
+      "path_mentioned_in_issue": true,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 27,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "django__django-11951",
+      "model": "qwen2.5-coder-1.5b",
+      "gold_files": [
+        "django/db/models/query.py"
+      ],
+      "path_prediction": "django/db/models/query.py",
+      "path_hit": true,
+      "path_mentioned_in_issue": true,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 27,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "django__django-12276",
+      "model": "qwen2.5-coder-7b",
+      "gold_files": [
+        "django/forms/widgets.py"
+      ],
+      "path_prediction": "django/forms/widgets.py",
+      "path_hit": true,
+      "path_mentioned_in_issue": true,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 20,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "django__django-12276",
+      "model": "qwen2.5-coder-3b",
+      "gold_files": [
+        "django/forms/widgets.py"
+      ],
+      "path_prediction": "django/forms/widgets.py",
+      "path_hit": true,
+      "path_mentioned_in_issue": true,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 20,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "django__django-12276",
+      "model": "qwen2.5-coder-1.5b",
+      "gold_files": [
+        "django/forms/widgets.py"
+      ],
+      "path_prediction": "django/forms/widgets.py",
+      "path_hit": true,
+      "path_mentioned_in_issue": true,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 20,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "django__django-12304",
+      "model": "qwen2.5-coder-7b",
+      "gold_files": [
+        "django/db/models/enums.py"
+      ],
+      "path_prediction": null,
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 5,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "django__django-12304",
+      "model": "qwen2.5-coder-3b",
+      "gold_files": [
+        "django/db/models/enums.py"
+      ],
+      "path_prediction": null,
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 5,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "django__django-12304",
+      "model": "qwen2.5-coder-1.5b",
+      "gold_files": [
+        "django/db/models/enums.py"
+      ],
+      "path_prediction": "django/django/db/models/fields/__init__.py",
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 5,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "django__django-13109",
+      "model": "qwen2.5-coder-7b",
+      "gold_files": [
+        "django/db/models/fields/related.py"
+      ],
+      "path_prediction": "django/db/models/fields/related.py",
+      "path_hit": true,
+      "path_mentioned_in_issue": true,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 17,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "django__django-13109",
+      "model": "qwen2.5-coder-3b",
+      "gold_files": [
+        "django/db/models/fields/related.py"
+      ],
+      "path_prediction": "django/db/models/fields/related.py",
+      "path_hit": true,
+      "path_mentioned_in_issue": true,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 17,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "django__django-13109",
+      "model": "qwen2.5-coder-1.5b",
+      "gold_files": [
+        "django/db/models/fields/related.py"
+      ],
+      "path_prediction": "django/django/db/models/fields/related.py",
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 17,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "django__django-13112",
+      "model": "qwen2.5-coder-7b",
+      "gold_files": [
+        "django/db/models/fields/related.py"
+      ],
+      "path_prediction": "model.py",
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 69,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "django__django-13112",
+      "model": "qwen2.5-coder-3b",
+      "gold_files": [
+        "django/db/models/fields/related.py"
+      ],
+      "path_prediction": null,
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 69,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "django__django-13112",
+      "model": "qwen2.5-coder-1.5b",
+      "gold_files": [
+        "django/db/models/fields/related.py"
+      ],
+      "path_prediction": "django/django/apps.py",
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 69,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "django__django-13821",
+      "model": "qwen2.5-coder-7b",
+      "gold_files": [
+        "django/db/backends/sqlite3/base.py"
+      ],
+      "path_prediction": "django/db/backends/sqlite3/base.py",
+      "path_hit": true,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 39,
+      "verdict": "path-only"
+    },
+    {
+      "instance_id": "django__django-13821",
+      "model": "qwen2.5-coder-3b",
+      "gold_files": [
+        "django/db/backends/sqlite3/base.py"
+      ],
+      "path_prediction": "django/db/backends/sqlite3/base.py",
+      "path_hit": true,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 39,
+      "verdict": "path-only"
+    },
+    {
+      "instance_id": "django__django-13821",
+      "model": "qwen2.5-coder-1.5b",
+      "gold_files": [
+        "django/db/backends/sqlite3/base.py"
+      ],
+      "path_prediction": "django/django/db/backends/sqlite3/base.py",
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 39,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "django__django-13933",
+      "model": "qwen2.5-coder-7b",
+      "gold_files": [
+        "django/forms/models.py"
+      ],
+      "path_prediction": "django/forms/fields.py",
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 29,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "django__django-13933",
+      "model": "qwen2.5-coder-3b",
+      "gold_files": [
+        "django/forms/models.py"
+      ],
+      "path_prediction": "django/forms/fields.py",
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 29,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "django__django-13933",
+      "model": "qwen2.5-coder-1.5b",
+      "gold_files": [
+        "django/forms/models.py"
+      ],
+      "path_prediction": "django/django/forms/models.py",
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 29,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "django__django-14580",
+      "model": "qwen2.5-coder-7b",
+      "gold_files": [
+        "django/db/migrations/serializer.py"
+      ],
+      "path_prediction": "django/db/migrations/writer.py",
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 23,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "django__django-14580",
+      "model": "qwen2.5-coder-3b",
+      "gold_files": [
+        "django/db/migrations/serializer.py"
+      ],
+      "path_prediction": null,
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.167,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 23,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "django__django-14580",
+      "model": "qwen2.5-coder-1.5b",
+      "gold_files": [
+        "django/db/migrations/serializer.py"
+      ],
+      "path_prediction": "django/django/db/migrations/writer.py",
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 23,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "django__django-15569",
+      "model": "qwen2.5-coder-7b",
+      "gold_files": [
+        "django/db/models/query_utils.py"
+      ],
+      "path_prediction": "django/db/models/query_utils.py",
+      "path_hit": true,
+      "path_mentioned_in_issue": true,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 5,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "django__django-15569",
+      "model": "qwen2.5-coder-3b",
+      "gold_files": [
+        "django/db/models/query_utils.py"
+      ],
+      "path_prediction": "django/db/models/query_utils.py",
+      "path_hit": true,
+      "path_mentioned_in_issue": true,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 5,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "django__django-15569",
+      "model": "qwen2.5-coder-1.5b",
+      "gold_files": [
+        "django/db/models/query_utils.py"
+      ],
+      "path_prediction": "django/db/models/query_utils.py",
+      "path_hit": true,
+      "path_mentioned_in_issue": true,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 5,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "matplotlib__matplotlib-20859",
+      "model": "qwen2.5-coder-7b",
+      "gold_files": [
+        "lib/matplotlib/legend.py"
+      ],
+      "path_prediction": "matplotlib/lib/matplotlib/legend.py",
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 28,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "matplotlib__matplotlib-20859",
+      "model": "qwen2.5-coder-3b",
+      "gold_files": [
+        "lib/matplotlib/legend.py"
+      ],
+      "path_prediction": "matplotlib/lib/matplotlib/legend.py",
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 28,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "matplotlib__matplotlib-20859",
+      "model": "qwen2.5-coder-1.5b",
+      "gold_files": [
+        "lib/matplotlib/legend.py"
+      ],
+      "path_prediction": "matplotlib/matplotlib/lib/matplotlib/figure.py",
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 28,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "matplotlib__matplotlib-24177",
+      "model": "qwen2.5-coder-7b",
+      "gold_files": [
+        "lib/matplotlib/axes/_base.py"
+      ],
+      "path_prediction": null,
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 14,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "matplotlib__matplotlib-24177",
+      "model": "qwen2.5-coder-3b",
+      "gold_files": [
+        "lib/matplotlib/axes/_base.py"
+      ],
+      "path_prediction": "matplotlib_3.6_hist_bug_report/test.py",
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 14,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "matplotlib__matplotlib-24177",
+      "model": "qwen2.5-coder-1.5b",
+      "gold_files": [
+        "lib/matplotlib/axes/_base.py"
+      ],
+      "path_prediction": null,
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 14,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "matplotlib__matplotlib-25287",
+      "model": "qwen2.5-coder-7b",
+      "gold_files": [
+        "lib/matplotlib/axis.py"
+      ],
+      "path_prediction": "matplotlib/axis.py",
+      "path_hit": true,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 92,
+      "verdict": "path-only"
+    },
+    {
+      "instance_id": "matplotlib__matplotlib-25287",
+      "model": "qwen2.5-coder-3b",
+      "gold_files": [
+        "lib/matplotlib/axis.py"
+      ],
+      "path_prediction": "matplotlib/axis.py",
+      "path_hit": true,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 92,
+      "verdict": "path-only"
+    },
+    {
+      "instance_id": "matplotlib__matplotlib-25287",
+      "model": "qwen2.5-coder-1.5b",
+      "gold_files": [
+        "lib/matplotlib/axis.py"
+      ],
+      "path_prediction": "matplotlib/matplotlib/axes.py",
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 92,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "matplotlib__matplotlib-25311",
+      "model": "qwen2.5-coder-7b",
+      "gold_files": [
+        "lib/matplotlib/offsetbox.py"
+      ],
+      "path_prediction": "matplotlib/backend_bases.py",
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 27,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "matplotlib__matplotlib-25311",
+      "model": "qwen2.5-coder-3b",
+      "gold_files": [
+        "lib/matplotlib/offsetbox.py"
+      ],
+      "path_prediction": "matplotlib/matplotlib/examples/legend_draggable.py",
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 27,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "matplotlib__matplotlib-25311",
+      "model": "qwen2.5-coder-1.5b",
+      "gold_files": [
+        "lib/matplotlib/offsetbox.py"
+      ],
+      "path_prediction": "matplotlib/matplotlib/examples/legend_draggable.py",
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 27,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "pydata__xarray-4075",
+      "model": "qwen2.5-coder-7b",
+      "gold_files": [
+        "xarray/core/weighted.py"
+      ],
+      "path_prediction": "xarray/core/ops.py",
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 95,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "pydata__xarray-4075",
+      "model": "qwen2.5-coder-3b",
+      "gold_files": [
+        "xarray/core/weighted.py"
+      ],
+      "path_prediction": "xarray/xarray/core/dataarray.py",
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 95,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "pydata__xarray-4075",
+      "model": "qwen2.5-coder-1.5b",
+      "gold_files": [
+        "xarray/core/weighted.py"
+      ],
+      "path_prediction": "pydata/xarray/tests/test_core.py",
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 95,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "pydata__xarray-4629",
+      "model": "qwen2.5-coder-7b",
+      "gold_files": [
+        "xarray/core/merge.py"
+      ],
+      "path_prediction": "xarray/core/merge.py",
+      "path_hit": true,
+      "path_mentioned_in_issue": true,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 8,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "pydata__xarray-4629",
+      "model": "qwen2.5-coder-3b",
+      "gold_files": [
+        "xarray/core/merge.py"
+      ],
+      "path_prediction": "xarray/core/merge.py",
+      "path_hit": true,
+      "path_mentioned_in_issue": true,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 8,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "pydata__xarray-4629",
+      "model": "qwen2.5-coder-1.5b",
+      "gold_files": [
+        "xarray/core/merge.py"
+      ],
+      "path_prediction": "xarray/core/merge.py",
+      "path_hit": true,
+      "path_mentioned_in_issue": true,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 8,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "pytest-dev__pytest-7205",
+      "model": "qwen2.5-coder-7b",
+      "gold_files": [
+        "src/_pytest/setuponly.py"
+      ],
+      "path_prediction": "src/_pytest/setuponly.py",
+      "path_hit": true,
+      "path_mentioned_in_issue": true,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 33,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "pytest-dev__pytest-7205",
+      "model": "qwen2.5-coder-3b",
+      "gold_files": [
+        "src/_pytest/setuponly.py"
+      ],
+      "path_prediction": "pytest-dev/pytest/tests/test_setuponly.py",
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 33,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "pytest-dev__pytest-7205",
+      "model": "qwen2.5-coder-1.5b",
+      "gold_files": [
+        "src/_pytest/setuponly.py"
+      ],
+      "path_prediction": "pytest/dev/pytest/test_setup.py",
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 33,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "pytest-dev__pytest-7982",
+      "model": "qwen2.5-coder-7b",
+      "gold_files": [
+        "src/_pytest/pathlib.py"
+      ],
+      "path_prediction": "src/_pytest/pythonpath.py",
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 12,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "pytest-dev__pytest-7982",
+      "model": "qwen2.5-coder-3b",
+      "gold_files": [
+        "src/_pytest/pathlib.py"
+      ],
+      "path_prediction": "pytest/tests/test_collection.py",
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 12,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "pytest-dev__pytest-7982",
+      "model": "qwen2.5-coder-1.5b",
+      "gold_files": [
+        "src/_pytest/pathlib.py"
+      ],
+      "path_prediction": "pytest-dev/pytest/test_pytest.py",
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 12,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "scikit-learn__scikit-learn-13135",
+      "model": "qwen2.5-coder-7b",
+      "gold_files": [
+        "sklearn/preprocessing/_discretization.py"
+      ],
+      "path_prediction": "sklearn/preprocessing/_discretization.py",
+      "path_hit": true,
+      "path_mentioned_in_issue": true,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 17,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "scikit-learn__scikit-learn-13135",
+      "model": "qwen2.5-coder-3b",
+      "gold_files": [
+        "sklearn/preprocessing/_discretization.py"
+      ],
+      "path_prediction": "sklearn/preprocessing/_discretization.py",
+      "path_hit": true,
+      "path_mentioned_in_issue": true,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 17,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "scikit-learn__scikit-learn-13135",
+      "model": "qwen2.5-coder-1.5b",
+      "gold_files": [
+        "sklearn/preprocessing/_discretization.py"
+      ],
+      "path_prediction": "scikit-learn/sklearn/preprocessing/_discretization.py",
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 17,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-8621",
+      "model": "qwen2.5-coder-7b",
+      "gold_files": [
+        "sphinx/builders/html/transforms.py"
+      ],
+      "path_prediction": "sphinx/roles.py",
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 34,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-8621",
+      "model": "qwen2.5-coder-3b",
+      "gold_files": [
+        "sphinx/builders/html/transforms.py"
+      ],
+      "path_prediction": "sphinx/doc/sphinx/roles.py",
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 34,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-8621",
+      "model": "qwen2.5-coder-1.5b",
+      "gold_files": [
+        "sphinx/builders/html/transforms.py"
+      ],
+      "path_prediction": "sphinx-doc/sphinx/themes/basic/__init__.py",
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 34,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-9281",
+      "model": "qwen2.5-coder-7b",
+      "gold_files": [
+        "sphinx/util/inspect.py"
+      ],
+      "path_prediction": "sphinx_issue_ugly_enum/ugly_enum.py",
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 46,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-9281",
+      "model": "qwen2.5-coder-3b",
+      "gold_files": [
+        "sphinx/util/inspect.py"
+      ],
+      "path_prediction": "sphinx_issue_ugly_enum/ugly_enum.py",
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 46,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-9281",
+      "model": "qwen2.5-coder-1.5b",
+      "gold_files": [
+        "sphinx/util/inspect.py"
+      ],
+      "path_prediction": "sphinx_issue_ugly_enum/ugly_enum.py",
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 46,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-9698",
+      "model": "qwen2.5-coder-7b",
+      "gold_files": [
+        "sphinx/domains/python.py"
+      ],
+      "path_prediction": "sphinx/ext/autodoc.py",
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 19,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-9698",
+      "model": "qwen2.5-coder-3b",
+      "gold_files": [
+        "sphinx/domains/python.py"
+      ],
+      "path_prediction": "sphinx-doc/sphinx/ext/autodoc.py",
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 19,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-9698",
+      "model": "qwen2.5-coder-1.5b",
+      "gold_files": [
+        "sphinx/domains/python.py"
+      ],
+      "path_prediction": "sphinx-doc/sphinx/ext/autodoc.py",
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 19,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-9711",
+      "model": "qwen2.5-coder-7b",
+      "gold_files": [
+        "sphinx/extension.py"
+      ],
+      "path_prediction": "sphinx_gallery/needs.py",
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 62,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-9711",
+      "model": "qwen2.5-coder-3b",
+      "gold_files": [
+        "sphinx/extension.py"
+      ],
+      "path_prediction": "sphinx-gallery/sphinx_gallery/gen_gallery.py",
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 62,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-9711",
+      "model": "qwen2.5-coder-1.5b",
+      "gold_files": [
+        "sphinx/extension.py"
+      ],
+      "path_prediction": "sphinx-doc/sphinx/ext/needs_extensions.py",
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 62,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "sympy__sympy-12096",
+      "model": "qwen2.5-coder-7b",
+      "gold_files": [
+        "sympy/core/function.py"
+      ],
+      "path_prediction": "sympy/core/function.py",
+      "path_hit": true,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 26,
+      "verdict": "path-only"
+    },
+    {
+      "instance_id": "sympy__sympy-12096",
+      "model": "qwen2.5-coder-3b",
+      "gold_files": [
+        "sympy/core/function.py"
+      ],
+      "path_prediction": "sympy/sympy/functions/core/function.py",
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 26,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "sympy__sympy-12096",
+      "model": "qwen2.5-coder-1.5b",
+      "gold_files": [
+        "sympy/core/function.py"
+      ],
+      "path_prediction": "sympy/sympy/core/function.py",
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 26,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "sympy__sympy-12481",
+      "model": "qwen2.5-coder-7b",
+      "gold_files": [
+        "sympy/combinatorics/permutations.py"
+      ],
+      "path_prediction": "sympy/permutation.py",
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 20,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "sympy__sympy-12481",
+      "model": "qwen2.5-coder-3b",
+      "gold_files": [
+        "sympy/combinatorics/permutations.py"
+      ],
+      "path_prediction": "sympy/sympy/perms/perm.py",
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 20,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "sympy__sympy-12481",
+      "model": "qwen2.5-coder-1.5b",
+      "gold_files": [
+        "sympy/combinatorics/permutations.py"
+      ],
+      "path_prediction": "sympy/sympy/core/permutation.py",
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 20,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "sympy__sympy-15809",
+      "model": "qwen2.5-coder-7b",
+      "gold_files": [
+        "sympy/functions/elementary/miscellaneous.py"
+      ],
+      "path_prediction": "sympy/functions/elementary/miscellaneous.py",
+      "path_hit": true,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 0,
+      "verdict": "path-only"
+    },
+    {
+      "instance_id": "sympy__sympy-15809",
+      "model": "qwen2.5-coder-3b",
+      "gold_files": [
+        "sympy/functions/elementary/miscellaneous.py"
+      ],
+      "path_prediction": "sympy/sympy/functions/elementary/minmax.py",
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 0,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "sympy__sympy-15809",
+      "model": "qwen2.5-coder-1.5b",
+      "gold_files": [
+        "sympy/functions/elementary/miscellaneous.py"
+      ],
+      "path_prediction": "sympy/sympy/functions/elementary/__init__.py",
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 0,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "sympy__sympy-16886",
+      "model": "qwen2.5-coder-7b",
+      "gold_files": [
+        "sympy/crypto/crypto.py"
+      ],
+      "path_prediction": "simpy/crypto/crypto.py",
+      "path_hit": false,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 24,
+      "verdict": "clean"
+    },
+    {
+      "instance_id": "sympy__sympy-16886",
+      "model": "qwen2.5-coder-3b",
+      "gold_files": [
+        "sympy/crypto/crypto.py"
+      ],
+      "path_prediction": "sympy/crypto/crypto.py",
+      "path_hit": true,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 24,
+      "verdict": "path-only"
+    },
+    {
+      "instance_id": "sympy__sympy-16886",
+      "model": "qwen2.5-coder-1.5b",
+      "gold_files": [
+        "sympy/crypto/crypto.py"
+      ],
+      "path_prediction": "sympy/crypto/crypto.py",
+      "path_hit": true,
+      "path_mentioned_in_issue": false,
+      "task_id_overlap": 0.0,
+      "task_id_exact_lines": 0,
+      "gold_tokens": 24,
+      "verdict": "path-only"
+    }
+  ],
+  "submissions": [
+    {
+      "instance_id": "astropy__astropy-7336",
+      "resolved": false,
+      "model": "qwen2.5-coder-1.5b",
+      "overlap5": 0.0,
+      "identical_added_lines": false,
+      "gold_added_lines": 1,
+      "submission_added_lines": 2
+    },
+    {
+      "instance_id": "django__django-11099",
+      "resolved": false,
+      "model": "qwen2.5-coder-1.5b",
+      "overlap5": 0.571,
+      "identical_added_lines": false,
+      "gold_added_lines": 2,
+      "submission_added_lines": 1
+    },
+    {
+      "instance_id": "django__django-11451",
+      "resolved": true,
+      "model": "qwen2.5-coder-7b",
+      "overlap5": 1.0,
+      "identical_added_lines": true,
+      "gold_added_lines": 2,
+      "submission_added_lines": 2
+    },
+    {
+      "instance_id": "django__django-11490",
+      "resolved": false,
+      "model": "qwen2.5-coder-7b",
+      "overlap5": 0.0,
+      "identical_added_lines": false,
+      "gold_added_lines": 1,
+      "submission_added_lines": 0
+    },
+    {
+      "instance_id": "django__django-11951",
+      "resolved": false,
+      "model": "qwen2.5-coder-1.5b",
+      "overlap5": 0.0,
+      "identical_added_lines": false,
+      "gold_added_lines": 2,
+      "submission_added_lines": 1
+    },
+    {
+      "instance_id": "django__django-12276",
+      "resolved": false,
+      "model": "qwen2.5-coder-1.5b",
+      "overlap5": 0.0,
+      "identical_added_lines": false,
+      "gold_added_lines": 2,
+      "submission_added_lines": 1
+    },
+    {
+      "instance_id": "django__django-12304",
+      "resolved": false,
+      "model": "qwen2.5-coder-7b",
+      "overlap5": 0.0,
+      "identical_added_lines": false,
+      "gold_added_lines": 1,
+      "submission_added_lines": 1
+    },
+    {
+      "instance_id": "django__django-13109",
+      "resolved": true,
+      "model": "qwen2.5-coder-7b",
+      "overlap5": 1.0,
+      "identical_added_lines": true,
+      "gold_added_lines": 1,
+      "submission_added_lines": 1
+    },
+    {
+      "instance_id": "django__django-13112",
+      "resolved": false,
+      "model": "qwen2.5-coder-3b",
+      "overlap5": 0.0,
+      "identical_added_lines": false,
+      "gold_added_lines": 5,
+      "submission_added_lines": 1
+    },
+    {
+      "instance_id": "django__django-13821",
+      "resolved": false,
+      "model": "qwen2.5-coder-1.5b",
+      "overlap5": 0.0,
+      "identical_added_lines": false,
+      "gold_added_lines": 4,
+      "submission_added_lines": 1
+    },
+    {
+      "instance_id": "django__django-13933",
+      "resolved": false,
+      "model": "qwen2.5-coder-1.5b",
+      "overlap5": 0.0,
+      "identical_added_lines": false,
+      "gold_added_lines": 5,
+      "submission_added_lines": 1
+    },
+    {
+      "instance_id": "django__django-14580",
+      "resolved": false,
+      "model": "qwen2.5-coder-1.5b",
+      "overlap5": 0.0,
+      "identical_added_lines": false,
+      "gold_added_lines": 1,
+      "submission_added_lines": 1
+    },
+    {
+      "instance_id": "django__django-15569",
+      "resolved": false,
+      "model": "qwen2.5-coder-7b",
+      "overlap5": 0.0,
+      "identical_added_lines": false,
+      "gold_added_lines": 1,
+      "submission_added_lines": 1
+    },
+    {
+      "instance_id": "matplotlib__matplotlib-20859",
+      "resolved": false,
+      "model": "qwen2.5-coder-3b",
+      "overlap5": 0.0,
+      "identical_added_lines": false,
+      "gold_added_lines": 5,
+      "submission_added_lines": 1
+    },
+    {
+      "instance_id": "matplotlib__matplotlib-24177",
+      "resolved": false,
+      "model": "qwen2.5-coder-1.5b",
+      "overlap5": 0.0,
+      "identical_added_lines": false,
+      "gold_added_lines": 1,
+      "submission_added_lines": 0
+    },
+    {
+      "instance_id": "matplotlib__matplotlib-25287",
+      "resolved": false,
+      "model": "qwen2.5-coder-1.5b",
+      "overlap5": 0.0,
+      "identical_added_lines": false,
+      "gold_added_lines": 10,
+      "submission_added_lines": 2
+    },
+    {
+      "instance_id": "matplotlib__matplotlib-25311",
+      "resolved": false,
+      "model": "qwen2.5-coder-7b",
+      "overlap5": 0.0,
+      "identical_added_lines": false,
+      "gold_added_lines": 2,
+      "submission_added_lines": 2
+    },
+    {
+      "instance_id": "pydata__xarray-4075",
+      "resolved": false,
+      "model": "qwen2.5-coder-3b",
+      "overlap5": 0.0,
+      "identical_added_lines": false,
+      "gold_added_lines": 8,
+      "submission_added_lines": 1
+    },
+    {
+      "instance_id": "pydata__xarray-4629",
+      "resolved": false,
+      "model": "qwen2.5-coder-1.5b",
+      "overlap5": 0.0,
+      "identical_added_lines": false,
+      "gold_added_lines": 1,
+      "submission_added_lines": 1
+    },
+    {
+      "instance_id": "pytest-dev__pytest-7205",
+      "resolved": false,
+      "model": "qwen2.5-coder-1.5b",
+      "overlap5": 0.0,
+      "identical_added_lines": false,
+      "gold_added_lines": 2,
+      "submission_added_lines": 2
+    },
+    {
+      "instance_id": "pytest-dev__pytest-7982",
+      "resolved": false,
+      "model": "qwen2.5-coder-1.5b",
+      "overlap5": 0.0,
+      "identical_added_lines": false,
+      "gold_added_lines": 1,
+      "submission_added_lines": 1
+    },
+    {
+      "instance_id": "scikit-learn__scikit-learn-13135",
+      "resolved": false,
+      "model": "qwen2.5-coder-1.5b",
+      "overlap5": 0.0,
+      "identical_added_lines": false,
+      "gold_added_lines": 2,
+      "submission_added_lines": 4
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-8621",
+      "resolved": false,
+      "model": "qwen2.5-coder-7b",
+      "overlap5": 0.6,
+      "identical_added_lines": false,
+      "gold_added_lines": 1,
+      "submission_added_lines": 1
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-9281",
+      "resolved": false,
+      "model": "qwen2.5-coder-3b",
+      "overlap5": 0.0,
+      "identical_added_lines": false,
+      "gold_added_lines": 4,
+      "submission_added_lines": 1
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-9698",
+      "resolved": false,
+      "model": "qwen2.5-coder-1.5b",
+      "overlap5": 0.0,
+      "identical_added_lines": false,
+      "gold_added_lines": 1,
+      "submission_added_lines": 1
+    },
+    {
+      "instance_id": "sphinx-doc__sphinx-9711",
+      "resolved": false,
+      "model": "qwen2.5-coder-1.5b",
+      "overlap5": 0.0,
+      "identical_added_lines": false,
+      "gold_added_lines": 12,
+      "submission_added_lines": 2
+    },
+    {
+      "instance_id": "sympy__sympy-12096",
+      "resolved": false,
+      "model": "qwen2.5-coder-7b",
+      "overlap5": 0.0,
+      "identical_added_lines": false,
+      "gold_added_lines": 1,
+      "submission_added_lines": 5
+    },
+    {
+      "instance_id": "sympy__sympy-12481",
+      "resolved": false,
+      "model": "qwen2.5-coder-7b",
+      "overlap5": 0.241,
+      "identical_added_lines": false,
+      "gold_added_lines": 2,
+      "submission_added_lines": 4
+    },
+    {
+      "instance_id": "sympy__sympy-15809",
+      "resolved": false,
+      "model": "qwen2.5-coder-3b",
+      "overlap5": 0.0,
+      "identical_added_lines": true,
+      "gold_added_lines": 0,
+      "submission_added_lines": 1
+    },
+    {
+      "instance_id": "sympy__sympy-16886",
+      "resolved": false,
+      "model": "qwen2.5-coder-3b",
+      "overlap5": 0.0,
+      "identical_added_lines": false,
+      "gold_added_lines": 1,
+      "submission_added_lines": 1
+    }
+  ]
+}
