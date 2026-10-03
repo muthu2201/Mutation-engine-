@@ -44,7 +44,28 @@ Every number below is generated from the run's records by `stress/render_swebenc
 <!-- RESULTS:SWE_INSTANCES -->
 <!-- /RESULTS:SWE_INSTANCES -->
 
-## 6. Reproduce
+## 6. The API arm: the same engine with a stronger model (ADR 0012)
+
+The same 30 instances, localisation, prompts, bandit, judge, grader and budget, with
+Qwen3.8 27B served by OpenRouter in place of the local models. It is pre-registered in
+[ADR 0012](adr/0012-swe-bench-api-arm.md) and runs after the local arm.
+
+### 6.1 Result
+
+<!-- RESULTS:SWE_SUMMARY_API -->
+<!-- /RESULTS:SWE_SUMMARY_API -->
+
+### 6.2 The funnel
+
+<!-- RESULTS:SWE_FUNNEL_API -->
+<!-- /RESULTS:SWE_FUNNEL_API -->
+
+### 6.3 Local vs API, instance by instance (the pre-registered comparison)
+
+<!-- RESULTS:SWE_PAIRED -->
+<!-- /RESULTS:SWE_PAIRED -->
+
+## 7. Reproduce
 
 ```bash
 python -m venv /opt/colloid/state/swebench/venv && /opt/colloid/state/swebench/venv/bin/pip install swebench pandas pyarrow
@@ -52,4 +73,7 @@ colloid swebench prepare                     # tasks.jsonl (search-visible), gol
 colloid swebench run --out runs/swebench     # pre-registered sample; resumable
 colloid swebench ingest --out runs/swebench  # resolved fixes -> the lake
 python stress/render_swebench.py --run runs/swebench --write docs/SWEBENCH_RESULTS.md
+# the API arm (ADR 0012), with OPENROUTER_API_KEY in the environment
+colloid swebench run --provider openrouter --out runs/swebench-api
+python stress/render_swebench.py --arm local=docs/results/swebench/local --arm api=runs/swebench-api --write docs/SWEBENCH_RESULTS.md
 ```

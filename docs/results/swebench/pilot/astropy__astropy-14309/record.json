@@ -1,0 +1,397 @@
+{
+  "instance_id": "astropy__astropy-14309",
+  "repo": "astropy/astropy",
+  "version": "5.1",
+  "base_commit": "cdb66059a2feb44ee49021874605ba90801f9986",
+  "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.astropy__astropy-14309:latest",
+  "started_at": "2026-10-03T02:08:47.091442+00:00",
+  "image_digest": "ghcr.io/epoch-research/swe-bench.eval.x86_64.astropy__astropy-14309@sha256:13f8d040d30af633e8f934b292775979ee6dc6f5f2661ff03ee85edf0348e00b",
+  "pull_s": 0.8,
+  "files_considered": 493,
+  "ranked_files": [
+    {
+      "file": "astropy/io/registry/base.py",
+      "score": 4.5
+    },
+    {
+      "file": "astropy/io/registry/compat.py",
+      "score": 3.539
+    },
+    {
+      "file": "astropy/__init__.py",
+      "score": 3.504
+    },
+    {
+      "file": "astropy/table/__init__.py",
+      "score": 3.279
+    },
+    {
+      "file": "astropy/io/fits/connect.py",
+      "score": 3.266
+    },
+    {
+      "file": "astropy/io/registry/__init__.py",
+      "score": 3.139
+    },
+    {
+      "file": "astropy/io/__init__.py",
+      "score": 3.095
+    },
+    {
+      "file": "astropy/io/fits/hdu/hdulist.py",
+      "score": 1.697
+    }
+  ],
+  "localised": [
+    {
+      "file": "astropy/io/registry/base.py",
+      "name": "_UnifiedIORegistryBase.identify_format",
+      "kind": "function",
+      "start": 282,
+      "end": 318,
+      "score": 6.5
+    },
+    {
+      "file": "astropy/io/fits/connect.py",
+      "name": "is_fits",
+      "kind": "function",
+      "start": 48,
+      "end": 72,
+      "score": 5.144
+    },
+    {
+      "file": "astropy/io/registry/base.py",
+      "name": "_UnifiedIORegistryBase._is_best_match",
+      "kind": "function",
+      "start": 330,
+      "end": 347,
+      "score": 3.628
+    },
+    {
+      "file": "astropy/io/fits/hdu/hdulist.py",
+      "name": "HDUList.append",
+      "kind": "function",
+      "start": 716,
+      "end": 759,
+      "score": 3.417
+    },
+    {
+      "file": "astropy/io/registry/compat.py",
+      "name": "_make_io_func",
+      "kind": "function",
+      "start": 32,
+      "end": 54,
+      "score": 2.975
+    },
+    {
+      "file": "astropy/io/registry/base.py",
+      "name": "_UnifiedIORegistryBase.register_identifier",
+      "kind": "function",
+      "start": 206,
+      "end": 261,
+      "score": 2.448
+    }
+  ],
+  "repro": [
+    {
+      "model": "qwen2.5-coder-7b",
+      "outcome": "NONE",
+      "script_hash": "399eb18754c72d2c"
+    },
+    {
+      "model": "qwen2.5-coder-3b",
+      "outcome": "ISSUE RESOLVED",
+      "script_hash": "40b157961196ff14"
+    }
+  ],
+  "candidates": [
+    {
+      "snippet": "py:astropy/io/registry/base.py::_UnifiedIORegistryBase.identify_format",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix_think",
+      "prompt_hash": "c92c1bae2e0d2964",
+      "response_hash": "461f1113bb86c2f3",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "astropy/cosmology/flrw/tests/test_base.py",
+        "astropy/io/registry/tests/test_registries.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 7,
+      "judge_s": 12.0,
+      "diff": "diff --git a/astropy/io/registry/base.py b/astropy/io/registry/base.py\nindex 0ac2a20cce..92c1b1c1ee 100644\n--- a/astropy/io/registry/base.py\n+++ b/astropy/io/registry/base.py\n@@ -310,9 +310,10 @@ class _UnifiedIORegistryBase(metaclass=abc.ABCMeta):\n         valid_formats = []\n         for data_format, data_class in self._identifiers:\n             if self._is_best_match(data_class_required, data_class, self._identifiers):\n-                if self._identifiers[(data_format, data_class)](\n-                    origin, path, fileobj, *args, **kwargs\n-                ):\n+                if (data_format, data_class) in self._identifiers and \\\n+                   self._identifiers[(data_format, data_class)](\n+                       origin, path, fileobj, *args, **kwargs\n+                   ):\n                     valid_formats.append(data_format)\n \n         return valid_formats\n",
+      "new_source": "def identify_format(self, origin, data_class_required, path, fileobj, args, kwargs):\n    \"\"\"Loop through identifiers to see which formats match.\n\n    Parameters\n    ----------\n    origin : str\n        A string ``\"read`` or ``\"write\"`` identifying whether the file is to be\n        opened for reading or writing.\n    data_class_required : object\n        The specified class for the result of `read` or the class that is to be\n        written.\n    path : str or path-like or None\n        The path to the file or None.\n    fileobj : file-like or None.\n        An open file object to read the file's contents, or ``None`` if the\n        file could not be opened.\n    args : sequence\n        Positional arguments for the `read` or `write` function. Note that\n        these must be provided as sequence.\n    kwargs : dict-like\n        Keyword arguments for the `read` or `write` function. Note that this\n        parameter must be `dict`-like.\n\n    Returns\n    -------\n    valid_formats : list\n        List of matching formats.\n    \"\"\"\n    valid_formats = []\n    for data_format, data_class in self._identifiers:\n        if self._is_best_match(data_class_required, data_class, self._identifiers):\n            if (data_format, data_class) in self._identifiers and \\\n               self._identifiers[(data_format, data_class)](\n                   origin, path, fileobj, *args, **kwargs\n               ):\n                valid_formats.append(data_format)\n\n    return valid_formats\n"
+    },
+    {
+      "snippet": "py:astropy/io/fits/connect.py::is_fits",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "d8ccf0a01df18736",
+      "response_hash": "d58d817990d6a920",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "astropy/cosmology/tests/test_connect.py",
+        "astropy/io/ascii/tests/test_connect.py",
+        "astropy/io/fits/tests/test_connect.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 6,
+      "judge_s": 22.0,
+      "diff": "diff --git a/astropy/io/fits/connect.py b/astropy/io/fits/connect.py\nindex 4b6150f4ac..173bbe5c29 100644\n--- a/astropy/io/fits/connect.py\n+++ b/astropy/io/fits/connect.py\n@@ -69,7 +69,11 @@ def is_fits(origin, filepath, fileobj, *args, **kwargs):\n             (\".fits\", \".fits.gz\", \".fit\", \".fit.gz\", \".fts\", \".fts.gz\")\n         ):\n             return True\n-    return isinstance(args[0], (HDUList, TableHDU, BinTableHDU, GroupsHDU))\n+    # Check if the first argument is an HDUList, TableHDU, BinTableHDU, or GroupsHDU\n+    elif args and isinstance(args[0], (HDUList, TableHDU, BinTableHDU, GroupsHDU)):\n+        return True\n+    else:\n+        return False\n \n \n def _decode_mixins(tbl):\n",
+      "new_source": "def is_fits(origin, filepath, fileobj, *args, **kwargs):\n    \"\"\"\n    Determine whether `origin` is a FITS file.\n\n    Parameters\n    ----------\n    origin : str or readable file-like\n        Path or file object containing a potential FITS file.\n\n    Returns\n    -------\n    is_fits : bool\n        Returns `True` if the given file is a FITS file.\n    \"\"\"\n    if fileobj is not None:\n        pos = fileobj.tell()\n        sig = fileobj.read(30)\n        fileobj.seek(pos)\n        return sig == FITS_SIGNATURE\n    elif filepath is not None:\n        if filepath.lower().endswith(\n            (\".fits\", \".fits.gz\", \".fit\", \".fit.gz\", \".fts\", \".fts.gz\")\n        ):\n            return True\n    # Check if the first argument is an HDUList, TableHDU, BinTableHDU, or GroupsHDU\n    elif args and isinstance(args[0], (HDUList, TableHDU, BinTableHDU, GroupsHDU)):\n        return True\n    else:\n        return False\n"
+    },
+    {
+      "snippet": "py:astropy/io/registry/base.py::_UnifiedIORegistryBase._is_best_match",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "e95d69bae4552fb5",
+      "response_hash": "bc307195bfb3dd06",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:astropy/io/fits/hdu/hdulist.py::HDUList.append",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "1526f80f877eb542",
+      "response_hash": "22a4878f4037322d",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:astropy/io/registry/compat.py::_make_io_func",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix_think",
+      "prompt_hash": "6451aa6509d350ba",
+      "response_hash": "df1bbd8ea31999fd",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "astropy/nddata/tests/test_compat.py",
+        "astropy/io/registry/tests/test_registries.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 8,
+      "judge_s": 6.9,
+      "diff": "diff --git a/astropy/io/registry/compat.py b/astropy/io/registry/compat.py\nindex 0c2a67e594..e7cd98b893 100644\n--- a/astropy/io/registry/compat.py\n+++ b/astropy/io/registry/compat.py\n@@ -29,6 +29,9 @@ _readers = default_registry._readers\n _writers = default_registry._writers\n \n \n+import functools\n+from .core import UnifiedIORegistry\n+\n def _make_io_func(method_name):\n     \"\"\"Makes a function for a method on UnifiedIORegistry.\n \n@@ -49,7 +52,10 @@ def _make_io_func(method_name):\n         if registry is None:\n             registry = default_registry\n         # get and call bound method from registry instance\n-        return getattr(registry, method_name)(*args, **kwargs)\n+        if args:  # Check if args is not empty\n+            return getattr(registry, method_name)(*args, **kwargs)\n+        else:\n+            return getattr(registry, method_name)(**kwargs)\n \n     return wrapper\n \n",
+      "new_source": "import functools\nfrom .core import UnifiedIORegistry\n\ndef _make_io_func(method_name):\n    \"\"\"Makes a function for a method on UnifiedIORegistry.\n\n    .. todo::\n\n        Make kwarg \"registry\" not hidden.\n\n    Returns\n    -------\n    wrapper : callable\n        Signature matches method on UnifiedIORegistry.\n        Accepts (hidden) kwarg \"registry\". default is ``default_registry``.\n    \"\"\"\n\n    @functools.wraps(getattr(default_registry, method_name))\n    def wrapper(*args, registry=None, **kwargs):\n        # written this way in case ever controlled by ScienceState\n        if registry is None:\n            registry = default_registry\n        # get and call bound method from registry instance\n        if args:  # Check if args is not empty\n            return getattr(registry, method_name)(*args, **kwargs)\n        else:\n            return getattr(registry, method_name)(**kwargs)\n\n    return wrapper\n"
+    },
+    {
+      "snippet": "py:astropy/io/registry/base.py::_UnifiedIORegistryBase.register_identifier",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "91fb0bae95cd6805",
+      "response_hash": "263b2b9d21f2f402",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:astropy/io/registry/base.py::_UnifiedIORegistryBase.identify_format",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "ac908954d1e144ab",
+      "response_hash": "6c57cd6a62a6f62c",
+      "stage": "parse",
+      "reason": "response does not define identify_format()"
+    },
+    {
+      "snippet": "py:astropy/io/fits/connect.py::is_fits",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "d8ccf0a01df18736",
+      "response_hash": "e3ed4cdf3b423199",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "28 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "astropy/cosmology/tests/test_connect.py",
+        "astropy/io/ascii/tests/test_connect.py",
+        "astropy/io/fits/tests/test_connect.py"
+      ],
+      "regressions": 28,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 5,
+      "judge_s": 12.0
+    },
+    {
+      "snippet": "py:astropy/io/registry/base.py::_UnifiedIORegistryBase._is_best_match",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "e95d69bae4552fb5",
+      "response_hash": "1aff382834bb199d",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "6 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "astropy/cosmology/flrw/tests/test_base.py",
+        "astropy/io/registry/tests/test_registries.py"
+      ],
+      "regressions": 6,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 4,
+      "judge_s": 4.8
+    },
+    {
+      "snippet": "py:astropy/io/fits/hdu/hdulist.py::HDUList.append",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "1526f80f877eb542",
+      "response_hash": "c9efc18f175fa23f",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "17 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "astropy/io/fits/tests/test_hdulist.py",
+        "astropy/io/fits/tests/test_fitsdiff.py"
+      ],
+      "regressions": 17,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 15,
+      "judge_s": 8.1
+    },
+    {
+      "snippet": "py:astropy/io/registry/compat.py::_make_io_func",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix_think",
+      "prompt_hash": "6451aa6509d350ba",
+      "response_hash": "bfdc1d62819939c3",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "astropy/nddata/tests/test_compat.py",
+        "astropy/io/registry/tests/test_registries.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 8,
+      "judge_s": 3.7,
+      "diff": "diff --git a/astropy/io/registry/compat.py b/astropy/io/registry/compat.py\nindex 0c2a67e594..99fdf486cb 100644\n--- a/astropy/io/registry/compat.py\n+++ b/astropy/io/registry/compat.py\n@@ -29,6 +29,9 @@ _readers = default_registry._readers\n _writers = default_registry._writers\n \n \n+import functools\n+from .core import UnifiedIORegistry\n+\n def _make_io_func(method_name):\n     \"\"\"Makes a function for a method on UnifiedIORegistry.\n \n@@ -48,6 +51,11 @@ def _make_io_func(method_name):\n         # written this way in case ever controlled by ScienceState\n         if registry is None:\n             registry = default_registry\n+\n+        # Check if the method exists in the registry\n+        if not hasattr(registry, method_name):\n+            raise AttributeError(f\"Method '{method_name}' does not exist on UnifiedIORegistry\")\n+\n         # get and call bound method from registry instance\n         return getattr(registry, method_name)(*args, **kwargs)\n \n",
+      "new_source": "import functools\nfrom .core import UnifiedIORegistry\n\ndef _make_io_func(method_name):\n    \"\"\"Makes a function for a method on UnifiedIORegistry.\n\n    .. todo::\n\n        Make kwarg \"registry\" not hidden.\n\n    Returns\n    -------\n    wrapper : callable\n        Signature matches method on UnifiedIORegistry.\n        Accepts (hidden) kwarg \"registry\". default is ``default_registry``.\n    \"\"\"\n\n    @functools.wraps(getattr(default_registry, method_name))\n    def wrapper(*args, registry=None, **kwargs):\n        # written this way in case ever controlled by ScienceState\n        if registry is None:\n            registry = default_registry\n\n        # Check if the method exists in the registry\n        if not hasattr(registry, method_name):\n            raise AttributeError(f\"Method '{method_name}' does not exist on UnifiedIORegistry\")\n\n        # get and call bound method from registry instance\n        return getattr(registry, method_name)(*args, **kwargs)\n\n    return wrapper\n"
+    },
+    {
+      "snippet": "py:astropy/io/registry/base.py::_UnifiedIORegistryBase.register_identifier",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix_think",
+      "prompt_hash": "e1e20da97b9d9556",
+      "response_hash": "302d33d6c52e695a",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:astropy/io/registry/base.py::_UnifiedIORegistryBase.identify_format",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix",
+      "prompt_hash": "ac908954d1e144ab",
+      "response_hash": "097e91d5461109b0",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "astropy/cosmology/flrw/tests/test_base.py",
+        "astropy/io/registry/tests/test_registries.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 11,
+      "judge_s": 4.7,
+      "diff": "diff --git a/astropy/io/registry/base.py b/astropy/io/registry/base.py\nindex 0ac2a20cce..790feb9f7a 100644\n--- a/astropy/io/registry/base.py\n+++ b/astropy/io/registry/base.py\n@@ -310,10 +310,13 @@ class _UnifiedIORegistryBase(metaclass=abc.ABCMeta):\n         valid_formats = []\n         for data_format, data_class in self._identifiers:\n             if self._is_best_match(data_class_required, data_class, self._identifiers):\n-                if self._identifiers[(data_format, data_class)](\n-                    origin, path, fileobj, *args, **kwargs\n-                ):\n-                    valid_formats.append(data_format)\n+                try:\n+                    if self._identifiers[(data_format, data_class)](\n+                        origin, path, fileobj, *args, **kwargs\n+                    ):\n+                        valid_formats.append(data_format)\n+                except IndexError:\n+                    pass\n \n         return valid_formats\n \n",
+      "new_source": "def identify_format(self, origin, data_class_required, path, fileobj, args, kwargs):\n    \"\"\"Loop through identifiers to see which formats match.\n\n    Parameters\n    ----------\n    origin : str\n        A string ``\"read`` or ``\"write\"`` identifying whether the file is to be\n        opened for reading or writing.\n    data_class_required : object\n        The specified class for the result of `read` or the class that is to be\n        written.\n    path : str or path-like or None\n        The path to the file or None.\n    fileobj : file-like or None.\n        An open file object to read the file's contents, or ``None`` if the\n        file could not be opened.\n    args : sequence\n        Positional arguments for the `read` or `write` function. Note that\n        these must be provided as sequence.\n    kwargs : dict-like\n        Keyword arguments for the `read` or `write` function. Note that this\n        parameter must be `dict`-like.\n\n    Returns\n    -------\n    valid_formats : list\n        List of matching formats.\n    \"\"\"\n    valid_formats = []\n    for data_format, data_class in self._identifiers:\n        if self._is_best_match(data_class_required, data_class, self._identifiers):\n            try:\n                if self._identifiers[(data_format, data_class)](\n                    origin, path, fileobj, *args, **kwargs\n                ):\n                    valid_formats.append(data_format)\n            except IndexError:\n                pass\n\n    return valid_formats\n"
+    },
+    {
+      "snippet": "py:astropy/io/fits/connect.py::is_fits",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "d8ccf0a01df18736",
+      "response_hash": "99852e61a729c91b",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "85 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "astropy/cosmology/tests/test_connect.py",
+        "astropy/io/ascii/tests/test_connect.py",
+        "astropy/io/fits/tests/test_connect.py"
+      ],
+      "regressions": 85,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 25,
+      "judge_s": 12.0
+    }
+  ],
+  "validated_repro": 0,
+  "stop": "budget",
+  "submission": {
+    "snippet": "py:astropy/io/fits/connect.py::is_fits",
+    "model": "qwen2.5-coder-1.5b",
+    "template": "fix",
+    "diff": "diff --git a/astropy/io/fits/connect.py b/astropy/io/fits/connect.py\nindex 4b6150f4ac..173bbe5c29 100644\n--- a/astropy/io/fits/connect.py\n+++ b/astropy/io/fits/connect.py\n@@ -69,7 +69,11 @@ def is_fits(origin, filepath, fileobj, *args, **kwargs):\n             (\".fits\", \".fits.gz\", \".fit\", \".fit.gz\", \".fts\", \".fts.gz\")\n         ):\n             return True\n-    return isinstance(args[0], (HDUList, TableHDU, BinTableHDU, GroupsHDU))\n+    # Check if the first argument is an HDUList, TableHDU, BinTableHDU, or GroupsHDU\n+    elif args and isinstance(args[0], (HDUList, TableHDU, BinTableHDU, GroupsHDU)):\n+        return True\n+    else:\n+        return False\n \n \n def _decode_mixins(tbl):\n",
+    "votes": 0,
+    "changed_lines": 6,
+    "new_source": "def is_fits(origin, filepath, fileobj, *args, **kwargs):\n    \"\"\"\n    Determine whether `origin` is a FITS file.\n\n    Parameters\n    ----------\n    origin : str or readable file-like\n        Path or file object containing a potential FITS file.\n\n    Returns\n    -------\n    is_fits : bool\n        Returns `True` if the given file is a FITS file.\n    \"\"\"\n    if fileobj is not None:\n        pos = fileobj.tell()\n        sig = fileobj.read(30)\n        fileobj.seek(pos)\n        return sig == FITS_SIGNATURE\n    elif filepath is not None:\n        if filepath.lower().endswith(\n            (\".fits\", \".fits.gz\", \".fit\", \".fit.gz\", \".fts\", \".fts.gz\")\n        ):\n            return True\n    # Check if the first argument is an HDUList, TableHDU, BinTableHDU, or GroupsHDU\n    elif args and isinstance(args[0], (HDUList, TableHDU, BinTableHDU, GroupsHDU)):\n        return True\n    else:\n        return False\n",
+    "prompt_hash": "d8ccf0a01df18736",
+    "response_hash": "d58d817990d6a920"
+  },
+  "search_s": 1192.0,
+  "llm_calls": 16,
+  "tokens_in": 29042,
+  "tokens_out": 4743,
+  "arms": {
+    "qwen2.5-coder-7b/fix": 0.5333333333333333,
+    "qwen2.5-coder-7b/fix_think": 0.6,
+    "qwen2.5-coder-3b/fix": 0.3,
+    "qwen2.5-coder-3b/fix_think": 0.3,
+    "qwen2.5-coder-1.5b/fix": 0.14545454545454548,
+    "qwen2.5-coder-1.5b/fix_think": 0.3
+  },
+  "grade": {
+    "resolved": true,
+    "applied": true,
+    "fail_to_pass": {
+      "success": 1,
+      "failure": 0
+    },
+    "pass_to_pass": {
+      "success": 141,
+      "failure": 0
+    }
+  },
+  "grade_s": 30.3,
+  "wall_s": 1224.1,
+  "diagnosis": {
+    "gold_files": [
+      "astropy/io/fits/connect.py"
+    ],
+    "localised_file_hit": true,
+    "localised_line_hit": true,
+    "submission_files": [
+      "astropy/io/fits/connect.py"
+    ],
+    "submission_in_gold_file": true,
+    "gold_changed_lines": 5
+  }
+}

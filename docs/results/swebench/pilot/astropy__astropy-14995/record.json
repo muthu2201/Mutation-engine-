@@ -1,0 +1,463 @@
+{
+  "instance_id": "astropy__astropy-14995",
+  "repo": "astropy/astropy",
+  "version": "5.2",
+  "base_commit": "b16c7d12ccbc7b2d20364b89fb44285bcbfede54",
+  "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.astropy__astropy-14995:latest",
+  "started_at": "2026-10-03T02:29:11.259297+00:00",
+  "image_digest": "ghcr.io/epoch-research/swe-bench.eval.x86_64.astropy__astropy-14995@sha256:adca9052706170bc3aeab0cead178e25e5b16693f72fd5bb16a22183deff4dce",
+  "pull_s": 0.7,
+  "files_considered": 471,
+  "ranked_files": [
+    {
+      "file": "astropy/__init__.py",
+      "score": 3.144
+    },
+    {
+      "file": "astropy/nddata/__init__.py",
+      "score": 3.111
+    },
+    {
+      "file": "astropy/io/votable/tree.py",
+      "score": 1.558
+    },
+    {
+      "file": "astropy/nddata/mixins/ndarithmetic.py",
+      "score": 1.5
+    },
+    {
+      "file": "astropy/nddata/compat.py",
+      "score": 1.185
+    },
+    {
+      "file": "astropy/time/core.py",
+      "score": 1.112
+    },
+    {
+      "file": "astropy/nddata/nddata.py",
+      "score": 1.099
+    },
+    {
+      "file": "astropy/table/table.py",
+      "score": 1.074
+    }
+  ],
+  "localised": [
+    {
+      "file": "astropy/nddata/compat.py",
+      "name": "NDDataArray.mask",
+      "kind": "function",
+      "start": 167,
+      "end": 180,
+      "score": 3.012
+    },
+    {
+      "file": "astropy/nddata/nddata.py",
+      "name": "NDData.mask",
+      "kind": "function",
+      "start": 318,
+      "end": 326,
+      "score": 2.783
+    },
+    {
+      "file": "astropy/table/table.py",
+      "name": "Table.mask",
+      "kind": "function",
+      "start": 940,
+      "end": 960,
+      "score": 2.77
+    },
+    {
+      "file": "astropy/nddata/compat.py",
+      "name": "NDDataArray.mask",
+      "kind": "function",
+      "start": 160,
+      "end": 165,
+      "score": 2.763
+    },
+    {
+      "file": "astropy/table/table.py",
+      "name": "Table.mask",
+      "kind": "function",
+      "start": 962,
+      "end": 964,
+      "score": 2.745
+    },
+    {
+      "file": "astropy/time/core.py",
+      "name": "TimeBase.mask",
+      "kind": "function",
+      "start": 1016,
+      "end": 1018,
+      "score": 2.727
+    }
+  ],
+  "repro": [
+    {
+      "model": "qwen2.5-coder-7b",
+      "outcome": "ISSUE RESOLVED",
+      "script_hash": "4a807ce949f5ed9f"
+    },
+    {
+      "model": "qwen2.5-coder-3b",
+      "outcome": "OTHER",
+      "script_hash": "d50324e87032a52f"
+    }
+  ],
+  "candidates": [
+    {
+      "snippet": "py:astropy/nddata/compat.py::NDDataArray.mask",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix",
+      "prompt_hash": "3d8b57a14a0d4342",
+      "response_hash": "45a93da5cf7305a5",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "astropy/nddata/tests/test_compat.py",
+        "astropy/nddata/tests/test_nduncertainty.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 4,
+      "judge_s": 6.9,
+      "diff": "diff --git a/astropy/nddata/compat.py b/astropy/nddata/compat.py\nindex 1e0694d0eb..8ae8e5a8c3 100644\n--- a/astropy/nddata/compat.py\n+++ b/astropy/nddata/compat.py\n@@ -175,9 +175,11 @@ class NDDataArray(NDArithmeticMixin, NDSlicingMixin, NDIOMixin, NDData):\n                 )\n             else:\n                 self._mask = mask\n-        else:\n+        elif value is None:\n             # internal representation should be one numpy understands\n             self._mask = np.ma.nomask\n+        else:\n+            self._mask = value\n \n     @property\n     def shape(self):\n",
+      "new_source": "@mask.setter\ndef mask(self, value):\n    # Check that value is not either type of null mask.\n    if (value is not None) and (value is not np.ma.nomask):\n        mask = np.array(value, dtype=np.bool_, copy=False)\n        if mask.shape != self.data.shape:\n            raise ValueError(\n                f\"dimensions of mask {mask.shape} and data {self.data.shape} do not match\"\n            )\n        else:\n            self._mask = mask\n    elif value is None:\n        # internal representation should be one numpy understands\n        self._mask = np.ma.nomask\n    else:\n        self._mask = value\n"
+    },
+    {
+      "snippet": "py:astropy/nddata/nddata.py::NDData.mask",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix",
+      "prompt_hash": "c7203629a9ee96fa",
+      "response_hash": "f0190c6faee3c0db",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "astropy/nddata/tests/test_nddata.py",
+        "astropy/nddata/tests/test_compat.py",
+        "astropy/nddata/tests/test_decorators.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 5,
+      "judge_s": 18.9,
+      "diff": "diff --git a/astropy/nddata/nddata.py b/astropy/nddata/nddata.py\nindex 8201a5fa55..2db06d39f5 100644\n--- a/astropy/nddata/nddata.py\n+++ b/astropy/nddata/nddata.py\n@@ -323,7 +323,10 @@ class NDData(NDDataBase):\n         Masks should follow the ``numpy`` convention that valid data points are\n         marked by ``False`` and invalid ones with ``True``.\n         \"\"\"\n-        return self._mask\n+        if self._mask is None:\n+            return None\n+        else:\n+            return deepcopy(self._mask)\n \n     @mask.setter\n     def mask(self, value):\n",
+      "new_source": "@property\ndef mask(self):\n    \"\"\"\n    any type : Mask for the dataset, if any.\n\n    Masks should follow the ``numpy`` convention that valid data points are\n    marked by ``False`` and invalid ones with ``True``.\n    \"\"\"\n    if self._mask is None:\n        return None\n    else:\n        return deepcopy(self._mask)\n"
+    },
+    {
+      "snippet": "py:astropy/table/table.py::Table.mask",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix",
+      "prompt_hash": "3203b888d8cb83ed",
+      "response_hash": "cc1f57bf0e5bb1a0",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "1 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "astropy/cosmology/_io/tests/test_table.py",
+        "astropy/io/fits/tests/test_table.py",
+        "astropy/table/tests/test_table.py"
+      ],
+      "regressions": 1,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 13.0
+    },
+    {
+      "snippet": "py:astropy/nddata/compat.py::NDDataArray.mask",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix",
+      "prompt_hash": "802b2071f6ef0c60",
+      "response_hash": "f1e117081d76dd9f",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "1 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "astropy/nddata/tests/test_compat.py",
+        "astropy/nddata/tests/test_nduncertainty.py"
+      ],
+      "regressions": 1,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 3.4
+    },
+    {
+      "snippet": "py:astropy/table/table.py::Table.mask",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix_think",
+      "prompt_hash": "9e71ad3cea126b72",
+      "response_hash": "76f8aa7b7cdeaf3e",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "astropy/cosmology/_io/tests/test_table.py",
+        "astropy/io/fits/tests/test_table.py",
+        "astropy/table/tests/test_table.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 6.4,
+      "diff": "diff --git a/astropy/table/table.py b/astropy/table/table.py\nindex d51ee0a68a..14386f506c 100644\n--- a/astropy/table/table.py\n+++ b/astropy/table/table.py\n@@ -961,6 +961,8 @@ class Table:\n \n     @mask.setter\n     def mask(self, val):\n+        if val is None:\n+            return\n         self.mask[:] = val\n \n     @property\n",
+      "new_source": "@mask.setter\ndef mask(self, val):\n    if val is None:\n        return\n    self.mask[:] = val\n"
+    },
+    {
+      "snippet": "py:astropy/time/core.py::TimeBase.mask",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix_think",
+      "prompt_hash": "f530f6d24aad09fb",
+      "response_hash": "37a6e53600e78543",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "astropy/cosmology/tests/test_core.py",
+        "astropy/io/fits/tests/test_core.py",
+        "astropy/modeling/tests/test_core.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 5,
+      "judge_s": 10.9,
+      "diff": "diff --git a/astropy/time/core.py b/astropy/time/core.py\nindex ee46434b37..6c026a51e1 100644\n--- a/astropy/time/core.py\n+++ b/astropy/time/core.py\n@@ -1015,7 +1015,10 @@ class TimeBase(ShapedLikeNDArray):\n \n     @property\n     def mask(self):\n-        return self._time.mask\n+        if self._time.mask is None:\n+            return np.zeros_like(self._time.data, dtype=bool)\n+        else:\n+            return self._time.mask\n \n     def insert(self, obj, values, axis=0):\n         \"\"\"\n",
+      "new_source": "@property\ndef mask(self):\n    if self._time.mask is None:\n        return np.zeros_like(self._time.data, dtype=bool)\n    else:\n        return self._time.mask\n"
+    },
+    {
+      "snippet": "py:astropy/nddata/compat.py::NDDataArray.mask",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix",
+      "prompt_hash": "3d8b57a14a0d4342",
+      "response_hash": "e0d9b4d511f4c668",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "astropy/nddata/tests/test_compat.py",
+        "astropy/nddata/tests/test_nduncertainty.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 3,
+      "judge_s": 3.4,
+      "diff": "diff --git a/astropy/nddata/compat.py b/astropy/nddata/compat.py\nindex 1e0694d0eb..f8f5f24057 100644\n--- a/astropy/nddata/compat.py\n+++ b/astropy/nddata/compat.py\n@@ -175,6 +175,9 @@ class NDDataArray(NDArithmeticMixin, NDSlicingMixin, NDIOMixin, NDData):\n                 )\n             else:\n                 self._mask = mask\n+        elif value is None:\n+            # Handle the case where the mask is explicitly set to None\n+            self._mask = np.ma.nomask\n         else:\n             # internal representation should be one numpy understands\n             self._mask = np.ma.nomask\n",
+      "new_source": "@mask.setter\ndef mask(self, value):\n    # Check that value is not either type of null mask.\n    if (value is not None) and (value is not np.ma.nomask):\n        mask = np.array(value, dtype=np.bool_, copy=False)\n        if mask.shape != self.data.shape:\n            raise ValueError(\n                f\"dimensions of mask {mask.shape} and data {self.data.shape} do not match\"\n            )\n        else:\n            self._mask = mask\n    elif value is None:\n        # Handle the case where the mask is explicitly set to None\n        self._mask = np.ma.nomask\n    else:\n        # internal representation should be one numpy understands\n        self._mask = np.ma.nomask\n"
+    },
+    {
+      "snippet": "py:astropy/nddata/nddata.py::NDData.mask",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix_think",
+      "prompt_hash": "ec83f1cec207dc21",
+      "response_hash": "b2f6f2d960927af9",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "13 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "astropy/nddata/tests/test_nddata.py",
+        "astropy/nddata/tests/test_compat.py",
+        "astropy/nddata/tests/test_decorators.py"
+      ],
+      "regressions": 13,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 3,
+      "judge_s": 10.1
+    },
+    {
+      "snippet": "py:astropy/table/table.py::Table.mask",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix_think",
+      "prompt_hash": "8592dfaac30e271b",
+      "response_hash": "a76480fd9983271e",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "astropy/cosmology/_io/tests/test_table.py",
+        "astropy/io/fits/tests/test_table.py",
+        "astropy/table/tests/test_table.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 6.5,
+      "diff": "diff --git a/astropy/table/table.py b/astropy/table/table.py\nindex d51ee0a68a..5a60e58eb2 100644\n--- a/astropy/table/table.py\n+++ b/astropy/table/table.py\n@@ -955,7 +955,7 @@ class Table:\n             # See #5556 for discussion.\n             mask_table._setitem_inplace = True\n         else:\n-            mask_table = None\n+            mask_table = self.__class__(names=self.colnames)\n \n         return mask_table\n \n",
+      "new_source": "@property\ndef mask(self):\n    # Dynamic view of available masks\n    if self.masked or self.has_masked_columns or self.has_masked_values:\n        mask_table = Table(\n            [\n                getattr(col, \"mask\", FalseArray(col.shape))\n                for col in self.itercols()\n            ],\n            names=self.colnames,\n            copy=False,\n        )\n\n        # Set hidden attribute to force inplace setitem so that code like\n        # t.mask['a'] = [1, 0, 1] will correctly set the underlying mask.\n        # See #5556 for discussion.\n        mask_table._setitem_inplace = True\n    else:\n        mask_table = self.__class__(names=self.colnames)\n\n    return mask_table\n"
+    },
+    {
+      "snippet": "py:astropy/nddata/compat.py::NDDataArray.mask",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix_think",
+      "prompt_hash": "fe71e681cf2d9f4c",
+      "response_hash": "ebddca0a50ad52e2",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "astropy/nddata/tests/test_compat.py",
+        "astropy/nddata/tests/test_nduncertainty.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 5,
+      "judge_s": 3.6,
+      "diff": "diff --git a/astropy/nddata/compat.py b/astropy/nddata/compat.py\nindex 1e0694d0eb..0d0b058a54 100644\n--- a/astropy/nddata/compat.py\n+++ b/astropy/nddata/compat.py\n@@ -159,10 +159,7 @@ class NDDataArray(NDArithmeticMixin, NDSlicingMixin, NDIOMixin, NDData):\n     # Implement mask in a way that converts nicely to a numpy masked array\n     @property\n     def mask(self):\n-        if self._mask is np.ma.nomask:\n-            return None\n-        else:\n-            return self._mask\n+        return None if self._mask is np.ma.nomask else self._mask\n \n     @mask.setter\n     def mask(self, value):\n",
+      "new_source": "@property\ndef mask(self):\n    return None if self._mask is np.ma.nomask else self._mask\n"
+    },
+    {
+      "snippet": "py:astropy/table/table.py::Table.mask",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix",
+      "prompt_hash": "80d76b45d08b1fe1",
+      "response_hash": "e365857dc7d3eb64",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "astropy/cosmology/_io/tests/test_table.py",
+        "astropy/io/fits/tests/test_table.py",
+        "astropy/table/tests/test_table.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 6,
+      "judge_s": 6.6,
+      "diff": "diff --git a/astropy/table/table.py b/astropy/table/table.py\nindex d51ee0a68a..7f1055d0a4 100644\n--- a/astropy/table/table.py\n+++ b/astropy/table/table.py\n@@ -961,7 +961,11 @@ class Table:\n \n     @mask.setter\n     def mask(self, val):\n-        self.mask[:] = val\n+        if isinstance(val, np.ndarray) and val.ndim > 0:\n+            self.mask[:] = val\n+        else:\n+            # Handle the case when val is None or not a proper array\n+            self.mask = None\n \n     @property\n     def _mask(self):\n",
+      "new_source": "@mask.setter\ndef mask(self, val):\n    if isinstance(val, np.ndarray) and val.ndim > 0:\n        self.mask[:] = val\n    else:\n        # Handle the case when val is None or not a proper array\n        self.mask = None\n"
+    },
+    {
+      "snippet": "py:astropy/time/core.py::TimeBase.mask",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix",
+      "prompt_hash": "5358f0bb45151e53",
+      "response_hash": "335d743e5a60a665",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "astropy/cosmology/tests/test_core.py",
+        "astropy/io/fits/tests/test_core.py",
+        "astropy/modeling/tests/test_core.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 5,
+      "judge_s": 5.7,
+      "diff": "diff --git a/astropy/time/core.py b/astropy/time/core.py\nindex ee46434b37..ac44a8234c 100644\n--- a/astropy/time/core.py\n+++ b/astropy/time/core.py\n@@ -1015,7 +1015,10 @@ class TimeBase(ShapedLikeNDArray):\n \n     @property\n     def mask(self):\n-        return self._time.mask\n+        if self._time.mask is None:\n+            return None\n+        else:\n+            return np.bitwise_or(self._time.mask, 0)\n \n     def insert(self, obj, values, axis=0):\n         \"\"\"\n",
+      "new_source": "@property\ndef mask(self):\n    if self._time.mask is None:\n        return None\n    else:\n        return np.bitwise_or(self._time.mask, 0)\n"
+    },
+    {
+      "snippet": "py:astropy/nddata/compat.py::NDDataArray.mask",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix_think",
+      "prompt_hash": "ae3a49732890311d",
+      "response_hash": "d1c51f3518ac3795",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "astropy/nddata/tests/test_compat.py",
+        "astropy/nddata/tests/test_nduncertainty.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 9,
+      "judge_s": 3.3,
+      "diff": "diff --git a/astropy/nddata/compat.py b/astropy/nddata/compat.py\nindex 1e0694d0eb..f03f22b260 100644\n--- a/astropy/nddata/compat.py\n+++ b/astropy/nddata/compat.py\n@@ -166,8 +166,10 @@ class NDDataArray(NDArithmeticMixin, NDSlicingMixin, NDIOMixin, NDData):\n \n     @mask.setter\n     def mask(self, value):\n-        # Check that value is not either type of null mask.\n-        if (value is not None) and (value is not np.ma.nomask):\n+        # Check if value is None or np.ma.nomask, set to np.ma.nomask\n+        if value is None or value is np.ma.nomask:\n+            self._mask = np.ma.nomask\n+        else:\n             mask = np.array(value, dtype=np.bool_, copy=False)\n             if mask.shape != self.data.shape:\n                 raise ValueError(\n@@ -175,9 +177,6 @@ class NDDataArray(NDArithmeticMixin, NDSlicingMixin, NDIOMixin, NDData):\n                 )\n             else:\n                 self._mask = mask\n-        else:\n-            # internal representation should be one numpy understands\n-            self._mask = np.ma.nomask\n \n     @property\n     def shape(self):\n",
+      "new_source": "@mask.setter\ndef mask(self, value):\n    # Check if value is None or np.ma.nomask, set to np.ma.nomask\n    if value is None or value is np.ma.nomask:\n        self._mask = np.ma.nomask\n    else:\n        mask = np.array(value, dtype=np.bool_, copy=False)\n        if mask.shape != self.data.shape:\n            raise ValueError(\n                f\"dimensions of mask {mask.shape} and data {self.data.shape} do not match\"\n            )\n        else:\n            self._mask = mask\n"
+    },
+    {
+      "snippet": "py:astropy/nddata/nddata.py::NDData.mask",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix_think",
+      "prompt_hash": "ec83f1cec207dc21",
+      "response_hash": "1eab74d53d872721",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "17 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "astropy/nddata/tests/test_nddata.py",
+        "astropy/nddata/tests/test_compat.py",
+        "astropy/nddata/tests/test_decorators.py"
+      ],
+      "regressions": 17,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 10.5
+    }
+  ],
+  "validated_repro": 0,
+  "stop": "budget",
+  "submission": {
+    "snippet": "py:astropy/table/table.py::Table.mask",
+    "model": "qwen2.5-coder-7b",
+    "template": "fix_think",
+    "diff": "diff --git a/astropy/table/table.py b/astropy/table/table.py\nindex d51ee0a68a..14386f506c 100644\n--- a/astropy/table/table.py\n+++ b/astropy/table/table.py\n@@ -961,6 +961,8 @@ class Table:\n \n     @mask.setter\n     def mask(self, val):\n+        if val is None:\n+            return\n         self.mask[:] = val\n \n     @property\n",
+    "votes": 0,
+    "changed_lines": 2,
+    "new_source": "@mask.setter\ndef mask(self, val):\n    if val is None:\n        return\n    self.mask[:] = val\n",
+    "prompt_hash": "9e71ad3cea126b72",
+    "response_hash": "76f8aa7b7cdeaf3e"
+  },
+  "search_s": 910.1,
+  "llm_calls": 16,
+  "tokens_in": 17433,
+  "tokens_out": 2666,
+  "arms": {
+    "qwen2.5-coder-7b/fix": 0.6222222222222222,
+    "qwen2.5-coder-7b/fix_think": 0.6222222222222222,
+    "qwen2.5-coder-3b/fix": 0.3,
+    "qwen2.5-coder-3b/fix_think": 0.3,
+    "qwen2.5-coder-1.5b/fix": 0.3,
+    "qwen2.5-coder-1.5b/fix_think": 0.3
+  },
+  "grade": {
+    "resolved": false,
+    "applied": true,
+    "fail_to_pass": {
+      "success": 0,
+      "failure": 1
+    },
+    "pass_to_pass": {
+      "success": 179,
+      "failure": 0
+    }
+  },
+  "grade_s": 28.4,
+  "wall_s": 940.3,
+  "diagnosis": {
+    "gold_files": [
+      "astropy/nddata/mixins/ndarithmetic.py"
+    ],
+    "localised_file_hit": false,
+    "localised_line_hit": false,
+    "submission_files": [
+      "astropy/table/table.py"
+    ],
+    "submission_in_gold_file": false,
+    "gold_changed_lines": 4
+  }
+}

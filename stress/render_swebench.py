@@ -108,7 +108,7 @@ def per_instance(rows: list[dict[str, Any]]) -> str:
     return "\n".join(out)
 
 
-def arms(rows: list[dict[str, Any]]) -> str:
+def arms_block(rows: list[dict[str, Any]]) -> str:
     tally: dict[str, Counter[str]] = {}
     for r in rows:
         for c in r["candidates"]:
@@ -126,19 +126,59 @@ def arms(rows: list[dict[str, Any]]) -> str:
     return "\n".join(out)
 
 
+def mcnemar_exact(b: int, c: int) -> float:
+    """Two-sided exact McNemar p-value: a binomial test of b against b + c at p = 0.5."""
+    n = b + c
+    if n == 0:
+        return 1.0
+    tail = sum(math.comb(n, k) for k in range(min(b, c) + 1)) / 2**n
+    return min(1.0, 2 * tail)
+
+
+def paired(arms: list[tuple[str, list[dict[str, Any]]]]) -> str:
+    """The pre-registered comparison of two arms on the same instances (ADR 0012)."""
+    (la, _), (lb, _) = arms[0], arms[1]
+    res = {lab: {r["instance_id"]: bool((r.get("grade") or {}).get("resolved")) for r in rows} for lab, rows in arms}
+    common = sorted(set(res[la]) & set(res[lb]))
+    b = sum(1 for i in common if res[lb][i] and not res[la][i])
+    c = sum(1 for i in common if res[la][i] and not res[lb][i])
+    out = [f"{len(common)} instances ran in both arms.\n", "| arm | resolved | Wilson 95% CI |", "|---|---|---|"]
+    for lab in (la, lb):
+        k = sum(1 for i in common if res[lab][i])
+        lo, hi = wilson(k, len(common))
+        out.append(f"| {lab} | {k} / {len(common)} | {100 * lo:.1f}–{100 * hi:.1f}% |")
+    out += ["", f"Discordant pairs: {b} resolved only by `{lb}`, {c} only by `{la}`; "
+            f"paired difference {b - c:+d} ({lb} − {la}), exact McNemar p = {mcnemar_exact(b, c):.3f}.", "",
+            f"| instance | {la} | {lb} |", "|---|---|---|"]
+    for i in common:
+        out.append(f"| `{i}` | {'**yes**' if res[la][i] else 'no'} | {'**yes**' if res[lb][i] else 'no'} |")
+    return "\n".join(out)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--run", default="runs/swebench")
+    ap.add_argument("--run", help="a single arm (same as --arm local=RUN)")
+    ap.add_argument("--arm", action="append", default=[], help="LABEL=RUN; the first arm fills the unsuffixed blocks, others NAME_LABEL")
     ap.add_argument("--planned", type=int, default=30)
     ap.add_argument("--write")
     args = ap.parse_args()
-    rows = load(Path(args.run))
-    blocks = {"SWE_SUMMARY": summary(rows, args.planned), "SWE_FUNNEL": funnel(rows), "SWE_LOCALISATION": localisation(rows),
-              "SWE_INSTANCES": per_instance(rows), "SWE_ARMS": arms(rows)}
+    specs = [tuple(a.split("=", 1)) for a in args.arm] or [("local", args.run or "runs/swebench")]
+    arms = [(label, load(Path(run))) for label, run in specs]
+    blocks: dict[str, str] = {}
+    for n, (label, rows) in enumerate(arms):
+        suffix = "" if n == 0 else f"_{label.upper()}"
+        blocks.update({f"SWE_SUMMARY{suffix}": summary(rows, args.planned), f"SWE_FUNNEL{suffix}": funnel(rows),
+                       f"SWE_LOCALISATION{suffix}": localisation(rows), f"SWE_INSTANCES{suffix}": per_instance(rows),
+                       f"SWE_ARMS{suffix}": arms_block(rows)})
+    if len(arms) >= 2:
+        blocks["SWE_PAIRED"] = paired(arms[:2])
     if args.write:
         doc = Path(args.write).read_text()
         for name, body in blocks.items():
-            doc = replace_block(doc, name, body)
+            if f"<!-- RESULTS:{name} -->" in doc:
+                doc = replace_block(doc, name, body)
+            else:
+                print(f"note: {args.write} has no RESULTS:{name} block; skipped")
         Path(args.write).write_text(doc)
     else:
         for name, body in blocks.items():
