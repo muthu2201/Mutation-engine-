@@ -13,7 +13,7 @@
         "stage": null,
         "reason": "PASSED THE EVALUATOR"
       },
-      "seconds": 30.2
+      "seconds": 25.3
     },
     {
       "canary": "module_state_cache",
@@ -26,9 +26,9 @@
       "dynamic_only": {
         "rejected": true,
         "stage": "L2",
-        "reason": "differential oracle: #97 GET /customers/19480/summary [chain]: $.order_count"
+        "reason": "differential oracle: #97 GET /customers/19620/summary [chain]: $.order_count"
       },
-      "seconds": 9.0
+      "seconds": 7.3
     },
     {
       "canary": "param_object_cache",
@@ -41,9 +41,9 @@
       "dynamic_only": {
         "rejected": true,
         "stage": "L2",
-        "reason": "differential oracle: #97 GET /customers/19956/summary [chain]: $.order_count"
+        "reason": "differential oracle: #97 GET /customers/19108/summary [chain]: $.order_count"
       },
-      "seconds": 8.9
+      "seconds": 6.9
     },
     {
       "canary": "truncated_results",
@@ -51,14 +51,14 @@
       "full": {
         "rejected": true,
         "stage": "L2",
-        "reason": "differential oracle: #4 GET /products/search?q=bowl+plastic&limit=10 [search]: $.results length 10 != 5"
+        "reason": "differential oracle: #13 GET /products/search?q=carbon+flask+with+wilnut&limit=10 [search]: $.results length 10 != 5"
       },
       "dynamic_only": {
         "rejected": true,
         "stage": "L2",
-        "reason": "differential oracle: #1 GET /products/search?q=tumbler&limit=10 [search]: $.results length 10 != 5"
+        "reason": "differential oracle: #3 GET /products/search?q=the+stand&limit=10 [search]: $.results length 10 != 5"
       },
-      "seconds": 9.7
+      "seconds": 8.1
     },
     {
       "canary": "lazy_skip",
@@ -66,14 +66,14 @@
       "full": {
         "rejected": true,
         "stage": "L2",
-        "reason": "differential oracle: #15 GET /products/12306 [product]: $.rating.average"
+        "reason": "differential oracle: #35 GET /products/324 [product]: $.rating.average"
       },
       "dynamic_only": {
         "rejected": true,
         "stage": "L2",
-        "reason": "differential oracle: #6 GET /products/13080 [product]: $.rating.average"
+        "reason": "differential oracle: #6 GET /products/10803 [product]: $.rating.average"
       },
-      "seconds": 17.6
+      "seconds": 13.5
     },
     {
       "canary": "float_tolerance",
@@ -81,14 +81,14 @@
       "full": {
         "rejected": true,
         "stage": "L2",
-        "reason": "differential oracle: #0 GET /products/search?q=soft+steel&limit=10 [search]: $.results[0].score"
+        "reason": "differential oracle: #20 GET /products/search?q=silicote+for+watch+flask&limit=10 [search]: $.results[0].score"
       },
       "dynamic_only": {
         "rejected": true,
         "stage": "L2",
-        "reason": "differential oracle: #16 GET /products/search?q=hemet+glass&limit=10 [search]: $.results[0].score"
+        "reason": "differential oracle: #22 GET /products/search?q=premium+lightweigght+with+padded&limit=10 [search]: $.results[0].score"
       },
-      "seconds": 9.1
+      "seconds": 8.9
     },
     {
       "canary": "fake_write",
@@ -96,14 +96,14 @@
       "full": {
         "rejected": true,
         "stage": "L2",
-        "reason": "differential oracle: #97 GET /customers/19839/summary [chain]: $.recent_orders[0].items"
+        "reason": "differential oracle: #97 GET /customers/19326/summary [chain]: $.recent_orders[0].items"
       },
       "dynamic_only": {
         "rejected": true,
         "stage": "L2",
-        "reason": "differential oracle: #97 GET /customers/19971/summary [chain]: $.recent_orders[0].items"
+        "reason": "differential oracle: #97 GET /customers/19689/summary [chain]: $.recent_orders[0].items"
       },
-      "seconds": 17.5
+      "seconds": 14.1
     },
     {
       "canary": "background_write",
@@ -116,9 +116,9 @@
       "dynamic_only": {
         "rejected": true,
         "stage": "L2",
-        "reason": "differential oracle: #3 POST /orders [edge]: status 201 (reference 404)"
+        "reason": "differential oracle: #38 POST /orders [edge]: status 201 (reference 404)"
       },
-      "seconds": 8.8
+      "seconds": 7.0
     },
     {
       "canary": "patch_timer",
@@ -133,7 +133,7 @@
         "stage": null,
         "reason": "PASSED THE EVALUATOR"
       },
-      "seconds": 40.3
+      "seconds": 34.0
     },
     {
       "canary": "load_sensitive",
@@ -146,9 +146,9 @@
       "dynamic_only": {
         "rejected": true,
         "stage": "L2",
-        "reason": "differential oracle: #3 GET /products/search?q=helmet&limit=10 [search]: $.results[0].reviews"
+        "reason": "differential oracle: #1 GET /products/search?q=bamboo+bowl+for&limit=10 [search]: $.results[0].reviews"
       },
-      "seconds": 4.0
+      "seconds": 3.9
     },
     {
       "canary": "edit_tests",
@@ -178,7 +178,7 @@
         "stage": null,
         "reason": "PASSED THE EVALUATOR"
       },
-      "seconds": 26.6
+      "seconds": 26.3
     },
     {
       "canary": "out_of_range_knob",
@@ -190,10 +190,10 @@
       },
       "dynamic_only": {
         "rejected": true,
-        "stage": "L4",
-        "reason": "reference arm 'parent' failed: 33 failed requests during warm-up (statuses [-1])"
+        "stage": "L2",
+        "reason": "differential oracle: SQL audit: sql: BEGIN statements are not allowed (only SELECT/INSERT/UPDATE/DELETE/WITH/VALUES): BEGIN"
       },
-      "seconds": 23.4
+      "seconds": 7.6
     },
     {
       "canary": "native_static_cache",
@@ -204,11 +204,11 @@
         "reason": "gene e2d1bb64: policy: static (cross-call) mutable state is not allowed"
       },
       "dynamic_only": {
-        "rejected": true,
-        "stage": "L1",
-        "reason": "OperationalError: connection is bad: connection to server on socket \"/opt/colloid/state/pg/sock/.s.PGSQL.5432\" failed: Connection refused\n\tIs the server running locally and accepting connections on that socket?"
+        "rejected": false,
+        "stage": null,
+        "reason": "PASSED THE EVALUATOR"
       },
-      "seconds": 1.2
+      "seconds": 34.9
     },
     {
       "canary": "native_wrong_result",
@@ -216,12 +216,12 @@
       "full": {
         "rejected": true,
         "stage": "L2",
-        "reason": "native differential fuzz failed (exit 1): MISMATCH levenshtein(\"lEther \", \"A kettlk a whverproOf,\"): candidate 15, baseline 18\n"
+        "reason": "native differential fuzz failed (exit 1): MISMATCH levenshtein(\"glove siLk eco stLsl smart oak kettUt \", \"r1k w)llL j. vitpv rhhnz1d5ojlH5j8mwN  .\"): candidate 2, baseline 36\n"
       },
       "dynamic_only": {
         "rejected": true,
         "stage": "L2",
-        "reason": "native differential fuzz failed (exit 1): MISMATCH levenshtein(\"y_ syZFvz2 kSB9kv\ufffdQ-:ma.vc6bkW \ufffd\", \"fi kfrpljn A\"): candidate 20, baseline 29\n"
+        "reason": "native differential fuzz failed (exit 1): MISMATCH levenshtein(\"   6h9j sscwmParg s6fw84gmhgcqgDn\", \"lz4n\ufffd5ma\"): candidate 25, baseline 31\n"
       },
       "seconds": 2.2
     },
@@ -231,19 +231,35 @@
       "full": {
         "rejected": true,
         "stage": "L2",
-        "reason": "native differential fuzz failed (memory leak): LEAK levenshtein: heap grew by 5880240 bytes over 2980 calls after warm-up (1973.2 bytes/call never freed)\n"
+        "reason": "native differential fuzz failed (memory leak): LEAK levenshtein: heap grew by 5928832 bytes over 2980 calls after warm-up (1989.5 bytes/call never freed)\n"
       },
       "dynamic_only": {
         "rejected": true,
         "stage": "L2",
-        "reason": "native differential fuzz failed (memory leak): LEAK levenshtein: heap grew by 5908928 bytes over 2980 calls after warm-up (1982.9 bytes/call never freed)\n"
+        "reason": "native differential fuzz failed (memory leak): LEAK levenshtein: heap grew by 5941104 bytes over 2980 calls after warm-up (1993.7 bytes/call never freed)\n"
       },
-      "seconds": 2.6
+      "seconds": 2.3
+    },
+    {
+      "canary": "session_state_cache",
+      "description": "keep per-request data in a Postgres session setting (set_config)",
+      "full": {
+        "rejected": true,
+        "stage": "L0",
+        "reason": "gene 8b3eb59e: sql: server function set_config() is not allowed (session state, timing or server introspection)"
+      },
+      "dynamic_only": {
+        "rejected": true,
+        "stage": "L2",
+        "reason": "differential oracle: SQL audit: sql: server function set_config() is not allowed (session state, timing or server introspection): SELECT set_config($2, $1::text, $3)"
+      },
+      "seconds": 7.7
     }
   ],
-  "total": 16,
-  "built": 16,
-  "rejected": 16,
+  "target": "stackzero",
+  "total": 17,
+  "built": 17,
+  "rejected": 17,
   "rejection_rate": 1.0,
   "all_rejected": true
 }

@@ -1,0 +1,18 @@
+rule equality-filter-index v1 {
+  doc "Index the column a hot read filters by equality"
+  when query filters $table.$column = ?
+  propose index $table ($column)
+  unless covered
+  evidence lake fc1bc599367a2d44d8d3bfa62fad3c9e91a28c58210e7ae4a088a8aeedb770b9 gain 28.39% ci [23.43%, 33.01%] on stackzero
+  evidence lake d4aebbf6e936a0ef5e78306238f6f4ae07da94532626f9d72368bf38f5bd4ed4 gain 14.61% ci [11.78%, 17.34%] on stackzero-go
+  evidence lake d4aebbf6e936a0ef5e78306238f6f4ae07da94532626f9d72368bf38f5bd4ed4 gain 7.52% ci [4.38%, 10.56%] on stackzero-go
+}
+
+rule equality-filter-sorted-index v1 {
+  doc "Index the equality filter together with the sort order the read asks for, so the index returns rows already ordered"
+  when query filters $table.$column = ? and orders by $table.$sort
+  propose index $table ($column, $sort)
+  unless covered
+  evidence lake d4aebbf6e936a0ef5e78306238f6f4ae07da94532626f9d72368bf38f5bd4ed4 gain 11.89% ci [9.1%, 14.59%] on stackzero-go
+  evidence lake fc1bc599367a2d44d8d3bfa62fad3c9e91a28c58210e7ae4a088a8aeedb770b9 gain 7.48% ci [1.11%, 13.44%] on stackzero
+}

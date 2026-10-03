@@ -21,17 +21,24 @@ RESULTS = Path("docs/results")
 
 
 def arm_result(run: str) -> ArmResult:
-    """Best verified gain and when it was verified, from a run's own store."""
+    """Best verified gain and when it was verified, from a run's own store.
+
+    Only L6 passes made by the run itself count: ``colloid verify`` adds L6 evaluations after
+    the run ends, which say nothing about how fast the search found anything (ADR 0008 defines
+    VGPH from run start to the run's own L6 pass)."""
     store = open_store(_store_url(run))
     try:
         baseline = next(p for p in store.programs(island="baseline"))
         start = baseline.created_at
+        elapsed_min = (store.kv_get("result") or {}).get("elapsed_min")
+        end = start + 60.0 * float(elapsed_min) + 300.0 if elapsed_min is not None else float("inf")
         evaluated = sum(1 for p in store.programs() if store.evaluations(p.id, stage=Stage.L5.value) or store.evaluations(p.id, stage=Stage.L4.value))
         verified = [*store.programs(status=ProgramStatus.PROMOTED), *store.programs(status=ProgramStatus.VERIFIED)]
         points: list[tuple[float, float]] = []  # (gain %, hours)
         for prog in verified:
-            l6 = [e for e in store.evaluations(prog.id, stage=Stage.L6.value) if e.verdict == Verdict.PASS]
-            est = next((o for e in l6 for o in e.objectives if o.objective == "cost" and o.reference == "baseline"), None)
+            l6 = sorted((e for e in store.evaluations(prog.id, stage=Stage.L6.value) if e.verdict == Verdict.PASS and e.created_at <= end),
+                        key=lambda e: e.created_at)
+            est = next((o for o in l6[0].objectives if o.objective == "cost" and o.reference == "baseline"), None) if l6 else None
             if est is None:
                 continue
             points.append((round(gain_percent(est.log_ratio), 2), round((l6[0].created_at - start) / 3600.0, 3)))

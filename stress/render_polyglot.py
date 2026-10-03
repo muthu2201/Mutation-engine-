@@ -18,7 +18,7 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from render_results import aa_block, replace_block, run_block
+from render_results import replace_block, run_block
 
 from colloid.adapters.telemetry.jsonl import read_events
 
@@ -109,7 +109,7 @@ def bakeoff_blocks() -> dict[str, str]:
         c = e.get("conformance")
         conf.append(f"| `{name}` | {e['language']} | {c['requests'] if c else 'reference'} | {c['mismatches'] if c else '—'} |")
     load = [f"Offered load {rep['rate_rps']} req/s for every arm (half the Python reference's knee), protocol `{rep['protocol']}`.\n",
-            "| implementation | $ / 1M req | CPU ms / req | p50 ms | p95 ms | stack PSS MB | cost vs Python (95% CI) |", "|---|---|---|---|---|---|---|"]
+            "| implementation | $ / 1M req | CPU ms / req | p50 ms | p95 ms | stack PSS MB | cost saving vs Python (95% CI; negative = costs more) |", "|---|---|---|---|---|---|---|"]
     for name, e in impls.items():
         m = e.get("at_equal_load")
         if not m:
@@ -123,10 +123,12 @@ def bakeoff_blocks() -> dict[str, str]:
         f = e["footprint"]
         foot.append(f"| `{name}` | {f['runtime']} | {f['runtime_bytes'] / 1e6:.1f} | {len(f['dependencies'])} | {f['dependency_bytes'] / 1e6:.1f} | "
                     f"{f['app_bytes'] / 1e6:.2f} | {f['startup_ms_median']} | {f['service_pss_mb_after_warmup']} |")
-    cap = ["| implementation | knee (req/s sustained, p99 within 8x of light load) |", "|---|---|"]
+    cap = ["| implementation | knee: the highest tested rate with p99 within 8x of light load (req/s) | next tested rate |", "|---|---|---|"]
     for name, e in impls.items():
         if e.get("capacity"):
-            cap.append(f"| `{name}` | {e['capacity']['knee_rps']} |")
+            offered = [pt["offered"] for pt in e["capacity"].get("curve", [])]
+            nxt = next((r for r in offered if r > e["capacity"]["knee_rps"]), None)
+            cap.append(f"| `{name}` | {e['capacity']['knee_rps']} | {nxt if nxt is not None else '—'} |")
     scale = rep.get("scale_projection") or {}
     sc = [f"Assumptions: {json.dumps(scale.get('assumptions', {}))}\n", "| implementation | CPU ms/req | 100 req/s | 1k req/s | 10k req/s |", "|---|---|---|---|---|"]
     for name, e in (scale.get("implementations") or {}).items():
@@ -212,12 +214,7 @@ def main() -> int:
     }
     for label, run in (("COLD", args.cold), ("PRIMED", args.primed)):
         if (Path(run) / "colloid.db").exists():
-            from colloid.adapters.store.sql_store import open_store
-
-            store = open_store(f"sqlite:///{Path(run) / 'colloid.db'}")
-            aa = store.kv_get("aa_test")
-            store.close()
-            blocks[f"M1_{label}"] = (aa_block(aa, "A/A noise floor") if aa else "") + "\n" + run_block(run)
+            blocks[f"M1_{label}"] = run_block(run)  # run_block already renders the run's A/A table
             blocks[f"LLM_{label}"] = llm_block(run)
     if args.write:
         doc = Path(args.write).read_text()

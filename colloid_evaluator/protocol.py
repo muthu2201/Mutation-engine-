@@ -157,7 +157,8 @@ class PhaseResult:
     chunk_cpu_us: list[float] = field(default_factory=list)  # total CPU (svc + db) per chunk
     chunk_requests: list[int] = field(default_factory=list)
     chunk_sched_s: list[float] = field(default_factory=list)  # scheduled duration of each chunk
-    pss_mb: list[float] = field(default_factory=list)
+    pss_mb: list[float] = field(default_factory=list)  # service + database, the memory objective
+    pss_parts: dict[str, list[float]] = field(default_factory=dict)  # the same samples per source ("service", "db")
     cpu_us_per_req: float = float("nan")
     throughput: float = float("nan")
     warmup_chunks: int = 0
@@ -247,21 +248,29 @@ def _read_cpu(files: Sequence[str]) -> int:
     return total
 
 
+PSS_INTERVAL_S = 0.2
+
+
 class PssSampler:
-    def __init__(self, pid_sources: Sequence[Callable[[], list[int]]], interval: float = 0.2) -> None:
+    def __init__(self, pid_sources: Sequence[Callable[[], list[int]]], interval: float = PSS_INTERVAL_S) -> None:
         self.sources = pid_sources
         self.interval = interval
         self.samples: list[float] = []
+        self.by_source: list[list[float]] = [[] for _ in pid_sources]  # PSS is additive: these sum to samples
         self._stop = threading.Event()
         self._thread = threading.Thread(target=self._run, daemon=True)
 
     def _run(self) -> None:
         while not self._stop.is_set():
-            pids: list[int] = []
+            parts: list[float] = []
             for src in self.sources:
+                pids: list[int] = []
                 with contextlib.suppress(Exception):
-                    pids += src()
-            self.samples.append(_pss_mb(pids))
+                    pids = src()
+                parts.append(_pss_mb(pids))
+            for series, value in zip(self.by_source, parts, strict=True):
+                series.append(value)
+            self.samples.append(sum(parts))
             self._stop.wait(self.interval)
 
     def __enter__(self) -> PssSampler:
@@ -438,6 +447,7 @@ class Bench:
                 res.reason = "service died during measurement"
                 return res
             res.pss_mb = list(pss.samples)
+            res.pss_parts = {"service": list(pss.by_source[0]), "db": list(pss.by_source[1])}
             res.latency_ms = latency
             res.cpu_us_per_req = sum(res.chunk_cpu_us) / max(1, sum(res.chunk_requests))
             res.throughput = n / max(elapsed, 1e-9)

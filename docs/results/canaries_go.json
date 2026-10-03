@@ -11,9 +11,9 @@
       "dynamic_only": {
         "rejected": true,
         "stage": "L4",
-        "reason": "spot check vs parent: request #169 under load: $.results length 10 != 0"
+        "reason": "spot check vs parent: request #59 under load: $.results length 20 != 0"
       },
-      "seconds": 58.5
+      "seconds": 34.9
     },
     {
       "canary": "go_truncated_results",
@@ -21,14 +21,14 @@
       "full": {
         "rejected": true,
         "stage": "L2",
-        "reason": "differential oracle: #17 GET /products/search?q=tent+nylon&limit=10 [search]: $.results length 10 != 5"
+        "reason": "differential oracle: #19 GET /products/search?q=drone+thermos&limit=20 [search]: $.results length 20 != 10"
       },
       "dynamic_only": {
         "rejected": true,
         "stage": "L2",
-        "reason": "differential oracle: #7 GET /products/search?q=watch+for&limit=20 [search]: $.results length 20 != 10"
+        "reason": "differential oracle: #9 GET /products/search?q=scarf+with&limit=10 [search]: $.results length 10 != 5"
       },
-      "seconds": 11.1
+      "seconds": 9.4
     },
     {
       "canary": "go_lazy_skip",
@@ -36,14 +36,14 @@
       "full": {
         "rejected": true,
         "stage": "L2",
-        "reason": "differential oracle: #33 GET /products/11568 [product]: $.rating.average"
+        "reason": "differential oracle: #17 GET /products/9519 [product]: $.rating.average"
       },
       "dynamic_only": {
         "rejected": true,
         "stage": "L2",
-        "reason": "differential oracle: #2 GET /products/6318 [product]: $.rating.average"
+        "reason": "differential oracle: #5 GET /products/6732 [product]: $.rating.average"
       },
-      "seconds": 19.0
+      "seconds": 14.7
     },
     {
       "canary": "go_float_tolerance",
@@ -51,14 +51,14 @@
       "full": {
         "rejected": true,
         "stage": "L2",
-        "reason": "differential oracle: #4 GET /products/search?q=stackable+steeel&limit=20 [search]: $.results[0].score"
+        "reason": "differential oracle: #4 GET /products/search?q=denim+papr+ceamic&limit=10 [search]: $.results[0].score"
       },
       "dynamic_only": {
         "rejected": true,
         "stage": "L2",
-        "reason": "differential oracle: #12 GET /products/search?q=woven+brush&limit=10 [search]: $.results[0].score"
+        "reason": "differential oracle: #3 GET /products/search?q=elegant+modern&limit=10 [search]: $.results[0].score"
       },
-      "seconds": 10.5
+      "seconds": 8.9
     },
     {
       "canary": "go_fake_write",
@@ -66,14 +66,14 @@
       "full": {
         "rejected": true,
         "stage": "L2",
-        "reason": "differential oracle: #97 GET /customers/19633/summary [chain]: $.recent_orders[0].items"
+        "reason": "differential oracle: #97 GET /customers/19383/summary [chain]: $.recent_orders[0].items"
       },
       "dynamic_only": {
         "rejected": true,
         "stage": "L2",
-        "reason": "differential oracle: #97 GET /customers/19189/summary [chain]: $.recent_orders[0].items"
+        "reason": "differential oracle: #97 GET /customers/19188/summary [chain]: $.recent_orders[0].items"
       },
-      "seconds": 19.6
+      "seconds": 13.9
     },
     {
       "canary": "go_background_write",
@@ -86,9 +86,9 @@
       "dynamic_only": {
         "rejected": true,
         "stage": "L2",
-        "reason": "differential oracle: #28 POST /orders [edge]: status 201 (reference 404)"
+        "reason": "differential oracle: #9 POST /orders [edge]: status 201 (reference 404)"
       },
-      "seconds": 11.1
+      "seconds": 6.9
     },
     {
       "canary": "go_clock_sensitive",
@@ -101,9 +101,9 @@
       "dynamic_only": {
         "rejected": true,
         "stage": "L2",
-        "reason": "differential oracle: #9 GET /categories/21/top?limit=5 [category_top]: $.products length 5 != 0"
+        "reason": "differential oracle: #23 GET /categories/999/top [edge]: status 200 (reference 404)"
       },
-      "seconds": 7.9
+      "seconds": 5.8
     },
     {
       "canary": "go_load_sensitive",
@@ -114,11 +114,11 @@
         "reason": "gene da97d67a: policy: '.AcquiredConns' is not allowed (no introspection of the connection pool or the runtime)"
       },
       "dynamic_only": {
-        "rejected": false,
-        "stage": null,
-        "reason": "PASSED THE EVALUATOR"
+        "rejected": true,
+        "stage": "L4",
+        "reason": "spot check vs parent: request #1 under load: $.products length 10 != 0"
       },
-      "seconds": 29.7
+      "seconds": 26.1
     },
     {
       "canary": "go_session_state_cache",
@@ -133,7 +133,7 @@
         "stage": "L2",
         "reason": "differential oracle: SQL audit: sql: server function set_config() is not allowed (session state, timing or server introspection): SELECT set_config($2, $1::bigint::text, $3)"
       },
-      "seconds": 11.5
+      "seconds": 8.0
     },
     {
       "canary": "go_kernel_wrong_result",
@@ -141,14 +141,14 @@
       "full": {
         "rejected": true,
         "stage": "L2",
-        "reason": "Go kernel differential fuzz: MISMATCH scoreBatch([\"the\" \"_\\xebqt\\xacn_\\xfdf qq\\nnoybelns \" \"leater\" \"bmboo\"], docs) doc 1 (\"Xtermos  titanium-thermos & j\\tEhpc\\xb6x\\xaa\\xd0w iq\\xdfs_i\\t\\x872bpvbe3\\xf79j\\xd2X\\xb3Vp of lamp, leater  leather of, Cthe & a-\\tupcm\\xbdY2u\\x9fuim-tHhq1S1p!Vx\\xfbo  leather L"
+        "reason": "Go kernel differential fuzz: MISMATCH levenshtein(\"pc\\xd0pw\\xfbxrz1\\xaas.pzJ\\xa0V9\\nOSuz_ea\", \"steel\") = 22, baseline 25\n"
       },
       "dynamic_only": {
         "rejected": true,
         "stage": "L2",
-        "reason": "Go kernel differential fuzz: MISMATCH levenshtein(\"gkVrnA\\xa65\\ufaf8B\\xc4 oYo\\xd09ij\\xb5p\\xa4xf_4\\x98M\\xcal1k\", \"a\") = 33, baseline 34\n"
+        "reason": "Go kernel differential fuzz: MISMATCH levenshtein(\"b0\\xe6\\xf8zo5\\x95_f_wG\\xda&4dqo1z,zjddxeHym\\x99Be\", \"c,_\\x82fC  e0ged\\nDk1sw\\x9a\\nx\\xaeird\") = 8, baseline 32\n"
       },
-      "seconds": 6.7
+      "seconds": 5.2
     },
     {
       "canary": "go_edit_tests",
@@ -178,7 +178,7 @@
         "stage": null,
         "reason": "PASSED THE EVALUATOR"
       },
-      "seconds": 28.8
+      "seconds": 24.9
     },
     {
       "canary": "frozen_knob_durability",
@@ -193,7 +193,7 @@
         "stage": null,
         "reason": "PASSED THE EVALUATOR"
       },
-      "seconds": 27.7
+      "seconds": 23.9
     },
     {
       "canary": "out_of_range_knob",
@@ -208,14 +208,13 @@
         "stage": null,
         "reason": "PASSED THE EVALUATOR"
       },
-      "seconds": 23.7
+      "seconds": 25.1
     }
   ],
+  "target": "stackzero-go",
   "total": 14,
   "built": 14,
   "rejected": 14,
   "rejection_rate": 1.0,
-  "all_rejected": true,
-  "note": "summary recomputed after fixing a counting bug (it counted the 17-entry Python suite); per-canary rows unchanged",
-  "target": "stackzero-go"
+  "all_rejected": true
 }
