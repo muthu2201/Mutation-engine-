@@ -112,6 +112,7 @@ HOSTED_DEFAULTS = {  # provider -> (model, reasoning effort, extra max_tokens); 
     "gemini": ("", None, 8000),
     "groq": ("", None, 8000),
     "xkiro": ("", None, 8000),
+    "bedrock": ("", None, 8000),
 }
 
 
@@ -126,7 +127,7 @@ def _hosted(args: argparse.Namespace) -> tuple[Any, str, Any, int]:
         from colloid.adapters.llm import openrouter
 
         return openrouter.provider(model, effort), model, openrouter.pace, extra
-    if args.provider in ("gemini", "groq", "xkiro"):
+    if args.provider in ("gemini", "groq", "xkiro", "bedrock"):
         from colloid.adapters.llm import hosted
 
         return hosted.provider(args.provider, model, effort), model, None, extra  # per-minute spacing, no daily pacing
@@ -509,7 +510,7 @@ def main(argv: list[str] | None = None) -> int:
     bo.set_defaults(fn=cmd_bakeoff)
     lm = sub.add_parser("llm", help="hosted model providers: list models, smoke-test a key")
     lm.add_argument("action", choices=["models", "smoke"])
-    lm.add_argument("--provider", required=True, choices=["nvidia", "openrouter", "gemini", "groq", "xkiro"])
+    lm.add_argument("--provider", required=True, choices=["nvidia", "openrouter", "gemini", "groq", "xkiro", "bedrock"])
     lm.add_argument("--model")
     lm.add_argument("--reasoning-effort")
     lm.set_defaults(fn=cmd_llm)
@@ -526,7 +527,7 @@ def main(argv: list[str] | None = None) -> int:
     sw.add_argument("--llm-calls", type=int, default=16)
     sw.add_argument("--keep-images", action="store_true")
     sw.add_argument("--lake", default="git:colloid/datalake")
-    sw.add_argument("--provider", choices=["local", "openrouter", "nvidia", "gemini", "groq", "xkiro"], default="local",
+    sw.add_argument("--provider", choices=["local", "openrouter", "nvidia", "gemini", "groq", "xkiro", "bedrock"], default="local",
                     help="hosted arms read their key (e.g. NVIDIA_API_KEY, GEMINI_API_KEY, GROQ_API_KEY) from the environment")
     sw.add_argument("--api-model", help="default: qwen/qwen3.8-27b:free (openrouter), moonshotai/kimi-k3 (nvidia)")
     sw.add_argument("--reasoning-effort", choices=["low", "medium", "high", "xhigh", "max"], help="default: medium (openrouter), high (nvidia)")

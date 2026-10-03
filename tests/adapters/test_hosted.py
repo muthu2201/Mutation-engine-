@@ -18,6 +18,8 @@ class _Resp:
 
 @pytest.fixture(autouse=True)
 def _no_keys(monkeypatch):
+    for var in ("BEDROCK_REGION", "AWS_REGION"):
+        monkeypatch.delenv(var, raising=False)
     for h in hosted.PROVIDERS.values():
         for var in h.env:
             monkeypatch.delenv(var, raising=False)
@@ -36,6 +38,7 @@ def test_keys_come_only_from_the_environment_in_declared_order(monkeypatch):
     ("gemini", "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"),
     ("groq", "https://api.groq.com/openai/v1/chat/completions"),
     ("xkiro", "https://api.xkiro.com/v1/chat/completions"),
+    ("bedrock", "https://bedrock-mantle.us-east-1.api.aws/v1/chat/completions"),
 ])
 def test_each_provider_posts_to_its_documented_endpoint(monkeypatch, name, url):
     for var in hosted.PROVIDERS[name].env:
@@ -69,3 +72,11 @@ def test_model_listing(monkeypatch):
 
 def test_only_first_party_hosts_are_marked_first_party():
     assert hosted.PROVIDERS["gemini"].first_party and hosted.PROVIDERS["groq"].first_party and not hosted.PROVIDERS["xkiro"].first_party
+
+
+def test_bedrock_region_comes_from_the_environment(monkeypatch):
+    monkeypatch.setenv("AWS_BEARER_TOKEN_BEDROCK", "k")
+    monkeypatch.setenv("AWS_REGION", "ap-south-1")
+    assert hosted.provider("bedrock", "zai.glm-5").base_url == "https://bedrock-mantle.ap-south-1.api.aws"
+    monkeypatch.setenv("BEDROCK_REGION", "us-west-2")
+    assert hosted.base_url("bedrock") == "https://bedrock-mantle.us-west-2.api.aws"

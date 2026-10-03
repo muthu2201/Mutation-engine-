@@ -157,6 +157,7 @@ commands (`colloid lake push`, `colloid stack ...`), never by hand.
 |---|---|---|---|
 | Google AI Studio (Gemini), free tier | `GEMINI_API_KEY` (or `GOOGLE_API_KEY`) | OpenAI-compatible, `/v1beta/openai` | a possible third arm; Google's unpaid tier may use submitted content to improve its products, so public code only (verify, research prompt 3) |
 | Groq | `GROQ_API_KEY` | `api.groq.com/openai/v1` | a possible third arm (open-weights models, fast) |
+| Amazon Bedrock ($125 promotional credits) | `AWS_BEARER_TOKEN_BEDROCK` (or `BEDROCK_API_KEY`); region from `BEDROCK_REGION`/`AWS_REGION`, default us-east-1 | OpenAI-compatible `bedrock-mantle.{region}.api.aws/v1` | GLM 5 (`zai.glm-5`) and others. About $0.90 per 30-instance arm at GLM 5's prices, so the credits fund many arms and seeds |
 | xKiro (third-party gateway) | `XKIRO_API_KEY` | `api.xkiro.com/v1` | exploration on public code only: no published data policy, and it cannot prove which model answered, so never a pre-registered arm and never proprietary code |
 
 First steps with a new key:
