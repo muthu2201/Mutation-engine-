@@ -4,6 +4,76 @@ Written 2026-10-03 at the end of the local SWE-bench arm, for a new session that
 `NVIDIA_API_KEY` in its environment. Read this first, then `docs/SWEBENCH_RESULTS.md` and
 ADRs 0011–0013.
 
+## 0. The goal, and how to work with the owner
+
+**The long-term goal.** A proprietary stack with no bloat, machine-optimised from bare metal to
+applications: our own language(s) and compilers, up to a full-stack ecosystem. It should be
+mathematically verified wherever that is possible. The moat is two things together:
+
+- that stack;
+- the proprietary data Colloid accumulates. That means the lake of *verified* mutations, each
+  with its evidence, and the rules distilled from them.
+
+ADR 0007 sets out the path from verified mutations to a stack, and ADR 0009 the first rule
+language (CRL). Nothing in the engine is sacred. If a session finds a flaw in the core (the
+judge, the statistics, the lake, the search), it fixes it and records why in an ADR. Two caveats:
+
+- A fix never edits a result that was already measured.
+- A fix never changes a pre-registered protocol that is already running. It goes into the next
+  pre-registration.
+
+**Where we stand against that goal, honestly.**
+
+- **Verification today is empirical, not mathematical.** It is a statistical judge (A/A noise
+  floors, ABAB, holdouts), the projects' own tests, and official graders.
+- **Next step towards "mathematically verified":** prove CRL rewrite rules sound before they are
+  applied. Candidate techniques: SMT-checked rule soundness in the style of Alive2, e-graph
+  rewriting, and translation validation. Each verified gene then carries a proof as well as a
+  measurement.
+- **Evidence so far:**
+  - M1a passed.
+  - M1b, the transfer of knowledge between runs, did not pass (PR #2).
+  - On real repositories, small local models resolve few SWE-bench issues (section 2).
+- Claims in the docs stay within that evidence.
+
+**Asking the owner for research.** The owner can run deep-research prompts in the Claude web app
+and paste the reports back. Use it whenever a decision needs research or verification beyond this
+container: a technique, a benchmark, a provider's terms, prior art. Write one self-contained
+prompt, saying:
+
+- what to find;
+- which sources count (papers, official docs, repository code);
+- what form the answer should take (tables with links; verified figures marked as such).
+
+Every claim taken from a returned report is checked against its primary source (the alphaXiv
+connector reads papers and GitHub repositories) before it enters the docs. That is how the three
+reports behind `docs/RELATED_WORK.md` were used.
+
+Research prompts worth asking next:
+
+1. *Proven-sound program rewriting in 2025–2026:*
+   - Alive2-style SMT checking, e-graphs (egg/egglog), translation validation, verified
+     compilers (CompCert, CakeML);
+   - LLM-proposed rewrites with formal equivalence checks.
+
+   Which of these can certify rules mined from measured mutations, in Python, Go and C, and at
+   what cost?
+2. *Superoptimisation and learned compilers:*
+   - the state of the art in LLM-guided superoptimisation and compiler-pass ordering, with
+     verified correctness;
+   - which open toolchains (MLIR, LLVM, Cranelift) a new language could target first.
+3. *Keeping proprietary data proprietary when using hosted models:* the data-retention and
+   training terms of NVIDIA's hosted endpoints and OpenRouter's providers. What can be sent for
+   public benchmark code, and what must stay on local models for proprietary code?
+
+**Protecting the moat (the data).**
+
+- The lake (`colloid/datalake`) and the stack branches are the proprietary asset.
+- Prompts sent to a hosted model leave this machine. That is acceptable for public benchmark code
+  such as SWE-bench, but not, by default, for proprietary code.
+- Until question 3 is answered, proprietary targets use local models only.
+- Never push lake data or keys anywhere except this repository's own branches.
+
 ## 1. State in one screen
 
 | what | where | state |
