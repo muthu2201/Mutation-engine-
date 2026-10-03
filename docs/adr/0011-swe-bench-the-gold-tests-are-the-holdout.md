@@ -91,3 +91,50 @@ The objective changes from cost to correctness. Colloid's structure carries over
   - resolved.
 
   So the bottleneck is visible.
+
+## Addendum (2026-10-03, written before any probe ran): post-hoc memorisation probes
+
+**Why.** Research checked against the primary sources on 2026-10-03 shows that SWE-bench
+Verified is contaminated for frontier models:
+
+- In "The SWE-Bench Illusion" (arXiv 2506.12286), models name the buggy file from the issue
+  text alone on up to 76% of Verified instances, against under 53% on other repositories. They
+  reproduce 12–32% of instances verbatim.
+- OpenAI stopped reporting Verified in February 2026. It reportedly named `django__django-11451`
+  as a task whose gold patch a frontier model reproduced. That is one of this run's two resolved
+  instances. (The OpenAI page itself could not be fetched to confirm this.)
+
+**What is added.** These probes are added *after* grading, as diagnosis. The pre-registered
+resolve rate (point 5) is unchanged and stays the headline. For all 30 instances and each local
+model (temperature 0, at most 600 tokens), `colloid_evaluator/swebench/contamination.py` runs:
+
+1. **File-path probe:** the issue text and repository only. Does the model name a gold-patch
+   file, and does the issue mention it?
+2. **Task-ID probe:** the instance ID only. How much of the gold patch's added code does the
+   model reproduce? This is measured as frequency-aware 5-gram overlap, and as non-trivial gold
+   lines (4 tokens or more) repeated verbatim.
+3. **Submission overlap:** no model call. How much of our winning patch's added code is the
+   gold patch's?
+
+**Verdict rule**, fixed now:
+
+| verdict | condition |
+|---|---|
+| `suspect` | 5-gram overlap ≥ 0.5 (only when gold adds ≥ 12 tokens), or any non-trivial gold line reproduced verbatim |
+| `path-only` | not suspect, but names a gold file the issue does not mention (familiarity with the repository, or memory) |
+| `clean` | neither |
+
+**Reported:**
+
+- each resolved instance's verdict for the model that solved it;
+- a resolve rate on the instances `clean` for that model, alongside the pre-registered rate.
+
+**Limits.**
+
+- A model can recall a fix when shown the code but not from the ID alone, so `clean` is not
+  proof of absence.
+- `path-only` cannot separate familiarity with the repository from instance memory.
+- The search itself never had shell or network access (L0–L3 run in a network-off container,
+  and the model sees only the issue and snippets). So retrieving the fix at run time, through
+  `git log` or the web as reported for agentic scaffolds, was not possible here. Training-data
+  memorisation is the only channel these probes test.

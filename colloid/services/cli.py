@@ -119,6 +119,42 @@ def cmd_swebench(args: argparse.Namespace) -> int:
 
         swe.ingest(Path(args.out), open_lake(args.lake))
         return 0
+    if args.action == "probe":  # post-hoc memorisation probes (ADR 0011 addendum); reads gold, after grading only
+        from colloid_evaluator.swebench import contamination
+
+        tasks, gold = contamination.load_jsonl(data / "tasks.jsonl"), contamination.load_jsonl(data / "gold.jsonl")
+        sample = args.instance or json.loads((data / "sample.json").read_text())["instances"]
+        if args.provider == "openrouter":  # ADR 0012 amendment: the same probes for the API model, 2 requests per instance
+            from colloid.adapters.llm import openrouter
+
+            api = openrouter.provider(args.api_model, args.reasoning_effort)
+
+            def ask_api(model: str, prompt: str) -> str:
+                return str(api.complete(model, "You are a helpful assistant.", [{"role": "user", "content": prompt}],
+                                        max_tokens=600 + args.max_tokens_extra, temperature=0.0, timeout_s=900.0).text)
+
+            report = contamination.run(sample, tasks, gold, Path(args.out), ask_api, [args.api_model], pace=openrouter.pace)
+        else:
+            from colloid.adapters.llm.llama_server import LlamaServer
+            from colloid.adapters.llm.openai_compat import OpenAICompatProvider
+
+            models = [m for m in (args.model or list(MODEL_FILES)) if Path(MODEL_FILES[m]).exists()]
+            server = LlamaServer({m: MODEL_FILES[m] for m in models})
+            server.start()
+            try:
+                llm = OpenAICompatProvider(server.base_url, models, name="local")
+
+                def ask(model: str, prompt: str) -> str:
+                    return str(llm.complete(model, "You are a helpful assistant.", [{"role": "user", "content": prompt}], max_tokens=600,
+                                            temperature=0.0, timeout_s=900.0).text)
+
+                report = contamination.run(sample, tasks, gold, Path(args.out), ask, models)
+            finally:
+                server.stop()
+        Path(args.probe_out).parent.mkdir(parents=True, exist_ok=True)
+        Path(args.probe_out).write_text(json.dumps(report, indent=2))
+        print(f"wrote {args.probe_out}")
+        return 0
     from colloid.adapters.llm.llama_server import LlamaServer
     from colloid.adapters.llm.openai_compat import OpenAICompatProvider
 
@@ -403,7 +439,8 @@ def main(argv: list[str] | None = None) -> int:
     bo.add_argument("--cycles", type=int, default=4); bo.add_argument("--no-capacity", action="store_true"); bo.add_argument("--out")
     bo.set_defaults(fn=cmd_bakeoff)
     sw = sub.add_parser("swebench", help="repair real issues (SWE-bench Verified, ADR 0011)")
-    sw.add_argument("action", choices=["prepare", "run", "ingest"])
+    sw.add_argument("action", choices=["prepare", "run", "ingest", "probe"])
+    sw.add_argument("--probe-out", default="docs/results/swebench/contamination.json")
     sw.add_argument("--data", default=str(SWEBENCH / "data"))
     sw.add_argument("--parquet", default=str(SWEBENCH / "verified.parquet"))
     sw.add_argument("--grader-python", default=str(SWEBENCH / "venv/bin/python"))
