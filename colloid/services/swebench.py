@@ -92,6 +92,7 @@ class Repairer:
         self.rng = random.Random(seed)
         self.calls = 0
         self.tokens = [0, 0]
+        self.call_log: list[dict[str, Any]] = []  # per call: latency and how it ended (a hosted reasoning model can run out of tokens)
 
     def _ask(self, model: str, system: str, prompt: str, *, temperature: float, max_tokens: int) -> str:
         self.calls += 1
@@ -99,6 +100,8 @@ class Repairer:
                               timeout_s=600.0)
         self.tokens[0] += c.tokens_in
         self.tokens[1] += c.tokens_out
+        self.call_log.append({"model": model, "latency_s": round(c.latency_s, 2), "tokens_in": c.tokens_in, "tokens_out": c.tokens_out,
+                              "finish_reason": c.finish_reason, "empty": not str(c.text).strip()})
         return str(c.text)
 
     def solve(self, task: dict[str, Any], judge: RepairJudge, root: Path) -> dict[str, Any]:
@@ -187,6 +190,7 @@ class Repairer:
                                                                                "new_source", "prompt_hash", "response_hash")}
         rec["search_s"] = round(time.monotonic() - t0, 1)
         rec["llm_calls"], rec["tokens_in"], rec["tokens_out"] = self.calls, self.tokens[0], self.tokens[1]
+        rec["calls"] = self.call_log
         rec["arms"] = {f"{m}/{t}": bandit.posterior(("repair",), (o, m, t))[0] for o, m, t in arms}
         return rec
 

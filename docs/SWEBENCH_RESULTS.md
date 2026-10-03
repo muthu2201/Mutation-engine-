@@ -62,9 +62,12 @@ resolve rate in section 1 stays the headline.
 
 ## 7. The API arm: the same engine with a stronger model (ADR 0012)
 
-The same 30 instances, localisation, prompts, bandit, judge, grader and budget, with
-Qwen3.8 27B served by OpenRouter in place of the local models. It is pre-registered in
-[ADR 0012](adr/0012-swe-bench-api-arm.md) and runs after the local arm.
+The same 30 instances, localisation, prompts, bandit, judge, grader and budget, with a hosted
+model in place of the local models. That model is Kimi K3 (`moonshotai/kimi-k3`), served by
+NVIDIA's hosted endpoints. It is pre-registered in [ADR 0012](adr/0012-swe-bench-api-arm.md); its
+amendment 2 records the switch from Qwen3.8 on OpenRouter, made before any API-arm instance ran.
+The model's reasoning effort is fixed by a pilot on two instances outside the sample
+(`docs/results/swebench/api_pilot.json`). The arm runs after the local arm.
 
 ### 7.1 Result
 
@@ -97,13 +100,15 @@ Qwen3.8 27B served by OpenRouter in place of the local models. It is pre-registe
 python -m venv /opt/colloid/state/swebench/venv && /opt/colloid/state/swebench/venv/bin/pip install swebench==5.0.2 pandas==3.0.6 pyarrow==25.0.1
 colloid swebench prepare                     # tasks.jsonl (search-visible), gold.jsonl (grader only), sample.json
 colloid swebench run --out runs/swebench     # pre-registered sample; resumable
-colloid swebench ingest --out runs/swebench  # resolved fixes -> the lake
 colloid swebench probe --out runs/swebench   # post hoc: docs/results/swebench/contamination_local.json
+colloid swebench ingest --out runs/swebench  # resolved fixes, with their probe verdicts -> the lake
 python stress/render_swebench.py --arm local=runs/swebench --probes local=docs/results/swebench/contamination_local.json \
     --write docs/SWEBENCH_RESULTS.md
-# the API arm (ADR 0012), with OPENROUTER_API_KEY in the environment: scripts/run-swebench-api.sh, i.e.
-colloid swebench run --provider openrouter --out runs/swebench-api
-colloid swebench probe --provider openrouter --out runs/swebench-api   # contamination_api.json
+# the API arm (ADR 0012, amendment 2), with NVIDIA_API_KEY in the environment:
+scripts/pilot-swebench-api.sh                # pilot instances only: fixes the reasoning effort (api_pilot.json)
+scripts/run-swebench-api.sh                  # i.e. the following, with the pilot's effort:
+colloid swebench run --provider nvidia --reasoning-effort EFFORT --out runs/swebench-api
+colloid swebench probe --provider nvidia --reasoning-effort EFFORT --out runs/swebench-api   # contamination_api.json
 python stress/render_swebench.py --arm local=docs/results/swebench/local --arm api=docs/results/swebench/api \
     --probes local=docs/results/swebench/contamination_local.json --probes api=docs/results/swebench/contamination_api.json \
     --write docs/SWEBENCH_RESULTS.md

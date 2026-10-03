@@ -38,6 +38,8 @@ class OpenAICompatProvider:
         max_retries: int = 3,
         api_key: str | None = None,
         extra_body: Mapping[str, Any] | None = None,
+        fixed_sampling: bool = False,
+        min_interval_s: float = 0.0,
     ) -> None:
         self.base_url = base_url.rstrip("/")
         self._models = tuple(models)
@@ -48,6 +50,9 @@ class OpenAICompatProvider:
         self.max_retries = max_retries
         self.headers = {"Authorization": f"Bearer {api_key}"} if api_key else {}
         self.extra_body = dict(extra_body or {})  # e.g. a hosted reasoning model's {"reasoning": {"effort": "medium"}}
+        self.fixed_sampling = fixed_sampling  # the model fixes temperature/top_p itself and wants them omitted
+        self.min_interval_s = min_interval_s  # a per-minute request cap, spread evenly
+        self._last_request = 0.0
 
     def models(self) -> Sequence[ModelInfo]:
         return [ModelInfo(m, self.context_tokens, 0.0, 0.0, local=True) for m in self._models]
@@ -75,13 +80,15 @@ class OpenAICompatProvider:
             "model": model,
             "messages": [{"role": "system", "content": system}, *[dict(m) for m in messages]],
             "max_tokens": max_tokens,
-            "temperature": temperature,
-            "top_p": 0.95,
+            **({} if self.fixed_sampling else {"temperature": temperature, "top_p": 0.95}),
             **self.extra_body,
         }
         last: Exception | None = None
         for attempt in range(self.max_retries + 1):
-            start = time.monotonic()
+            wait = self._last_request + self.min_interval_s - time.monotonic()
+            if wait > 0:
+                time.sleep(wait)
+            start = self._last_request = time.monotonic()
             try:
                 r = httpx.post(f"{self.base_url}/v1/chat/completions", json=body, timeout=timeout_s, headers=self.headers)
             except httpx.HTTPError as exc:

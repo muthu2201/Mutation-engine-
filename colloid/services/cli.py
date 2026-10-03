@@ -105,6 +105,26 @@ def cmd_redteam_recheck(args: argparse.Namespace) -> int:
     return 1 if any(r.get("verdict") == "genuine breach" for r in out) else 0
 
 
+HOSTED_DEFAULTS = {  # provider -> (model, reasoning effort, extra max_tokens); ADR 0012 and its amendment 2
+    "openrouter": ("qwen/qwen3.8-27b:free", "medium", 6000),
+    "nvidia": ("moonshotai/kimi-k3", "high", 16000),
+}
+
+
+def _hosted(args: argparse.Namespace) -> tuple[Any, str, Any, int]:
+    """(provider, model, pace, extra max_tokens) for a hosted API arm; keys come only from the environment."""
+    model_d, effort_d, extra_d = HOSTED_DEFAULTS[args.provider]
+    model, effort = args.api_model or model_d, args.reasoning_effort or effort_d
+    extra = extra_d if args.max_tokens_extra is None else args.max_tokens_extra
+    if args.provider == "openrouter":
+        from colloid.adapters.llm import openrouter
+
+        return openrouter.provider(model, effort), model, openrouter.pace, extra
+    from colloid.adapters.llm import nvidia
+
+    return nvidia.provider(model, effort), model, None, extra  # no daily cap; requests are spaced per minute instead
+
+
 def cmd_swebench(args: argparse.Namespace) -> int:
     import subprocess
 
@@ -117,7 +137,7 @@ def cmd_swebench(args: argparse.Namespace) -> int:
     if args.action == "ingest":
         from colloid.adapters.lake import open_lake
 
-        probe_path = Path(args.probe_out or f"docs/results/swebench/contamination_{'api' if args.provider == 'openrouter' else 'local'}.json")
+        probe_path = Path(args.probe_out or f"docs/results/swebench/contamination_{'local' if args.provider == 'local' else 'api'}.json")
         if probe_path.exists():
             probes = json.loads(probe_path.read_text())
         else:
@@ -130,16 +150,14 @@ def cmd_swebench(args: argparse.Namespace) -> int:
 
         tasks, gold = contamination.load_jsonl(data / "tasks.jsonl"), contamination.load_jsonl(data / "gold.jsonl")
         sample = args.instance or json.loads((data / "sample.json").read_text())["instances"]
-        if args.provider == "openrouter":  # ADR 0012 amendment: the same probes for the API model, 2 requests per instance
-            from colloid.adapters.llm import openrouter
-
-            api = openrouter.provider(args.api_model, args.reasoning_effort)
+        if args.provider != "local":  # ADR 0012 amendment: the same probes for the API model, 2 requests per instance
+            api, api_model, api_pace, extra = _hosted(args)
 
             def ask_api(model: str, prompt: str) -> str:
                 return str(api.complete(model, "You are a helpful assistant.", [{"role": "user", "content": prompt}],
-                                        max_tokens=600 + args.max_tokens_extra, temperature=0.0, timeout_s=900.0).text)
+                                        max_tokens=600 + extra, temperature=0.0, timeout_s=900.0).text)
 
-            report = contamination.run(sample, tasks, gold, Path(args.out), ask_api, [args.api_model], pace=openrouter.pace)
+            report = contamination.run(sample, tasks, gold, Path(args.out), ask_api, [api_model], pace=api_pace)
         else:
             from colloid.adapters.llm.llama_server import LlamaServer
             from colloid.adapters.llm.openai_compat import OpenAICompatProvider
@@ -157,7 +175,7 @@ def cmd_swebench(args: argparse.Namespace) -> int:
                 report = contamination.run(sample, tasks, gold, Path(args.out), ask, models)
             finally:
                 server.stop()
-        out = Path(args.probe_out or f"docs/results/swebench/contamination_{'api' if args.provider == 'openrouter' else 'local'}.json")
+        out = Path(args.probe_out or f"docs/results/swebench/contamination_{'local' if args.provider == 'local' else 'api'}.json")
         out.parent.mkdir(parents=True, exist_ok=True)
         out.write_text(json.dumps(report, indent=2))
         print(f"wrote {out}")
@@ -168,12 +186,10 @@ def cmd_swebench(args: argparse.Namespace) -> int:
     tasks = swe.load_tasks(data / "tasks.jsonl")
     sample = args.instance or json.loads((data / "sample.json").read_text())["instances"]
     run_args = {"gold": data / "gold.jsonl", "grader_python": args.grader_python, "keep_images": args.keep_images}
-    if args.provider == "openrouter":  # the API arm (ADR 0012): the same search, a hosted model
-        from colloid.adapters.llm import openrouter
-
-        budget = swe.Budget(search_s=args.search_minutes * 60, llm_calls=args.llm_calls, max_tokens_extra=args.max_tokens_extra)
-        swe.run(sample, tasks, Path(args.out), openrouter.provider(args.api_model, args.reasoning_effort), [args.api_model],
-                budget=budget, pace=openrouter.pace, **run_args)
+    if args.provider != "local":  # the API arm (ADR 0012): the same search, a hosted model
+        api, api_model, api_pace, extra = _hosted(args)
+        budget = swe.Budget(search_s=args.search_minutes * 60, llm_calls=args.llm_calls, max_tokens_extra=extra)
+        swe.run(sample, tasks, Path(args.out), api, [api_model], budget=budget, pace=api_pace, **run_args)
         return 0
     models = [m for m in (args.model or list(MODEL_FILES)) if Path(MODEL_FILES[m]).exists()]
     server = LlamaServer({m: MODEL_FILES[m] for m in models})
@@ -458,10 +474,11 @@ def main(argv: list[str] | None = None) -> int:
     sw.add_argument("--llm-calls", type=int, default=16)
     sw.add_argument("--keep-images", action="store_true")
     sw.add_argument("--lake", default="git:colloid/datalake")
-    sw.add_argument("--provider", choices=["local", "openrouter"], default="local", help="openrouter reads OPENROUTER_API_KEY from the environment")
-    sw.add_argument("--api-model", default="qwen/qwen3.8-27b:free")
-    sw.add_argument("--reasoning-effort", choices=["low", "medium", "high", "xhigh"], default="medium")
-    sw.add_argument("--max-tokens-extra", type=int, default=6000, help="added to every request's cap for a hosted reasoning model")
+    sw.add_argument("--provider", choices=["local", "openrouter", "nvidia"], default="local",
+                    help="hosted arms read OPENROUTER_API_KEY or NVIDIA_API_KEY from the environment")
+    sw.add_argument("--api-model", help="default: qwen/qwen3.8-27b:free (openrouter), moonshotai/kimi-k3 (nvidia)")
+    sw.add_argument("--reasoning-effort", choices=["low", "medium", "high", "xhigh", "max"], help="default: medium (openrouter), high (nvidia)")
+    sw.add_argument("--max-tokens-extra", type=int, help="added to every request's cap for a hosted reasoning model (default 6000 / 16000)")
     sw.set_defaults(fn=cmd_swebench)
     d = sub.add_parser("dashboard"); d.add_argument("run"); d.add_argument("--port", type=int, default=8080); d.set_defaults(fn=cmd_dashboard)
     from colloid.adapters.target import DEFAULT_TARGET, TARGETS

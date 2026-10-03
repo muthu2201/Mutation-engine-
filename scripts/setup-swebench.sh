@@ -4,7 +4,7 @@
 #   2. the grader's own venv with the official swebench package
 #   3. the dataset (sha256-checked) and the pre-registered sample (must equal the committed one)
 #   4. the Docker daemon
-#   5. whether OPENROUTER_API_KEY is set (never printed)
+#   5. whether NVIDIA_API_KEY / OPENROUTER_API_KEY are set (never printed)
 set -euo pipefail
 cd "$(dirname "$0")/.."
 SWE=/opt/colloid/state/swebench
@@ -47,8 +47,7 @@ if ! docker info >/dev/null 2>&1; then
 fi
 docker info --format 'docker {{.ServerVersion}} up'
 
-if [ -n "${OPENROUTER_API_KEY:-}" ]; then
-  echo "==> OPENROUTER_API_KEY is set"
-else
-  echo "==> OPENROUTER_API_KEY is NOT set: add it in the environment's settings, then start a new session (needed for the API arm only)"
-fi
+for k in NVIDIA_API_KEY OPENROUTER_API_KEY; do  # the API arm needs one of them (ADR 0012); values are never printed
+  if [ -n "${!k:-}" ]; then echo "==> $k is set"; else echo "==> $k is not set"; fi
+done
+[ -n "${NVIDIA_API_KEY:-}${OPENROUTER_API_KEY:-}" ] || echo "    add one in the environment's settings, then start a new session (API arm only)"

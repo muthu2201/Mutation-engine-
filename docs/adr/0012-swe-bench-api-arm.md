@@ -1,6 +1,6 @@
 # ADR 0012 — SWE-bench API arm: the same engine with a stronger hosted model
 
-**Status:** accepted (pre-registered before any API-arm instance was run; the local arm of ADR 0011
+**Status:** accepted, amended twice (pre-registered before any API-arm instance was run; the local arm of ADR 0011
 was already running and is unaffected)
 
 ## Context
@@ -93,3 +93,50 @@ So, before the arm runs:
    SWE-bench-Live issues created after 2026-08-14 (Qwen3.8's release), run through the same
    engine. It is pending a check that their instance images can be pulled from this host;
    Docker Hub rate-limits it.
+
+## Amendment 2 (2026-10-03, before any API-arm instance ran): provider and model
+
+**Why.** The owner has a key for NVIDIA's hosted endpoints (build.nvidia.com), not OpenRouter's.
+Qwen3.8 27B is not among the 80 models in NVIDIA's public catalogue (`/v1/models`, checked
+2026-10-03), so the provider change forces a model change. This amendment supersedes point 2 and
+point 4.
+
+1. **Model:** `moonshotai/kimi-k3` (Kimi K3).
+   - A Mixture-of-Experts model with 2.8T parameters, 104B of them active, and a 1M-token context.
+   - Published on build.nvidia.com on 2026-08-20, with a free endpoint.
+   - It is far larger than Qwen3.8 27B, so the arm now measures what a frontier-scale
+     open-weights model adds to this engine. Point 7's interpretation is otherwise unchanged.
+2. **The key:** read only from `NVIDIA_API_KEY`, set in the environment's settings, as in point 3.
+3. **Rate limits.**
+   - A verified account's free tier has no daily cap, only a per-minute one: about 40 requests a
+     minute for most models.
+   - Requests are spaced 1.5 s apart, and a 429 is retried with backoff.
+   - No daily pacing is needed.
+4. **Sampling.**
+   - Kimi K3 fixes its own sampling at temperature 1.0 and top_p 0.95, and expects requests to omit
+     both. So the arm cannot use the local arm's temperatures; that is part of "what follows from the
+     model" (point 7).
+   - The probes also run at temperature 1.0, so each is one sampled draw, not greedy decoding.
+5. **Reasoning.**
+   - Thinking is always on. The effort can be `low`, `high` or `max`, and the default is `max`.
+   - `max` is excluded: its default output budget of 131,072 tokens cannot fit 16 calls into a
+     20-minute search.
+   - Every request gets 16,000 extra `max_tokens`.
+6. **Choosing the effort.** The effort is fixed by a pilot, by this rule:
+   - **The pilot:** the full engine on the two pilot instances, which are outside the sample, once at
+     `high` and once at `low` (`scripts/pilot-swebench-api.sh`).
+   - **The rule:** take the highest effort whose median call latency is at most 75 s
+     (16 × 75 s = 20 minutes), with at most a quarter of its calls cut off by the token cap or
+     returning nothing.
+   - **If neither fits:** run at `low`, and report that the time budget binds.
+   - The pilot's statistics and its choice (`docs/results/swebench/api_pilot.json`) are committed
+     before the first sampled instance runs.
+7. **Unchanged:**
+   - everything in point 1: instances, order, localisation, prompts, the bandit over the model's
+     (fix, fix_think) arms, the judge, the selection rule, the grader and the budget;
+   - the endpoints in point 6;
+   - the first amendment's probes and the clean-instance comparison.
+8. **Contamination follow-up.** The window becomes issues created after Kimi K3's release
+   (2026-08-20).
+9. **Qwen3.8 through OpenRouter stays implemented** (`PROVIDER=openrouter`). If it runs later, it is
+   a separate arm, reported separately; it does not replace this one.
