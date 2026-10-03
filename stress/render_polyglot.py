@@ -123,10 +123,12 @@ def bakeoff_blocks() -> dict[str, str]:
         f = e["footprint"]
         foot.append(f"| `{name}` | {f['runtime']} | {f['runtime_bytes'] / 1e6:.1f} | {len(f['dependencies'])} | {f['dependency_bytes'] / 1e6:.1f} | "
                     f"{f['app_bytes'] / 1e6:.2f} | {f['startup_ms_median']} | {f['service_pss_mb_after_warmup']} |")
-    cap = ["| implementation | knee (req/s sustained, p99 within 8x of light load) |", "|---|---|"]
+    cap = ["| implementation | knee: the highest tested rate with p99 within 8x of light load (req/s) | next tested rate |", "|---|---|---|"]
     for name, e in impls.items():
         if e.get("capacity"):
-            cap.append(f"| `{name}` | {e['capacity']['knee_rps']} |")
+            offered = [pt["offered"] for pt in e["capacity"].get("curve", [])]
+            nxt = next((r for r in offered if r > e["capacity"]["knee_rps"]), None)
+            cap.append(f"| `{name}` | {e['capacity']['knee_rps']} | {nxt if nxt is not None else '—'} |")
     scale = rep.get("scale_projection") or {}
     sc = [f"Assumptions: {json.dumps(scale.get('assumptions', {}))}\n", "| implementation | CPU ms/req | 100 req/s | 1k req/s | 10k req/s |", "|---|---|---|---|---|"]
     for name, e in (scale.get("implementations") or {}).items():
