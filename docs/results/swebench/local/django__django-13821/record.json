@@ -1,0 +1,404 @@
+{
+  "instance_id": "django__django-13821",
+  "repo": "django/django",
+  "version": "3.2",
+  "base_commit": "e64c1d8055a3e476122633da141f16b50f0c4a2d",
+  "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.django__django-13821:latest",
+  "started_at": "2026-10-03T04:41:06.653457+00:00",
+  "image_digest": "ghcr.io/epoch-research/swe-bench.eval.x86_64.django__django-13821@sha256:a327258389aff5cdd112c9de464918e9f72f5591aa37d4901527eb7a664418ef",
+  "pull_s": 12.8,
+  "files_considered": 852,
+  "ranked_files": [
+    {
+      "file": "django/db/backends/sqlite3/features.py",
+      "score": 1.0
+    },
+    {
+      "file": "django/db/backends/sqlite3/operations.py",
+      "score": 0.93
+    },
+    {
+      "file": "django/db/models/functions/comparison.py",
+      "score": 0.924
+    },
+    {
+      "file": "django/db/backends/sqlite3/introspection.py",
+      "score": 0.851
+    },
+    {
+      "file": "django/db/backends/sqlite3/schema.py",
+      "score": 0.813
+    },
+    {
+      "file": "django/db/backends/sqlite3/base.py",
+      "score": 0.809
+    },
+    {
+      "file": "django/contrib/gis/db/models/functions.py",
+      "score": 0.732
+    },
+    {
+      "file": "django/contrib/gis/db/backends/spatialite/base.py",
+      "score": 0.729
+    }
+  ],
+  "localised": [
+    {
+      "file": "django/db/backends/sqlite3/features.py",
+      "name": "DatabaseFeatures.supports_atomic_references_rename",
+      "kind": "function",
+      "start": 84,
+      "end": 90,
+      "score": 1.478
+    },
+    {
+      "file": "django/db/backends/sqlite3/operations.py",
+      "name": "DatabaseOperations.adapt_timefield_value",
+      "kind": "function",
+      "start": 253,
+      "end": 265,
+      "score": 1.418
+    },
+    {
+      "file": "django/db/backends/sqlite3/schema.py",
+      "name": "DatabaseSchemaEditor.__enter__",
+      "kind": "function",
+      "start": 21,
+      "end": 32,
+      "score": 1.406
+    },
+    {
+      "file": "django/db/backends/sqlite3/operations.py",
+      "name": "DatabaseOperations.adapt_datetimefield_value",
+      "kind": "function",
+      "start": 236,
+      "end": 251,
+      "score": 1.351
+    },
+    {
+      "file": "django/db/backends/sqlite3/operations.py",
+      "name": "DatabaseOperations.check_expression_support",
+      "kind": "function",
+      "start": 40,
+      "end": 66,
+      "score": 1.286
+    },
+    {
+      "file": "django/db/backends/sqlite3/introspection.py",
+      "name": "DatabaseIntrospection.get_field_type",
+      "kind": "function",
+      "start": 60,
+      "end": 68,
+      "score": 1.261
+    }
+  ],
+  "repro": [
+    {
+      "model": "qwen2.5-coder-7b",
+      "outcome": "ISSUE REPRODUCED",
+      "script_hash": "065284cfb82b51b8"
+    },
+    {
+      "model": "qwen2.5-coder-3b",
+      "outcome": "unparseable",
+      "script_hash": null
+    }
+  ],
+  "candidates": [
+    {
+      "snippet": "py:django/db/backends/sqlite3/features.py::DatabaseFeatures.supports_atomic_references_rename",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "3d3e70dea84f819e",
+      "response_hash": "d66237b7ae227450",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/db/backends/sqlite3/operations.py::DatabaseOperations.adapt_timefield_value",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "67464e497e734043",
+      "response_hash": "7cc1cdebfbfe0bfd",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/backends/base/test_operations.py",
+        "tests/backends/mysql/test_operations.py",
+        "tests/backends/oracle/test_operations.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 2,
+      "judge_s": 6.1,
+      "diff": "diff --git a/django/db/backends/sqlite3/operations.py b/django/db/backends/sqlite3/operations.py\nindex 71ef000c93..c9436c8024 100644\n--- a/django/db/backends/sqlite3/operations.py\n+++ b/django/db/backends/sqlite3/operations.py\n@@ -259,7 +259,7 @@ class DatabaseOperations(BaseDatabaseOperations):\n             return value\n \n         # SQLite doesn't support tz-aware datetimes\n-        if timezone.is_aware(value):\n+        if timezone.is_aware(value) and not self.connection.settings_dict['USE_TZ']:\n             raise ValueError(\"SQLite backend does not support timezone-aware times.\")\n \n         return str(value)\n",
+      "new_source": "def adapt_timefield_value(self, value):\n    if value is None:\n        return None\n\n    # Expression values are adapted by the database.\n    if hasattr(value, 'resolve_expression'):\n        return value\n\n    # SQLite doesn't support tz-aware datetimes\n    if timezone.is_aware(value) and not self.connection.settings_dict['USE_TZ']:\n        raise ValueError(\"SQLite backend does not support timezone-aware times.\")\n\n    return str(value)\n"
+    },
+    {
+      "snippet": "py:django/db/backends/sqlite3/schema.py::DatabaseSchemaEditor.__enter__",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "5e8124a399d358ca",
+      "response_hash": "82929bde3d018dad",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/db/backends/sqlite3/operations.py::DatabaseOperations.adapt_datetimefield_value",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "b7d7af377919c8b1",
+      "response_hash": "82c5c1f8bfce00fd",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/backends/base/test_operations.py",
+        "tests/backends/mysql/test_operations.py",
+        "tests/backends/oracle/test_operations.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 9,
+      "judge_s": 3.6,
+      "diff": "diff --git a/django/db/backends/sqlite3/operations.py b/django/db/backends/sqlite3/operations.py\nindex 71ef000c93..47d8073b70 100644\n--- a/django/db/backends/sqlite3/operations.py\n+++ b/django/db/backends/sqlite3/operations.py\n@@ -242,11 +242,10 @@ class DatabaseOperations(BaseDatabaseOperations):\n             return value\n \n         # SQLite doesn't support tz-aware datetimes\n-        if timezone.is_aware(value):\n-            if settings.USE_TZ:\n-                value = timezone.make_naive(value, self.connection.timezone)\n-            else:\n-                raise ValueError(\"SQLite backend does not support timezone-aware datetimes when USE_TZ is False.\")\n+        if timezone.is_aware(value) and settings.USE_TZ:\n+            value = timezone.make_naive(value, self.connection.timezone)\n+        elif timezone.is_aware(value) and not settings.USE_TZ:\n+            raise ValueError(\"SQLite backend does not support timezone-aware datetimes when USE_TZ is False.\")\n \n         return str(value)\n \n",
+      "new_source": "def adapt_datetimefield_value(self, value):\n    if value is None:\n        return None\n\n    # Expression values are adapted by the database.\n    if hasattr(value, 'resolve_expression'):\n        return value\n\n    # SQLite doesn't support tz-aware datetimes\n    if timezone.is_aware(value) and settings.USE_TZ:\n        value = timezone.make_naive(value, self.connection.timezone)\n    elif timezone.is_aware(value) and not settings.USE_TZ:\n        raise ValueError(\"SQLite backend does not support timezone-aware datetimes when USE_TZ is False.\")\n\n    return str(value)\n"
+    },
+    {
+      "snippet": "py:django/db/backends/sqlite3/operations.py::DatabaseOperations.check_expression_support",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "4c71045c15e6896d",
+      "response_hash": "9960bdf4272b6ab6",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/db/backends/sqlite3/introspection.py::DatabaseIntrospection.get_field_type",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "2ab279ba621c22f0",
+      "response_hash": "b594bb79dc89ade9",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/backends/base/test_introspection.py",
+        "tests/backends/mysql/test_introspection.py",
+        "tests/backends/oracle/test_introspection.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 2,
+      "judge_s": 5.9,
+      "diff": "diff --git a/django/db/backends/sqlite3/introspection.py b/django/db/backends/sqlite3/introspection.py\nindex 1d7ce3fabf..01c7aa5b85 100644\n--- a/django/db/backends/sqlite3/introspection.py\n+++ b/django/db/backends/sqlite3/introspection.py\n@@ -63,7 +63,7 @@ class DatabaseIntrospection(BaseDatabaseIntrospection):\n             # No support for BigAutoField or SmallAutoField as SQLite treats\n             # all integer primary keys as signed 64-bit integers.\n             return 'AutoField'\n-        if description.has_json_constraint:\n+        if description.has_json_constraint and data_type != 'TEXT':\n             return 'JSONField'\n         return field_type\n \n",
+      "new_source": "def get_field_type(self, data_type, description):\n    field_type = super().get_field_type(data_type, description)\n    if description.pk and field_type in {'BigIntegerField', 'IntegerField', 'SmallIntegerField'}:\n        # No support for BigAutoField or SmallAutoField as SQLite treats\n        # all integer primary keys as signed 64-bit integers.\n        return 'AutoField'\n    if description.has_json_constraint and data_type != 'TEXT':\n        return 'JSONField'\n    return field_type\n"
+    },
+    {
+      "snippet": "py:django/db/backends/sqlite3/features.py::DatabaseFeatures.supports_atomic_references_rename",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "3d3e70dea84f819e",
+      "response_hash": "f61b433c78c06b72",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/backends/base/test_features.py",
+        "tests/backends/mysql/test_features.py",
+        "tests/backends/sqlite/test_features.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 1,
+      "judge_s": 5.9,
+      "diff": "diff --git a/django/db/backends/sqlite3/features.py b/django/db/backends/sqlite3/features.py\nindex 3348256c74..d082d945ea 100644\n--- a/django/db/backends/sqlite3/features.py\n+++ b/django/db/backends/sqlite3/features.py\n@@ -87,6 +87,7 @@ class DatabaseFeatures(BaseDatabaseFeatures):\n         # references atomically.\n         if platform.mac_ver()[0].startswith('10.15.') and Database.sqlite_version_info == (3, 28, 0):\n             return False\n+        # SQLite version support seems like a similar situation as GEOS libraries which we generally support about 5 years after released.\n         return Database.sqlite_version_info >= (3, 26, 0)\n \n     @cached_property\n",
+      "new_source": "@cached_property\ndef supports_atomic_references_rename(self):\n    # SQLite 3.28.0 bundled with MacOS 10.15 does not support renaming\n    # references atomically.\n    if platform.mac_ver()[0].startswith('10.15.') and Database.sqlite_version_info == (3, 28, 0):\n        return False\n    # SQLite version support seems like a similar situation as GEOS libraries which we generally support about 5 years after released.\n    return Database.sqlite_version_info >= (3, 26, 0)\n"
+    },
+    {
+      "snippet": "py:django/db/backends/sqlite3/operations.py::DatabaseOperations.adapt_timefield_value",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "67464e497e734043",
+      "response_hash": "b89fe31537acd81e",
+      "stage": "parse",
+      "reason": "response does not define adapt_timefield_value()"
+    },
+    {
+      "snippet": "py:django/db/backends/sqlite3/schema.py::DatabaseSchemaEditor.__enter__",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "5e8124a399d358ca",
+      "response_hash": "5816068b09c587f4",
+      "stage": "parse",
+      "reason": "response does not define __enter__()"
+    },
+    {
+      "snippet": "py:django/db/backends/sqlite3/operations.py::DatabaseOperations.adapt_datetimefield_value",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "b7d7af377919c8b1",
+      "response_hash": "e36bf82f5ccaa8d9",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/backends/base/test_operations.py",
+        "tests/backends/mysql/test_operations.py",
+        "tests/backends/oracle/test_operations.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 2,
+      "judge_s": 3.7,
+      "diff": "diff --git a/django/db/backends/sqlite3/operations.py b/django/db/backends/sqlite3/operations.py\nindex 71ef000c93..8dfa4ea3d7 100644\n--- a/django/db/backends/sqlite3/operations.py\n+++ b/django/db/backends/sqlite3/operations.py\n@@ -242,7 +242,7 @@ class DatabaseOperations(BaseDatabaseOperations):\n             return value\n \n         # SQLite doesn't support tz-aware datetimes\n-        if timezone.is_aware(value):\n+        if timezone.is_aware(value) and self.connection.vendor != 'sqlite':\n             if settings.USE_TZ:\n                 value = timezone.make_naive(value, self.connection.timezone)\n             else:\n",
+      "new_source": "def adapt_datetimefield_value(self, value):\n    if value is None:\n        return None\n\n    # Expression values are adapted by the database.\n    if hasattr(value, 'resolve_expression'):\n        return value\n\n    # SQLite doesn't support tz-aware datetimes\n    if timezone.is_aware(value) and self.connection.vendor != 'sqlite':\n        if settings.USE_TZ:\n            value = timezone.make_naive(value, self.connection.timezone)\n        else:\n            raise ValueError(\"SQLite backend does not support timezone-aware datetimes when USE_TZ is False.\")\n\n    return str(value)\n"
+    },
+    {
+      "snippet": "py:django/db/backends/sqlite3/operations.py::DatabaseOperations.check_expression_support",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "4c71045c15e6896d",
+      "response_hash": "d87f7eacde16ca27",
+      "stage": "parse",
+      "reason": "response does not define check_expression_support()"
+    },
+    {
+      "snippet": "py:django/db/backends/sqlite3/introspection.py::DatabaseIntrospection.get_field_type",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "2ab279ba621c22f0",
+      "response_hash": "397a735044168d8d",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/backends/base/test_introspection.py",
+        "tests/backends/mysql/test_introspection.py",
+        "tests/backends/oracle/test_introspection.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 5,
+      "judge_s": 3.7,
+      "diff": "diff --git a/django/db/backends/sqlite3/introspection.py b/django/db/backends/sqlite3/introspection.py\nindex 1d7ce3fabf..2cd0889483 100644\n--- a/django/db/backends/sqlite3/introspection.py\n+++ b/django/db/backends/sqlite3/introspection.py\n@@ -63,9 +63,10 @@ class DatabaseIntrospection(BaseDatabaseIntrospection):\n             # No support for BigAutoField or SmallAutoField as SQLite treats\n             # all integer primary keys as signed 64-bit integers.\n             return 'AutoField'\n-        if description.has_json_constraint:\n+        elif description.has_json_constraint:\n             return 'JSONField'\n-        return field_type\n+        else:\n+            return field_type\n \n     def get_table_list(self, cursor):\n         \"\"\"Return a list of table and view names in the current database.\"\"\"\n",
+      "new_source": "def get_field_type(self, data_type, description):\n    field_type = super().get_field_type(data_type, description)\n    if description.pk and field_type in {'BigIntegerField', 'IntegerField', 'SmallIntegerField'}:\n        # No support for BigAutoField or SmallAutoField as SQLite treats\n        # all integer primary keys as signed 64-bit integers.\n        return 'AutoField'\n    elif description.has_json_constraint:\n        return 'JSONField'\n    else:\n        return field_type\n"
+    },
+    {
+      "snippet": "py:django/db/backends/sqlite3/features.py::DatabaseFeatures.supports_atomic_references_rename",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "3d3e70dea84f819e",
+      "response_hash": "25d23442e927d123",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "2 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "tests/backends/base/test_features.py",
+        "tests/backends/mysql/test_features.py",
+        "tests/backends/sqlite/test_features.py"
+      ],
+      "regressions": 2,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 4,
+      "judge_s": 2.8
+    },
+    {
+      "snippet": "py:django/db/backends/sqlite3/operations.py::DatabaseOperations.adapt_timefield_value",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "67464e497e734043",
+      "response_hash": "fdd0c9bbf335fa59",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/backends/base/test_operations.py",
+        "tests/backends/mysql/test_operations.py",
+        "tests/backends/oracle/test_operations.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 2,
+      "judge_s": 3.5,
+      "diff": "diff --git a/django/db/backends/sqlite3/operations.py b/django/db/backends/sqlite3/operations.py\nindex 71ef000c93..2ebf97e384 100644\n--- a/django/db/backends/sqlite3/operations.py\n+++ b/django/db/backends/sqlite3/operations.py\n@@ -259,7 +259,7 @@ class DatabaseOperations(BaseDatabaseOperations):\n             return value\n \n         # SQLite doesn't support tz-aware datetimes\n-        if timezone.is_aware(value):\n+        if timezone.is_aware(value) and not (self.connection.vendor == 'sqlite' and self.connection.version >= '3.9.0'):\n             raise ValueError(\"SQLite backend does not support timezone-aware times.\")\n \n         return str(value)\n",
+      "new_source": "def adapt_timefield_value(self, value):\n    if value is None:\n        return None\n\n    # Expression values are adapted by the database.\n    if hasattr(value, 'resolve_expression'):\n        return value\n\n    # SQLite doesn't support tz-aware datetimes\n    if timezone.is_aware(value) and not (self.connection.vendor == 'sqlite' and self.connection.version >= '3.9.0'):\n        raise ValueError(\"SQLite backend does not support timezone-aware times.\")\n\n    return str(value)\n"
+    }
+  ],
+  "validated_repro": 1,
+  "stop": "budget",
+  "submission": {
+    "snippet": "py:django/db/backends/sqlite3/features.py::DatabaseFeatures.supports_atomic_references_rename",
+    "model": "qwen2.5-coder-1.5b",
+    "template": "fix",
+    "diff": "diff --git a/django/db/backends/sqlite3/features.py b/django/db/backends/sqlite3/features.py\nindex 3348256c74..d082d945ea 100644\n--- a/django/db/backends/sqlite3/features.py\n+++ b/django/db/backends/sqlite3/features.py\n@@ -87,6 +87,7 @@ class DatabaseFeatures(BaseDatabaseFeatures):\n         # references atomically.\n         if platform.mac_ver()[0].startswith('10.15.') and Database.sqlite_version_info == (3, 28, 0):\n             return False\n+        # SQLite version support seems like a similar situation as GEOS libraries which we generally support about 5 years after released.\n         return Database.sqlite_version_info >= (3, 26, 0)\n \n     @cached_property\n",
+    "votes": 0,
+    "changed_lines": 1,
+    "new_source": "@cached_property\ndef supports_atomic_references_rename(self):\n    # SQLite 3.28.0 bundled with MacOS 10.15 does not support renaming\n    # references atomically.\n    if platform.mac_ver()[0].startswith('10.15.') and Database.sqlite_version_info == (3, 28, 0):\n        return False\n    # SQLite version support seems like a similar situation as GEOS libraries which we generally support about 5 years after released.\n    return Database.sqlite_version_info >= (3, 26, 0)\n",
+    "prompt_hash": "3d3e70dea84f819e",
+    "response_hash": "f61b433c78c06b72"
+  },
+  "search_s": 351.5,
+  "llm_calls": 16,
+  "tokens_in": 7505,
+  "tokens_out": 2437,
+  "arms": {
+    "qwen2.5-coder-7b/fix": 0.3,
+    "qwen2.5-coder-7b/fix_think": 0.3,
+    "qwen2.5-coder-3b/fix": 0.3,
+    "qwen2.5-coder-3b/fix_think": 0.3,
+    "qwen2.5-coder-1.5b/fix": 0.16875,
+    "qwen2.5-coder-1.5b/fix_think": 0.3
+  },
+  "grade": {
+    "resolved": false,
+    "applied": true,
+    "fail_to_pass": {
+      "success": 0,
+      "failure": 1
+    },
+    "pass_to_pass": {
+      "success": 14,
+      "failure": 0
+    }
+  },
+  "grade_s": 24.4,
+  "wall_s": 396.0,
+  "diagnosis": {
+    "gold_files": [
+      "django/db/backends/sqlite3/base.py"
+    ],
+    "localised_file_hit": false,
+    "localised_line_hit": false,
+    "submission_files": [
+      "django/db/backends/sqlite3/features.py"
+    ],
+    "submission_in_gold_file": false,
+    "gold_changed_lines": 6
+  }
+}

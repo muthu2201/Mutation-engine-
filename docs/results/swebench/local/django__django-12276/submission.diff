@@ -1,0 +1,12 @@
+diff --git a/django/forms/widgets.py b/django/forms/widgets.py
+index 338d54d72f..37fe73faba 100644
+--- a/django/forms/widgets.py
++++ b/django/forms/widgets.py
+@@ -396,6 +396,7 @@ class ClearableFileInput(FileInput):
+     initial_text = _('Currently')
+     input_text = _('Change')
+     template_name = 'django/forms/widgets/clearable_file_input.html'
++    use_required_attribute = False  # Move this line to FileInput.use_required_attribute()
+ 
+     def clear_checkbox_name(self, name):
+         """

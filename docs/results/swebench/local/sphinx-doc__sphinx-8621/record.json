@@ -1,0 +1,399 @@
+{
+  "instance_id": "sphinx-doc__sphinx-8621",
+  "repo": "sphinx-doc/sphinx",
+  "version": "3.5",
+  "base_commit": "21698c14461d27933864d73e6fba568a154e83b3",
+  "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.sphinx-doc__sphinx-8621:latest",
+  "started_at": "2026-10-03T08:26:28.807877+00:00",
+  "image_digest": "ghcr.io/epoch-research/swe-bench.eval.x86_64.sphinx-doc__sphinx-8621@sha256:57fb8acd12f29d08ddee9ec15cf8b3158ea181a1c0ed04f26611616cf7b46d6c",
+  "pull_s": 22.6,
+  "files_considered": 183,
+  "ranked_files": [
+    {
+      "file": "sphinx/builders/html/transforms.py",
+      "score": 1.0
+    },
+    {
+      "file": "sphinx/writers/html.py",
+      "score": 0.909
+    },
+    {
+      "file": "sphinx/writers/html5.py",
+      "score": 0.907
+    },
+    {
+      "file": "sphinx/roles.py",
+      "score": 0.532
+    },
+    {
+      "file": "sphinx/writers/latex.py",
+      "score": 0.439
+    },
+    {
+      "file": "sphinx/addnodes.py",
+      "score": 0.314
+    },
+    {
+      "file": "sphinx/writers/text.py",
+      "score": 0.298
+    },
+    {
+      "file": "sphinx/application.py",
+      "score": 0.273
+    }
+  ],
+  "localised": [
+    {
+      "file": "sphinx/writers/html.py",
+      "name": "HTMLTranslator.visit_literal",
+      "kind": "function",
+      "start": 495,
+      "end": 502,
+      "score": 1.454
+    },
+    {
+      "file": "sphinx/writers/html5.py",
+      "name": "HTML5Translator.visit_literal",
+      "kind": "function",
+      "start": 446,
+      "end": 453,
+      "score": 1.454
+    },
+    {
+      "file": "sphinx/builders/html/transforms.py",
+      "name": "KeyboardTransform.<L22-40>",
+      "kind": "block",
+      "start": 22,
+      "end": 40,
+      "score": 1.44
+    },
+    {
+      "file": "sphinx/writers/html.py",
+      "name": "HTMLTranslator.depart_literal",
+      "kind": "function",
+      "start": 504,
+      "end": 509,
+      "score": 1.212
+    },
+    {
+      "file": "sphinx/writers/html5.py",
+      "name": "HTML5Translator.depart_literal",
+      "kind": "function",
+      "start": 455,
+      "end": 460,
+      "score": 1.212
+    },
+    {
+      "file": "sphinx/builders/html/transforms.py",
+      "name": "KeyboardTransform.run",
+      "kind": "function",
+      "start": 42,
+      "end": 59,
+      "score": 1.142
+    }
+  ],
+  "repro": [
+    {
+      "model": "qwen2.5-coder-7b",
+      "outcome": "unparseable",
+      "script_hash": null
+    },
+    {
+      "model": "qwen2.5-coder-3b",
+      "outcome": "unparseable",
+      "script_hash": null
+    }
+  ],
+  "candidates": [
+    {
+      "snippet": "py:sphinx/writers/html.py::HTMLTranslator.visit_literal",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix",
+      "prompt_hash": "0bd7c55fd7b652fb",
+      "response_hash": "85df76d3418cf1fa",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/test_markup.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 4,
+      "judge_s": 9.2,
+      "diff": "diff --git a/sphinx/writers/html.py b/sphinx/writers/html.py\nindex d3c87076f..7f4d087c9 100644\n--- a/sphinx/writers/html.py\n+++ b/sphinx/writers/html.py\n@@ -495,10 +495,10 @@ class HTMLTranslator(SphinxTranslator, BaseTranslator):\n     def visit_literal(self, node: Element) -> None:\n         if 'kbd' in node['classes']:\n             self.body.append(self.starttag(node, 'kbd', '',\n-                                           CLASS='docutils literal notranslate'))\n+     CLASS='docutils literal notranslate'))\n         else:\n             self.body.append(self.starttag(node, 'code', '',\n-                                           CLASS='docutils literal notranslate'))\n+     CLASS='docutils literal notranslate'))\n             self.protect_literal_text += 1\n \n     def depart_literal(self, node: Element) -> None:\n",
+      "new_source": "def visit_literal(self, node: Element) -> None:\n    if 'kbd' in node['classes']:\n        self.body.append(self.starttag(node, 'kbd', '',\n CLASS='docutils literal notranslate'))\n    else:\n        self.body.append(self.starttag(node, 'code', '',\n CLASS='docutils literal notranslate'))\n        self.protect_literal_text += 1\n"
+    },
+    {
+      "snippet": "py:sphinx/writers/html5.py::HTML5Translator.visit_literal",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix",
+      "prompt_hash": "319602dbfe7752e9",
+      "response_hash": "85df76d3418cf1fa",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 4,
+      "judge_s": 0.7,
+      "diff": "diff --git a/sphinx/writers/html5.py b/sphinx/writers/html5.py\nindex 7824f54f5..a034a59a4 100644\n--- a/sphinx/writers/html5.py\n+++ b/sphinx/writers/html5.py\n@@ -446,10 +446,10 @@ class HTML5Translator(SphinxTranslator, BaseTranslator):\n     def visit_literal(self, node: Element) -> None:\n         if 'kbd' in node['classes']:\n             self.body.append(self.starttag(node, 'kbd', '',\n-                                           CLASS='docutils literal notranslate'))\n+     CLASS='docutils literal notranslate'))\n         else:\n             self.body.append(self.starttag(node, 'code', '',\n-                                           CLASS='docutils literal notranslate'))\n+     CLASS='docutils literal notranslate'))\n             self.protect_literal_text += 1\n \n     def depart_literal(self, node: Element) -> None:\n",
+      "new_source": "def visit_literal(self, node: Element) -> None:\n    if 'kbd' in node['classes']:\n        self.body.append(self.starttag(node, 'kbd', '',\n CLASS='docutils literal notranslate'))\n    else:\n        self.body.append(self.starttag(node, 'code', '',\n CLASS='docutils literal notranslate'))\n        self.protect_literal_text += 1\n"
+    },
+    {
+      "snippet": "py:sphinx/builders/html/transforms.py::KeyboardTransform.<L22-40>",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix",
+      "prompt_hash": "7664e7d75bf2f6fb",
+      "response_hash": "64fb4ce582ce0c99",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/test_markup.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 4.3,
+      "diff": "diff --git a/sphinx/builders/html/transforms.py b/sphinx/builders/html/transforms.py\nindex c91da57e9..abf07a59b 100644\n--- a/sphinx/builders/html/transforms.py\n+++ b/sphinx/builders/html/transforms.py\n@@ -37,7 +37,7 @@ class KeyboardTransform(SphinxPostTransform):\n     \"\"\"\n     default_priority = 400\n     builders = ('html',)\n-    pattern = re.compile(r'(-|\\+|\\^|\\s+)')\n+    pattern = re.compile(r'(-|\\+|\\^)')\n \n     def run(self, **kwargs: Any) -> None:\n         matcher = NodeMatcher(nodes.literal, classes=[\"kbd\"])\n",
+      "new_source": "\"\"\"Transform :kbd: role to more detailed form.\n\nBefore::\n\n    <literal class=\"kbd\">\n        Control-x\n\nAfter::\n\n    <literal class=\"kbd\">\n        <literal class=\"kbd\">\n            Control\n        -\n        <literal class=\"kbd\">\n            x\n\"\"\"\ndefault_priority = 400\nbuilders = ('html',)\npattern = re.compile(r'(-|\\+|\\^)')\n"
+    },
+    {
+      "snippet": "py:sphinx/writers/html.py::HTMLTranslator.depart_literal",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix",
+      "prompt_hash": "923ebcaff3e4c4bb",
+      "response_hash": "d20619e29a9dba32",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:sphinx/writers/html5.py::HTML5Translator.depart_literal",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix",
+      "prompt_hash": "084653049b706a92",
+      "response_hash": "d20619e29a9dba32",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:sphinx/builders/html/transforms.py::KeyboardTransform.run",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix",
+      "prompt_hash": "2aa4c8ddfba2d670",
+      "response_hash": "9469d86cd8b42614",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/test_markup.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 7,
+      "judge_s": 4.1,
+      "diff": "diff --git a/sphinx/builders/html/transforms.py b/sphinx/builders/html/transforms.py\nindex c91da57e9..97253ce3b 100644\n--- a/sphinx/builders/html/transforms.py\n+++ b/sphinx/builders/html/transforms.py\n@@ -42,14 +42,17 @@ class KeyboardTransform(SphinxPostTransform):\n     def run(self, **kwargs: Any) -> None:\n         matcher = NodeMatcher(nodes.literal, classes=[\"kbd\"])\n         for node in self.document.traverse(matcher):  # type: nodes.literal\n-            parts = self.pattern.split(node[-1].astext())\n+            parts = re.split(r'([-+^])', node[-1].astext())\n             if len(parts) == 1:\n                 continue\n \n             node.pop()\n             while parts:\n                 key = parts.pop(0)\n-                node += nodes.literal('', key, classes=[\"kbd\"])\n+                if key in '-+^':\n+                    node += nodes.Text(key)\n+                else:\n+                    node += nodes.literal('', key, classes=[\"kbd\"])\n \n                 try:\n                     # key separator (ex. -, +, ^)\n",
+      "new_source": "def run(self, **kwargs: Any) -> None:\n    matcher = NodeMatcher(nodes.literal, classes=[\"kbd\"])\n    for node in self.document.traverse(matcher):  # type: nodes.literal\n        parts = re.split(r'([-+^])', node[-1].astext())\n        if len(parts) == 1:\n            continue\n\n        node.pop()\n        while parts:\n            key = parts.pop(0)\n            if key in '-+^':\n                node += nodes.Text(key)\n            else:\n                node += nodes.literal('', key, classes=[\"kbd\"])\n\n            try:\n                # key separator (ex. -, +, ^)\n                sep = parts.pop(0)\n                node += nodes.Text(sep)\n            except IndexError:\n                pass\n"
+    },
+    {
+      "snippet": "py:sphinx/writers/html.py::HTMLTranslator.visit_literal",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix",
+      "prompt_hash": "0bd7c55fd7b652fb",
+      "response_hash": "9543b1f87d94ef69",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/test_markup.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 17,
+      "judge_s": 4.4,
+      "diff": "diff --git a/sphinx/writers/html.py b/sphinx/writers/html.py\nindex d3c87076f..4f7161615 100644\n--- a/sphinx/writers/html.py\n+++ b/sphinx/writers/html.py\n@@ -494,11 +494,20 @@ class HTMLTranslator(SphinxTranslator, BaseTranslator):\n     # overwritten\n     def visit_literal(self, node: Element) -> None:\n         if 'kbd' in node['classes']:\n-            self.body.append(self.starttag(node, 'kbd', '',\n-                                           CLASS='docutils literal notranslate'))\n+            if '-' in node.astext() or '+' in node.astext() or '^' in node.astext():\n+                self.body.append(self.starttag(node, 'kbd', '', CLASS='docutils literal notranslate'))\n+                for child in node.children:\n+                    if isinstance(child, nodes.Text):\n+                        parts = re.split(r'([-+^])', child.astext())\n+                        for part in parts:\n+                            if part and part.strip():\n+                                self.body.append(self.starttag(nodes.Text(), 'kbd', '', CLASS='docutils literal notranslate'))\n+                                self.body.append(part)\n+                                self.body.append('</kbd>')\n+            else:\n+                self.body.append(self.starttag(node, 'kbd', '', CLASS='docutils literal notranslate'))\n         else:\n-            self.body.append(self.starttag(node, 'code', '',\n-                                           CLASS='docutils literal notranslate'))\n+            self.body.append(self.starttag(node, 'code', '', CLASS='docutils literal notranslate'))\n             self.protect_literal_text += 1\n \n     def depart_literal(self, node: Element) -> None:\n",
+      "new_source": "def visit_literal(self, node: Element) -> None:\n    if 'kbd' in node['classes']:\n        if '-' in node.astext() or '+' in node.astext() or '^' in node.astext():\n            self.body.append(self.starttag(node, 'kbd', '', CLASS='docutils literal notranslate'))\n            for child in node.children:\n                if isinstance(child, nodes.Text):\n                    parts = re.split(r'([-+^])', child.astext())\n                    for part in parts:\n                        if part and part.strip():\n                            self.body.append(self.starttag(nodes.Text(), 'kbd', '', CLASS='docutils literal notranslate'))\n                            self.body.append(part)\n                            self.body.append('</kbd>')\n        else:\n            self.body.append(self.starttag(node, 'kbd', '', CLASS='docutils literal notranslate'))\n    else:\n        self.body.append(self.starttag(node, 'code', '', CLASS='docutils literal notranslate'))\n        self.protect_literal_text += 1\n"
+    },
+    {
+      "snippet": "py:sphinx/writers/html5.py::HTML5Translator.visit_literal",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix",
+      "prompt_hash": "319602dbfe7752e9",
+      "response_hash": "0ae6367a27da9809",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 21,
+      "judge_s": 0.7,
+      "diff": "diff --git a/sphinx/writers/html5.py b/sphinx/writers/html5.py\nindex 7824f54f5..1903b3d05 100644\n--- a/sphinx/writers/html5.py\n+++ b/sphinx/writers/html5.py\n@@ -445,11 +445,26 @@ class HTML5Translator(SphinxTranslator, BaseTranslator):\n     # overwritten\n     def visit_literal(self, node: Element) -> None:\n         if 'kbd' in node['classes']:\n-            self.body.append(self.starttag(node, 'kbd', '',\n-                                           CLASS='docutils literal notranslate'))\n+            # Check for compound keystrokes and handle separators appropriately\n+            content = ''.join(child.astext() for child in node.children)\n+            if '-' in content or '+' in content or '^' in content:\n+                parts = re.split(r'([-+^])', content)\n+                self.body.append(self.starttag(node, 'kbd', '', CLASS='docutils literal notranslate'))\n+                for part in parts:\n+                    if part in ('-', '+', '^'):\n+                        self.body.append(self.starttag(nodes.Text(part), 'span', '',\n+     CLASS='kbd-separator'))\n+                    else:\n+                        self.body.append(self.starttag(nodes.Text(part), 'span', '',\n+     CLASS='kbd-key'))\n+                    self.body.append('</span>')\n+                self.body.append('</kbd>')\n+            else:\n+                self.body.append(self.starttag(node, 'kbd', '',\n+     CLASS='docutils literal notranslate'))\n         else:\n             self.body.append(self.starttag(node, 'code', '',\n-                                           CLASS='docutils literal notranslate'))\n+     CLASS='docutils literal notranslate'))\n             self.protect_literal_text += 1\n \n     def depart_literal(self, node: Element) -> None:\n",
+      "new_source": "def visit_literal(self, node: Element) -> None:\n    if 'kbd' in node['classes']:\n        # Check for compound keystrokes and handle separators appropriately\n        content = ''.join(child.astext() for child in node.children)\n        if '-' in content or '+' in content or '^' in content:\n            parts = re.split(r'([-+^])', content)\n            self.body.append(self.starttag(node, 'kbd', '', CLASS='docutils literal notranslate'))\n            for part in parts:\n                if part in ('-', '+', '^'):\n                    self.body.append(self.starttag(nodes.Text(part), 'span', '',\n CLASS='kbd-separator'))\n                else:\n                    self.body.append(self.starttag(nodes.Text(part), 'span', '',\n CLASS='kbd-key'))\n                self.body.append('</span>')\n            self.body.append('</kbd>')\n        else:\n            self.body.append(self.starttag(node, 'kbd', '',\n CLASS='docutils literal notranslate'))\n    else:\n        self.body.append(self.starttag(node, 'code', '',\n CLASS='docutils literal notranslate'))\n        self.protect_literal_text += 1\n"
+    },
+    {
+      "snippet": "py:sphinx/builders/html/transforms.py::KeyboardTransform.<L22-40>",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix",
+      "prompt_hash": "7664e7d75bf2f6fb",
+      "response_hash": "3f4530a3932988b1",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/test_markup.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 28,
+      "judge_s": 4.3,
+      "diff": "diff --git a/sphinx/builders/html/transforms.py b/sphinx/builders/html/transforms.py\nindex c91da57e9..b8e092d8e 100644\n--- a/sphinx/builders/html/transforms.py\n+++ b/sphinx/builders/html/transforms.py\n@@ -19,25 +19,15 @@ from sphinx.util.nodes import NodeMatcher\n \n \n class KeyboardTransform(SphinxPostTransform):\n-    \"\"\"Transform :kbd: role to more detailed form.\n-\n-    Before::\n-\n-        <literal class=\"kbd\">\n-            Control-x\n-\n-    After::\n-\n-        <literal class=\"kbd\">\n-            <literal class=\"kbd\">\n-                Control\n-            -\n-            <literal class=\"kbd\">\n-                x\n-    \"\"\"\n-    default_priority = 400\n-    builders = ('html',)\n-    pattern = re.compile(r'(-|\\+|\\^|\\s+)')\n+    import re\n+    from typing import Any, Dict\n+    from docutils import nodes\n+    from sphinx.application import Sphinx\n+    from sphinx.transforms.post_transforms import SphinxPostTransform\n+    from sphinx.util.nodes import NodeMatcher\n+\n+    class KeyboardTransform(SphinxPostTransform):\n+        ...\n \n     def run(self, **kwargs: Any) -> None:\n         matcher = NodeMatcher(nodes.literal, classes=[\"kbd\"])\n",
+      "new_source": "import re\nfrom typing import Any, Dict\nfrom docutils import nodes\nfrom sphinx.application import Sphinx\nfrom sphinx.transforms.post_transforms import SphinxPostTransform\nfrom sphinx.util.nodes import NodeMatcher\n\nclass KeyboardTransform(SphinxPostTransform):\n    ...\n"
+    },
+    {
+      "snippet": "py:sphinx/writers/html.py::HTMLTranslator.depart_literal",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix",
+      "prompt_hash": "923ebcaff3e4c4bb",
+      "response_hash": "d20619e29a9dba32",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:sphinx/writers/html5.py::HTML5Translator.depart_literal",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix",
+      "prompt_hash": "084653049b706a92",
+      "response_hash": "48fa90857e931f0f",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 4,
+      "judge_s": 0.7,
+      "diff": "diff --git a/sphinx/writers/html5.py b/sphinx/writers/html5.py\nindex 7824f54f5..924c179cd 100644\n--- a/sphinx/writers/html5.py\n+++ b/sphinx/writers/html5.py\n@@ -454,6 +454,10 @@ class HTML5Translator(SphinxTranslator, BaseTranslator):\n \n     def depart_literal(self, node: Element) -> None:\n         if 'kbd' in node['classes']:\n+            # Check if the content inside the literal node contains any separator characters\n+            if re.search(r'[-+^]', self.body[-1]):\n+                # If a separator is found, remove the extra closing kbd tag\n+                self.body.pop()\n             self.body.append('</kbd>')\n         else:\n             self.protect_literal_text -= 1\n",
+      "new_source": "def depart_literal(self, node: Element) -> None:\n    if 'kbd' in node['classes']:\n        # Check if the content inside the literal node contains any separator characters\n        if re.search(r'[-+^]', self.body[-1]):\n            # If a separator is found, remove the extra closing kbd tag\n            self.body.pop()\n        self.body.append('</kbd>')\n    else:\n        self.protect_literal_text -= 1\n        self.body.append('</code>')\n"
+    },
+    {
+      "snippet": "py:sphinx/builders/html/transforms.py::KeyboardTransform.run",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix",
+      "prompt_hash": "2aa4c8ddfba2d670",
+      "response_hash": "749b91dde05ed068",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/test_markup.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 15,
+      "judge_s": 4.3,
+      "diff": "diff --git a/sphinx/builders/html/transforms.py b/sphinx/builders/html/transforms.py\nindex c91da57e9..1caccf517 100644\n--- a/sphinx/builders/html/transforms.py\n+++ b/sphinx/builders/html/transforms.py\n@@ -42,21 +42,22 @@ class KeyboardTransform(SphinxPostTransform):\n     def run(self, **kwargs: Any) -> None:\n         matcher = NodeMatcher(nodes.literal, classes=[\"kbd\"])\n         for node in self.document.traverse(matcher):  # type: nodes.literal\n-            parts = self.pattern.split(node[-1].astext())\n+            parts = re.split(r'([-+^])', node[-1].astext())\n             if len(parts) == 1:\n                 continue\n \n             node.pop()\n-            while parts:\n-                key = parts.pop(0)\n+            i = 0\n+            while i < len(parts):\n+                key = parts[i]\n+                i += 1\n                 node += nodes.literal('', key, classes=[\"kbd\"])\n \n-                try:\n+                if i < len(parts) and parts[i] in '-+^':\n                     # key separator (ex. -, +, ^)\n-                    sep = parts.pop(0)\n+                    sep = parts[i]\n+                    i += 1\n                     node += nodes.Text(sep)\n-                except IndexError:\n-                    pass\n \n \n def setup(app: Sphinx) -> Dict[str, Any]:\n",
+      "new_source": "def run(self, **kwargs: Any) -> None:\n    matcher = NodeMatcher(nodes.literal, classes=[\"kbd\"])\n    for node in self.document.traverse(matcher):  # type: nodes.literal\n        parts = re.split(r'([-+^])', node[-1].astext())\n        if len(parts) == 1:\n            continue\n\n        node.pop()\n        i = 0\n        while i < len(parts):\n            key = parts[i]\n            i += 1\n            node += nodes.literal('', key, classes=[\"kbd\"])\n\n            if i < len(parts) and parts[i] in '-+^':\n                # key separator (ex. -, +, ^)\n                sep = parts[i]\n                i += 1\n                node += nodes.Text(sep)\n"
+    },
+    {
+      "snippet": "py:sphinx/writers/html.py::HTMLTranslator.visit_literal",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix",
+      "prompt_hash": "0bd7c55fd7b652fb",
+      "response_hash": "126bb4c899940617",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/test_markup.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 5,
+      "judge_s": 5.1,
+      "diff": "diff --git a/sphinx/writers/html.py b/sphinx/writers/html.py\nindex d3c87076f..84cd12ec1 100644\n--- a/sphinx/writers/html.py\n+++ b/sphinx/writers/html.py\n@@ -494,11 +494,10 @@ class HTMLTranslator(SphinxTranslator, BaseTranslator):\n     # overwritten\n     def visit_literal(self, node: Element) -> None:\n         if 'kbd' in node['classes']:\n-            self.body.append(self.starttag(node, 'kbd', '',\n-                                           CLASS='docutils literal notranslate'))\n+            self.body.append(self.starttag(node, 'kbd', '', CLASS='docutils literal notranslate'))\n         else:\n             self.body.append(self.starttag(node, 'code', '',\n-                                           CLASS='docutils literal notranslate'))\n+     CLASS='docutils literal notranslate'))\n             self.protect_literal_text += 1\n \n     def depart_literal(self, node: Element) -> None:\n",
+      "new_source": "def visit_literal(self, node: Element) -> None:\n    if 'kbd' in node['classes']:\n        self.body.append(self.starttag(node, 'kbd', '', CLASS='docutils literal notranslate'))\n    else:\n        self.body.append(self.starttag(node, 'code', '',\n CLASS='docutils literal notranslate'))\n        self.protect_literal_text += 1\n"
+    },
+    {
+      "snippet": "py:sphinx/writers/html5.py::HTML5Translator.visit_literal",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix",
+      "prompt_hash": "319602dbfe7752e9",
+      "response_hash": "8bc192bb6e29bde3",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 11,
+      "judge_s": 0.7,
+      "diff": "diff --git a/sphinx/writers/html5.py b/sphinx/writers/html5.py\nindex 7824f54f5..0e87f3ac6 100644\n--- a/sphinx/writers/html5.py\n+++ b/sphinx/writers/html5.py\n@@ -446,12 +446,19 @@ class HTML5Translator(SphinxTranslator, BaseTranslator):\n     def visit_literal(self, node: Element) -> None:\n         if 'kbd' in node['classes']:\n             self.body.append(self.starttag(node, 'kbd', '',\n-                                           CLASS='docutils literal notranslate'))\n+     CLASS='docutils literal notranslate'))\n         else:\n             self.body.append(self.starttag(node, 'code', '',\n-                                           CLASS='docutils literal notranslate'))\n+     CLASS='docutils literal notranslate'))\n             self.protect_literal_text += 1\n \n+    def depart_literal(self, node: Element) -> None:\n+        if 'kbd' in node['classes']:\n+            self.body.append('</kbd>')\n+        else:\n+            self.body.append('</code>')\n+            self.protect_literal_text -= 1\n+\n     def depart_literal(self, node: Element) -> None:\n         if 'kbd' in node['classes']:\n             self.body.append('</kbd>')\n",
+      "new_source": "def visit_literal(self, node: Element) -> None:\n    if 'kbd' in node['classes']:\n        self.body.append(self.starttag(node, 'kbd', '',\n CLASS='docutils literal notranslate'))\n    else:\n        self.body.append(self.starttag(node, 'code', '',\n CLASS='docutils literal notranslate'))\n        self.protect_literal_text += 1\n\ndef depart_literal(self, node: Element) -> None:\n    if 'kbd' in node['classes']:\n        self.body.append('</kbd>')\n    else:\n        self.body.append('</code>')\n        self.protect_literal_text -= 1\n"
+    }
+  ],
+  "validated_repro": 0,
+  "stop": "budget",
+  "submission": {
+    "snippet": "py:sphinx/builders/html/transforms.py::KeyboardTransform.<L22-40>",
+    "model": "qwen2.5-coder-7b",
+    "template": "fix",
+    "diff": "diff --git a/sphinx/builders/html/transforms.py b/sphinx/builders/html/transforms.py\nindex c91da57e9..abf07a59b 100644\n--- a/sphinx/builders/html/transforms.py\n+++ b/sphinx/builders/html/transforms.py\n@@ -37,7 +37,7 @@ class KeyboardTransform(SphinxPostTransform):\n     \"\"\"\n     default_priority = 400\n     builders = ('html',)\n-    pattern = re.compile(r'(-|\\+|\\^|\\s+)')\n+    pattern = re.compile(r'(-|\\+|\\^)')\n \n     def run(self, **kwargs: Any) -> None:\n         matcher = NodeMatcher(nodes.literal, classes=[\"kbd\"])\n",
+    "votes": 0,
+    "changed_lines": 2,
+    "new_source": "\"\"\"Transform :kbd: role to more detailed form.\n\nBefore::\n\n    <literal class=\"kbd\">\n        Control-x\n\nAfter::\n\n    <literal class=\"kbd\">\n        <literal class=\"kbd\">\n            Control\n        -\n        <literal class=\"kbd\">\n            x\n\"\"\"\ndefault_priority = 400\nbuilders = ('html',)\npattern = re.compile(r'(-|\\+|\\^)')\n",
+    "prompt_hash": "7664e7d75bf2f6fb",
+    "response_hash": "64fb4ce582ce0c99"
+  },
+  "search_s": 822.4,
+  "llm_calls": 16,
+  "tokens_in": 13764,
+  "tokens_out": 2489,
+  "arms": {
+    "qwen2.5-coder-7b/fix": 0.725,
+    "qwen2.5-coder-7b/fix_think": 0.3,
+    "qwen2.5-coder-3b/fix": 0.3,
+    "qwen2.5-coder-3b/fix_think": 0.3,
+    "qwen2.5-coder-1.5b/fix": 0.3,
+    "qwen2.5-coder-1.5b/fix_think": 0.3
+  },
+  "grade": {
+    "resolved": false,
+    "applied": true,
+    "fail_to_pass": {
+      "success": 0,
+      "failure": 2
+    },
+    "pass_to_pass": {
+      "success": 30,
+      "failure": 1
+    }
+  },
+  "grade_s": 21.6,
+  "wall_s": 874.5,
+  "diagnosis": {
+    "gold_files": [
+      "sphinx/builders/html/transforms.py"
+    ],
+    "localised_file_hit": true,
+    "localised_line_hit": true,
+    "submission_files": [
+      "sphinx/builders/html/transforms.py"
+    ],
+    "submission_in_gold_file": true,
+    "gold_changed_lines": 2
+  }
+}

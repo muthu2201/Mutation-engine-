@@ -1,0 +1,397 @@
+{
+  "instance_id": "sphinx-doc__sphinx-9281",
+  "repo": "sphinx-doc/sphinx",
+  "version": "4.1",
+  "base_commit": "8ec06e9a1bd862cd713b9db748e039ccc7b3e15b",
+  "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.sphinx-doc__sphinx-9281:latest",
+  "started_at": "2026-10-03T08:41:03.352015+00:00",
+  "image_digest": "ghcr.io/epoch-research/swe-bench.eval.x86_64.sphinx-doc__sphinx-9281@sha256:8dcf7b055e0224a1dbc68da02c7cc100023e8d1d520ab78c8ca0ec0be3ccf32a",
+  "pull_s": 20.5,
+  "files_considered": 177,
+  "ranked_files": [
+    {
+      "file": "sphinx/util/inspect.py",
+      "score": 1.0
+    },
+    {
+      "file": "sphinx/domains/__init__.py",
+      "score": 0.816
+    },
+    {
+      "file": "sphinx/ext/autodoc/__init__.py",
+      "score": 0.808
+    },
+    {
+      "file": "sphinx/config.py",
+      "score": 0.806
+    },
+    {
+      "file": "sphinx/addnodes.py",
+      "score": 0.795
+    },
+    {
+      "file": "sphinx/builders/epub3.py",
+      "score": 0.781
+    },
+    {
+      "file": "sphinx/domains/c.py",
+      "score": 0.769
+    },
+    {
+      "file": "sphinx/domains/cpp.py",
+      "score": 0.755
+    }
+  ],
+  "localised": [
+    {
+      "file": "sphinx/addnodes.py",
+      "name": "index.<L379-390>",
+      "kind": "block",
+      "start": 379,
+      "end": 390,
+      "score": 1.534
+    },
+    {
+      "file": "sphinx/util/inspect.py",
+      "name": "isenumattribute",
+      "kind": "function",
+      "start": 227,
+      "end": 229,
+      "score": 1.5
+    },
+    {
+      "file": "sphinx/util/inspect.py",
+      "name": "isenumclass",
+      "kind": "function",
+      "start": 222,
+      "end": 224,
+      "score": 1.489
+    },
+    {
+      "file": "sphinx/config.py",
+      "name": "ENUM.<L59-63>",
+      "kind": "block",
+      "start": 59,
+      "end": 63,
+      "score": 1.387
+    },
+    {
+      "file": "sphinx/domains/c.py",
+      "name": "DefinitionParser._parse_enum",
+      "kind": "function",
+      "start": 3004,
+      "end": 3006,
+      "score": 1.356
+    },
+    {
+      "file": "sphinx/ext/autodoc/__init__.py",
+      "name": "setup",
+      "kind": "function",
+      "start": 2714,
+      "end": 2753,
+      "score": 1.326
+    }
+  ],
+  "repro": [
+    {
+      "model": "qwen2.5-coder-7b",
+      "outcome": "NONE",
+      "script_hash": "4dd74b538af5da39"
+    },
+    {
+      "model": "qwen2.5-coder-3b",
+      "outcome": "unparseable",
+      "script_hash": null
+    }
+  ],
+  "candidates": [
+    {
+      "snippet": "py:sphinx/addnodes.py::index.<L379-390>",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix_think",
+      "prompt_hash": "f71d8459f804e827",
+      "response_hash": "ff7bea09c1d27a64",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:sphinx/util/inspect.py::isenumattribute",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix_think",
+      "prompt_hash": "58b622c451a2895f",
+      "response_hash": "f18aff68393d09a9",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/test_util_inspect.py",
+        "tests/test_pycode_parser.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 6.8,
+      "diff": "diff --git a/sphinx/util/inspect.py b/sphinx/util/inspect.py\nindex a415a7074..545c513a1 100644\n--- a/sphinx/util/inspect.py\n+++ b/sphinx/util/inspect.py\n@@ -226,7 +226,7 @@ def isenumclass(x: Any) -> bool:\n \n def isenumattribute(x: Any) -> bool:\n     \"\"\"Check if the object is attribute of enum.\"\"\"\n-    return isinstance(x, enum.Enum)\n+    return isinstance(x, (enum.Enum, type))\n \n \n def unpartial(obj: Any) -> Any:\n",
+      "new_source": "def isenumattribute(x: Any) -> bool:\n    \"\"\"Check if the object is attribute of enum.\"\"\"\n    return isinstance(x, (enum.Enum, type))\n"
+    },
+    {
+      "snippet": "py:sphinx/util/inspect.py::isenumclass",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix_think",
+      "prompt_hash": "09c0c8b7b8c754fe",
+      "response_hash": "7b350f219b4cefd4",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/test_util_inspect.py",
+        "tests/test_pycode_parser.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 3.3,
+      "diff": "diff --git a/sphinx/util/inspect.py b/sphinx/util/inspect.py\nindex a415a7074..e09685274 100644\n--- a/sphinx/util/inspect.py\n+++ b/sphinx/util/inspect.py\n@@ -221,7 +221,7 @@ def isNewType(obj: Any) -> bool:\n \n def isenumclass(x: Any) -> bool:\n     \"\"\"Check if the object is subclass of enum.\"\"\"\n-    return inspect.isclass(x) and issubclass(x, enum.Enum)\n+    return inspect.isclass(x) and x.__bases__ == (enum.Enum,)\n \n \n def isenumattribute(x: Any) -> bool:\n",
+      "new_source": "def isenumclass(x: Any) -> bool:\n    \"\"\"Check if the object is subclass of enum.\"\"\"\n    return inspect.isclass(x) and x.__bases__ == (enum.Enum,)\n"
+    },
+    {
+      "snippet": "py:sphinx/config.py::ENUM.<L59-63>",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix_think",
+      "prompt_hash": "100bd228da89289c",
+      "response_hash": "cb7692a40d253419",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/test_config.py",
+        "tests/test_domain_py.py",
+        "tests/test_build_latex.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 22,
+      "judge_s": 24.4,
+      "diff": "diff --git a/sphinx/config.py b/sphinx/config.py\nindex 553aa74d6..d950d4d08 100644\n--- a/sphinx/config.py\n+++ b/sphinx/config.py\n@@ -61,6 +61,28 @@ class ENUM:\n     Example:\n         app.add_config_value('latex_show_urls', 'no', None, ENUM('no', 'footnote', 'inline'))\n     \"\"\"\n+    class ENUM:\n+        def __init__(self, *candidates):\n+            self.candidates = candidates\n+\n+        def __repr__(self):\n+            return f\"ENUM({', '.join(map(repr, self.candidates))})\"\n+\n+        def render(self, value):\n+            if isinstance(value, type) and issubclass(value, Enum):\n+                # Use the Enum object itself when rendering\n+                return str(value)\n+            else:\n+                # Fallback to string representation for other types\n+                return repr(value)\n+\n+        def __eq__(self, other):\n+            if not isinstance(other, ENUM):\n+                return False\n+            return self.candidates == other.candidates\n+\n+        def __ne__(self, other):\n+            return not (self == other)\n     def __init__(self, *candidates: str) -> None:\n         self.candidates = candidates\n \n",
+      "new_source": "\"\"\"represents the config value should be a one of candidates.\n\nExample:\n    app.add_config_value('latex_show_urls', 'no', None, ENUM('no', 'footnote', 'inline'))\n\"\"\"\nclass ENUM:\n    def __init__(self, *candidates):\n        self.candidates = candidates\n\n    def __repr__(self):\n        return f\"ENUM({', '.join(map(repr, self.candidates))})\"\n\n    def render(self, value):\n        if isinstance(value, type) and issubclass(value, Enum):\n            # Use the Enum object itself when rendering\n            return str(value)\n        else:\n            # Fallback to string representation for other types\n            return repr(value)\n\n    def __eq__(self, other):\n        if not isinstance(other, ENUM):\n            return False\n        return self.candidates == other.candidates\n\n    def __ne__(self, other):\n        return not (self == other)\n"
+    },
+    {
+      "snippet": "py:sphinx/domains/c.py::DefinitionParser._parse_enum",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix_think",
+      "prompt_hash": "11644dc183676b3a",
+      "response_hash": "8dccbe9b81e1f52a",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/test_domain_cpp.py",
+        "tests/test_domain_c.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 25.2,
+      "diff": "diff --git a/sphinx/domains/c.py b/sphinx/domains/c.py\nindex ed908c875..eeb85ca9b 100644\n--- a/sphinx/domains/c.py\n+++ b/sphinx/domains/c.py\n@@ -3003,7 +3003,7 @@ class DefinitionParser(BaseParser):\n \n     def _parse_enum(self) -> ASTEnum:\n         name = self._parse_nested_name()\n-        return ASTEnum(name)\n+        return ASTEnum(name, value=self._parse_enum_value())\n \n     def _parse_enumerator(self) -> ASTEnumerator:\n         name = self._parse_nested_name()\n",
+      "new_source": "def _parse_enum(self) -> ASTEnum:\n    name = self._parse_nested_name()\n    return ASTEnum(name, value=self._parse_enum_value())\n"
+    },
+    {
+      "snippet": "py:sphinx/ext/autodoc/__init__.py::setup",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix_think",
+      "prompt_hash": "9e4b867f477c96dd",
+      "response_hash": "7567149baa97e387",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:sphinx/addnodes.py::index.<L379-390>",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix",
+      "prompt_hash": "4aef259df81ea200",
+      "response_hash": "fb870ab97c621b75",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/test_domain_c.py",
+        "tests/test_domain_cpp.py",
+        "tests/test_domain_js.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 16,
+      "judge_s": 23.9,
+      "diff": "diff --git a/sphinx/addnodes.py b/sphinx/addnodes.py\nindex 8a020b02e..371bc7e5a 100644\n--- a/sphinx/addnodes.py\n+++ b/sphinx/addnodes.py\n@@ -376,18 +376,12 @@ class production(nodes.Part, nodes.Inline, nodes.FixedTextElement):\n # other directive-level nodes\n \n class index(nodes.Invisible, nodes.Inline, nodes.TextElement):\n-    \"\"\"Node for index entries.\n+    from typing import TYPE_CHECKING, Any, Dict, List, Sequence\n+    from docutils import nodes\n+    from docutils.nodes import Element\n \n-    This node is created by the ``index`` directive and has one attribute,\n-    ``entries``.  Its value is a list of 5-tuples of ``(entrytype, entryname,\n-    target, ignored, key)``.\n-\n-    *entrytype* is one of \"single\", \"pair\", \"double\", \"triple\".\n-\n-    *key* is categorization characters (usually a single character) for\n-    general index page. For the details of this, please see also:\n-    :rst:dir:`glossary` and issue #2320.\n-    \"\"\"\n+    class index(nodes.Invisible, nodes.Inline, nodes.TextElement):\n+        ...\n \n \n class centered(nodes.Part, nodes.TextElement):\n",
+      "new_source": "from typing import TYPE_CHECKING, Any, Dict, List, Sequence\nfrom docutils import nodes\nfrom docutils.nodes import Element\n\nclass index(nodes.Invisible, nodes.Inline, nodes.TextElement):\n    ...\n"
+    },
+    {
+      "snippet": "py:sphinx/util/inspect.py::isenumattribute",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix",
+      "prompt_hash": "8b4edd17b2747465",
+      "response_hash": "e92045b3fe430dc9",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/test_util_inspect.py",
+        "tests/test_pycode_parser.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 6,
+      "judge_s": 3.4,
+      "diff": "diff --git a/sphinx/util/inspect.py b/sphinx/util/inspect.py\nindex a415a7074..c2f5ca50f 100644\n--- a/sphinx/util/inspect.py\n+++ b/sphinx/util/inspect.py\n@@ -224,9 +224,11 @@ def isenumclass(x: Any) -> bool:\n     return inspect.isclass(x) and issubclass(x, enum.Enum)\n \n \n+from typing import Any, Callable, Dict, Mapping, Optional, Sequence, Tuple, Type, cast\n+\n def isenumattribute(x: Any) -> bool:\n-    \"\"\"Check if the object is attribute of enum.\"\"\"\n-    return isinstance(x, enum.Enum)\n+    \"\"\"Check if the object is an attribute of enum.\"\"\"\n+    return isinstance(x, (enum.Enum, type))\n \n \n def unpartial(obj: Any) -> Any:\n",
+      "new_source": "from typing import Any, Callable, Dict, Mapping, Optional, Sequence, Tuple, Type, cast\n\ndef isenumattribute(x: Any) -> bool:\n    \"\"\"Check if the object is an attribute of enum.\"\"\"\n    return isinstance(x, (enum.Enum, type))\n"
+    },
+    {
+      "snippet": "py:sphinx/util/inspect.py::isenumclass",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix",
+      "prompt_hash": "fa1f4993f893f44e",
+      "response_hash": "309013347d31b72b",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/test_util_inspect.py",
+        "tests/test_pycode_parser.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 3.4,
+      "diff": "diff --git a/sphinx/util/inspect.py b/sphinx/util/inspect.py\nindex a415a7074..f78b34158 100644\n--- a/sphinx/util/inspect.py\n+++ b/sphinx/util/inspect.py\n@@ -221,7 +221,7 @@ def isNewType(obj: Any) -> bool:\n \n def isenumclass(x: Any) -> bool:\n     \"\"\"Check if the object is subclass of enum.\"\"\"\n-    return inspect.isclass(x) and issubclass(x, enum.Enum)\n+    return inspect.isclass(x) and isinstance(x, enum.Enum)\n \n \n def isenumattribute(x: Any) -> bool:\n",
+      "new_source": "def isenumclass(x: Any) -> bool:\n    \"\"\"Check if the object is subclass of enum.\"\"\"\n    return inspect.isclass(x) and isinstance(x, enum.Enum)\n"
+    },
+    {
+      "snippet": "py:sphinx/config.py::ENUM.<L59-63>",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix",
+      "prompt_hash": "db4ae2bb1b35da0f",
+      "response_hash": "bb0592e5fea92176",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "the test run produced no parseable results: ed/sphinx/config.py\", line 59, in ENUM\n    from typing import (TYPE_CHECKING, Any, Callable, Dict, Generator, Iterator, List, NamedTuple,\nImportError: Error importing plugin \"sphinx.testing.fixtures\": cannot import name 'NoneType' from 'typing' (/opt/miniconda3/envs/testbed/lib/python3.9/typing.py)\n"
+      ],
+      "tests": [
+        "tests/test_config.py",
+        "tests/test_domain_py.py",
+        "tests/test_build_latex.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 7,
+      "judge_s": 2.9
+    },
+    {
+      "snippet": "py:sphinx/domains/c.py::DefinitionParser._parse_enum",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix",
+      "prompt_hash": "d93aae36208edfc8",
+      "response_hash": "d1b0b835b6072e7b",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:sphinx/ext/autodoc/__init__.py::setup",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix",
+      "prompt_hash": "5ba60a6b9a9f5448",
+      "response_hash": "bc5094b4bb172c9d",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:sphinx/addnodes.py::index.<L379-390>",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix",
+      "prompt_hash": "4aef259df81ea200",
+      "response_hash": "54f4805ebd8f7781",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:sphinx/util/inspect.py::isenumattribute",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix",
+      "prompt_hash": "8b4edd17b2747465",
+      "response_hash": "731bc489f817cb81",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/test_util_inspect.py",
+        "tests/test_pycode_parser.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 3.6,
+      "diff": "diff --git a/sphinx/util/inspect.py b/sphinx/util/inspect.py\nindex a415a7074..6fa8712be 100644\n--- a/sphinx/util/inspect.py\n+++ b/sphinx/util/inspect.py\n@@ -226,7 +226,7 @@ def isenumclass(x: Any) -> bool:\n \n def isenumattribute(x: Any) -> bool:\n     \"\"\"Check if the object is attribute of enum.\"\"\"\n-    return isinstance(x, enum.Enum)\n+    return isinstance(x, enum.Enum) or isinstance(x, enum._EnumMeta)\n \n \n def unpartial(obj: Any) -> Any:\n",
+      "new_source": "def isenumattribute(x: Any) -> bool:\n    \"\"\"Check if the object is attribute of enum.\"\"\"\n    return isinstance(x, enum.Enum) or isinstance(x, enum._EnumMeta)\n"
+    }
+  ],
+  "validated_repro": 0,
+  "stop": "budget",
+  "submission": {
+    "snippet": "py:sphinx/util/inspect.py::isenumattribute",
+    "model": "qwen2.5-coder-3b",
+    "template": "fix_think",
+    "diff": "diff --git a/sphinx/util/inspect.py b/sphinx/util/inspect.py\nindex a415a7074..545c513a1 100644\n--- a/sphinx/util/inspect.py\n+++ b/sphinx/util/inspect.py\n@@ -226,7 +226,7 @@ def isenumclass(x: Any) -> bool:\n \n def isenumattribute(x: Any) -> bool:\n     \"\"\"Check if the object is attribute of enum.\"\"\"\n-    return isinstance(x, enum.Enum)\n+    return isinstance(x, (enum.Enum, type))\n \n \n def unpartial(obj: Any) -> Any:\n",
+    "votes": 0,
+    "changed_lines": 2,
+    "new_source": "def isenumattribute(x: Any) -> bool:\n    \"\"\"Check if the object is attribute of enum.\"\"\"\n    return isinstance(x, (enum.Enum, type))\n",
+    "prompt_hash": "58b622c451a2895f",
+    "response_hash": "f18aff68393d09a9"
+  },
+  "search_s": 687.2,
+  "llm_calls": 16,
+  "tokens_in": 9668,
+  "tokens_out": 3162,
+  "arms": {
+    "qwen2.5-coder-7b/fix": 0.3,
+    "qwen2.5-coder-7b/fix_think": 0.3,
+    "qwen2.5-coder-3b/fix": 0.45999999999999996,
+    "qwen2.5-coder-3b/fix_think": 0.575,
+    "qwen2.5-coder-1.5b/fix": 0.3,
+    "qwen2.5-coder-1.5b/fix_think": 0.3
+  },
+  "grade": {
+    "resolved": false,
+    "applied": true,
+    "fail_to_pass": {
+      "success": 0,
+      "failure": 1
+    },
+    "pass_to_pass": {
+      "success": 38,
+      "failure": 0
+    }
+  },
+  "grade_s": 20.3,
+  "wall_s": 736.6,
+  "diagnosis": {
+    "gold_files": [
+      "sphinx/util/inspect.py"
+    ],
+    "localised_file_hit": true,
+    "localised_line_hit": false,
+    "submission_files": [
+      "sphinx/util/inspect.py"
+    ],
+    "submission_in_gold_file": true,
+    "gold_changed_lines": 7
+  }
+}

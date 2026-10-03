@@ -1,0 +1,13 @@
+diff --git a/django/db/migrations/operations/models.py b/django/db/migrations/operations/models.py
+index 982816be3a..c28dfb5ae9 100644
+--- a/django/db/migrations/operations/models.py
++++ b/django/db/migrations/operations/models.py
+@@ -197,7 +197,7 @@ class CreateModel(ModelOperation):
+             elif isinstance(operation, RemoveField):
+                 options = self.options.copy()
+                 for option_name in ('unique_together', 'index_together'):
+-                    option = options.pop(option_name, None)
++                    option = options.get(option_name)
+                     if option:
+                         option = set(filter(bool, (
+                             tuple(f for f in fields if f != operation.name_lower) for fields in option

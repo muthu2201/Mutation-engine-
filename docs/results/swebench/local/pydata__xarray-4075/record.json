@@ -1,0 +1,321 @@
+{
+  "instance_id": "pydata__xarray-4075",
+  "repo": "pydata/xarray",
+  "version": "0.12",
+  "base_commit": "19b088636eb7d3f65ab7a1046ac672e0689371d8",
+  "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.pydata__xarray-4075:latest",
+  "started_at": "2026-10-03T06:57:07.579337+00:00",
+  "image_digest": "ghcr.io/epoch-research/swe-bench.eval.x86_64.pydata__xarray-4075@sha256:ff77b37db46f4dd6c37cb8e87deea72d06a47a0d93395b9add1bbf01215406c1",
+  "pull_s": 44.4,
+  "files_considered": 77,
+  "ranked_files": [
+    {
+      "file": "xarray/__init__.py",
+      "score": 3.301
+    },
+    {
+      "file": "xarray/util/print_versions.py",
+      "score": 1.5
+    },
+    {
+      "file": "xarray/core/dataarray.py",
+      "score": 1.459
+    },
+    {
+      "file": "xarray/core/weighted.py",
+      "score": 1.422
+    },
+    {
+      "file": "xarray/core/computation.py",
+      "score": 1.336
+    },
+    {
+      "file": "xarray/core/duck_array_ops.py",
+      "score": 1.292
+    },
+    {
+      "file": "xarray/core/common.py",
+      "score": 0.973
+    },
+    {
+      "file": "xarray/core/rolling_exp.py",
+      "score": 0.736
+    }
+  ],
+  "localised": [
+    {
+      "file": "xarray/core/dataarray.py",
+      "name": "DataArray.dot",
+      "kind": "function",
+      "start": 2875,
+      "end": 2926,
+      "score": 3.794
+    },
+    {
+      "file": "xarray/util/print_versions.py",
+      "name": "show_versions",
+      "kind": "function",
+      "start": 80,
+      "end": 156,
+      "score": 3.227
+    },
+    {
+      "file": "xarray/core/computation.py",
+      "name": "dot",
+      "kind": "function",
+      "start": 1072,
+      "end": 1215,
+      "score": 2.806
+    },
+    {
+      "file": "xarray/core/common.py",
+      "name": "DataWithCoords.weighted",
+      "kind": "function",
+      "start": 766,
+      "end": 783,
+      "score": 2.666
+    },
+    {
+      "file": "xarray/core/duck_array_ops.py",
+      "name": "mean",
+      "kind": "function",
+      "start": 503,
+      "end": 532,
+      "score": 2.641
+    },
+    {
+      "file": "xarray/core/weighted.py",
+      "name": "Weighted.sum_of_weights",
+      "kind": "function",
+      "start": 180,
+      "end": 188,
+      "score": 2.641
+    }
+  ],
+  "repro": [
+    {
+      "model": "qwen2.5-coder-7b",
+      "outcome": "ISSUE REPRODUCED",
+      "script_hash": "0037b9c69f4e8934"
+    },
+    {
+      "model": "qwen2.5-coder-3b",
+      "outcome": "unparseable",
+      "script_hash": null
+    }
+  ],
+  "candidates": [
+    {
+      "snippet": "py:xarray/core/dataarray.py::DataArray.dot",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix_think",
+      "prompt_hash": "2224160b5ea3d62d",
+      "response_hash": "87eac7a936b063ee",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "xarray/tests/test_dataarray.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 6,
+      "judge_s": 28.7,
+      "diff": "diff --git a/xarray/core/dataarray.py b/xarray/core/dataarray.py\nindex 236938ba..e84f48eb 100644\n--- a/xarray/core/dataarray.py\n+++ b/xarray/core/dataarray.py\n@@ -2923,6 +2923,12 @@ class DataArray(AbstractArray, DataWithCoords):\n         if not isinstance(other, DataArray):\n             raise TypeError(\"dot only operates on DataArrays.\")\n \n+        # Convert boolean weights to integers before performing the dot product\n+        if self.dtype == np.bool_:\n+            self = self.astype(np.int_)\n+        if other.dtype == np.bool_:\n+            other = other.astype(np.int_)\n+\n         return computation.dot(self, other, dims=dims)\n \n     def sortby(\n",
+      "new_source": "def dot(\n    self, other: \"DataArray\", dims: Union[Hashable, Sequence[Hashable], None] = None\n) -> \"DataArray\":\n    \"\"\"Perform dot product of two DataArrays along their shared dims.\n\n    Equivalent to taking taking tensordot over all shared dims.\n\n    Parameters\n    ----------\n    other : DataArray\n        The other array with which the dot product is performed.\n    dims: '...', hashable or sequence of hashables, optional\n        Which dimensions to sum over. Ellipsis ('...') sums over all dimensions.\n        If not specified, then all the common dimensions are summed over.\n\n    Returns\n    -------\n    result : DataArray\n        Array resulting from the dot product over all shared dimensions.\n\n    See also\n    --------\n    dot\n    numpy.tensordot\n\n    Examples\n    --------\n\n    >>> da_vals = np.arange(6 * 5 * 4).reshape((6, 5, 4))\n    >>> da = xr.DataArray(da_vals, dims=[\"x\", \"y\", \"z\"])\n    >>> dm_vals = np.arange(4)\n    >>> dm = xr.DataArray(dm_vals, dims=[\"z\"])\n\n    >>> dm.dims\n    ('z')\n\n    >>> da.dims\n    ('x', 'y', 'z')\n\n    >>> dot_result = da.dot(dm)\n    >>> dot_result.dims\n    ('x', 'y')\n\n    \"\"\"\n    if isinstance(other, Dataset):\n        raise NotImplementedError(\n            \"dot products are not yet supported with Dataset objects.\"\n        )\n    if not isinstance(other, DataArray):\n        raise TypeError(\"dot only operates on DataArrays.\")\n\n    # Convert boolean weights to integers before performing the dot product\n    if self.dtype == np.bool_:\n        self = self.astype(np.int_)\n    if other.dtype == np.bool_:\n        other = other.astype(np.int_)\n\n    return computation.dot(self, other, dims=dims)\n"
+    },
+    {
+      "snippet": "py:xarray/util/print_versions.py::show_versions",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix_think",
+      "prompt_hash": "dc07b508a19d9d1a",
+      "response_hash": "d5f46b001ba891f8",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "xarray/tests/test_print_versions.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 2,
+      "judge_s": 10.3,
+      "diff": "diff --git a/xarray/util/print_versions.py b/xarray/util/print_versions.py\nindex 96983c83..213615ac 100755\n--- a/xarray/util/print_versions.py\n+++ b/xarray/util/print_versions.py\n@@ -104,7 +104,7 @@ def show_versions(file=sys.stdout):\n         (\"h5netcdf\", lambda mod: mod.__version__),\n         (\"h5py\", lambda mod: mod.__version__),\n         (\"Nio\", lambda mod: mod.__version__),\n-        (\"zarr\", lambda mod: mod.__version__),\n+        (\"zarr\", lambda mod: mod.version__),\n         (\"cftime\", lambda mod: mod.__version__),\n         (\"nc_time_axis\", lambda mod: mod.__version__),\n         (\"PseudoNetCDF\", lambda mod: mod.__version__),\n",
+      "new_source": "def show_versions(file=sys.stdout):\n    \"\"\" print the versions of xarray and its dependencies\n\n    Parameters\n    ----------\n    file : file-like, optional\n        print to the given file-like object. Defaults to sys.stdout.\n    \"\"\"\n    sys_info = get_sys_info()\n\n    try:\n        sys_info.extend(netcdf_and_hdf5_versions())\n    except Exception as e:\n        print(f\"Error collecting netcdf / hdf5 version: {e}\")\n\n    deps = [\n        # (MODULE_NAME, f(mod) -> mod version)\n        (\"xarray\", lambda mod: mod.__version__),\n        (\"pandas\", lambda mod: mod.__version__),\n        (\"numpy\", lambda mod: mod.__version__),\n        (\"scipy\", lambda mod: mod.__version__),\n        # xarray optionals\n        (\"netCDF4\", lambda mod: mod.__version__),\n        (\"pydap\", lambda mod: mod.__version__),\n        (\"h5netcdf\", lambda mod: mod.__version__),\n        (\"h5py\", lambda mod: mod.__version__),\n        (\"Nio\", lambda mod: mod.__version__),\n        (\"zarr\", lambda mod: mod.version__),\n        (\"cftime\", lambda mod: mod.__version__),\n        (\"nc_time_axis\", lambda mod: mod.__version__),\n        (\"PseudoNetCDF\", lambda mod: mod.__version__),\n        (\"rasterio\", lambda mod: mod.__version__),\n        (\"cfgrib\", lambda mod: mod.__version__),\n        (\"iris\", lambda mod: mod.__version__),\n        (\"bottleneck\", lambda mod: mod.__version__),\n        (\"dask\", lambda mod: mod.__version__),\n        (\"distributed\", lambda mod: mod.__version__),\n        (\"matplotlib\", lambda mod: mod.__version__),\n        (\"cartopy\", lambda mod: mod.__version__),\n        (\"seaborn\", lambda mod: mod.__version__),\n        (\"numbagg\", lambda mod: mod.__version__),\n        (\"pint\", lambda mod: mod.__version__),\n        # xarray setup/test\n        (\"setuptools\", lambda mod: mod.__version__),\n        (\"pip\", lambda mod: mod.__version__),\n        (\"conda\", lambda mod: mod.__version__),\n        (\"pytest\", lambda mod: mod.__version__),\n        # Misc.\n        (\"IPython\", lambda mod: mod.__version__),\n        (\"sphinx\", lambda mod: mod.__version__),\n    ]\n\n    deps_blob = []\n    for (modname, ver_f) in deps:\n        try:\n            if modname in sys.modules:\n                mod = sys.modules[modname]\n            else:\n                mod = importlib.import_module(modname)\n        except Exception:\n            deps_blob.append((modname, None))\n        else:\n            try:\n                ver = ver_f(mod)\n                deps_blob.append((modname, ver))\n            except Exception:\n                deps_blob.append((modname, \"installed\"))\n\n    print(\"\\nINSTALLED VERSIONS\", file=file)\n    print(\"------------------\", file=file)\n\n    for k, stat in sys_info:\n        print(f\"{k}: {stat}\", file=file)\n\n    print(\"\", file=file)\n    for k, stat in deps_blob:\n        print(f\"{k}: {stat}\", file=file)\n"
+    },
+    {
+      "snippet": "py:xarray/core/computation.py::dot",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix",
+      "prompt_hash": "0c5e83107bda1ab7",
+      "response_hash": "f77cf35353233e2a",
+      "stage": "parse",
+      "reason": "syntax error: invalid syntax (line 6)"
+    },
+    {
+      "snippet": "py:xarray/core/common.py::DataWithCoords.weighted",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "9ec43e48569b45a1",
+      "response_hash": "e4792bd090d058b3",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "xarray/tests/test_coding_times.py",
+        "xarray/tests/test_dataarray.py",
+        "xarray/tests/test_dataset.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 4,
+      "judge_s": 52.8,
+      "diff": "diff --git a/xarray/core/common.py b/xarray/core/common.py\nindex e343f342..29ed17e2 100644\n--- a/xarray/core/common.py\n+++ b/xarray/core/common.py\n@@ -780,6 +780,10 @@ class DataWithCoords(SupportsArithmetic, AttrAccessMixin):\n         Missing values can be replaced by ``weights.fillna(0)``.\n         \"\"\"\n \n+        # Ensure weights are not NaN\n+        if np.isnan(weights).any():\n+            raise ValueError(\"Weights array cannot contain NaN values.\")\n+\n         return self._weighted_cls(self, weights)\n \n     def rolling(\n",
+      "new_source": "def weighted(self, weights):\n    \"\"\"\n    Weighted operations.\n\n    Parameters\n    ----------\n    weights : DataArray\n        An array of weights associated with the values in this Dataset.\n        Each value in the data contributes to the reduction operation\n        according to its associated weight.\n\n    Notes\n    -----\n    ``weights`` must be a DataArray and cannot contain missing values.\n    Missing values can be replaced by ``weights.fillna(0)``.\n    \"\"\"\n\n    # Ensure weights are not NaN\n    if np.isnan(weights).any():\n        raise ValueError(\"Weights array cannot contain NaN values.\")\n\n    return self._weighted_cls(self, weights)\n"
+    },
+    {
+      "snippet": "py:xarray/core/duck_array_ops.py::mean",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "76b753a7891b2c80",
+      "response_hash": "3db453435fafd8ab",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "xarray/tests/test_duck_array_ops.py",
+        "xarray/tests/test_dask.py",
+        "xarray/tests/test_utils.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 4,
+      "judge_s": 35.4,
+      "diff": "diff --git a/xarray/core/duck_array_ops.py b/xarray/core/duck_array_ops.py\nindex 1340b456..87deab5c 100644\n--- a/xarray/core/duck_array_ops.py\n+++ b/xarray/core/duck_array_ops.py\n@@ -526,10 +526,10 @@ def mean(array, axis=None, skipna=None, **kwargs):\n             )\n         offset = min(array)\n         timedeltas = datetime_to_numeric(array, offset, datetime_unit=\"us\")\n-        mean_timedeltas = _mean(timedeltas, axis=axis, skipna=skipna, **kwargs)\n+        mean_timedeltas = _mean(timedeltas * 1, axis=axis, skipna=skipna, **kwargs)\n         return _to_pytimedelta(mean_timedeltas, unit=\"us\") + offset\n     else:\n-        return _mean(array, axis=axis, skipna=skipna, **kwargs)\n+        return _mean(array * 1, axis=axis, skipna=skipna, **kwargs)\n \n \n mean.numeric_only = True  # type: ignore\n",
+      "new_source": "def mean(array, axis=None, skipna=None, **kwargs):\n    \"\"\"inhouse mean that can handle np.datetime64 or cftime.datetime\n    dtypes\"\"\"\n    from .common import _contains_cftime_datetimes\n\n    array = asarray(array)\n    if array.dtype.kind in \"Mm\":\n        offset = _datetime_nanmin(array)\n\n        # xarray always uses np.datetime64[ns] for np.datetime64 data\n        dtype = \"timedelta64[ns]\"\n        return (\n            _mean(\n                datetime_to_numeric(array, offset), axis=axis, skipna=skipna, **kwargs\n            ).astype(dtype)\n            + offset\n        )\n    elif _contains_cftime_datetimes(array):\n        if isinstance(array, dask_array_type):\n            raise NotImplementedError(\n                \"Computing the mean of an array containing \"\n                \"cftime.datetime objects is not yet implemented on \"\n                \"dask arrays.\"\n            )\n        offset = min(array)\n        timedeltas = datetime_to_numeric(array, offset, datetime_unit=\"us\")\n        mean_timedeltas = _mean(timedeltas * 1, axis=axis, skipna=skipna, **kwargs)\n        return _to_pytimedelta(mean_timedeltas, unit=\"us\") + offset\n    else:\n        return _mean(array * 1, axis=axis, skipna=skipna, **kwargs)\n"
+    },
+    {
+      "snippet": "py:xarray/core/weighted.py::Weighted.sum_of_weights",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "6bd92a92bfb99c9e",
+      "response_hash": "a9353acdc58bd278",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "304 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "xarray/tests/test_weighted.py"
+      ],
+      "regressions": 304,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 31.8
+    },
+    {
+      "snippet": "py:xarray/core/dataarray.py::DataArray.dot",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix",
+      "prompt_hash": "ce854731dd435655",
+      "response_hash": "49fe087776e07954",
+      "stage": "parse",
+      "reason": "syntax error: invalid syntax (line 5)"
+    },
+    {
+      "snippet": "py:xarray/util/print_versions.py::show_versions",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "dc07b508a19d9d1a",
+      "response_hash": "8077c5e83a0416ff",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "xarray/tests/test_print_versions.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [
+        "ISSUE REPRODUCED"
+      ],
+      "changed_lines": 6,
+      "judge_s": 6.2,
+      "diff": "diff --git a/xarray/util/print_versions.py b/xarray/util/print_versions.py\nindex 96983c83..79e73355 100755\n--- a/xarray/util/print_versions.py\n+++ b/xarray/util/print_versions.py\n@@ -140,6 +140,12 @@ def show_versions(file=sys.stdout):\n             deps_blob.append((modname, None))\n         else:\n             try:\n+                if isinstance(wgt.values, bool):\n+                    # Convert boolean weights to float\n+                    wgt_values_float = wgt.values.astype(float)\n+                else:\n+                    wgt_values_float = wgt.values\n+\n                 ver = ver_f(mod)\n                 deps_blob.append((modname, ver))\n             except Exception:\n",
+      "new_source": "def show_versions(file=sys.stdout):\n    \"\"\" print the versions of xarray and its dependencies\n\n    Parameters\n    ----------\n    file : file-like, optional\n        print to the given file-like object. Defaults to sys.stdout.\n    \"\"\"\n    sys_info = get_sys_info()\n\n    try:\n        sys_info.extend(netcdf_and_hdf5_versions())\n    except Exception as e:\n        print(f\"Error collecting netcdf / hdf5 version: {e}\")\n\n    deps = [\n        # (MODULE_NAME, f(mod) -> mod version)\n        (\"xarray\", lambda mod: mod.__version__),\n        (\"pandas\", lambda mod: mod.__version__),\n        (\"numpy\", lambda mod: mod.__version__),\n        (\"scipy\", lambda mod: mod.__version__),\n        # xarray optionals\n        (\"netCDF4\", lambda mod: mod.__version__),\n        (\"pydap\", lambda mod: mod.__version__),\n        (\"h5netcdf\", lambda mod: mod.__version__),\n        (\"h5py\", lambda mod: mod.__version__),\n        (\"Nio\", lambda mod: mod.__version__),\n        (\"zarr\", lambda mod: mod.__version__),\n        (\"cftime\", lambda mod: mod.__version__),\n        (\"nc_time_axis\", lambda mod: mod.__version__),\n        (\"PseudoNetCDF\", lambda mod: mod.__version__),\n        (\"rasterio\", lambda mod: mod.__version__),\n        (\"cfgrib\", lambda mod: mod.__version__),\n        (\"iris\", lambda mod: mod.__version__),\n        (\"bottleneck\", lambda mod: mod.__version__),\n        (\"dask\", lambda mod: mod.__version__),\n        (\"distributed\", lambda mod: mod.__version__),\n        (\"matplotlib\", lambda mod: mod.__version__),\n        (\"cartopy\", lambda mod: mod.__version__),\n        (\"seaborn\", lambda mod: mod.__version__),\n        (\"numbagg\", lambda mod: mod.__version__),\n        (\"pint\", lambda mod: mod.__version__),\n        # xarray setup/test\n        (\"setuptools\", lambda mod: mod.__version__),\n        (\"pip\", lambda mod: mod.__version__),\n        (\"conda\", lambda mod: mod.__version__),\n        (\"pytest\", lambda mod: mod.__version__),\n        # Misc.\n        (\"IPython\", lambda mod: mod.__version__),\n        (\"sphinx\", lambda mod: mod.__version__),\n    ]\n\n    deps_blob = []\n    for (modname, ver_f) in deps:\n        try:\n            if modname in sys.modules:\n                mod = sys.modules[modname]\n            else:\n                mod = importlib.import_module(modname)\n        except Exception:\n            deps_blob.append((modname, None))\n        else:\n            try:\n                if isinstance(wgt.values, bool):\n                    # Convert boolean weights to float\n                    wgt_values_float = wgt.values.astype(float)\n                else:\n                    wgt_values_float = wgt.values\n\n                ver = ver_f(mod)\n                deps_blob.append((modname, ver))\n            except Exception:\n                deps_blob.append((modname, \"installed\"))\n\n    print(\"\\nINSTALLED VERSIONS\", file=file)\n    print(\"------------------\", file=file)\n\n    for k, stat in sys_info:\n        print(f\"{k}: {stat}\", file=file)\n\n    print(\"\", file=file)\n    for k, stat in deps_blob:\n        print(f\"{k}: {stat}\", file=file)\n"
+    },
+    {
+      "snippet": "py:xarray/core/computation.py::dot",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "d50503e042cdc50c",
+      "response_hash": "3950d1602064f42d",
+      "stage": "parse",
+      "reason": "no code block in response"
+    }
+  ],
+  "validated_repro": 1,
+  "stop": "budget",
+  "submission": {
+    "snippet": "py:xarray/util/print_versions.py::show_versions",
+    "model": "qwen2.5-coder-3b",
+    "template": "fix_think",
+    "diff": "diff --git a/xarray/util/print_versions.py b/xarray/util/print_versions.py\nindex 96983c83..213615ac 100755\n--- a/xarray/util/print_versions.py\n+++ b/xarray/util/print_versions.py\n@@ -104,7 +104,7 @@ def show_versions(file=sys.stdout):\n         (\"h5netcdf\", lambda mod: mod.__version__),\n         (\"h5py\", lambda mod: mod.__version__),\n         (\"Nio\", lambda mod: mod.__version__),\n-        (\"zarr\", lambda mod: mod.__version__),\n+        (\"zarr\", lambda mod: mod.version__),\n         (\"cftime\", lambda mod: mod.__version__),\n         (\"nc_time_axis\", lambda mod: mod.__version__),\n         (\"PseudoNetCDF\", lambda mod: mod.__version__),\n",
+    "votes": 0,
+    "changed_lines": 2,
+    "new_source": "def show_versions(file=sys.stdout):\n    \"\"\" print the versions of xarray and its dependencies\n\n    Parameters\n    ----------\n    file : file-like, optional\n        print to the given file-like object. Defaults to sys.stdout.\n    \"\"\"\n    sys_info = get_sys_info()\n\n    try:\n        sys_info.extend(netcdf_and_hdf5_versions())\n    except Exception as e:\n        print(f\"Error collecting netcdf / hdf5 version: {e}\")\n\n    deps = [\n        # (MODULE_NAME, f(mod) -> mod version)\n        (\"xarray\", lambda mod: mod.__version__),\n        (\"pandas\", lambda mod: mod.__version__),\n        (\"numpy\", lambda mod: mod.__version__),\n        (\"scipy\", lambda mod: mod.__version__),\n        # xarray optionals\n        (\"netCDF4\", lambda mod: mod.__version__),\n        (\"pydap\", lambda mod: mod.__version__),\n        (\"h5netcdf\", lambda mod: mod.__version__),\n        (\"h5py\", lambda mod: mod.__version__),\n        (\"Nio\", lambda mod: mod.__version__),\n        (\"zarr\", lambda mod: mod.version__),\n        (\"cftime\", lambda mod: mod.__version__),\n        (\"nc_time_axis\", lambda mod: mod.__version__),\n        (\"PseudoNetCDF\", lambda mod: mod.__version__),\n        (\"rasterio\", lambda mod: mod.__version__),\n        (\"cfgrib\", lambda mod: mod.__version__),\n        (\"iris\", lambda mod: mod.__version__),\n        (\"bottleneck\", lambda mod: mod.__version__),\n        (\"dask\", lambda mod: mod.__version__),\n        (\"distributed\", lambda mod: mod.__version__),\n        (\"matplotlib\", lambda mod: mod.__version__),\n        (\"cartopy\", lambda mod: mod.__version__),\n        (\"seaborn\", lambda mod: mod.__version__),\n        (\"numbagg\", lambda mod: mod.__version__),\n        (\"pint\", lambda mod: mod.__version__),\n        # xarray setup/test\n        (\"setuptools\", lambda mod: mod.__version__),\n        (\"pip\", lambda mod: mod.__version__),\n        (\"conda\", lambda mod: mod.__version__),\n        (\"pytest\", lambda mod: mod.__version__),\n        # Misc.\n        (\"IPython\", lambda mod: mod.__version__),\n        (\"sphinx\", lambda mod: mod.__version__),\n    ]\n\n    deps_blob = []\n    for (modname, ver_f) in deps:\n        try:\n            if modname in sys.modules:\n                mod = sys.modules[modname]\n            else:\n                mod = importlib.import_module(modname)\n        except Exception:\n            deps_blob.append((modname, None))\n        else:\n            try:\n                ver = ver_f(mod)\n                deps_blob.append((modname, ver))\n            except Exception:\n                deps_blob.append((modname, \"installed\"))\n\n    print(\"\\nINSTALLED VERSIONS\", file=file)\n    print(\"------------------\", file=file)\n\n    for k, stat in sys_info:\n        print(f\"{k}: {stat}\", file=file)\n\n    print(\"\", file=file)\n    for k, stat in deps_blob:\n        print(f\"{k}: {stat}\", file=file)\n",
+    "prompt_hash": "dc07b508a19d9d1a",
+    "response_hash": "d5f46b001ba891f8"
+  },
+  "search_s": 1213.9,
+  "llm_calls": 11,
+  "tokens_in": 15748,
+  "tokens_out": 5186,
+  "arms": {
+    "qwen2.5-coder-7b/fix": 0.19999999999999998,
+    "qwen2.5-coder-7b/fix_think": 0.3,
+    "qwen2.5-coder-3b/fix": 0.19999999999999998,
+    "qwen2.5-coder-3b/fix_think": 0.3,
+    "qwen2.5-coder-1.5b/fix": 0.3,
+    "qwen2.5-coder-1.5b/fix_think": 0.19999999999999998
+  },
+  "grade": {
+    "resolved": false,
+    "applied": true,
+    "fail_to_pass": {
+      "success": 0,
+      "failure": 2
+    },
+    "pass_to_pass": {
+      "success": 958,
+      "failure": 0
+    }
+  },
+  "grade_s": 26.4,
+  "wall_s": 1302.5,
+  "diagnosis": {
+    "gold_files": [
+      "xarray/core/weighted.py"
+    ],
+    "localised_file_hit": true,
+    "localised_line_hit": false,
+    "submission_files": [
+      "xarray/util/print_versions.py"
+    ],
+    "submission_in_gold_file": false,
+    "gold_changed_lines": 9
+  }
+}

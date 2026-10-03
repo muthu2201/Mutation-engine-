@@ -1,0 +1,22 @@
+diff --git a/sphinx/application.py b/sphinx/application.py
+index 4a75a83fe..a8ed96f23 100644
+--- a/sphinx/application.py
++++ b/sphinx/application.py
+@@ -163,7 +163,7 @@ class Sphinx:
+ 
+         if self.srcdir == self.outdir:
+             raise ApplicationError(__('Source directory and destination '
+-                                      'directory cannot be identical'))
++     'directory cannot be identical'))
+ 
+         self.parallel = parallel
+ 
+@@ -223,7 +223,7 @@ class Sphinx:
+         self._init_i18n()
+ 
+         # check the Sphinx version if requested
+-        if self.config.needs_sphinx and self.config.needs_sphinx > sphinx.__display_version__:
++        if self.config.needs_sphinx and self.config.needs_sphinx > sphinx.__version__:
+             raise VersionRequirementError(
+                 __('This project needs at least Sphinx v%s and therefore cannot '
+                    'be built with this version.') % self.config.needs_sphinx)

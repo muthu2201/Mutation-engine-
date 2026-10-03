@@ -22,26 +22,118 @@ Every number below is generated from the run's records by `stress/render_swebenc
 ## 1. Result
 
 <!-- RESULTS:SWE_SUMMARY -->
+
+**Resolved: 2 / 30** (6.7%, Wilson 95% CI 1.8–21.3%), graded by the official SWE-bench harness. 30 of 30 pre-registered instances ran.
+
+| | count |
+|---|---|
+| instances run | 30 |
+| a patch was submitted (passed L0–L2) | 30 |
+| resolved (all FAIL_TO_PASS and PASS_TO_PASS pass) | 2 |
+| infrastructure errors | 0 |
+| wall clock, all instances | 8.0 h |
+| LLM calls | 450 |
+
 <!-- /RESULTS:SWE_SUMMARY -->
 
 ## 2. Where candidates are lost (the funnel)
 
 <!-- RESULTS:SWE_FUNNEL -->
+
+| stage | candidates |
+|---|---|
+| proposals | 390 |
+| parsed and spliced | 227 |
+| passed L0 (patch policy) | 220 |
+| passed L1 (applies, compiles) | 216 |
+| passed L2 (no regressions) | 164 |
+
+| reproduction script at base_commit | scripts |
+|---|---|
+| unparseable | 29 |
+| NONE | 18 |
+| ISSUE REPRODUCED | 10 |
+| ISSUE RESOLVED | 3 |
+
+| why a response was not a candidate | count |
+|---|---|
+| parse: identical to the original | 76 |
+| parse: response does not define __init__() | 10 |
+| parse: no code block in response | 4 |
+| parse: response does not define fit() | 3 |
+| parse: response does not define _eval_evalf() | 3 |
+| parse: response does not define authenticate() | 2 |
+| parse: syntax error: '(' was never closed (line 9) | 2 |
+| parse: syntax error: '(' was never closed (line 19) | 2 |
+
 <!-- /RESULTS:SWE_FUNNEL -->
 
 ## 3. Localisation
 
 <!-- RESULTS:SWE_LOCALISATION -->
+
+Computed after grading, from the gold patch, for diagnosis only:
+
+| | instances |
+|---|---|
+| a localised snippet is in a file the gold patch changes | 21 / 30 |
+| a localised snippet overlaps the gold patch's changed lines | 16 / 30 |
+| the submission edits a file the gold patch changes | 14 / 30 |
+
 <!-- /RESULTS:SWE_LOCALISATION -->
 
 ## 4. Which arms produced what
 
 <!-- RESULTS:SWE_ARMS -->
+
+| arm (model / prompt) | proposals | passed L0–L2 | resolved a reproduction | resolved instances |
+|---|---|---|---|---|
+| qwen2.5-coder-1.5b / fix | 153 | 65 | 0 | 0 |
+| qwen2.5-coder-1.5b / fix_think | 67 | 27 | 0 | 0 |
+| qwen2.5-coder-3b / fix | 44 | 14 | 0 | 0 |
+| qwen2.5-coder-3b / fix_think | 38 | 15 | 0 | 0 |
+| qwen2.5-coder-7b / fix | 51 | 22 | 0 | 0 |
+| qwen2.5-coder-7b / fix_think | 37 | 21 | 0 | 2 |
+
 <!-- /RESULTS:SWE_ARMS -->
 
 ## 5. Every instance
 
 <!-- RESULTS:SWE_INSTANCES -->
+
+| instance | localised (file / lines) | validated repro | candidates ok / proposed | submitted | resolved | wall min |
+|---|---|---|---|---|---|---|
+| `astropy__astropy-7336` | ✓ / ✗ | 0/2 | 3 / 14 | yes | no | 7 |
+| `django__django-11099` | ✓ / ✓ | 1/2 | 8 / 14 | yes | no | 6 |
+| `django__django-11451` | ✓ / ✓ | 0/2 | 5 / 14 | yes | **yes** | 16 |
+| `django__django-11490` | ✗ / ✗ | 0/2 | 5 / 14 | yes | no | 9 |
+| `django__django-11951` | ✓ / ✓ | 0/2 | 4 / 14 | yes | no | 16 |
+| `django__django-12276` | ✓ / ✓ | 0/2 | 11 / 14 | yes | no | 5 |
+| `django__django-12304` | ✗ / ✗ | 0/2 | 5 / 11 | yes | no | 23 |
+| `django__django-13109` | ✓ / ✓ | 0/2 | 8 / 14 | yes | **yes** | 20 |
+| `django__django-13112` | ✗ / ✗ | 0/2 | 4 / 14 | yes | no | 13 |
+| `django__django-13821` | ✗ / ✗ | 1/2 | 7 / 14 | yes | no | 7 |
+| `django__django-13933` | ✓ / ✓ | 0/2 | 8 / 14 | yes | no | 8 |
+| `django__django-14580` | ✗ / ✗ | 0/2 | 4 / 14 | yes | no | 12 |
+| `django__django-15569` | ✓ / ✓ | 0/2 | 7 / 14 | yes | no | 14 |
+| `matplotlib__matplotlib-20859` | ✓ / ✗ | 1/2 | 4 / 10 | yes | no | 26 |
+| `matplotlib__matplotlib-24177` | ✗ / ✗ | 0/2 | 5 / 14 | yes | no | 17 |
+| `matplotlib__matplotlib-25287` | ✗ / ✗ | 0/2 | 2 / 13 | yes | no | 29 |
+| `matplotlib__matplotlib-25311` | ✗ / ✗ | 1/2 | 2 / 13 | yes | no | 23 |
+| `pydata__xarray-4075` | ✓ / ✗ | 1/2 | 5 / 9 | yes | no | 22 |
+| `pydata__xarray-4629` | ✗ / ✗ | 2/2 | 6 / 13 | yes | no | 22 |
+| `pytest-dev__pytest-7205` | ✓ / ✓ | 0/2 | 3 / 14 | yes | no | 14 |
+| `pytest-dev__pytest-7982` | ✓ / ✓ | 0/2 | 8 / 14 | yes | no | 10 |
+| `scikit-learn__scikit-learn-13135` | ✓ / ✓ | 0/2 | 4 / 12 | yes | no | 22 |
+| `sphinx-doc__sphinx-8621` | ✓ / ✓ | 0/2 | 11 / 14 | yes | no | 15 |
+| `sphinx-doc__sphinx-9281` | ✓ / ✗ | 0/2 | 8 / 14 | yes | no | 12 |
+| `sphinx-doc__sphinx-9698` | ✓ / ✓ | 0/2 | 9 / 14 | yes | no | 16 |
+| `sphinx-doc__sphinx-9711` | ✓ / ✓ | 0/2 | 9 / 12 | yes | no | 21 |
+| `sympy__sympy-12096` | ✓ / ✓ | 1/2 | 1 / 12 | yes | no | 21 |
+| `sympy__sympy-12481` | ✓ / ✓ | 1/2 | 3 / 14 | yes | no | 17 |
+| `sympy__sympy-15809` | ✓ / ✗ | 1/2 | 2 / 5 | yes | no | 21 |
+| `sympy__sympy-16886` | ✓ / ✓ | 0/2 | 3 / 14 | yes | no | 15 |
+
 <!-- /RESULTS:SWE_INSTANCES -->
 
 ## 6. Memorisation probes (post hoc; ADR 0011 addendum)

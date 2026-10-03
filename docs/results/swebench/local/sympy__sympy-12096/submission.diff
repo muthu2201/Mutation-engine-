@@ -1,0 +1,17 @@
+diff --git a/sympy/core/evalf.py b/sympy/core/evalf.py
+index 9e75733a05..98d8e522a0 100644
+--- a/sympy/core/evalf.py
++++ b/sympy/core/evalf.py
+@@ -1321,6 +1321,12 @@ def evalf(x, prec, options):
+         check_target(x, r, prec)
+     return r
+ 
++def _eval_evalf(self, prec):
++    if isinstance(self.func, implemented_function):
++        return self.func._imp_(self.args[0]).evalf(prec=prec)
++    else:
++        return super(Function, self)._eval_evalf(prec)
++
+ 
+ class EvalfMixin(object):
+     """Mixin class adding evalf capabililty."""

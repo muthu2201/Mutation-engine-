@@ -1,0 +1,332 @@
+{
+  "instance_id": "matplotlib__matplotlib-25287",
+  "repo": "matplotlib/matplotlib",
+  "version": "3.7",
+  "base_commit": "f8ffce6d44127d4ea7d6491262ab30046b03294b",
+  "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.matplotlib__matplotlib-25287:latest",
+  "started_at": "2026-10-03T06:04:50.343506+00:00",
+  "image_digest": "ghcr.io/epoch-research/swe-bench.eval.x86_64.matplotlib__matplotlib-25287@sha256:a7b4fcc4101b49d1769676a6242246b52efb3860f4e0d445d96d5ca5ba06bfca",
+  "pull_s": 67.0,
+  "files_considered": 243,
+  "ranked_files": [
+    {
+      "file": "lib/matplotlib/axis.py",
+      "score": 4.0
+    },
+    {
+      "file": "lib/matplotlib/pyplot.py",
+      "score": 2.09
+    },
+    {
+      "file": "lib/matplotlib/figure.py",
+      "score": 2.072
+    },
+    {
+      "file": "lib/matplotlib/artist.py",
+      "score": 1.438
+    },
+    {
+      "file": "lib/matplotlib/axes/_base.py",
+      "score": 1.35
+    },
+    {
+      "file": "lib/matplotlib/transforms.py",
+      "score": 1.308
+    },
+    {
+      "file": "lib/matplotlib/axes/_axes.py",
+      "score": 1.063
+    },
+    {
+      "file": "lib/matplotlib/backend_bases.py",
+      "score": 1.024
+    }
+  ],
+  "localised": [
+    {
+      "file": "lib/matplotlib/pyplot.py",
+      "name": "axes",
+      "kind": "function",
+      "start": 1016,
+      "end": 1100,
+      "score": 2.432
+    },
+    {
+      "file": "lib/matplotlib/figure.py",
+      "name": "FigureBase.add_subplot",
+      "kind": "function",
+      "start": 631,
+      "end": 758,
+      "score": 2.428
+    },
+    {
+      "file": "lib/matplotlib/transforms.py",
+      "name": "blended_transform_factory",
+      "kind": "function",
+      "start": 2329,
+      "end": 2340,
+      "score": 2.371
+    },
+    {
+      "file": "lib/matplotlib/figure.py",
+      "name": "Figure.axes",
+      "kind": "function",
+      "start": 2701,
+      "end": 2713,
+      "score": 2.334
+    },
+    {
+      "file": "lib/matplotlib/figure.py",
+      "name": "SubFigure.axes",
+      "kind": "function",
+      "start": 2294,
+      "end": 2307,
+      "score": 2.329
+    },
+    {
+      "file": "lib/matplotlib/figure.py",
+      "name": "SubplotParams.update",
+      "kind": "function",
+      "start": 144,
+      "end": 166,
+      "score": 2.306
+    }
+  ],
+  "repro": [
+    {
+      "model": "qwen2.5-coder-7b",
+      "outcome": "ISSUE RESOLVED",
+      "script_hash": "91274a989839864a"
+    },
+    {
+      "model": "qwen2.5-coder-3b",
+      "outcome": "unparseable",
+      "script_hash": null
+    }
+  ],
+  "candidates": [
+    {
+      "snippet": "py:lib/matplotlib/pyplot.py::axes",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix_think",
+      "prompt_hash": "c4de44f2669c078d",
+      "response_hash": "f32303fe46752bac",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "13 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "lib/matplotlib/tests/test_pyplot.py"
+      ],
+      "regressions": 13,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 16,
+      "judge_s": 10.3
+    },
+    {
+      "snippet": "py:lib/matplotlib/figure.py::FigureBase.add_subplot",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix",
+      "prompt_hash": "ec181b74b27772fc",
+      "response_hash": "f10fe660605f25c2",
+      "stage": "parse",
+      "reason": "syntax error: unmatched ')' (line 10)"
+    },
+    {
+      "snippet": "py:lib/matplotlib/transforms.py::blended_transform_factory",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "98babf91b1f615b4",
+      "response_hash": "6ce9289e28f5796e",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "lib/matplotlib/tests/test_transforms.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 3,
+      "judge_s": 7.8,
+      "diff": "diff --git a/lib/matplotlib/transforms.py b/lib/matplotlib/transforms.py\nindex f545bd7a1f..457263f931 100644\n--- a/lib/matplotlib/transforms.py\n+++ b/lib/matplotlib/transforms.py\n@@ -2337,7 +2337,8 @@ def blended_transform_factory(x_transform, y_transform):\n     if (isinstance(x_transform, Affine2DBase) and\n             isinstance(y_transform, Affine2DBase)):\n         return BlendedAffine2D(x_transform, y_transform)\n-    return BlendedGenericTransform(x_transform, y_transform)\n+    else:\n+        return BlendedGenericTransform(x_transform, y_transform)\n \n \n class CompositeGenericTransform(Transform):\n",
+      "new_source": "def blended_transform_factory(x_transform, y_transform):\n    \"\"\"\n    Create a new \"blended\" transform using *x_transform* to transform\n    the *x*-axis and *y_transform* to transform the *y*-axis.\n\n    A faster version of the blended transform is returned for the case\n    where both child transforms are affine.\n    \"\"\"\n    if (isinstance(x_transform, Affine2DBase) and\n            isinstance(y_transform, Affine2DBase)):\n        return BlendedAffine2D(x_transform, y_transform)\n    else:\n        return BlendedGenericTransform(x_transform, y_transform)\n"
+    },
+    {
+      "snippet": "py:lib/matplotlib/figure.py::Figure.axes",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "02f19127cf38b1ea",
+      "response_hash": "27b3c2f78153722e",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "70 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "lib/matplotlib/tests/test_figure.py"
+      ],
+      "regressions": 70,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 8,
+      "judge_s": 59.1
+    },
+    {
+      "snippet": "py:lib/matplotlib/figure.py::SubFigure.axes",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "92bc1fea8668bab0",
+      "response_hash": "49d862d775547a1e",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "9 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "lib/matplotlib/tests/test_figure.py"
+      ],
+      "regressions": 9,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 8,
+      "judge_s": 16.0
+    },
+    {
+      "snippet": "py:lib/matplotlib/figure.py::SubplotParams.update",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "99b36e8d6c801644",
+      "response_hash": "fe4ecf1a74874da7",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:lib/matplotlib/pyplot.py::axes",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "c4de44f2669c078d",
+      "response_hash": "a3eb5fa0513a01b9",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:lib/matplotlib/figure.py::FigureBase.add_subplot",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "ec181b74b27772fc",
+      "response_hash": "e16b9c9d2e19d0a8",
+      "stage": "parse",
+      "reason": "syntax error: unmatched ')' (line 9)"
+    },
+    {
+      "snippet": "py:lib/matplotlib/transforms.py::blended_transform_factory",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix",
+      "prompt_hash": "440640899918ad66",
+      "response_hash": "bc0ccd9f63ae8377",
+      "stage": "parse",
+      "reason": "syntax error: '(' was never closed (line 9)"
+    },
+    {
+      "snippet": "py:lib/matplotlib/figure.py::Figure.axes",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix",
+      "prompt_hash": "ba3529d28b15d35a",
+      "response_hash": "9cbcae368c6935e5",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:lib/matplotlib/figure.py::SubFigure.axes",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "0edffa30e13522a3",
+      "response_hash": "44741e0bc4fe16a2",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:lib/matplotlib/figure.py::SubplotParams.update",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "99b36e8d6c801644",
+      "response_hash": "1a9535e1fb114738",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "lib/matplotlib/tests/test_figure.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 7,
+      "judge_s": 16.5,
+      "diff": "diff --git a/lib/matplotlib/figure.py b/lib/matplotlib/figure.py\nindex 5b26f72845..b7daf88003 100644\n--- a/lib/matplotlib/figure.py\n+++ b/lib/matplotlib/figure.py\n@@ -147,11 +147,10 @@ class SubplotParams:\n         Update the dimensions of the passed parameters. *None* means unchanged.\n         \"\"\"\n         if ((left if left is not None else self.left)\n-                >= (right if right is not None else self.right)):\n-            raise ValueError('left cannot be >= right')\n-        if ((bottom if bottom is not None else self.bottom)\n+                >= (right if right is not None else self.right) or \n+            (bottom if bottom is not None else self.bottom)\n                 >= (top if top is not None else self.top)):\n-            raise ValueError('bottom cannot be >= top')\n+            raise ValueError('left cannot be >= right or bottom cannot be >= top')\n         if left is not None:\n             self.left = left\n         if right is not None:\n",
+      "new_source": "def update(self, left=None, bottom=None, right=None, top=None,\n           wspace=None, hspace=None):\n    \"\"\"\n    Update the dimensions of the passed parameters. *None* means unchanged.\n    \"\"\"\n    if ((left if left is not None else self.left)\n            >= (right if right is not None else self.right) or \n        (bottom if bottom is not None else self.bottom)\n            >= (top if top is not None else self.top)):\n        raise ValueError('left cannot be >= right or bottom cannot be >= top')\n    if left is not None:\n        self.left = left\n    if right is not None:\n        self.right = right\n    if bottom is not None:\n        self.bottom = bottom\n    if top is not None:\n        self.top = top\n    if wspace is not None:\n        self.wspace = wspace\n    if hspace is not None:\n        self.hspace = hspace\n"
+    },
+    {
+      "snippet": "py:lib/matplotlib/pyplot.py::axes",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix",
+      "prompt_hash": "0459cd9d302a277a",
+      "response_hash": "89cf96b33198520b",
+      "stage": "parse",
+      "reason": "replacement has 232 lines for a 85-line snippet"
+    }
+  ],
+  "validated_repro": 0,
+  "stop": "budget",
+  "submission": {
+    "snippet": "py:lib/matplotlib/transforms.py::blended_transform_factory",
+    "model": "qwen2.5-coder-1.5b",
+    "template": "fix_think",
+    "diff": "diff --git a/lib/matplotlib/transforms.py b/lib/matplotlib/transforms.py\nindex f545bd7a1f..457263f931 100644\n--- a/lib/matplotlib/transforms.py\n+++ b/lib/matplotlib/transforms.py\n@@ -2337,7 +2337,8 @@ def blended_transform_factory(x_transform, y_transform):\n     if (isinstance(x_transform, Affine2DBase) and\n             isinstance(y_transform, Affine2DBase)):\n         return BlendedAffine2D(x_transform, y_transform)\n-    return BlendedGenericTransform(x_transform, y_transform)\n+    else:\n+        return BlendedGenericTransform(x_transform, y_transform)\n \n \n class CompositeGenericTransform(Transform):\n",
+    "votes": 0,
+    "changed_lines": 3,
+    "new_source": "def blended_transform_factory(x_transform, y_transform):\n    \"\"\"\n    Create a new \"blended\" transform using *x_transform* to transform\n    the *x*-axis and *y_transform* to transform the *y*-axis.\n\n    A faster version of the blended transform is returned for the case\n    where both child transforms are affine.\n    \"\"\"\n    if (isinstance(x_transform, Affine2DBase) and\n            isinstance(y_transform, Affine2DBase)):\n        return BlendedAffine2D(x_transform, y_transform)\n    else:\n        return BlendedGenericTransform(x_transform, y_transform)\n",
+    "prompt_hash": "98babf91b1f615b4",
+    "response_hash": "6ce9289e28f5796e"
+  },
+  "search_s": 1568.7,
+  "llm_calls": 15,
+  "tokens_in": 18669,
+  "tokens_out": 6193,
+  "arms": {
+    "qwen2.5-coder-7b/fix": 0.12,
+    "qwen2.5-coder-7b/fix_think": 0.19999999999999998,
+    "qwen2.5-coder-3b/fix": 0.19999999999999998,
+    "qwen2.5-coder-3b/fix_think": 0.3,
+    "qwen2.5-coder-1.5b/fix": 0.26666666666666666,
+    "qwen2.5-coder-1.5b/fix_think": 0.26666666666666666
+  },
+  "grade": {
+    "resolved": false,
+    "applied": true,
+    "fail_to_pass": {
+      "success": 0,
+      "failure": 2
+    },
+    "pass_to_pass": {
+      "success": 786,
+      "failure": 0
+    }
+  },
+  "grade_s": 93.5,
+  "wall_s": 1750.6,
+  "diagnosis": {
+    "gold_files": [
+      "lib/matplotlib/axis.py"
+    ],
+    "localised_file_hit": false,
+    "localised_line_hit": false,
+    "submission_files": [
+      "lib/matplotlib/transforms.py"
+    ],
+    "submission_in_gold_file": false,
+    "gold_changed_lines": 15
+  }
+}

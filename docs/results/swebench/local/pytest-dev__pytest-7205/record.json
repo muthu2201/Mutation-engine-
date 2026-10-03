@@ -1,0 +1,337 @@
+{
+  "instance_id": "pytest-dev__pytest-7205",
+  "repo": "pytest-dev/pytest",
+  "version": "5.4",
+  "base_commit": "5e7f1ab4bf58e473e5d7f878eb2b499d7deabd29",
+  "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.pytest-dev__pytest-7205:latest",
+  "started_at": "2026-10-03T07:40:43.056325+00:00",
+  "image_digest": "ghcr.io/epoch-research/swe-bench.eval.x86_64.pytest-dev__pytest-7205@sha256:2d3474311e9b4c2d2d13fb07a739d4e18188395eefbb62223ef8f232bd370cad",
+  "pull_s": 18.5,
+  "files_considered": 74,
+  "ranked_files": [
+    {
+      "file": "src/_pytest/fixtures.py",
+      "score": 5.5
+    },
+    {
+      "file": "src/_pytest/runner.py",
+      "score": 5.167
+    },
+    {
+      "file": "src/_pytest/setuponly.py",
+      "score": 4.952
+    },
+    {
+      "file": "src/_pytest/python.py",
+      "score": 4.892
+    },
+    {
+      "file": "src/_pytest/capture.py",
+      "score": 2.067
+    },
+    {
+      "file": "src/_pytest/hookspec.py",
+      "score": 1.726
+    },
+    {
+      "file": "src/_pytest/config/__init__.py",
+      "score": 1.604
+    },
+    {
+      "file": "src/_pytest/nodes.py",
+      "score": 1.587
+    }
+  ],
+  "localised": [
+    {
+      "file": "src/_pytest/fixtures.py",
+      "name": "FixtureDef.execute",
+      "kind": "function",
+      "start": 900,
+      "end": 925,
+      "score": 4.044
+    },
+    {
+      "file": "src/_pytest/runner.py",
+      "name": "CallInfo.from_call",
+      "kind": "function",
+      "start": 252,
+      "end": 277,
+      "score": 3.839
+    },
+    {
+      "file": "src/_pytest/setuponly.py",
+      "name": "_show_fixture_action",
+      "kind": "function",
+      "start": 46,
+      "end": 74,
+      "score": 3.45
+    },
+    {
+      "file": "src/_pytest/fixtures.py",
+      "name": "FixtureRequest._get_active_fixturedef",
+      "kind": "function",
+      "start": 495,
+      "end": 511,
+      "score": 3.222
+    },
+    {
+      "file": "src/_pytest/fixtures.py",
+      "name": "pytest_fixture_setup",
+      "kind": "function",
+      "start": 962,
+      "end": 980,
+      "score": 3.208
+    },
+    {
+      "file": "src/_pytest/setuponly.py",
+      "name": "pytest_fixture_setup",
+      "kind": "function",
+      "start": 20,
+      "end": 34,
+      "score": 3.111
+    }
+  ],
+  "repro": [
+    {
+      "model": "qwen2.5-coder-7b",
+      "outcome": "unparseable",
+      "script_hash": null
+    },
+    {
+      "model": "qwen2.5-coder-3b",
+      "outcome": "unparseable",
+      "script_hash": null
+    }
+  ],
+  "candidates": [
+    {
+      "snippet": "py:src/_pytest/fixtures.py::FixtureDef.execute",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "b214b7a02d6d02ee",
+      "response_hash": "4b7addde35910443",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 4,
+      "judge_s": 0.8,
+      "diff": "diff --git a/src/_pytest/fixtures.py b/src/_pytest/fixtures.py\nindex 638ed89b1..8f03b4acd 100644\n--- a/src/_pytest/fixtures.py\n+++ b/src/_pytest/fixtures.py\n@@ -922,6 +922,10 @@ class FixtureDef:\n             assert self.cached_result is None\n \n         hook = self._fixturemanager.session.gethookproxy(request.node.fspath)\n+        if isinstance(self.cached_result, bytes):\n+            result = safe_getattr(result, \"saferepr\")\n+        else:\n+            result = self.cached_result\n         return hook.pytest_fixture_setup(fixturedef=self, request=request)\n \n     def cache_key(self, request):\n",
+      "new_source": "def execute(self, request):\n    # get required arguments and register our own finish()\n    # with their finalization\n    for argname in self.argnames:\n        fixturedef = request._get_active_fixturedef(argname)\n        if argname != \"request\":\n            fixturedef.addfinalizer(functools.partial(self.finish, request=request))\n\n    my_cache_key = self.cache_key(request)\n    if self.cached_result is not None:\n        result, cache_key, err = self.cached_result\n        # note: comparison with `==` can fail (or be expensive) for e.g.\n        # numpy arrays (#6497)\n        if my_cache_key is cache_key:\n            if err is not None:\n                _, val, tb = err\n                raise val.with_traceback(tb)\n            else:\n                return result\n        # we have a previous but differently parametrized fixture instance\n        # so we need to tear it down before creating a new one\n        self.finish(request)\n        assert self.cached_result is None\n\n    hook = self._fixturemanager.session.gethookproxy(request.node.fspath)\n    if isinstance(self.cached_result, bytes):\n        result = safe_getattr(result, \"saferepr\")\n    else:\n        result = self.cached_result\n    return hook.pytest_fixture_setup(fixturedef=self, request=request)\n"
+    },
+    {
+      "snippet": "py:src/_pytest/runner.py::CallInfo.from_call",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "c49ddb636905015d",
+      "response_hash": "5165c0e55635f5f6",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:src/_pytest/setuponly.py::_show_fixture_action",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "c2ba185950d2c07c",
+      "response_hash": "5d1f948fb8a2e51b",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "9 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "testing/test_setuponly.py"
+      ],
+      "regressions": 9,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 4,
+      "judge_s": 8.1
+    },
+    {
+      "snippet": "py:src/_pytest/fixtures.py::FixtureRequest._get_active_fixturedef",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix",
+      "prompt_hash": "4b7e17a4bdbe61ec",
+      "response_hash": "8416e9cea376d276",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:src/_pytest/fixtures.py::pytest_fixture_setup",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "1e2915f34911edfc",
+      "response_hash": "e267081fef670bb8",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:src/_pytest/setuponly.py::pytest_fixture_setup",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "880eeebeb2c74e2b",
+      "response_hash": "46d1c6a9957e66cf",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:src/_pytest/fixtures.py::FixtureDef.execute",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "b214b7a02d6d02ee",
+      "response_hash": "d83da204d0142906",
+      "stage": "parse",
+      "reason": "response does not define execute()"
+    },
+    {
+      "snippet": "py:src/_pytest/runner.py::CallInfo.from_call",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "c49ddb636905015d",
+      "response_hash": "2b6abcee05eb79f8",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:src/_pytest/setuponly.py::_show_fixture_action",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix_think",
+      "prompt_hash": "c2ba185950d2c07c",
+      "response_hash": "2ff77984183196df",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "9 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "testing/test_setuponly.py"
+      ],
+      "regressions": 9,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 3,
+      "judge_s": 4.7
+    },
+    {
+      "snippet": "py:src/_pytest/fixtures.py::FixtureRequest._get_active_fixturedef",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix",
+      "prompt_hash": "4b7e17a4bdbe61ec",
+      "response_hash": "57e1986d62f43007",
+      "stage": "parse",
+      "reason": "response does not define _get_active_fixturedef()"
+    },
+    {
+      "snippet": "py:src/_pytest/fixtures.py::pytest_fixture_setup",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "1e2915f34911edfc",
+      "response_hash": "abe41d1dbf7df056",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 5,
+      "judge_s": 0.7,
+      "diff": "diff --git a/src/_pytest/fixtures.py b/src/_pytest/fixtures.py\nindex 638ed89b1..32abb4ee0 100644\n--- a/src/_pytest/fixtures.py\n+++ b/src/_pytest/fixtures.py\n@@ -967,7 +967,10 @@ def pytest_fixture_setup(fixturedef, request):\n         assert fixdef.cached_result is not None\n         result, arg_cache_key, exc = fixdef.cached_result\n         request._check_scope(argname, request.scope, fixdef.scope)\n-        kwargs[argname] = result\n+        if isinstance(result, bytes):\n+            kwargs[argname] = saferepr(result)\n+        else:\n+            kwargs[argname] = repr(result)\n \n     fixturefunc = resolve_fixture_function(fixturedef, request)\n     my_cache_key = fixturedef.cache_key(request)\n",
+      "new_source": "def pytest_fixture_setup(fixturedef, request):\n    \"\"\" Execution of fixture setup. \"\"\"\n    kwargs = {}\n    for argname in fixturedef.argnames:\n        fixdef = request._get_active_fixturedef(argname)\n        assert fixdef.cached_result is not None\n        result, arg_cache_key, exc = fixdef.cached_result\n        request._check_scope(argname, request.scope, fixdef.scope)\n        if isinstance(result, bytes):\n            kwargs[argname] = saferepr(result)\n        else:\n            kwargs[argname] = repr(result)\n\n    fixturefunc = resolve_fixture_function(fixturedef, request)\n    my_cache_key = fixturedef.cache_key(request)\n    try:\n        result = call_fixture_func(fixturefunc, request, kwargs)\n    except TEST_OUTCOME:\n        fixturedef.cached_result = (None, my_cache_key, sys.exc_info())\n        raise\n    fixturedef.cached_result = (result, my_cache_key, None)\n    return result\n"
+    },
+    {
+      "snippet": "py:src/_pytest/setuponly.py::pytest_fixture_setup",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "880eeebeb2c74e2b",
+      "response_hash": "8e8b120f8e768b40",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "testing/test_setuponly.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 3,
+      "judge_s": 3.1,
+      "diff": "diff --git a/src/_pytest/setuponly.py b/src/_pytest/setuponly.py\nindex c9cc589ff..14b996b79 100644\n--- a/src/_pytest/setuponly.py\n+++ b/src/_pytest/setuponly.py\n@@ -17,6 +17,8 @@ def pytest_addoption(parser):\n     )\n \n \n+import pytest\n+\n @pytest.hookimpl(hookwrapper=True)\n def pytest_fixture_setup(fixturedef, request):\n     yield\n@@ -31,6 +33,7 @@ def pytest_fixture_setup(fixturedef, request):\n                     fixturedef.cached_param = fixturedef.ids[request.param_index]\n             else:\n                 fixturedef.cached_param = request.param\n+        # Use saferepr instead of str() to safely represent the bytes object\n         _show_fixture_action(fixturedef, \"SETUP\")\n \n \n",
+      "new_source": "import pytest\n\n@pytest.hookimpl(hookwrapper=True)\ndef pytest_fixture_setup(fixturedef, request):\n    yield\n    if request.config.option.setupshow:\n        if hasattr(request, \"param\"):\n            # Save the fixture parameter so ._show_fixture_action() can\n            # display it now and during the teardown (in .finish()).\n            if fixturedef.ids:\n                if callable(fixturedef.ids):\n                    fixturedef.cached_param = fixturedef.ids(request.param)\n                else:\n                    fixturedef.cached_param = fixturedef.ids[request.param_index]\n            else:\n                fixturedef.cached_param = request.param\n        # Use saferepr instead of str() to safely represent the bytes object\n        _show_fixture_action(fixturedef, \"SETUP\")\n"
+    },
+    {
+      "snippet": "py:src/_pytest/fixtures.py::FixtureDef.execute",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "b214b7a02d6d02ee",
+      "response_hash": "d83da204d0142906",
+      "stage": "parse",
+      "reason": "response does not define execute()"
+    },
+    {
+      "snippet": "py:src/_pytest/runner.py::CallInfo.from_call",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "c49ddb636905015d",
+      "response_hash": "2b6abcee05eb79f8",
+      "stage": "parse",
+      "reason": "identical to the original"
+    }
+  ],
+  "validated_repro": 0,
+  "stop": "budget",
+  "submission": {
+    "snippet": "py:src/_pytest/setuponly.py::pytest_fixture_setup",
+    "model": "qwen2.5-coder-1.5b",
+    "template": "fix_think",
+    "diff": "diff --git a/src/_pytest/setuponly.py b/src/_pytest/setuponly.py\nindex c9cc589ff..14b996b79 100644\n--- a/src/_pytest/setuponly.py\n+++ b/src/_pytest/setuponly.py\n@@ -17,6 +17,8 @@ def pytest_addoption(parser):\n     )\n \n \n+import pytest\n+\n @pytest.hookimpl(hookwrapper=True)\n def pytest_fixture_setup(fixturedef, request):\n     yield\n@@ -31,6 +33,7 @@ def pytest_fixture_setup(fixturedef, request):\n                     fixturedef.cached_param = fixturedef.ids[request.param_index]\n             else:\n                 fixturedef.cached_param = request.param\n+        # Use saferepr instead of str() to safely represent the bytes object\n         _show_fixture_action(fixturedef, \"SETUP\")\n \n \n",
+    "votes": 0,
+    "changed_lines": 3,
+    "new_source": "import pytest\n\n@pytest.hookimpl(hookwrapper=True)\ndef pytest_fixture_setup(fixturedef, request):\n    yield\n    if request.config.option.setupshow:\n        if hasattr(request, \"param\"):\n            # Save the fixture parameter so ._show_fixture_action() can\n            # display it now and during the teardown (in .finish()).\n            if fixturedef.ids:\n                if callable(fixturedef.ids):\n                    fixturedef.cached_param = fixturedef.ids(request.param)\n                else:\n                    fixturedef.cached_param = fixturedef.ids[request.param_index]\n            else:\n                fixturedef.cached_param = request.param\n        # Use saferepr instead of str() to safely represent the bytes object\n        _show_fixture_action(fixturedef, \"SETUP\")\n",
+    "prompt_hash": "880eeebeb2c74e2b",
+    "response_hash": "8e8b120f8e768b40"
+  },
+  "search_s": 778.7,
+  "llm_calls": 16,
+  "tokens_in": 25906,
+  "tokens_out": 3885,
+  "arms": {
+    "qwen2.5-coder-7b/fix": 0.15,
+    "qwen2.5-coder-7b/fix_think": 0.3,
+    "qwen2.5-coder-3b/fix": 0.3,
+    "qwen2.5-coder-3b/fix_think": 0.19999999999999998,
+    "qwen2.5-coder-1.5b/fix": 0.3,
+    "qwen2.5-coder-1.5b/fix_think": 0.27692307692307694
+  },
+  "grade": {
+    "resolved": false,
+    "applied": true,
+    "fail_to_pass": {
+      "success": 0,
+      "failure": 10
+    },
+    "pass_to_pass": {
+      "success": 16,
+      "failure": 0
+    }
+  },
+  "grade_s": 27.3,
+  "wall_s": 832.0,
+  "diagnosis": {
+    "gold_files": [
+      "src/_pytest/setuponly.py"
+    ],
+    "localised_file_hit": true,
+    "localised_line_hit": true,
+    "submission_files": [
+      "src/_pytest/setuponly.py"
+    ],
+    "submission_in_gold_file": true,
+    "gold_changed_lines": 3
+  }
+}

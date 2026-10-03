@@ -1,0 +1,385 @@
+{
+  "instance_id": "sympy__sympy-16886",
+  "repo": "sympy/sympy",
+  "version": "1.5",
+  "base_commit": "c50643a49811e9fe2f4851adff4313ad46f7325e",
+  "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.sympy__sympy-16886:latest",
+  "started_at": "2026-10-03T10:30:09.968344+00:00",
+  "image_digest": "ghcr.io/epoch-research/swe-bench.eval.x86_64.sympy__sympy-16886@sha256:3497e9b9fd7d4621dcae64e6baa61b94144bc1da126b841e151ef8d2c1ae2d91",
+  "pull_s": 20.0,
+  "files_considered": 709,
+  "ranked_files": [
+    {
+      "file": "sympy/crypto/crypto.py",
+      "score": 1.0
+    },
+    {
+      "file": "sympy/crypto/__init__.py",
+      "score": 0.71
+    },
+    {
+      "file": "sympy/codegen/array_utils.py",
+      "score": 0.356
+    },
+    {
+      "file": "sympy/integrals/heurisch.py",
+      "score": 0.355
+    },
+    {
+      "file": "sympy/core/symbol.py",
+      "score": 0.353
+    },
+    {
+      "file": "sympy/printing/pretty/pretty_symbology.py",
+      "score": 0.351
+    },
+    {
+      "file": "sympy/series/gruntz.py",
+      "score": 0.308
+    },
+    {
+      "file": "sympy/core/basic.py",
+      "score": 0.297
+    }
+  ],
+  "localised": [
+    {
+      "file": "sympy/crypto/crypto.py",
+      "name": "decode_morse",
+      "kind": "function",
+      "start": 1586,
+      "end": 1617,
+      "score": 1.5
+    },
+    {
+      "file": "sympy/crypto/crypto.py",
+      "name": "encode_morse",
+      "kind": "function",
+      "start": 1539,
+      "end": 1583,
+      "score": 1.463
+    },
+    {
+      "file": "sympy/crypto/crypto.py",
+      "name": "<L1509-1536>",
+      "kind": "block",
+      "start": 1509,
+      "end": 1536,
+      "score": 0.984
+    },
+    {
+      "file": "sympy/crypto/crypto.py",
+      "name": "decipher_affine",
+      "kind": "function",
+      "start": 379,
+      "end": 399,
+      "score": 0.912
+    },
+    {
+      "file": "sympy/crypto/crypto.py",
+      "name": "encipher_substitution",
+      "kind": "function",
+      "start": 452,
+      "end": 502,
+      "score": 0.867
+    },
+    {
+      "file": "sympy/crypto/crypto.py",
+      "name": "encipher_atbash",
+      "kind": "function",
+      "start": 401,
+      "end": 420,
+      "score": 0.772
+    }
+  ],
+  "repro": [
+    {
+      "model": "qwen2.5-coder-7b",
+      "outcome": "NONE",
+      "script_hash": "84095f1f69850db9"
+    },
+    {
+      "model": "qwen2.5-coder-3b",
+      "outcome": "NONE",
+      "script_hash": "7dd475e2f72ba965"
+    }
+  ],
+  "candidates": [
+    {
+      "snippet": "py:sympy/crypto/crypto.py::decode_morse",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix",
+      "prompt_hash": "89a09540d8684338",
+      "response_hash": "b83eca2eb399a221",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "sympy/crypto/tests/test_crypto.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 7.0,
+      "diff": "diff --git a/sympy/crypto/crypto.py b/sympy/crypto/crypto.py\nindex ca552191c0..c2f4081f52 100644\n--- a/sympy/crypto/crypto.py\n+++ b/sympy/crypto/crypto.py\n@@ -1586,7 +1586,7 @@ def encode_morse(msg, sep='|', mapping=None):\n def decode_morse(msg, sep='|', mapping=None):\n     \"\"\"\n     Decodes a Morse Code with letters separated by `sep`\n-    (default is '|') and words by `word_sep` (default is '||)\n+    (default is '|') and words by `word_sep` (default is '||')\n     into plaintext.\n \n     References\n",
+      "new_source": "def decode_morse(msg, sep='|', mapping=None):\n    \"\"\"\n    Decodes a Morse Code with letters separated by `sep`\n    (default is '|') and words by `word_sep` (default is '||')\n    into plaintext.\n\n    References\n    ==========\n\n    .. [1] https://en.wikipedia.org/wiki/Morse_code\n\n    Examples\n    ========\n\n    >>> from sympy.crypto.crypto import decode_morse\n    >>> mc = '--|---|...-|.||.|.-|...|-'\n    >>> decode_morse(mc)\n    'MOVE EAST'\n\n    \"\"\"\n\n    mapping = mapping or morse_char\n    word_sep = 2*sep\n    characterstring = []\n    words = msg.strip(word_sep).split(word_sep)\n    for word in words:\n        letters = word.split(sep)\n        chars = [mapping[c] for c in letters]\n        word = ''.join(chars)\n        characterstring.append(word)\n    rv = \" \".join(characterstring)\n    return rv\n"
+    },
+    {
+      "snippet": "py:sympy/crypto/crypto.py::encode_morse",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix",
+      "prompt_hash": "fb90cca24f4cabd7",
+      "response_hash": "4f288e32aba896ed",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:sympy/crypto/crypto.py::<L1509-1536>",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix",
+      "prompt_hash": "ff01ffce99523bf1",
+      "response_hash": "823fb02c83f2336c",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "sympy/crypto/tests/test_crypto.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 5,
+      "judge_s": 3.9,
+      "diff": "diff --git a/sympy/crypto/crypto.py b/sympy/crypto/crypto.py\nindex ca552191c0..35e6682fea 100644\n--- a/sympy/crypto/crypto.py\n+++ b/sympy/crypto/crypto.py\n@@ -1520,7 +1520,7 @@ def decipher_kid_rsa(msg, key):\n     \"..-\": \"U\", \"...-\": \"V\",\n     \".--\": \"W\", \"-..-\": \"X\",\n     \"-.--\": \"Y\", \"--..\": \"Z\",\n-    \"-----\": \"0\", \"----\": \"1\",\n+    \"-----\": \"0\", \".----\": \"1\",\n     \"..---\": \"2\", \"...--\": \"3\",\n     \"....-\": \"4\", \".....\": \"5\",\n     \"-....\": \"6\", \"--...\": \"7\",\n@@ -1532,7 +1532,8 @@ def decipher_kid_rsa(msg, key):\n     \"-.--.-\": \")\", \".----.\": \"'\",\n     \"-...-\": \"=\", \".-.-.\": \"+\",\n     \"-..-.\": \"/\", \".--.-.\": \"@\",\n-    \"...-..-\": \"$\", \"-.-.--\": \"!\"}\n+    \"...-..-\": \"$\", \"-.-.--\": \"!\"\n+}\n char_morse = {v: k for k, v in morse_char.items()}\n \n \n",
+      "new_source": "morse_char = {\n    \".-\": \"A\", \"-...\": \"B\",\n    \"-.-.\": \"C\", \"-..\": \"D\",\n    \".\": \"E\", \"..-.\": \"F\",\n    \"--.\": \"G\", \"....\": \"H\",\n    \"..\": \"I\", \".---\": \"J\",\n    \"-.-\": \"K\", \".-..\": \"L\",\n    \"--\": \"M\", \"-.\": \"N\",\n    \"---\": \"O\", \".--.\": \"P\",\n    \"--.-\": \"Q\", \".-.\": \"R\",\n    \"...\": \"S\", \"-\": \"T\",\n    \"..-\": \"U\", \"...-\": \"V\",\n    \".--\": \"W\", \"-..-\": \"X\",\n    \"-.--\": \"Y\", \"--..\": \"Z\",\n    \"-----\": \"0\", \".----\": \"1\",\n    \"..---\": \"2\", \"...--\": \"3\",\n    \"....-\": \"4\", \".....\": \"5\",\n    \"-....\": \"6\", \"--...\": \"7\",\n    \"---..\": \"8\", \"----.\": \"9\",\n    \".-.-.-\": \".\", \"--..--\": \",\",\n    \"---...\": \":\", \"-.-.-.\": \";\",\n    \"..--..\": \"?\", \"-....-\": \"-\",\n    \"..--.-\": \"_\", \"-.--.\": \"(\",\n    \"-.--.-\": \")\", \".----.\": \"'\",\n    \"-...-\": \"=\", \".-.-.\": \"+\",\n    \"-..-.\": \"/\", \".--.-.\": \"@\",\n    \"...-..-\": \"$\", \"-.-.--\": \"!\"\n}\nchar_morse = {v: k for k, v in morse_char.items()}\n"
+    },
+    {
+      "snippet": "py:sympy/crypto/crypto.py::decipher_affine",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix",
+      "prompt_hash": "2cfad02f83f70628",
+      "response_hash": "96864b234d1a6aeb",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:sympy/crypto/crypto.py::encipher_substitution",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix",
+      "prompt_hash": "5b8010f46cf6561f",
+      "response_hash": "914bd0cc680d97b1",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "1 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "sympy/crypto/tests/test_crypto.py"
+      ],
+      "regressions": 1,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 3.9
+    },
+    {
+      "snippet": "py:sympy/crypto/crypto.py::encipher_atbash",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix_think",
+      "prompt_hash": "1e95ad815537fc0e",
+      "response_hash": "7af907777301b7ed",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "1 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "sympy/crypto/tests/test_crypto.py"
+      ],
+      "regressions": 1,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 24,
+      "judge_s": 3.9
+    },
+    {
+      "snippet": "py:sympy/crypto/crypto.py::decode_morse",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix_think",
+      "prompt_hash": "5db81a41e5eab61c",
+      "response_hash": "a7b8e6cc3ffe44d4",
+      "stage": "L1",
+      "ok": false,
+      "reasons": [
+        "File \"sympy/crypto/crypto.py\", line 1586\n    from __future__ import print_function\n    ^\nSyntaxError: from __future__ imports must occur at the beginning of the file"
+      ],
+      "tests": [
+        "sympy/crypto/tests/test_crypto.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 31,
+      "judge_s": 0.8
+    },
+    {
+      "snippet": "py:sympy/crypto/crypto.py::encode_morse",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix",
+      "prompt_hash": "fb90cca24f4cabd7",
+      "response_hash": "61bc68ec2b916ed0",
+      "stage": "L1",
+      "ok": false,
+      "reasons": [
+        "File \"sympy/crypto/crypto.py\", line 1539\n    from __future__ import print_function\n    ^\nSyntaxError: from __future__ imports must occur at the beginning of the file"
+      ],
+      "tests": [
+        "sympy/crypto/tests/test_crypto.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 15,
+      "judge_s": 0.8
+    },
+    {
+      "snippet": "py:sympy/crypto/crypto.py::<L1509-1536>",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix",
+      "prompt_hash": "ff01ffce99523bf1",
+      "response_hash": "8a00dece514f867a",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "sympy/crypto/tests/test_crypto.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 6,
+      "judge_s": 3.8,
+      "diff": "diff --git a/sympy/crypto/crypto.py b/sympy/crypto/crypto.py\nindex ca552191c0..664e673430 100644\n--- a/sympy/crypto/crypto.py\n+++ b/sympy/crypto/crypto.py\n@@ -1514,7 +1514,8 @@ def decipher_kid_rsa(msg, key):\n     \"..\": \"I\", \".---\": \"J\",\n     \"-.-\": \"K\", \".-..\": \"L\",\n     \"--\": \"M\", \"-.\": \"N\",\n-    \"---\": \"O\", \".--.\": \"P\",\n+    \"---\": \".----\",  # Fixed incorrect mapping\n+    \".--.\": \"P\",\n     \"--.-\": \"Q\", \".-.\": \"R\",\n     \"...\": \"S\", \"-\": \"T\",\n     \"..-\": \"U\", \"...-\": \"V\",\n@@ -1532,7 +1533,8 @@ def decipher_kid_rsa(msg, key):\n     \"-.--.-\": \")\", \".----.\": \"'\",\n     \"-...-\": \"=\", \".-.-.\": \"+\",\n     \"-..-.\": \"/\", \".--.-.\": \"@\",\n-    \"...-..-\": \"$\", \"-.-.--\": \"!\"}\n+    \"...-..-\": \"$\", \"-.-.--\": \"!\"\n+}\n char_morse = {v: k for k, v in morse_char.items()}\n \n \n",
+      "new_source": "morse_char = {\n    \".-\": \"A\", \"-...\": \"B\",\n    \"-.-.\": \"C\", \"-..\": \"D\",\n    \".\": \"E\", \"..-.\": \"F\",\n    \"--.\": \"G\", \"....\": \"H\",\n    \"..\": \"I\", \".---\": \"J\",\n    \"-.-\": \"K\", \".-..\": \"L\",\n    \"--\": \"M\", \"-.\": \"N\",\n    \"---\": \".----\",  # Fixed incorrect mapping\n    \".--.\": \"P\",\n    \"--.-\": \"Q\", \".-.\": \"R\",\n    \"...\": \"S\", \"-\": \"T\",\n    \"..-\": \"U\", \"...-\": \"V\",\n    \".--\": \"W\", \"-..-\": \"X\",\n    \"-.--\": \"Y\", \"--..\": \"Z\",\n    \"-----\": \"0\", \"----\": \"1\",\n    \"..---\": \"2\", \"...--\": \"3\",\n    \"....-\": \"4\", \".....\": \"5\",\n    \"-....\": \"6\", \"--...\": \"7\",\n    \"---..\": \"8\", \"----.\": \"9\",\n    \".-.-.-\": \".\", \"--..--\": \",\",\n    \"---...\": \":\", \"-.-.-.\": \";\",\n    \"..--..\": \"?\", \"-....-\": \"-\",\n    \"..--.-\": \"_\", \"-.--.\": \"(\",\n    \"-.--.-\": \")\", \".----.\": \"'\",\n    \"-...-\": \"=\", \".-.-.\": \"+\",\n    \"-..-.\": \"/\", \".--.-.\": \"@\",\n    \"...-..-\": \"$\", \"-.-.--\": \"!\"\n}\nchar_morse = {v: k for k, v in morse_char.items()}\n"
+    },
+    {
+      "snippet": "py:sympy/crypto/crypto.py::decipher_affine",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix",
+      "prompt_hash": "2cfad02f83f70628",
+      "response_hash": "4c94e9e654589e37",
+      "stage": "L1",
+      "ok": false,
+      "reasons": [
+        "File \"sympy/crypto/crypto.py\", line 379\n    from __future__ import print_function\n    ^\nSyntaxError: from __future__ imports must occur at the beginning of the file"
+      ],
+      "tests": [
+        "sympy/crypto/tests/test_crypto.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 15,
+      "judge_s": 0.7
+    },
+    {
+      "snippet": "py:sympy/crypto/crypto.py::encipher_substitution",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "9fb6610fd13e61a7",
+      "response_hash": "472c38b9bc239538",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:sympy/crypto/crypto.py::encipher_atbash",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "1e95ad815537fc0e",
+      "response_hash": "d0a3db22981a0191",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:sympy/crypto/crypto.py::decode_morse",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix",
+      "prompt_hash": "89a09540d8684338",
+      "response_hash": "79b4adb4f8726c27",
+      "stage": "L1",
+      "ok": false,
+      "reasons": [
+        "File \"sympy/crypto/crypto.py\", line 1586\n    from __future__ import print_function\n    ^\nSyntaxError: from __future__ imports must occur at the beginning of the file"
+      ],
+      "tests": [
+        "sympy/crypto/tests/test_crypto.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 22,
+      "judge_s": 0.8
+    },
+    {
+      "snippet": "py:sympy/crypto/crypto.py::encode_morse",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "01bdec703cab9f12",
+      "response_hash": "c62976845e2aaed1",
+      "stage": "parse",
+      "reason": "identical to the original"
+    }
+  ],
+  "validated_repro": 0,
+  "stop": "budget",
+  "submission": {
+    "snippet": "py:sympy/crypto/crypto.py::decode_morse",
+    "model": "qwen2.5-coder-3b",
+    "template": "fix",
+    "diff": "diff --git a/sympy/crypto/crypto.py b/sympy/crypto/crypto.py\nindex ca552191c0..c2f4081f52 100644\n--- a/sympy/crypto/crypto.py\n+++ b/sympy/crypto/crypto.py\n@@ -1586,7 +1586,7 @@ def encode_morse(msg, sep='|', mapping=None):\n def decode_morse(msg, sep='|', mapping=None):\n     \"\"\"\n     Decodes a Morse Code with letters separated by `sep`\n-    (default is '|') and words by `word_sep` (default is '||)\n+    (default is '|') and words by `word_sep` (default is '||')\n     into plaintext.\n \n     References\n",
+    "votes": 0,
+    "changed_lines": 2,
+    "new_source": "def decode_morse(msg, sep='|', mapping=None):\n    \"\"\"\n    Decodes a Morse Code with letters separated by `sep`\n    (default is '|') and words by `word_sep` (default is '||')\n    into plaintext.\n\n    References\n    ==========\n\n    .. [1] https://en.wikipedia.org/wiki/Morse_code\n\n    Examples\n    ========\n\n    >>> from sympy.crypto.crypto import decode_morse\n    >>> mc = '--|---|...-|.||.|.-|...|-'\n    >>> decode_morse(mc)\n    'MOVE EAST'\n\n    \"\"\"\n\n    mapping = mapping or morse_char\n    word_sep = 2*sep\n    characterstring = []\n    words = msg.strip(word_sep).split(word_sep)\n    for word in words:\n        letters = word.split(sep)\n        chars = [mapping[c] for c in letters]\n        word = ''.join(chars)\n        characterstring.append(word)\n    rv = \" \".join(characterstring)\n    return rv\n",
+    "prompt_hash": "89a09540d8684338",
+    "response_hash": "b83eca2eb399a221"
+  },
+  "search_s": 875.9,
+  "llm_calls": 16,
+  "tokens_in": 8869,
+  "tokens_out": 5177,
+  "arms": {
+    "qwen2.5-coder-7b/fix": 0.3,
+    "qwen2.5-coder-7b/fix_think": 0.3,
+    "qwen2.5-coder-3b/fix": 0.32727272727272727,
+    "qwen2.5-coder-3b/fix_think": 0.15,
+    "qwen2.5-coder-1.5b/fix": 0.3,
+    "qwen2.5-coder-1.5b/fix_think": 0.12
+  },
+  "grade": {
+    "resolved": false,
+    "applied": true,
+    "fail_to_pass": {
+      "success": 0,
+      "failure": 1
+    },
+    "pass_to_pass": {
+      "success": 42,
+      "failure": 0
+    }
+  },
+  "grade_s": 21.0,
+  "wall_s": 925.4,
+  "diagnosis": {
+    "gold_files": [
+      "sympy/crypto/crypto.py"
+    ],
+    "localised_file_hit": true,
+    "localised_line_hit": true,
+    "submission_files": [
+      "sympy/crypto/crypto.py"
+    ],
+    "submission_in_gold_file": true,
+    "gold_changed_lines": 2
+  }
+}

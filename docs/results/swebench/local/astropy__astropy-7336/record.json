@@ -1,0 +1,393 @@
+{
+  "instance_id": "astropy__astropy-7336",
+  "repo": "astropy/astropy",
+  "version": "1.3",
+  "base_commit": "732d89c2940156bdc0e200bb36dc38b5e424bcba",
+  "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.astropy__astropy-7336:latest",
+  "started_at": "2026-10-03T02:45:43.666868+00:00",
+  "image_digest": "ghcr.io/epoch-research/swe-bench.eval.x86_64.astropy__astropy-7336@sha256:65d32c14daba8d47cae4e871ca89c5636ce0c3e9e73eed952287ed60e5421bab",
+  "pull_s": 11.9,
+  "files_considered": 425,
+  "ranked_files": [
+    {
+      "file": "astropy/units/decorators.py",
+      "score": 4.0
+    },
+    {
+      "file": "astropy/utils/decorators.py",
+      "score": 3.752
+    },
+    {
+      "file": "astropy/__init__.py",
+      "score": 3.402
+    },
+    {
+      "file": "astropy/units/__init__.py",
+      "score": 3.142
+    },
+    {
+      "file": "astropy_helpers/astropy_helpers/utils.py",
+      "score": 1.691
+    },
+    {
+      "file": "astropy/modeling/parameters.py",
+      "score": 1.61
+    },
+    {
+      "file": "astropy/extern/bundled/six.py",
+      "score": 1.553
+    },
+    {
+      "file": "astropy/modeling/fitting.py",
+      "score": 1.457
+    }
+  ],
+  "localised": [
+    {
+      "file": "astropy/utils/decorators.py",
+      "name": "classproperty.__init__",
+      "kind": "function",
+      "start": 605,
+      "end": 619,
+      "score": 4.692
+    },
+    {
+      "file": "astropy/utils/decorators.py",
+      "name": "lazyproperty.__init__",
+      "kind": "function",
+      "start": 700,
+      "end": 702,
+      "score": 4.562
+    },
+    {
+      "file": "astropy/units/decorators.py",
+      "name": "QuantityInput.__init__",
+      "kind": "function",
+      "start": 151,
+      "end": 153,
+      "score": 2.71
+    },
+    {
+      "file": "astropy/modeling/parameters.py",
+      "name": "Parameter.__init__",
+      "kind": "function",
+      "start": 212,
+      "end": 264,
+      "score": 2.498
+    },
+    {
+      "file": "astropy_helpers/astropy_helpers/utils.py",
+      "name": "classproperty.__init__",
+      "kind": "function",
+      "start": 736,
+      "end": 749,
+      "score": 2.388
+    },
+    {
+      "file": "astropy/extern/bundled/six.py",
+      "name": "_LazyModule.__init__",
+      "kind": "function",
+      "start": 126,
+      "end": 128,
+      "score": 2.323
+    }
+  ],
+  "repro": [
+    {
+      "model": "qwen2.5-coder-7b",
+      "outcome": "NONE",
+      "script_hash": "160c8faa1e7da9b9"
+    },
+    {
+      "model": "qwen2.5-coder-3b",
+      "outcome": "unparseable",
+      "script_hash": null
+    }
+  ],
+  "candidates": [
+    {
+      "snippet": "py:astropy/utils/decorators.py::classproperty.__init__",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix_think",
+      "prompt_hash": "853aa67177d1f3ba",
+      "response_hash": "c857dd988a4f8eab",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "astropy/nddata/tests/test_decorators.py",
+        "astropy/utils/tests/test_decorators.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 9,
+      "judge_s": 6.5,
+      "diff": "diff --git a/astropy/utils/decorators.py b/astropy/utils/decorators.py\nindex 1e6d788a0d..6639879659 100644\n--- a/astropy/utils/decorators.py\n+++ b/astropy/utils/decorators.py\n@@ -618,6 +618,15 @@ class classproperty(property):\n         if doc is not None:\n             self.__doc__ = doc\n \n+        # Ensure that the getter function returns a value that has a 'to' method\n+        def wrapped_fget(self):\n+            value = fget(self)\n+            if value is not None and not hasattr(value, 'to'):\n+                raise TypeError(f\"Getter function must return an object with a 'to' method, but got {type(value)}\")\n+            return value\n+\n+        self.fget = wrapped_fget\n+\n     def __get__(self, obj, objtype):\n         if self._lazy and objtype in self._cache:\n             return self._cache[objtype]\n",
+      "new_source": "def __init__(self, fget, doc=None, lazy=False):\n    self._lazy = lazy\n    if lazy:\n        self._cache = {}\n    fget = self._wrap_fget(fget)\n\n    super().__init__(fget=fget, doc=doc)\n\n    # There is a buglet in Python where self.__doc__ doesn't\n    # get set properly on instances of property subclasses if\n    # the doc argument was used rather than taking the docstring\n    # from fget\n    # Related Python issue: https://bugs.python.org/issue24766\n    if doc is not None:\n        self.__doc__ = doc\n\n    # Ensure that the getter function returns a value that has a 'to' method\n    def wrapped_fget(self):\n        value = fget(self)\n        if value is not None and not hasattr(value, 'to'):\n            raise TypeError(f\"Getter function must return an object with a 'to' method, but got {type(value)}\")\n        return value\n\n    self.fget = wrapped_fget\n"
+    },
+    {
+      "snippet": "py:astropy/utils/decorators.py::lazyproperty.__init__",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "767cb7b7bddf2f8c",
+      "response_hash": "4ef64b0125eac8db",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "astropy/nddata/tests/test_decorators.py",
+        "astropy/utils/tests/test_decorators.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 3,
+      "judge_s": 3.4,
+      "diff": "diff --git a/astropy/utils/decorators.py b/astropy/utils/decorators.py\nindex 1e6d788a0d..9ab0412892 100644\n--- a/astropy/utils/decorators.py\n+++ b/astropy/utils/decorators.py\n@@ -699,7 +699,8 @@ class lazyproperty(property):\n \n     def __init__(self, fget, fset=None, fdel=None, doc=None):\n         super().__init__(fget, fset, fdel, doc)\n-        self._key = self.fget.__name__\n+        if self.fget is not None:\n+            self._key = self.fget.__name__\n \n     def __get__(self, obj, owner=None):\n         try:\n",
+      "new_source": "def __init__(self, fget, fset=None, fdel=None, doc=None):\n    super().__init__(fget, fset, fdel, doc)\n    if self.fget is not None:\n        self._key = self.fget.__name__\n"
+    },
+    {
+      "snippet": "py:astropy/units/decorators.py::QuantityInput.__init__",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "a825e996a2728843",
+      "response_hash": "0b7696807a688c36",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "astropy/nddata/tests/test_decorators.py",
+        "astropy/utils/tests/test_decorators.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 3,
+      "judge_s": 3.3,
+      "diff": "diff --git a/astropy/units/decorators.py b/astropy/units/decorators.py\nindex 8bece5a850..555e3cbfac 100644\n--- a/astropy/units/decorators.py\n+++ b/astropy/units/decorators.py\n@@ -149,6 +149,9 @@ class QuantityInput:\n             return self\n \n     def __init__(self, func=None, **kwargs):\n+        if func is None:\n+            return\n+\n         self.equivalencies = kwargs.pop('equivalencies', [])\n         self.decorator_kwargs = kwargs\n \n",
+      "new_source": "def __init__(self, func=None, **kwargs):\n    if func is None:\n        return\n\n    self.equivalencies = kwargs.pop('equivalencies', [])\n    self.decorator_kwargs = kwargs\n"
+    },
+    {
+      "snippet": "py:astropy/modeling/parameters.py::Parameter.__init__",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "c74cfc850f9890cf",
+      "response_hash": "7fd3b87fdc7f15e5",
+      "stage": "parse",
+      "reason": "response does not define __init__()"
+    },
+    {
+      "snippet": "py:astropy_helpers/astropy_helpers/utils.py::classproperty.__init__",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "43349e9178790b12",
+      "response_hash": "891e91ac45220464",
+      "stage": "L0",
+      "ok": false,
+      "reasons": [
+        "astropy_helpers: only Python source files may change"
+      ],
+      "tests": [
+        "astropy/modeling/tests/test_utils.py",
+        "astropy/nddata/tests/test_utils.py",
+        "astropy/stats/lombscargle/implementations/tests/test_utils.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 3.3
+    },
+    {
+      "snippet": "py:astropy/extern/bundled/six.py::_LazyModule.__init__",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "e36ae3962835c2f0",
+      "response_hash": "116978d658921292",
+      "stage": "L0",
+      "ok": false,
+      "reasons": [
+        "astropy_helpers: only Python source files may change"
+      ],
+      "tests": [],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 5,
+      "judge_s": 0.4
+    },
+    {
+      "snippet": "py:astropy/utils/decorators.py::classproperty.__init__",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "c33132684b6db47f",
+      "response_hash": "57050b928a2a86a8",
+      "stage": "L0",
+      "ok": false,
+      "reasons": [
+        "astropy_helpers: only Python source files may change"
+      ],
+      "tests": [
+        "astropy/nddata/tests/test_decorators.py",
+        "astropy/utils/tests/test_decorators.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 7,
+      "judge_s": 0.4
+    },
+    {
+      "snippet": "py:astropy/utils/decorators.py::lazyproperty.__init__",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "767cb7b7bddf2f8c",
+      "response_hash": "5d6ecc3b84d7b788",
+      "stage": "L0",
+      "ok": false,
+      "reasons": [
+        "astropy_helpers: only Python source files may change"
+      ],
+      "tests": [
+        "astropy/nddata/tests/test_decorators.py",
+        "astropy/utils/tests/test_decorators.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 4,
+      "judge_s": 0.4
+    },
+    {
+      "snippet": "py:astropy/units/decorators.py::QuantityInput.__init__",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "a825e996a2728843",
+      "response_hash": "d8ac21131626648c",
+      "stage": "parse",
+      "reason": "response does not define __init__()"
+    },
+    {
+      "snippet": "py:astropy/modeling/parameters.py::Parameter.__init__",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "c74cfc850f9890cf",
+      "response_hash": "23ba8464c78920a7",
+      "stage": "parse",
+      "reason": "response does not define __init__()"
+    },
+    {
+      "snippet": "py:astropy_helpers/astropy_helpers/utils.py::classproperty.__init__",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "43349e9178790b12",
+      "response_hash": "0062185e5e8bbaac",
+      "stage": "L0",
+      "ok": false,
+      "reasons": [
+        "astropy_helpers: only Python source files may change"
+      ],
+      "tests": [
+        "astropy/modeling/tests/test_utils.py",
+        "astropy/nddata/tests/test_utils.py",
+        "astropy/stats/lombscargle/implementations/tests/test_utils.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 0.4
+    },
+    {
+      "snippet": "py:astropy/extern/bundled/six.py::_LazyModule.__init__",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "e36ae3962835c2f0",
+      "response_hash": "5520182c6249efbb",
+      "stage": "parse",
+      "reason": "response does not define __init__()"
+    },
+    {
+      "snippet": "py:astropy/utils/decorators.py::classproperty.__init__",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "c33132684b6db47f",
+      "response_hash": "27ecc3ad09a22323",
+      "stage": "parse",
+      "reason": "response does not define __init__()"
+    },
+    {
+      "snippet": "py:astropy/utils/decorators.py::lazyproperty.__init__",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "767cb7b7bddf2f8c",
+      "response_hash": "23d6579ee55c836b",
+      "stage": "L0",
+      "ok": false,
+      "reasons": [
+        "astropy_helpers: only Python source files may change"
+      ],
+      "tests": [
+        "astropy/nddata/tests/test_decorators.py",
+        "astropy/utils/tests/test_decorators.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 4,
+      "judge_s": 0.4
+    }
+  ],
+  "validated_repro": 0,
+  "stop": "budget",
+  "submission": {
+    "snippet": "py:astropy/utils/decorators.py::lazyproperty.__init__",
+    "model": "qwen2.5-coder-1.5b",
+    "template": "fix",
+    "diff": "diff --git a/astropy/utils/decorators.py b/astropy/utils/decorators.py\nindex 1e6d788a0d..9ab0412892 100644\n--- a/astropy/utils/decorators.py\n+++ b/astropy/utils/decorators.py\n@@ -699,7 +699,8 @@ class lazyproperty(property):\n \n     def __init__(self, fget, fset=None, fdel=None, doc=None):\n         super().__init__(fget, fset, fdel, doc)\n-        self._key = self.fget.__name__\n+        if self.fget is not None:\n+            self._key = self.fget.__name__\n \n     def __get__(self, obj, owner=None):\n         try:\n",
+    "votes": 0,
+    "changed_lines": 3,
+    "new_source": "def __init__(self, fget, fset=None, fdel=None, doc=None):\n    super().__init__(fget, fset, fdel, doc)\n    if self.fget is not None:\n        self._key = self.fget.__name__\n",
+    "prompt_hash": "767cb7b7bddf2f8c",
+    "response_hash": "4ef64b0125eac8db"
+  },
+  "search_s": 403.0,
+  "llm_calls": 16,
+  "tokens_in": 10958,
+  "tokens_out": 2416,
+  "arms": {
+    "qwen2.5-coder-7b/fix": 0.3,
+    "qwen2.5-coder-7b/fix_think": 0.5333333333333333,
+    "qwen2.5-coder-3b/fix": 0.3,
+    "qwen2.5-coder-3b/fix_think": 0.3,
+    "qwen2.5-coder-1.5b/fix": 0.17333333333333334,
+    "qwen2.5-coder-1.5b/fix_think": 0.3
+  },
+  "grade": {
+    "resolved": false,
+    "applied": true,
+    "fail_to_pass": {
+      "success": 0,
+      "failure": 1
+    },
+    "pass_to_pass": {
+      "success": 339,
+      "failure": 0
+    }
+  },
+  "grade_s": 23.9,
+  "wall_s": 442.9,
+  "diagnosis": {
+    "gold_files": [
+      "astropy/units/decorators.py"
+    ],
+    "localised_file_hit": true,
+    "localised_line_hit": false,
+    "submission_files": [
+      "astropy/utils/decorators.py"
+    ],
+    "submission_in_gold_file": false,
+    "gold_changed_lines": 2
+  }
+}

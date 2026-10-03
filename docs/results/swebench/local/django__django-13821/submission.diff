@@ -1,0 +1,12 @@
+diff --git a/django/db/backends/sqlite3/features.py b/django/db/backends/sqlite3/features.py
+index 3348256c74..d082d945ea 100644
+--- a/django/db/backends/sqlite3/features.py
++++ b/django/db/backends/sqlite3/features.py
+@@ -87,6 +87,7 @@ class DatabaseFeatures(BaseDatabaseFeatures):
+         # references atomically.
+         if platform.mac_ver()[0].startswith('10.15.') and Database.sqlite_version_info == (3, 28, 0):
+             return False
++        # SQLite version support seems like a similar situation as GEOS libraries which we generally support about 5 years after released.
+         return Database.sqlite_version_info >= (3, 26, 0)
+ 
+     @cached_property

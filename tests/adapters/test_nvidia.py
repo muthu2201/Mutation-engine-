@@ -24,8 +24,11 @@ def test_the_key_comes_only_from_the_environment(monkeypatch):
     monkeypatch.delenv("NVIDIA_API_KEY", raising=False)
     with pytest.raises(LLMError, match="environment"):
         nvidia.provider()
-    monkeypatch.setenv("NVIDIA_API_KEY", "test-key")
+    monkeypatch.setenv("NVIDIA_API_KEY", "\u200etest-key\u200b\n")  # as pasted from a phone browser
     assert nvidia.provider().headers == {"Authorization": "Bearer test-key"}
+    monkeypatch.setenv("NVIDIA_API_KEY", "\u200e")
+    with pytest.raises(LLMError, match="environment"):
+        nvidia.provider()
 
 
 def test_kimi_k3_gets_its_effort_and_no_sampling_overrides(monkeypatch):

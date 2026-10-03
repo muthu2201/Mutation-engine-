@@ -16,14 +16,14 @@ from typing import Any
 
 import httpx
 
-from colloid.adapters.llm.openai_compat import OpenAICompatProvider
+from colloid.adapters.llm.openai_compat import OpenAICompatProvider, clean_key
 from colloid.ports import LLMError
 
 BASE_URL = "https://openrouter.ai/api"
 
 
 def api_key() -> str:
-    key = os.environ.get("OPENROUTER_API_KEY", "")
+    key = clean_key(os.environ.get("OPENROUTER_API_KEY", ""))
     if not key:
         raise LLMError("OPENROUTER_API_KEY is not set; add it in the environment's settings")
     return key

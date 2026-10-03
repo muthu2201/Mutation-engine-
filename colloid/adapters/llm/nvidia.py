@@ -11,7 +11,7 @@ from __future__ import annotations
 import os
 from typing import Any
 
-from colloid.adapters.llm.openai_compat import OpenAICompatProvider
+from colloid.adapters.llm.openai_compat import OpenAICompatProvider, clean_key
 from colloid.ports import LLMError
 
 BASE_URL = "https://integrate.api.nvidia.com"
@@ -23,7 +23,7 @@ CONTEXT = {"moonshotai/kimi-k3": 1_048_576}
 
 
 def api_key() -> str:
-    key = os.environ.get("NVIDIA_API_KEY", "")
+    key = clean_key(os.environ.get("NVIDIA_API_KEY", ""))
     if not key:
         raise LLMError("NVIDIA_API_KEY is not set; add it in the environment's settings")
     return key

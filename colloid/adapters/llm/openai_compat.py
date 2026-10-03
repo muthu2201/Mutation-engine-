@@ -15,12 +15,19 @@ comparison between local and hosted models is apples to apples.
 from __future__ import annotations
 
 import time
+import unicodedata
 from collections.abc import Mapping, Sequence
 from typing import Any
 
 import httpx
 
 from colloid.ports import Completion, LLMError, ModelInfo
+
+
+def clean_key(raw: str) -> str:
+    """An API key as pasted into a settings field can carry invisible characters (a left-to-right mark from a
+    phone browser, a zero-width space, a trailing newline) that HTTP headers reject; keys never contain them."""
+    return "".join(ch for ch in raw if not ch.isspace() and unicodedata.category(ch) != "Cf")
 
 
 class OpenAICompatProvider:

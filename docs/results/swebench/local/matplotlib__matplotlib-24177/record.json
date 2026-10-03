@@ -1,0 +1,355 @@
+{
+  "instance_id": "matplotlib__matplotlib-24177",
+  "repo": "matplotlib/matplotlib",
+  "version": "3.6",
+  "base_commit": "493d608e39d32a67173c23a7bbc47d6bfedcef61",
+  "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.matplotlib__matplotlib-24177:latest",
+  "started_at": "2026-10-03T05:48:18.459408+00:00",
+  "image_digest": "ghcr.io/epoch-research/swe-bench.eval.x86_64.matplotlib__matplotlib-24177@sha256:8189bb05219d715ddc430b0e61e472779ea4ac8fa86b95243c2d11917a12428e",
+  "pull_s": 65.1,
+  "files_considered": 240,
+  "ranked_files": [
+    {
+      "file": "lib/matplotlib/axes/_axes.py",
+      "score": 2.5
+    },
+    {
+      "file": "lib/matplotlib/pyplot.py",
+      "score": 2.34
+    },
+    {
+      "file": "lib/matplotlib/figure.py",
+      "score": 1.978
+    },
+    {
+      "file": "lib/matplotlib/axes/_base.py",
+      "score": 1.345
+    },
+    {
+      "file": "lib/mpl_toolkits/axisartist/axislines.py",
+      "score": 1.12
+    },
+    {
+      "file": "lib/mpl_toolkits/axes_grid1/mpl_axes.py",
+      "score": 1.109
+    },
+    {
+      "file": "lib/matplotlib/backend_bases.py",
+      "score": 0.999
+    },
+    {
+      "file": "lib/matplotlib/__init__.py",
+      "score": 0.993
+    }
+  ],
+  "localised": [
+    {
+      "file": "lib/matplotlib/axes/_axes.py",
+      "name": "Axes.step",
+      "kind": "function",
+      "start": 2084,
+      "end": 2150,
+      "score": 3.887
+    },
+    {
+      "file": "lib/matplotlib/pyplot.py",
+      "name": "hist",
+      "kind": "function",
+      "start": 2557,
+      "end": 2568,
+      "score": 3.468
+    },
+    {
+      "file": "lib/mpl_toolkits/axisartist/axislines.py",
+      "name": "Axes.axis",
+      "kind": "function",
+      "start": 466,
+      "end": 468,
+      "score": 3.253
+    },
+    {
+      "file": "lib/mpl_toolkits/axes_grid1/mpl_axes.py",
+      "name": "Axes.axis",
+      "kind": "function",
+      "start": 43,
+      "end": 45,
+      "score": 3.251
+    },
+    {
+      "file": "lib/matplotlib/pyplot.py",
+      "name": "step",
+      "kind": "function",
+      "start": 2856,
+      "end": 2860,
+      "score": 2.714
+    },
+    {
+      "file": "lib/matplotlib/pyplot.py",
+      "name": "axes",
+      "kind": "function",
+      "start": 960,
+      "end": 1055,
+      "score": 2.696
+    }
+  ],
+  "repro": [
+    {
+      "model": "qwen2.5-coder-7b",
+      "outcome": "unparseable",
+      "script_hash": null
+    },
+    {
+      "model": "qwen2.5-coder-3b",
+      "outcome": "unparseable",
+      "script_hash": null
+    }
+  ],
+  "candidates": [
+    {
+      "snippet": "py:lib/matplotlib/axes/_axes.py::Axes.step",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "296fe149317060f0",
+      "response_hash": "a1869db0dcf07bce",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:lib/matplotlib/pyplot.py::hist",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix",
+      "prompt_hash": "983f8d3d845041b7",
+      "response_hash": "e5120da37965ffbd",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:lib/mpl_toolkits/axisartist/axislines.py::Axes.axis",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "fb6dd3c500309a12",
+      "response_hash": "2fd36f165c2fdf6d",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 1.8,
+      "diff": "diff --git a/lib/mpl_toolkits/axisartist/axislines.py b/lib/mpl_toolkits/axisartist/axislines.py\nindex fdbf41580f..dc04b1cdf4 100644\n--- a/lib/mpl_toolkits/axisartist/axislines.py\n+++ b/lib/mpl_toolkits/axisartist/axislines.py\n@@ -465,7 +465,7 @@ class Axes(maxes.Axes):\n \n     @property\n     def axis(self):\n-        return self._axislines\n+        return self._axislines[0]\n \n     @_api.deprecated(\"3.6\")\n     def new_gridlines(self, grid_helper=None):\n",
+      "new_source": "@property\ndef axis(self):\n    return self._axislines[0]\n"
+    },
+    {
+      "snippet": "py:lib/mpl_toolkits/axes_grid1/mpl_axes.py::Axes.axis",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "13c85588296f637c",
+      "response_hash": "2fd36f165c2fdf6d",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 0.8,
+      "diff": "diff --git a/lib/mpl_toolkits/axes_grid1/mpl_axes.py b/lib/mpl_toolkits/axes_grid1/mpl_axes.py\nindex 51c8748758..92ad5e7f9a 100644\n--- a/lib/mpl_toolkits/axes_grid1/mpl_axes.py\n+++ b/lib/mpl_toolkits/axes_grid1/mpl_axes.py\n@@ -42,7 +42,7 @@ class Axes(maxes.Axes):\n \n     @property\n     def axis(self):\n-        return self._axislines\n+        return self._axislines[0]\n \n     def clear(self):\n         # docstring inherited\n",
+      "new_source": "@property\ndef axis(self):\n    return self._axislines[0]\n"
+    },
+    {
+      "snippet": "py:lib/matplotlib/pyplot.py::step",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "a54c9713032da66a",
+      "response_hash": "1d9924248bdacd32",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "1 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "lib/matplotlib/tests/test_pyplot.py"
+      ],
+      "regressions": 1,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 12.1
+    },
+    {
+      "snippet": "py:lib/matplotlib/pyplot.py::axes",
+      "model": "qwen2.5-coder-3b",
+      "template": "fix",
+      "prompt_hash": "191c476cbf2ec1c9",
+      "response_hash": "d86fdfc32f79aea7",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:lib/matplotlib/axes/_axes.py::Axes.step",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "296fe149317060f0",
+      "response_hash": "57497f98a78b9d52",
+      "stage": "parse",
+      "reason": "response does not define step()"
+    },
+    {
+      "snippet": "py:lib/matplotlib/pyplot.py::hist",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "983f8d3d845041b7",
+      "response_hash": "ea08bc78859f88b5",
+      "stage": "parse",
+      "reason": "replacement has 64 lines for a 12-line snippet"
+    },
+    {
+      "snippet": "py:lib/mpl_toolkits/axisartist/axislines.py::Axes.axis",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "fb6dd3c500309a12",
+      "response_hash": "2462a58bd08a6a12",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 0.7,
+      "diff": "diff --git a/lib/mpl_toolkits/axisartist/axislines.py b/lib/mpl_toolkits/axisartist/axislines.py\nindex fdbf41580f..636ec0fd1e 100644\n--- a/lib/mpl_toolkits/axisartist/axislines.py\n+++ b/lib/mpl_toolkits/axisartist/axislines.py\n@@ -465,7 +465,7 @@ class Axes(maxes.Axes):\n \n     @property\n     def axis(self):\n-        return self._axislines\n+        return self._axislines if not hasattr(self, '_axislines') else self._axislines\n \n     @_api.deprecated(\"3.6\")\n     def new_gridlines(self, grid_helper=None):\n",
+      "new_source": "@property\ndef axis(self):\n    return self._axislines if not hasattr(self, '_axislines') else self._axislines\n"
+    },
+    {
+      "snippet": "py:lib/mpl_toolkits/axes_grid1/mpl_axes.py::Axes.axis",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "13c85588296f637c",
+      "response_hash": "63d128795e0ff72b",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 0.7,
+      "diff": "diff --git a/lib/mpl_toolkits/axes_grid1/mpl_axes.py b/lib/mpl_toolkits/axes_grid1/mpl_axes.py\nindex 51c8748758..46013ed8e7 100644\n--- a/lib/mpl_toolkits/axes_grid1/mpl_axes.py\n+++ b/lib/mpl_toolkits/axes_grid1/mpl_axes.py\n@@ -42,7 +42,7 @@ class Axes(maxes.Axes):\n \n     @property\n     def axis(self):\n-        return self._axislines\n+        return self._axislines.values()[0]\n \n     def clear(self):\n         # docstring inherited\n",
+      "new_source": "@property\ndef axis(self):\n    return self._axislines.values()[0]\n"
+    },
+    {
+      "snippet": "py:lib/matplotlib/pyplot.py::step",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "a54c9713032da66a",
+      "response_hash": "4ca55dbd455a01a0",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "1 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "lib/matplotlib/tests/test_pyplot.py"
+      ],
+      "regressions": 1,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 3,
+      "judge_s": 5.2
+    },
+    {
+      "snippet": "py:lib/matplotlib/pyplot.py::axes",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "191c476cbf2ec1c9",
+      "response_hash": "bf84e7a1d3679467",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "lib/matplotlib/tests/test_pyplot.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 1,
+      "judge_s": 4.9,
+      "diff": "diff --git a/lib/matplotlib/pyplot.py b/lib/matplotlib/pyplot.py\nindex e5ae9a0cc1..6dd1f609df 100644\n--- a/lib/matplotlib/pyplot.py\n+++ b/lib/matplotlib/pyplot.py\n@@ -957,7 +957,6 @@ if Figure.legend.__doc__:\n \n ## Axes ##\n \n-@_docstring.dedent_interpd\n def axes(arg=None, **kwargs):\n     \"\"\"\n     Add an Axes to the current figure and make it the current Axes.\n",
+      "new_source": "def axes(arg=None, **kwargs):\n    \"\"\"\n    Add an Axes to the current figure and make it the current Axes.\n\n    Call signatures::\n\n        plt.axes()\n        plt.axes(rect, projection=None, polar=False, **kwargs)\n        plt.axes(ax)\n\n    Parameters\n    ----------\n    arg : None or 4-tuple\n        The exact behavior of this function depends on the type:\n\n        - *None*: A new full window Axes is added using\n          ``subplot(**kwargs)``.\n        - 4-tuple of floats *rect* = ``[left, bottom, width, height]``.\n          A new Axes is added with dimensions *rect* in normalized\n          (0, 1) units using `~.Figure.add_axes` on the current figure.\n\n    projection : {None, 'aitoff', 'hammer', 'lambert', 'mollweide', \\\n'polar', 'rectilinear', str}, optional\n        The projection type of the `~.axes.Axes`. *str* is the name of\n        a custom projection, see `~matplotlib.projections`. The default\n        None results in a 'rectilinear' projection.\n\n    polar : bool, default: False\n        If True, equivalent to projection='polar'.\n\n    sharex, sharey : `~.axes.Axes`, optional\n        Share the x or y `~matplotlib.axis` with sharex and/or sharey.\n        The axis will have the same limits, ticks, and scale as the axis\n        of the shared Axes.\n\n    label : str\n        A label for the returned Axes.\n\n    Returns\n    -------\n    `~.axes.Axes`, or a subclass of `~.axes.Axes`\n        The returned axes class depends on the projection used. It is\n        `~.axes.Axes` if rectilinear projection is used and\n        `.projections.polar.PolarAxes` if polar projection is used.\n\n    Other Parameters\n    ----------------\n    **kwargs\n        This method also takes the keyword arguments for\n        the returned Axes class. The keyword arguments for the\n        rectilinear Axes class `~.axes.Axes` can be found in\n        the following table but there might also be other keyword\n        arguments if another projection is used, see the actual Axes\n        class.\n\n        %(Axes:kwdoc)s\n\n    Notes\n    -----\n    If the figure already has an Axes with key (*args*,\n    *kwargs*) then it will simply make that axes current and\n    return it.  This behavior is deprecated. Meanwhile, if you do\n    not want this behavior (i.e., you want to force the creation of a\n    new axes), you must use a unique set of args and kwargs.  The Axes\n    *label* attribute has been exposed for this purpose: if you want\n    two Axes that are otherwise identical to be added to the figure,\n    make sure you give them unique labels.\n\n    See Also\n    --------\n    .Figure.add_axes\n    .pyplot.subplot\n    .Figure.add_subplot\n    .Figure.subplots\n    .pyplot.subplots\n\n    Examples\n    --------\n    ::\n\n        # Creating a new full window Axes\n        plt.axes()\n\n        # Creating a new Axes with specified dimensions and a grey background\n        plt.axes((left, bottom, width, height), facecolor='grey')\n    \"\"\"\n    fig = gcf()\n    pos = kwargs.pop('position', None)\n    if arg is None:\n        if pos is None:\n            return fig.add_subplot(**kwargs)\n        else:\n            return fig.add_axes(pos, **kwargs)\n    else:\n        return fig.add_axes(arg, **kwargs)\n"
+    },
+    {
+      "snippet": "py:lib/matplotlib/axes/_axes.py::Axes.step",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "296fe149317060f0",
+      "response_hash": "4584269fefdc5d62",
+      "stage": "parse",
+      "reason": "syntax error: '(' was never closed (line 32)"
+    },
+    {
+      "snippet": "py:lib/matplotlib/pyplot.py::hist",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix",
+      "prompt_hash": "983f8d3d845041b7",
+      "response_hash": "58929b2eaa428381",
+      "stage": "parse",
+      "reason": "replacement has 64 lines for a 12-line snippet"
+    }
+  ],
+  "validated_repro": 0,
+  "stop": "budget",
+  "submission": {
+    "snippet": "py:lib/matplotlib/pyplot.py::axes",
+    "model": "qwen2.5-coder-1.5b",
+    "template": "fix",
+    "diff": "diff --git a/lib/matplotlib/pyplot.py b/lib/matplotlib/pyplot.py\nindex e5ae9a0cc1..6dd1f609df 100644\n--- a/lib/matplotlib/pyplot.py\n+++ b/lib/matplotlib/pyplot.py\n@@ -957,7 +957,6 @@ if Figure.legend.__doc__:\n \n ## Axes ##\n \n-@_docstring.dedent_interpd\n def axes(arg=None, **kwargs):\n     \"\"\"\n     Add an Axes to the current figure and make it the current Axes.\n",
+    "votes": 0,
+    "changed_lines": 1,
+    "new_source": "def axes(arg=None, **kwargs):\n    \"\"\"\n    Add an Axes to the current figure and make it the current Axes.\n\n    Call signatures::\n\n        plt.axes()\n        plt.axes(rect, projection=None, polar=False, **kwargs)\n        plt.axes(ax)\n\n    Parameters\n    ----------\n    arg : None or 4-tuple\n        The exact behavior of this function depends on the type:\n\n        - *None*: A new full window Axes is added using\n          ``subplot(**kwargs)``.\n        - 4-tuple of floats *rect* = ``[left, bottom, width, height]``.\n          A new Axes is added with dimensions *rect* in normalized\n          (0, 1) units using `~.Figure.add_axes` on the current figure.\n\n    projection : {None, 'aitoff', 'hammer', 'lambert', 'mollweide', \\\n'polar', 'rectilinear', str}, optional\n        The projection type of the `~.axes.Axes`. *str* is the name of\n        a custom projection, see `~matplotlib.projections`. The default\n        None results in a 'rectilinear' projection.\n\n    polar : bool, default: False\n        If True, equivalent to projection='polar'.\n\n    sharex, sharey : `~.axes.Axes`, optional\n        Share the x or y `~matplotlib.axis` with sharex and/or sharey.\n        The axis will have the same limits, ticks, and scale as the axis\n        of the shared Axes.\n\n    label : str\n        A label for the returned Axes.\n\n    Returns\n    -------\n    `~.axes.Axes`, or a subclass of `~.axes.Axes`\n        The returned axes class depends on the projection used. It is\n        `~.axes.Axes` if rectilinear projection is used and\n        `.projections.polar.PolarAxes` if polar projection is used.\n\n    Other Parameters\n    ----------------\n    **kwargs\n        This method also takes the keyword arguments for\n        the returned Axes class. The keyword arguments for the\n        rectilinear Axes class `~.axes.Axes` can be found in\n        the following table but there might also be other keyword\n        arguments if another projection is used, see the actual Axes\n        class.\n\n        %(Axes:kwdoc)s\n\n    Notes\n    -----\n    If the figure already has an Axes with key (*args*,\n    *kwargs*) then it will simply make that axes current and\n    return it.  This behavior is deprecated. Meanwhile, if you do\n    not want this behavior (i.e., you want to force the creation of a\n    new axes), you must use a unique set of args and kwargs.  The Axes\n    *label* attribute has been exposed for this purpose: if you want\n    two Axes that are otherwise identical to be added to the figure,\n    make sure you give them unique labels.\n\n    See Also\n    --------\n    .Figure.add_axes\n    .pyplot.subplot\n    .Figure.add_subplot\n    .Figure.subplots\n    .pyplot.subplots\n\n    Examples\n    --------\n    ::\n\n        # Creating a new full window Axes\n        plt.axes()\n\n        # Creating a new Axes with specified dimensions and a grey background\n        plt.axes((left, bottom, width, height), facecolor='grey')\n    \"\"\"\n    fig = gcf()\n    pos = kwargs.pop('position', None)\n    if arg is None:\n        if pos is None:\n            return fig.add_subplot(**kwargs)\n        else:\n            return fig.add_axes(pos, **kwargs)\n    else:\n        return fig.add_axes(arg, **kwargs)\n",
+    "prompt_hash": "191c476cbf2ec1c9",
+    "response_hash": "bf84e7a1d3679467"
+  },
+  "search_s": 811.0,
+  "llm_calls": 16,
+  "tokens_in": 18195,
+  "tokens_out": 5557,
+  "arms": {
+    "qwen2.5-coder-7b/fix": 0.3,
+    "qwen2.5-coder-7b/fix_think": 0.3,
+    "qwen2.5-coder-3b/fix": 0.15,
+    "qwen2.5-coder-3b/fix_think": 0.3,
+    "qwen2.5-coder-1.5b/fix": 0.39999999999999997,
+    "qwen2.5-coder-1.5b/fix_think": 0.3
+  },
+  "grade": {
+    "resolved": false,
+    "applied": true,
+    "fail_to_pass": {
+      "success": 0,
+      "failure": 1
+    },
+    "pass_to_pass": {
+      "success": 768,
+      "failure": 0
+    }
+  },
+  "grade_s": 93.3,
+  "wall_s": 991.8,
+  "diagnosis": {
+    "gold_files": [
+      "lib/matplotlib/axes/_base.py"
+    ],
+    "localised_file_hit": false,
+    "localised_line_hit": false,
+    "submission_files": [
+      "lib/matplotlib/pyplot.py"
+    ],
+    "submission_in_gold_file": false,
+    "gold_changed_lines": 2
+  }
+}

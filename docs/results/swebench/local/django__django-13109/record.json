@@ -1,0 +1,398 @@
+{
+  "instance_id": "django__django-13109",
+  "repo": "django/django",
+  "version": "3.2",
+  "base_commit": "fbe82f82555bc25dccb476c749ca062f0b522be3",
+  "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.django__django-13109:latest",
+  "started_at": "2026-10-03T04:08:07.966323+00:00",
+  "image_digest": "ghcr.io/epoch-research/swe-bench.eval.x86_64.django__django-13109@sha256:951fdfb84e7d4d781b47e2b87a895c181fb235e2af7d3753d36bea31612039d6",
+  "pull_s": 13.6,
+  "files_considered": 844,
+  "ranked_files": [
+    {
+      "file": "django/forms/models.py",
+      "score": 2.5
+    },
+    {
+      "file": "django/db/models/base.py",
+      "score": 2.373
+    },
+    {
+      "file": "django/db/models/fields/related.py",
+      "score": 2.266
+    },
+    {
+      "file": "django/db/models/fields/__init__.py",
+      "score": 2.231
+    },
+    {
+      "file": "django/db/models/query.py",
+      "score": 2.158
+    },
+    {
+      "file": "django/db/models/manager.py",
+      "score": 2.109
+    },
+    {
+      "file": "django/forms/fields.py",
+      "score": 1.99
+    },
+    {
+      "file": "django/contrib/contenttypes/fields.py",
+      "score": 1.917
+    }
+  ],
+  "localised": [
+    {
+      "file": "django/db/models/fields/related.py",
+      "name": "ForeignKey.validate",
+      "kind": "function",
+      "start": 909,
+      "end": 929,
+      "score": 4.018
+    },
+    {
+      "file": "django/db/models/base.py",
+      "name": "Model.__init__",
+      "kind": "function",
+      "start": 406,
+      "end": 503,
+      "score": 3.977
+    },
+    {
+      "file": "django/db/models/fields/related.py",
+      "name": "ForeignKey.__init__",
+      "kind": "function",
+      "start": 790,
+      "end": 828,
+      "score": 3.869
+    },
+    {
+      "file": "django/db/models/fields/__init__.py",
+      "name": "CharField.__init__",
+      "kind": "function",
+      "start": 985,
+      "end": 987,
+      "score": 3.7
+    },
+    {
+      "file": "django/forms/fields.py",
+      "name": "BooleanField.validate",
+      "kind": "function",
+      "start": 725,
+      "end": 727,
+      "score": 3.611
+    },
+    {
+      "file": "django/forms/fields.py",
+      "name": "CharField.__init__",
+      "kind": "function",
+      "start": 211,
+      "end": 221,
+      "score": 3.573
+    }
+  ],
+  "repro": [
+    {
+      "model": "qwen2.5-coder-7b",
+      "outcome": "NONE",
+      "script_hash": "e97beff24f1d5ea5"
+    },
+    {
+      "model": "qwen2.5-coder-3b",
+      "outcome": "unparseable",
+      "script_hash": null
+    }
+  ],
+  "candidates": [
+    {
+      "snippet": "py:django/db/models/fields/related.py::ForeignKey.validate",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix_think",
+      "prompt_hash": "0a874e788106eb05",
+      "response_hash": "1c719ecca6565e1e",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/queries/test_query.py",
+        "tests/update/tests.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 6.8,
+      "diff": "diff --git a/django/db/models/fields/related.py b/django/db/models/fields/related.py\nindex d517d7269b..c2aea9c730 100644\n--- a/django/db/models/fields/related.py\n+++ b/django/db/models/fields/related.py\n@@ -914,7 +914,7 @@ class ForeignKey(ForeignObject):\n             return\n \n         using = router.db_for_read(self.remote_field.model, instance=model_instance)\n-        qs = self.remote_field.model._default_manager.using(using).filter(\n+        qs = self.remote_field.model._base_manager.using(using).filter(\n             **{self.remote_field.field_name: value}\n         )\n         qs = qs.complex_filter(self.get_limit_choices_to())\n",
+      "new_source": "def validate(self, value, model_instance):\n    if self.remote_field.parent_link:\n        return\n    super().validate(value, model_instance)\n    if value is None:\n        return\n\n    using = router.db_for_read(self.remote_field.model, instance=model_instance)\n    qs = self.remote_field.model._base_manager.using(using).filter(\n        **{self.remote_field.field_name: value}\n    )\n    qs = qs.complex_filter(self.get_limit_choices_to())\n    if not qs.exists():\n        raise exceptions.ValidationError(\n            self.error_messages['invalid'],\n            code='invalid',\n            params={\n                'model': self.remote_field.model._meta.verbose_name, 'pk': value,\n                'field': self.remote_field.field_name, 'value': value,\n            },  # 'pk' is included for backwards compatibility\n        )\n"
+    },
+    {
+      "snippet": "py:django/db/models/base.py::Model.__init__",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix_think",
+      "prompt_hash": "7a1391f739f53bf5",
+      "response_hash": "fc75bedfe505a9ee",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/backends/base/test_base.py",
+        "tests/forms_tests/field_tests/test_base.py",
+        "tests/generic_views/test_base.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 11.7,
+      "diff": "diff --git a/django/db/models/base.py b/django/db/models/base.py\nindex 422b9e7e2d..f17e1cee0d 100644\n--- a/django/db/models/base.py\n+++ b/django/db/models/base.py\n@@ -425,7 +425,7 @@ class Model(metaclass=ModelBase):\n \n         if not kwargs:\n             fields_iter = iter(opts.concrete_fields)\n-            # The ordering of the zip calls matter - zip throws StopIteration\n+            # The ordering of the zip calls matter; zip throws StopIteration\n             # when an iter throws it. So if the first iter throws it, the second\n             # is *not* consumed. We rely on this, so don't change the order\n             # without changing the logic.\n",
+      "new_source": "def __init__(self, *args, **kwargs):\n    # Alias some things as locals to avoid repeat global lookups\n    cls = self.__class__\n    opts = self._meta\n    _setattr = setattr\n    _DEFERRED = DEFERRED\n\n    pre_init.send(sender=cls, args=args, kwargs=kwargs)\n\n    # Set up the storage for instance state\n    self._state = ModelState()\n\n    # There is a rather weird disparity here; if kwargs, it's set, then args\n    # overrides it. It should be one or the other; don't duplicate the work\n    # The reason for the kwargs check is that standard iterator passes in by\n    # args, and instantiation for iteration is 33% faster.\n    if len(args) > len(opts.concrete_fields):\n        # Daft, but matches old exception sans the err msg.\n        raise IndexError(\"Number of args exceeds number of fields\")\n\n    if not kwargs:\n        fields_iter = iter(opts.concrete_fields)\n        # The ordering of the zip calls matter; zip throws StopIteration\n        # when an iter throws it. So if the first iter throws it, the second\n        # is *not* consumed. We rely on this, so don't change the order\n        # without changing the logic.\n        for val, field in zip(args, fields_iter):\n            if val is _DEFERRED:\n                continue\n            _setattr(self, field.attname, val)\n    else:\n        # Slower, kwargs-ready version.\n        fields_iter = iter(opts.fields)\n        for val, field in zip(args, fields_iter):\n            if val is _DEFERRED:\n                continue\n            _setattr(self, field.attname, val)\n            kwargs.pop(field.name, None)\n\n    # Now we're left with the unprocessed fields that *must* come from\n    # keywords, or default.\n\n    for field in fields_iter:\n        is_related_object = False\n        # Virtual field\n        if field.attname not in kwargs and field.column is None:\n            continue\n        if kwargs:\n            if isinstance(field.remote_field, ForeignObjectRel):\n                try:\n                    # Assume object instance was passed in.\n                    rel_obj = kwargs.pop(field.name)\n                    is_related_object = True\n                except KeyError:\n                    try:\n                        # Object instance wasn't passed in -- must be an ID.\n                        val = kwargs.pop(field.attname)\n                    except KeyError:\n                        val = field.get_default()\n            else:\n                try:\n                    val = kwargs.pop(field.attname)\n                except KeyError:\n                    # This is done with an exception rather than the\n                    # default argument on pop because we don't want\n                    # get_default() to be evaluated, and then not used.\n                    # Refs #12057.\n                    val = field.get_default()\n        else:\n            val = field.get_default()\n\n        if is_related_object:\n            # If we are passed a related instance, set it using the\n            # field.name instead of field.attname (e.g. \"user\" instead of\n            # \"user_id\") so that the object gets properly cached (and type\n            # checked) by the RelatedObjectDescriptor.\n            if rel_obj is not _DEFERRED:\n                _setattr(self, field.name, rel_obj)\n        else:\n            if val is not _DEFERRED:\n                _setattr(self, field.attname, val)\n\n    if kwargs:\n        property_names = opts._property_names\n        for prop in tuple(kwargs):\n            try:\n                # Any remaining kwargs must correspond to properties or\n                # virtual fields.\n                if prop in property_names or opts.get_field(prop):\n                    if kwargs[prop] is not _DEFERRED:\n                        _setattr(self, prop, kwargs[prop])\n                    del kwargs[prop]\n            except (AttributeError, FieldDoesNotExist):\n                pass\n        for kwarg in kwargs:\n            raise TypeError(\"%s() got an unexpected keyword argument '%s'\" % (cls.__name__, kwarg))\n    super().__init__()\n    post_init.send(sender=cls, instance=self)\n"
+    },
+    {
+      "snippet": "py:django/db/models/fields/related.py::ForeignKey.__init__",
+      "model": "qwen2.5-coder-7b",
+      "template": "fix_think",
+      "prompt_hash": "3022fad7d0fbbedd",
+      "response_hash": "8ab2ccf7ed871b44",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/queries/test_query.py",
+        "tests/update/tests.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 14,
+      "judge_s": 3.4,
+      "diff": "diff --git a/django/db/models/fields/related.py b/django/db/models/fields/related.py\nindex d517d7269b..16743144a8 100644\n--- a/django/db/models/fields/related.py\n+++ b/django/db/models/fields/related.py\n@@ -827,6 +827,20 @@ class ForeignKey(ForeignObject):\n         )\n         self.db_constraint = db_constraint\n \n+        # Custom validation using the _base_manager\n+        def validate(self, value, model_instance):\n+            if value is None:\n+                return\n+            try:\n+                qs = value._meta.model._base_manager.get(pk=value.pk)\n+            except value._meta.model.DoesNotExist:\n+                raise exceptions.ValidationError(\n+                    self.error_messages['invalid'],\n+                    code='invalid',\n+                    params={'value': value},\n+                )\n+        self.validate = validate\n+\n     def check(self, **kwargs):\n         return [\n             *super().check(**kwargs),\n",
+      "new_source": "def __init__(self, to, on_delete, related_name=None, related_query_name=None,\n             limit_choices_to=None, parent_link=False, to_field=None,\n             db_constraint=True, **kwargs):\n    try:\n        to._meta.model_name\n    except AttributeError:\n        assert isinstance(to, str), (\n            \"%s(%r) is invalid. First parameter to ForeignKey must be \"\n            \"either a model, a model name, or the string %r\" % (\n                self.__class__.__name__, to,\n                RECURSIVE_RELATIONSHIP_CONSTANT,\n            )\n        )\n    else:\n        # For backwards compatibility purposes, we need to *try* and set\n        # the to_field during FK construction. It won't be guaranteed to\n        # be correct until contribute_to_class is called. Refs #12190.\n        to_field = to_field or (to._meta.pk and to._meta.pk.name)\n    if not callable(on_delete):\n        raise TypeError('on_delete must be callable.')\n\n    kwargs['rel'] = self.rel_class(\n        self, to, to_field,\n        related_name=related_name,\n        related_query_name=related_query_name,\n        limit_choices_to=limit_choices_to,\n        parent_link=parent_link,\n        on_delete=on_delete,\n    )\n    kwargs.setdefault('db_index', True)\n\n    super().__init__(\n        to,\n        on_delete,\n        from_fields=[RECURSIVE_RELATIONSHIP_CONSTANT],\n        to_fields=[to_field],\n        **kwargs,\n    )\n    self.db_constraint = db_constraint\n\n    # Custom validation using the _base_manager\n    def validate(self, value, model_instance):\n        if value is None:\n            return\n        try:\n            qs = value._meta.model._base_manager.get(pk=value.pk)\n        except value._meta.model.DoesNotExist:\n            raise exceptions.ValidationError(\n                self.error_messages['invalid'],\n                code='invalid',\n                params={'value': value},\n            )\n    self.validate = validate\n"
+    },
+    {
+      "snippet": "py:django/db/models/fields/__init__.py::CharField.__init__",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "8e7a51b28c2a9408",
+      "response_hash": "390e722c0f6b68ec",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/contenttypes_tests/test_fields.py",
+        "tests/gis_tests/test_fields.py",
+        "tests/model_fields/tests.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 3,
+      "judge_s": 4.6,
+      "diff": "diff --git a/django/db/models/fields/__init__.py b/django/db/models/fields/__init__.py\nindex 28374272f4..fbc0bea781 100644\n--- a/django/db/models/fields/__init__.py\n+++ b/django/db/models/fields/__init__.py\n@@ -984,7 +984,8 @@ class CharField(Field):\n \n     def __init__(self, *args, **kwargs):\n         super().__init__(*args, **kwargs)\n-        self.validators.append(validators.MaxLengthValidator(self.max_length))\n+        if self.max_length:\n+            self.validators.append(validators.MaxLengthValidator(self.max_length))\n \n     def check(self, **kwargs):\n         return [\n",
+      "new_source": "def __init__(self, *args, **kwargs):\n    super().__init__(*args, **kwargs)\n    if self.max_length:\n        self.validators.append(validators.MaxLengthValidator(self.max_length))\n"
+    },
+    {
+      "snippet": "py:django/forms/fields.py::BooleanField.validate",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "62e3ed3c06900207",
+      "response_hash": "c19a95ca5ac2ff0b",
+      "stage": "parse",
+      "reason": "response does not define validate()"
+    },
+    {
+      "snippet": "py:django/forms/fields.py::CharField.__init__",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "da375d3c57e5efd1",
+      "response_hash": "d86a16acc9013e17",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/contenttypes_tests/test_fields.py",
+        "tests/gis_tests/test_fields.py",
+        "django/test/testcases.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 12,
+      "judge_s": 5.0,
+      "diff": "diff --git a/django/forms/fields.py b/django/forms/fields.py\nindex 36dad72704..182822d204 100644\n--- a/django/forms/fields.py\n+++ b/django/forms/fields.py\n@@ -220,6 +220,18 @@ class CharField(Field):\n             self.validators.append(validators.MaxLengthValidator(int(max_length)))\n         self.validators.append(validators.ProhibitNullCharactersValidator())\n \n+    def validate_base_manager(self, value):\n+        try:\n+            Article.objects.get(pk=value)\n+        except Article.DoesNotExist:\n+            raise ValidationError(_(\"Invalid article instance with id %s.\" % value))\n+\n+    def validate(self, value):\n+        if not super().validate(value):\n+            return False\n+        self.validate_base_manager(value)\n+        return True\n+\n     def to_python(self, value):\n         \"\"\"Return a string.\"\"\"\n         if value not in self.empty_values:\n",
+      "new_source": "def __init__(self, *, max_length=None, min_length=None, strip=True, empty_value='', **kwargs):\n    self.max_length = max_length\n    self.min_length = min_length\n    self.strip = strip\n    self.empty_value = empty_value\n    super().__init__(**kwargs)\n    if min_length is not None:\n        self.validators.append(validators.MinLengthValidator(int(min_length)))\n    if max_length is not None:\n        self.validators.append(validators.MaxLengthValidator(int(max_length)))\n    self.validators.append(validators.ProhibitNullCharactersValidator())\n\ndef validate_base_manager(self, value):\n    try:\n        Article.objects.get(pk=value)\n    except Article.DoesNotExist:\n        raise ValidationError(_(\"Invalid article instance with id %s.\" % value))\n\ndef validate(self, value):\n    if not super().validate(value):\n        return False\n    self.validate_base_manager(value)\n    return True\n"
+    },
+    {
+      "snippet": "py:django/db/models/fields/related.py::ForeignKey.validate",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "0a874e788106eb05",
+      "response_hash": "4f304a744dcaf955",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/queries/test_query.py",
+        "tests/update/tests.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 3.4,
+      "diff": "diff --git a/django/db/models/fields/related.py b/django/db/models/fields/related.py\nindex d517d7269b..c2aea9c730 100644\n--- a/django/db/models/fields/related.py\n+++ b/django/db/models/fields/related.py\n@@ -914,7 +914,7 @@ class ForeignKey(ForeignObject):\n             return\n \n         using = router.db_for_read(self.remote_field.model, instance=model_instance)\n-        qs = self.remote_field.model._default_manager.using(using).filter(\n+        qs = self.remote_field.model._base_manager.using(using).filter(\n             **{self.remote_field.field_name: value}\n         )\n         qs = qs.complex_filter(self.get_limit_choices_to())\n",
+      "new_source": "def validate(self, value, model_instance):\n    if self.remote_field.parent_link:\n        return\n    super().validate(value, model_instance)\n    if value is None:\n        return\n\n    using = router.db_for_read(self.remote_field.model, instance=model_instance)\n    qs = self.remote_field.model._base_manager.using(using).filter(\n        **{self.remote_field.field_name: value}\n    )\n    qs = qs.complex_filter(self.get_limit_choices_to())\n    if not qs.exists():\n        raise exceptions.ValidationError(\n            self.error_messages['invalid'],\n            code='invalid',\n            params={\n                'model': self.remote_field.model._meta.verbose_name, 'pk': value,\n                'field': self.remote_field.field_name, 'value': value,\n            },  # 'pk' is included for backwards compatibility\n        )\n"
+    },
+    {
+      "snippet": "py:django/db/models/base.py::Model.__init__",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "7a1391f739f53bf5",
+      "response_hash": "39d4c00fe19e3cff",
+      "stage": "parse",
+      "reason": "identical to the original"
+    },
+    {
+      "snippet": "py:django/db/models/fields/related.py::ForeignKey.__init__",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "3022fad7d0fbbedd",
+      "response_hash": "eec4066c4ef0e701",
+      "stage": "L2",
+      "ok": false,
+      "reasons": [
+        "30 test(s) that passed at base_commit now fail"
+      ],
+      "tests": [
+        "tests/queries/test_query.py",
+        "tests/update/tests.py"
+      ],
+      "regressions": 30,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 4,
+      "judge_s": 3.0
+    },
+    {
+      "snippet": "py:django/db/models/fields/__init__.py::CharField.__init__",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "8e7a51b28c2a9408",
+      "response_hash": "5ce705635a7b5c3b",
+      "stage": "parse",
+      "reason": "response does not define __init__()"
+    },
+    {
+      "snippet": "py:django/forms/fields.py::BooleanField.validate",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "62e3ed3c06900207",
+      "response_hash": "b6ec11203741f8cb",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/contenttypes_tests/test_fields.py",
+        "tests/gis_tests/test_fields.py",
+        "django/test/testcases.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 5,
+      "judge_s": 3.1,
+      "diff": "diff --git a/django/forms/fields.py b/django/forms/fields.py\nindex 36dad72704..e77cb29310 100644\n--- a/django/forms/fields.py\n+++ b/django/forms/fields.py\n@@ -723,8 +723,9 @@ class BooleanField(Field):\n         return super().to_python(value)\n \n     def validate(self, value):\n-        if not value and self.required:\n-            raise ValidationError(self.error_messages['required'], code='required')\n+        if not value:\n+            if self.required:\n+                raise ValidationError(self.error_messages['required'], code='required')\n \n     def has_changed(self, initial, data):\n         if self.disabled:\n",
+      "new_source": "def validate(self, value):\n    if not value:\n        if self.required:\n            raise ValidationError(self.error_messages['required'], code='required')\n"
+    },
+    {
+      "snippet": "py:django/forms/fields.py::CharField.__init__",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "da375d3c57e5efd1",
+      "response_hash": "1c3aae300a70190c",
+      "stage": "parse",
+      "reason": "no code block in response"
+    },
+    {
+      "snippet": "py:django/db/models/fields/related.py::ForeignKey.validate",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "0a874e788106eb05",
+      "response_hash": "8b5aa27087fcdcb5",
+      "stage": "L3",
+      "ok": true,
+      "reasons": [],
+      "tests": [
+        "tests/queries/test_query.py",
+        "tests/update/tests.py"
+      ],
+      "regressions": 0,
+      "votes": 0,
+      "repro": [],
+      "changed_lines": 2,
+      "judge_s": 3.4,
+      "diff": "diff --git a/django/db/models/fields/related.py b/django/db/models/fields/related.py\nindex d517d7269b..c2aea9c730 100644\n--- a/django/db/models/fields/related.py\n+++ b/django/db/models/fields/related.py\n@@ -914,7 +914,7 @@ class ForeignKey(ForeignObject):\n             return\n \n         using = router.db_for_read(self.remote_field.model, instance=model_instance)\n-        qs = self.remote_field.model._default_manager.using(using).filter(\n+        qs = self.remote_field.model._base_manager.using(using).filter(\n             **{self.remote_field.field_name: value}\n         )\n         qs = qs.complex_filter(self.get_limit_choices_to())\n",
+      "new_source": "def validate(self, value, model_instance):\n    if self.remote_field.parent_link:\n        return\n    super().validate(value, model_instance)\n    if value is None:\n        return\n\n    using = router.db_for_read(self.remote_field.model, instance=model_instance)\n    qs = self.remote_field.model._base_manager.using(using).filter(\n        **{self.remote_field.field_name: value}\n    )\n    qs = qs.complex_filter(self.get_limit_choices_to())\n    if not qs.exists():\n        raise exceptions.ValidationError(\n            self.error_messages['invalid'],\n            code='invalid',\n            params={\n                'model': self.remote_field.model._meta.verbose_name, 'pk': value,\n                'field': self.remote_field.field_name, 'value': value,\n            },  # 'pk' is included for backwards compatibility\n        )\n"
+    },
+    {
+      "snippet": "py:django/db/models/base.py::Model.__init__",
+      "model": "qwen2.5-coder-1.5b",
+      "template": "fix_think",
+      "prompt_hash": "7a1391f739f53bf5",
+      "response_hash": "4cd4d0de124c8654",
+      "stage": "parse",
+      "reason": "identical to the original"
+    }
+  ],
+  "validated_repro": 0,
+  "stop": "budget",
+  "submission": {
+    "snippet": "py:django/db/models/fields/related.py::ForeignKey.validate",
+    "model": "qwen2.5-coder-7b",
+    "template": "fix_think",
+    "diff": "diff --git a/django/db/models/fields/related.py b/django/db/models/fields/related.py\nindex d517d7269b..c2aea9c730 100644\n--- a/django/db/models/fields/related.py\n+++ b/django/db/models/fields/related.py\n@@ -914,7 +914,7 @@ class ForeignKey(ForeignObject):\n             return\n \n         using = router.db_for_read(self.remote_field.model, instance=model_instance)\n-        qs = self.remote_field.model._default_manager.using(using).filter(\n+        qs = self.remote_field.model._base_manager.using(using).filter(\n             **{self.remote_field.field_name: value}\n         )\n         qs = qs.complex_filter(self.get_limit_choices_to())\n",
+    "votes": 0,
+    "changed_lines": 2,
+    "new_source": "def validate(self, value, model_instance):\n    if self.remote_field.parent_link:\n        return\n    super().validate(value, model_instance)\n    if value is None:\n        return\n\n    using = router.db_for_read(self.remote_field.model, instance=model_instance)\n    qs = self.remote_field.model._base_manager.using(using).filter(\n        **{self.remote_field.field_name: value}\n    )\n    qs = qs.complex_filter(self.get_limit_choices_to())\n    if not qs.exists():\n        raise exceptions.ValidationError(\n            self.error_messages['invalid'],\n            code='invalid',\n            params={\n                'model': self.remote_field.model._meta.verbose_name, 'pk': value,\n                'field': self.remote_field.field_name, 'value': value,\n            },  # 'pk' is included for backwards compatibility\n        )\n",
+    "prompt_hash": "0a874e788106eb05",
+    "response_hash": "1c719ecca6565e1e"
+  },
+  "search_s": 1167.5,
+  "llm_calls": 16,
+  "tokens_in": 15615,
+  "tokens_out": 6841,
+  "arms": {
+    "qwen2.5-coder-7b/fix": 0.3,
+    "qwen2.5-coder-7b/fix_think": 0.72,
+    "qwen2.5-coder-3b/fix": 0.3,
+    "qwen2.5-coder-3b/fix_think": 0.3,
+    "qwen2.5-coder-1.5b/fix": 0.3,
+    "qwen2.5-coder-1.5b/fix_think": 0.43076923076923074
+  },
+  "grade": {
+    "resolved": true,
+    "applied": true,
+    "fail_to_pass": {
+      "success": 2,
+      "failure": 0
+    },
+    "pass_to_pass": {
+      "success": 170,
+      "failure": 0
+    }
+  },
+  "grade_s": 25.2,
+  "wall_s": 1212.6,
+  "diagnosis": {
+    "gold_files": [
+      "django/db/models/fields/related.py"
+    ],
+    "localised_file_hit": true,
+    "localised_line_hit": true,
+    "submission_files": [
+      "django/db/models/fields/related.py"
+    ],
+    "submission_in_gold_file": true,
+    "gold_changed_lines": 2
+  }
+}

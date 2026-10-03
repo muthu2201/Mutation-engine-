@@ -1,0 +1,12 @@
+diff --git a/src/_pytest/python.py b/src/_pytest/python.py
+index 35797cc07..cc2f61ee6 100644
+--- a/src/_pytest/python.py
++++ b/src/_pytest/python.py
+@@ -246,6 +246,7 @@ def pytest_pycollect_makeitem(collector: "PyCollector", name: str, obj: object):
+                 res.add_marker(MARK_GEN.xfail(run=False, reason=reason))
+                 res.warn(PytestCollectionWarning(reason))
+             else:
++                obj = os.path.realpath(obj)
+                 res = list(collector._genfunctions(name, obj))
+             return res
+ 
