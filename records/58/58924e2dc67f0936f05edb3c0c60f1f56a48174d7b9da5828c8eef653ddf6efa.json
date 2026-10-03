@@ -1,0 +1,33 @@
+{
+ "content": {
+  "explain": "toLower: code rewrite (llm_rewrite/optimize) optimize",
+  "locus": {
+   "kind": "function",
+   "language": "go",
+   "layer": "svc",
+   "surface": "code_region",
+   "symbol_path": "go:service/score.go::toLower",
+   "unit": "toLower",
+   "unit_id": "d8064187977c44a7"
+  },
+  "payload": {
+   "base_hash": "200610dd69b7f481",
+   "diff_lines": 8,
+   "language": "go",
+   "source": "func toLower(c byte) byte {\n    if c >= 'A' && c <= 'Z' {\n        return c + ('a' - 'A')\n    }\n    return c\n}\n"
+  },
+  "payload_kind": "source",
+  "provenance": {
+   "model": "qwen2.5-coder-3b",
+   "notes": "",
+   "operator": "llm_rewrite",
+   "prompt_hash": "445d57deb4ea5e20",
+   "response_hash": "82a380fe8c342bea",
+   "template": "optimize"
+  },
+  "target": "stackzero-go"
+ },
+ "id": "58924e2dc67f0936f05edb3c0c60f1f56a48174d7b9da5828c8eef653ddf6efa",
+ "kind": "gene",
+ "schema": "colloid.mutation/1"
+}

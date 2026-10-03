@@ -1,6 +1,6 @@
 {
  "schema": "colloid.mutation/1",
- "head": "5df73c4e8a76f7d4753b279c7d59c9e571ce7271bd2743590392265904717b81",
- "entries": 12,
- "last_message": "lake: +1 records from run stackzero (seq 11..11)"
+ "head": "be79f70b5bcc3b6c761a744498f989d4b46e200af8fad22df7bc59a4204c31c1",
+ "entries": 32,
+ "last_message": "lake: +20 records from run stackzero-go (seq 12..31)"
 }

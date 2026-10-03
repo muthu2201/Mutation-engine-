@@ -1,0 +1,30 @@
+{
+ "content": {
+  "explain": "db.idx_reviews_product = True [knob_sample]",
+  "locus": {
+   "kind": "knob",
+   "language": null,
+   "layer": "db",
+   "surface": "index_set",
+   "symbol_path": "knob:db.idx_reviews_product",
+   "unit": "db.idx_reviews_product",
+   "unit_id": "f0e8da5b933a3997"
+  },
+  "payload": {
+   "value": true
+  },
+  "payload_kind": "value",
+  "provenance": {
+   "model": null,
+   "notes": "",
+   "operator": "knob_sample",
+   "prompt_hash": null,
+   "response_hash": null,
+   "template": null
+  },
+  "target": "stackzero-go"
+ },
+ "id": "977eaf4c448f623dbf7a42c26ad5b9c05da2c610c99a99e3cd4aba69afbe634b",
+ "kind": "gene",
+ "schema": "colloid.mutation/1"
+}

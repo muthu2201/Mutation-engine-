@@ -1,0 +1,30 @@
+{
+ "content": {
+  "explain": "db.random_page_cost = 5.7960216873358865 [knob_sample]",
+  "locus": {
+   "kind": "knob",
+   "language": null,
+   "layer": "db",
+   "surface": "knob",
+   "symbol_path": "knob:db.random_page_cost",
+   "unit": "db.random_page_cost",
+   "unit_id": "27aa397642f6f22a"
+  },
+  "payload": {
+   "value": 5.7960216873358865
+  },
+  "payload_kind": "value",
+  "provenance": {
+   "model": null,
+   "notes": "",
+   "operator": "knob_sample",
+   "prompt_hash": null,
+   "response_hash": null,
+   "template": null
+  },
+  "target": "stackzero-go"
+ },
+ "id": "1fe0bad1e208091120455f5fc4d23720fddce3f4f573a4e4c12c56c5ff464db6",
+ "kind": "gene",
+ "schema": "colloid.mutation/1"
+}

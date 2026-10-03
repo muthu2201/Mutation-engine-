@@ -1,0 +1,30 @@
+{
+ "content": {
+  "explain": "db.idx_products_category = True [knob_sample]",
+  "locus": {
+   "kind": "knob",
+   "language": null,
+   "layer": "db",
+   "surface": "index_set",
+   "symbol_path": "knob:db.idx_products_category",
+   "unit": "db.idx_products_category",
+   "unit_id": "2162ba3cb2e133e6"
+  },
+  "payload": {
+   "value": true
+  },
+  "payload_kind": "value",
+  "provenance": {
+   "model": null,
+   "notes": "",
+   "operator": "knob_sample",
+   "prompt_hash": null,
+   "response_hash": null,
+   "template": null
+  },
+  "target": "stackzero-go"
+ },
+ "id": "109b6a86bfb22be40ee8c188bf3fe925c701bfc64211d6133b482268ec9e35bc",
+ "kind": "gene",
+ "schema": "colloid.mutation/1"
+}

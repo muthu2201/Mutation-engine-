@@ -1,0 +1,147 @@
+{
+ "content": {
+  "attribution": [],
+  "baseline_id": "base-8fbcb3efb36f",
+  "derived_from": [
+   "0642b7fbb4d72da9d9aae0ff0f8f7da5919d0beb23cd275304726a60a22ddfb3",
+   "512bbcc1a9c17faa27934e145e4d604c1c2d030b53b9c82219e665dd7a2c9f6f",
+   "5c6230ec7b71a3e319ef90acfbca571468152376b44e665f66e898d4c17cda25",
+   "d4aebbf6e936a0ef5e78306238f6f4ae07da94532626f9d72368bf38f5bd4ed4",
+   "df335661bf7c2a8994e50b53bc47f7aaa385d495b3e521cd4962dbbfab32098c",
+   "e042e4cf01cca78d0c50b7b63f73d13d0d5cf827b40802879230befeec9be3d7"
+  ],
+  "effects": {
+   "cost": {
+    "ci_pct": [
+     24.89,
+     29.41
+    ],
+    "gain_pct": 27.1,
+    "p": 5e-05
+   },
+   "cpu": {
+    "ci_pct": [
+     25.52,
+     30.02
+    ],
+    "gain_pct": 27.71,
+    "p": 5e-05
+   },
+   "mem": {
+    "ci_pct": [
+     1.32,
+     4.39
+    ],
+    "gain_pct": 3.15,
+    "p": 0.00025
+   },
+   "p50": {
+    "ci_pct": [
+     48.11,
+     54.35
+    ],
+    "gain_pct": 51.81,
+    "p": 0.0005
+   },
+   "p95": {
+    "ci_pct": [
+     32.17,
+     40.33
+    ],
+    "gain_pct": 36.62,
+    "p": 0.0005
+   }
+  },
+  "engine_commit_at_ingest": "2a845c7b75c062f395ef60d4ee6cc026711738f6",
+  "genes": [
+   "1fe0bad1e208091120455f5fc4d23720fddce3f4f573a4e4c12c56c5ff464db6",
+   "3ee440d2b6dcc1b5366e65e654403b850fd070c0251f8d8803cf6b03a661778e",
+   "42bc6a4252b7c247cd6eba47d6ecba7dc8e85497d51c6dbc323f22f057be3a49",
+   "79d4ed6d1757ab537ae3ba2597978d762c3534ed420d6c5d2521e5ebba0be44b",
+   "977eaf4c448f623dbf7a42c26ad5b9c05da2c610c99a99e3cd4aba69afbe634b"
+  ],
+  "holdout": {
+   "ci_pct": [
+    23.27,
+    28.61
+   ],
+   "gain_pct": 25.89,
+   "p": 0.001953125
+  },
+  "island": "svc.code",
+  "noise_floor": {
+   "gate": "cost: 1/20 calibrated false positives (raw 2/20), binomial p=0.642 vs alpha=0.05",
+   "per_cycle": {
+    "cost": 0.017249441620947954,
+    "cpu": 0.01698822205512315,
+    "mem": 0.016326347404518216,
+    "p50": 0.0,
+    "p95": 0.0
+   }
+  },
+  "operator": "crossover",
+  "platform": {
+   "capabilities": {
+    "arch": "x86_64",
+    "cgroup_v1": true,
+    "cgroup_v2": false,
+    "container_daemon": false,
+    "container_runtime": "docker",
+    "cpu_affinity": "sched",
+    "os": "linux",
+    "posix": true,
+    "psutil": true,
+    "python": "3.12.3",
+    "root": true,
+    "sandbox_backend": "linux",
+    "seccomp": true,
+    "smaps": true
+   },
+   "clang": "Ubuntu clang version 18.1.3 (1ubuntu1)",
+   "cpu_count": 4,
+   "cpu_model": "Intel(R) Xeon(R) Processor @ 2.10GHz",
+   "evaluator_pinned": true,
+   "gcc": "gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+   "governor": null,
+   "hypervisor": true,
+   "kernel": "6.18.44-fc-v51",
+   "loadgen_sha": "301d857aed18aa4d",
+   "logical_cpus": 4,
+   "memory_gb": 15.7,
+   "memory_metric": "pss(smaps_rollup)",
+   "microcode": "0x1",
+   "no_turbo": null,
+   "numa_nodes": 1,
+   "physical_cpus": 4,
+   "pip_freeze_sha": "d975ff4759c3ee7e",
+   "platform": "Linux-6.18.44-fc-v51-x86_64-with-glibc2.39",
+   "port_apis": {
+    "Build": "1.0.0",
+    "CodeRepresentation": "1.0.0",
+    "CostModel": "1.0.0",
+    "LLMProvider": "1.0.0",
+    "LakeStore": "1.0.0",
+    "ProgramStore": "1.0.0",
+    "Sandbox": "1.0.0",
+    "TargetSystem": "1.0.0",
+    "Telemetry": "1.0.0"
+   },
+   "postgres": "postgres (PostgreSQL) 16.14 (Ubuntu 16.14-0ubuntu0.24.04.1)",
+   "python": "3.12.3",
+   "repo_commit": "05b8467",
+   "sbx_exec_sha": "bbfdd5a1b4aeb0a4",
+   "smt": "0",
+   "thp_at_start": "always [madvise] never",
+   "time_ns_resolution": 1e-09
+  },
+  "program_id": "16feaf5c2f392a0c",
+  "protocol": "replicate-x6",
+  "rate_rps": 30.0,
+  "run": "stackzero-go",
+  "status": "promoted",
+  "target": "stackzero-go"
+ },
+ "id": "44eae720cde0838891da86914e9e15a4ba12598ce2f6cfca453b369ce003d4dc",
+ "kind": "program",
+ "schema": "colloid.mutation/1"
+}

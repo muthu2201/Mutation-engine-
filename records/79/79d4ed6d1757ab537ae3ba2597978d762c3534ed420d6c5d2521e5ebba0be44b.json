@@ -1,0 +1,33 @@
+{
+ "content": {
+  "explain": "pyRound: code rewrite (llm_rewrite/algorithmic) algorithmic",
+  "locus": {
+   "kind": "function",
+   "language": "go",
+   "layer": "svc",
+   "surface": "code_region",
+   "symbol_path": "go:service/util.go::pyRound",
+   "unit": "pyRound",
+   "unit_id": "9d72019566567014"
+  },
+  "payload": {
+   "base_hash": "31de1a75892afb88",
+   "diff_lines": 21,
+   "language": "go",
+   "source": "func pyRound(x float64, ndigits int) float64 {\n    if math.IsNaN(x) || math.IsInf(x, 0) {\n        return x\n    }\n    var cache map[float64]float64\n    if cache == nil {\n        cache = make(map[float64]float64)\n    }\n    \n    if v, found := cache[x]; found {\n        return v\n    }\n    \n    v, _ := strconv.ParseFloat(strconv.FormatFloat(x, 'f', ndigits, 64), 64)\n    cache[x] = v\n    \n    return v\n}\n"
+  },
+  "payload_kind": "source",
+  "provenance": {
+   "model": "qwen2.5-coder-3b",
+   "notes": "",
+   "operator": "llm_rewrite",
+   "prompt_hash": "d18636e418c02014",
+   "response_hash": "b49049206029c8fc",
+   "template": "algorithmic"
+  },
+  "target": "stackzero-go"
+ },
+ "id": "79d4ed6d1757ab537ae3ba2597978d762c3534ed420d6c5d2521e5ebba0be44b",
+ "kind": "gene",
+ "schema": "colloid.mutation/1"
+}
