@@ -1,0 +1,33 @@
+{
+ "content": {
+  "explain": "django__django-11451: rewrite of ModelBackend.authenticate in django/contrib/auth/backends.py that resolves the issue (official SWE-bench grader)",
+  "locus": {
+   "kind": "function",
+   "language": "python",
+   "layer": "app",
+   "surface": "code_region",
+   "symbol_path": "py:django/django/django/contrib/auth/backends.py::ModelBackend.authenticate",
+   "unit": "ModelBackend.authenticate",
+   "unit_id": "c59331c19d1b0c24"
+  },
+  "payload": {
+   "base_commit": "e065b293878b1e3ea56655aa9d33e87576cd77ff",
+   "diff": "diff --git a/django/contrib/auth/backends.py b/django/contrib/auth/backends.py\nindex f4b1722757..a3765ae0f1 100644\n--- a/django/contrib/auth/backends.py\n+++ b/django/contrib/auth/backends.py\n@@ -39,6 +39,8 @@ class ModelBackend(BaseBackend):\n     def authenticate(self, request, username=None, password=None, **kwargs):\n         if username is None:\n             username = kwargs.get(UserModel.USERNAME_FIELD)\n+        if username is None or password is None:\n+            return\n         try:\n             user = UserModel._default_manager.get_by_natural_key(username)\n         except UserModel.DoesNotExist:\n",
+   "language": "python",
+   "source": "def authenticate(self, request, username=None, password=None, **kwargs):\n    if username is None:\n        username = kwargs.get(UserModel.USERNAME_FIELD)\n    if username is None or password is None:\n        return\n    try:\n        user = UserModel._default_manager.get_by_natural_key(username)\n    except UserModel.DoesNotExist:\n        # Run the default password hasher once to reduce the timing\n        # difference between an existing and a nonexistent user (#20760).\n        UserModel().set_password(password)\n    else:\n        if user.check_password(password) and self.user_can_authenticate(user):\n            return user\n"
+  },
+  "payload_kind": "source",
+  "provenance": {
+   "model": "moonshotai/kimi-k3",
+   "notes": "",
+   "operator": "repair_rewrite",
+   "prompt_hash": "579654584d1f28ce",
+   "response_hash": "fd27f0c033f02869",
+   "template": "fix_think"
+  },
+  "target": "swebench:django/django"
+ },
+ "id": "2a7bce65dd7d4950dbeafdd4ef6e6278a0acdaec465c97db86bf6d434d7ed7ce",
+ "kind": "gene",
+ "schema": "colloid.mutation/1"
+}

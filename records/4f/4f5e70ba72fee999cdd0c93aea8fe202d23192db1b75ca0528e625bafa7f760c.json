@@ -1,0 +1,55 @@
+{
+ "content": {
+  "attribution": [
+   {
+    "ci": [
+     1.0,
+     1.0
+    ],
+    "gene": "02ab4cbabced3f11904ae07cebe9628bb19a08446044320eff47f3dabdcc7c96",
+    "method": "official_grade",
+    "value": 1.0
+   }
+  ],
+  "base_commit": "fbe82f82555bc25dccb476c749ca062f0b522be3",
+  "effects": {
+   "fail_to_pass": {
+    "failure": 0,
+    "success": 2
+   },
+   "pass_to_pass": {
+    "failure": 0,
+    "success": 170
+   },
+   "resolved": true
+  },
+  "genes": [
+   "02ab4cbabced3f11904ae07cebe9628bb19a08446044320eff47f3dabdcc7c96"
+  ],
+  "holdout": {
+   "grader": "swebench run_instance (official)",
+   "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.django__django-13109@sha256:951fdfb84e7d4d781b47e2b87a895c181fb235e2af7d3753d36bea31612039d6",
+   "reproduction_votes": 1
+  },
+  "instance_id": "django__django-13109",
+  "memorisation_probe": {
+   "path_hit": false,
+   "path_mentioned_in_issue": false,
+   "rule": "ADR 0011 addendum",
+   "submission_identical_to_gold": true,
+   "submission_overlap5": 1.0,
+   "task_id_exact_lines": 0,
+   "task_id_overlap": 0.0,
+   "verdict": "clean"
+  },
+  "platform": {
+   "image": "ghcr.io/epoch-research/swe-bench.eval.x86_64.django__django-13109@sha256:951fdfb84e7d4d781b47e2b87a895c181fb235e2af7d3753d36bea31612039d6"
+  },
+  "run": "api",
+  "status": "verified",
+  "target": "swebench:django/django"
+ },
+ "id": "4f5e70ba72fee999cdd0c93aea8fe202d23192db1b75ca0528e625bafa7f760c",
+ "kind": "program",
+ "schema": "colloid.mutation/1"
+}
