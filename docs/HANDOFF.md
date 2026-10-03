@@ -1,7 +1,10 @@
 # Handoff: where Colloid stands, and how the next session runs the API arm
 
-Written 2026-10-03 at the end of the local SWE-bench arm, for a new session that will have
-`NVIDIA_API_KEY` in its environment. Read this first, then `docs/SWEBENCH_RESULTS.md` and
+Written 2026-10-03 at the end of the local SWE-bench arm. `NVIDIA_API_KEY` is set in the
+environment settings, so any session in this environment has it (a session that was already
+running sees it only after its worker restarts). The session that wrote this note went on to run
+the API arm itself. A later session resumes from whatever state `runs/` and PR #3 show: every
+step below is resumable. Read this first, then `docs/SWEBENCH_RESULTS.md` and
 ADRs 0011–0013.
 
 ## 0. The goal, and how to work with the owner
@@ -79,7 +82,7 @@ Research prompts worth asking next:
 | what | where | state |
 |---|---|---|
 | Engine, polyglot experiments (Go/TS ports, bake-off, M1 transfer, evidence ladder, CRL rules, soak fix) | branch `ccr-00675f8e-w4745o`, **PR #2** | ready for review, CI green; waiting on a human reviewer |
-| SWE-bench track (ADRs 0011–0013, harness, local arm, probes, API-arm code) | branch `bench/swebench`, **PR #3** (draft, stacked on PR #2) | local arm finished; API arm not started |
+| SWE-bench track (ADRs 0011–0013, harness, local arm, probes, API-arm code) | branch `bench/swebench`, **PR #3** (draft, stacked on PR #2) | local arm finished; the API arm (Kimi K3 on NVIDIA) was started by the session that wrote this note, once the local probes freed the CPU: check `runs/chain.log`, `runs/swebench-api.log` and PR #3 for its state |
 | The mutation lake (hash-chained) | branch `colloid/datalake` | pushed; includes the SWE-bench local arm's resolved fixes |
 | The verified StackZero stack | branch `stack/stackzero-verified` | unchanged since PR #2 |
 
@@ -89,15 +92,26 @@ commands (`colloid lake push`, `colloid stack ...`), never by hand.
 ## 2. What the local SWE-bench arm showed
 
 <!-- HANDOFF:LOCAL -->
-(filled in when the run finished; see section 1 of docs/SWEBENCH_RESULTS.md for the generated tables)
+- **Headline:** 2 / 30 resolved (6.7%, Wilson 95% CI 1.8–21.3%), graded by the official
+  harness; 0 infrastructure errors; 8.0 h.
+- **Both resolved issues stated their own fix.** django-11451 gives it verbatim; django-13109 in
+  prose. The engine solved nothing that required inferring the fix.
+- **Selection, not localisation, is the bottleneck.**
+  - 21/30 instances had a localised snippet in a gold file, but only 14/30 submissions edited one.
+  - L3 gave no candidate a vote.
+  - L2 passed all 30 submissions, missing official PASS_TO_PASS regressions on 2.
+- **The bandit misallocated the budget.** The cost-aware bandit gave 56% of proposals to the
+  1.5B model, which resolved nothing.
+- The full write-up is in `docs/SWEBENCH_RESULTS.md`, "What the local arm shows". The memorisation
+  probes for the three local models finish after this note was written; see section 6 there.
 <!-- /HANDOFF:LOCAL -->
 
 ## 3. Before the next session starts (the owner)
 
-1. **Add the NVIDIA key to the environment.** In the session's title bar, open the cloud
-   environment menu, choose **Edit**, and add the key from build.nvidia.com as the environment
-   variable **`NVIDIA_API_KEY`**. Then start a new session: a running session does not see a new
-   variable. Never paste the key into the chat, because it is then in the transcript.
+1. **The NVIDIA key is in the environment** as `NVIDIA_API_KEY` (done 2026-10-03). The stored
+   value starts with an invisible U+200E, picked up when the key was pasted from a phone browser.
+   The engine strips such characters (`clean_key`), so nothing needs re-entering. Never paste a key
+   into the chat.
 2. **Rotate the OpenRouter key** that was pasted into chat earlier, if you have not already. It is
    no longer needed for this arm.
 3. **What the NVIDIA key gives the arm** (ADR 0012, amendment 2):
