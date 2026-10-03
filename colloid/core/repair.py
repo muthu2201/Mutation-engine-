@@ -259,7 +259,15 @@ def fix_prompt(issue: str, snip: Snippet, context: str, *, think: bool) -> str:
             "one ```python block. Keep names, signatures and behaviour unrelated to the issue unchanged. " + ask)
 
 
-def repro_prompt(issue: str, repo: str) -> str:
+# protocol v2: one reproduction per stated behaviour (SWE-Doctor), so a fix must satisfy several facets
+REPRO_FOCUS = (
+    "Check the exact example given in the issue.",
+    "Check a different input or case that the issue's expected behaviour must also cover (not the issue's own example).",
+    "Check the expected behaviour stated in the issue's title or summary, as directly as possible.",
+)
+
+
+def repro_prompt(issue: str, repo: str, focus: str = "") -> str:
     django = ("\nIf the code needs Django settings, call django.conf.settings.configure(...) with the apps it needs and "
               "then django.setup() before using models." if repo == "django/django" else "")
     return (f"An issue was reported in the {repo} repository. The package is installed and importable.\n\n"
@@ -268,7 +276,8 @@ def repro_prompt(issue: str, repo: str) -> str:
             "ISSUE REPRODUCED - if the behaviour described in the issue occurs,\n"
             "ISSUE RESOLVED - if the expected behaviour occurs instead,\n"
             "OTHER - if anything else happens (wrap the check in try/except).{django}\n"
-            "Return only the script, in one ```python block.").replace("{django}", django)
+            + (f"Focus: {focus}\n" if focus else "")
+            + "Return only the script, in one ```python block.").replace("{django}", django)
 
 
 def file_context(file_text: str, snip: Snippet, limit: int = 40) -> str:
@@ -295,8 +304,15 @@ def _norm(src: str) -> str:
     return "\n".join(ln.rstrip() for ln in textwrap.dedent(src).strip().splitlines())
 
 
-def parse_fix(response: str, snip: Snippet, file_text: str) -> Rewrite:
+def parse_fix(response: str, snip: Snippet, file_text: str, *, allow_unfenced: bool = False) -> Rewrite:
+    """``allow_unfenced`` (protocol v2): a response with no code fence is taken whole when it parses as Python."""
     block = extract_code_block(response, "python")
+    if block is None and allow_unfenced and response.strip():
+        try:
+            ast.parse(textwrap.dedent(response.strip("\n")))
+            block = response.strip("\n")
+        except SyntaxError:
+            block = None
     if block is None:
         return Rewrite(False, reason="no code block in response")
     if _norm(block) == _norm(snip.text):
@@ -335,3 +351,9 @@ def repro_outcome(output: str) -> str:
         if line.strip() in MARKERS:
             return line.strip()
     return "NONE"
+
+
+def diff_signature(diff: str) -> str:
+    """Changed lines only, whitespace-insensitive: two candidates with the same signature made the same edit."""
+    return "\n".join(re.sub(r"\s+", "", ln) for ln in diff.splitlines()
+                     if ln[:1] in "+-" and not ln.startswith(("+++", "---")) and ln[1:].strip())

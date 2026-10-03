@@ -27,6 +27,7 @@ import random
 import subprocess
 import textwrap
 import time
+from collections import Counter
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
@@ -53,6 +54,11 @@ class Budget:
     snippet_max_lines: int = 150
     test_timeout_s: float = 300.0
     max_tokens_extra: int = 0  # added to every request's cap; a hosted reasoning model spends tokens before it answers
+    protocol: str = "v1"  # "v2" (ADR 0014): the engine changes the v1 arms motivated; v1 stays exactly as pre-registered
+
+    @property
+    def v2(self) -> bool:
+        return self.protocol == "v2"
 
 
 def load_tasks(path: Path) -> dict[str, dict[str, Any]]:
@@ -93,15 +99,23 @@ class Repairer:
         self.calls = 0
         self.tokens = [0, 0]
         self.call_log: list[dict[str, Any]] = []  # per call: latency and how it ended (a hosted reasoning model can run out of tokens)
+        self.free_declines = 0  # v2: unchanged-snippet responses not charged to the budget (capped)
+        self.empty_retries = 0  # v2: empty endpoint responses retried, not charged
 
     def _ask(self, model: str, system: str, prompt: str, *, temperature: float, max_tokens: int) -> str:
         self.calls += 1
-        c = self.llm.complete(model, system, [{"role": "user", "content": prompt}], max_tokens=max_tokens, temperature=temperature,
-                              timeout_s=600.0)
-        self.tokens[0] += c.tokens_in
-        self.tokens[1] += c.tokens_out
-        self.call_log.append({"model": model, "latency_s": round(c.latency_s, 2), "tokens_in": c.tokens_in, "tokens_out": c.tokens_out,
-                              "finish_reason": c.finish_reason, "empty": not str(c.text).strip()})
+        for attempt in range(3 if self.budget.v2 else 1):  # v2: an empty endpoint response is retried, not charged
+            c = self.llm.complete(model, system, [{"role": "user", "content": prompt}], max_tokens=max_tokens, temperature=temperature,
+                                  timeout_s=600.0)
+            self.tokens[0] += c.tokens_in
+            self.tokens[1] += c.tokens_out
+            empty = not str(c.text).strip()
+            self.call_log.append({"model": model, "latency_s": round(c.latency_s, 2), "tokens_in": c.tokens_in, "tokens_out": c.tokens_out,
+                                  "finish_reason": c.finish_reason, "empty": empty, **({"retry": attempt} if attempt else {})})
+            if not empty:
+                break
+            if attempt < (2 if self.budget.v2 else 0):
+                self.empty_retries += 1
         return str(c.text)
 
     def solve(self, task: dict[str, Any], judge: RepairJudge, root: Path) -> dict[str, Any]:
@@ -124,13 +138,17 @@ class Repairer:
 
         # reproduction scripts, validated at base_commit
         scripts: list[str] = []
-        for i in range(b.repro_calls):
+        n_repro = len(repair.REPRO_FOCUS) if b.v2 else b.repro_calls
+        for i in range(n_repro):
             model = self.models[i % len(self.models)]
-            text = self._ask(model, repair.SYSTEM_REPRO, repair.repro_prompt(issue, repo), temperature=0.7, max_tokens=900 + b.max_tokens_extra)
+            focus = repair.REPRO_FOCUS[i] if b.v2 else ""
+            text = self._ask(model, repair.SYSTEM_REPRO, repair.repro_prompt(issue, repo, focus), temperature=0.7,
+                             max_tokens=900 + b.max_tokens_extra)
             script = repair.parse_repro(text)
             outcome = judge.validate_repro(script) if script else "unparseable"
-            rec["repro"].append({"model": model, "outcome": outcome, "script_hash": _h(script) if script else None})
-            if outcome == "ISSUE REPRODUCED" and script:
+            rec["repro"].append({"model": model, "outcome": outcome, "script_hash": _h(script) if script else None,
+                                 **({"focus": i} if b.v2 else {})})
+            if outcome == "ISSUE REPRODUCED" and script and script not in scripts:
                 scripts.append(script)
         rec["validated_repro"] = len(scripts)
 
@@ -138,13 +156,20 @@ class Repairer:
         arms = [("repair_rewrite", m, t) for m in self.models for t in ("fix", "fix_think")]
         for a in arms:
             bandit.add_arm(a)
-        best: tuple[tuple[int, int], dict[str, Any]] | None = None
+        best: tuple[tuple[int, ...], dict[str, Any]] | None = None
+        oks: list[dict[str, Any]] = []  # v2: every candidate that passed L0-L2, for the consensus tie-break
+        declines: Counter[str] = Counter()  # v2: unchanged-snippet responses per snippet
         visit = 0
         while self.calls < b.llm_calls and time.monotonic() - t0 < b.search_s:
-            snip, _ = ranked[visit % len(ranked)]
+            live = [sr for sr in ranked if declines[sr[0].symbol_path] < 2] if b.v2 else ranked
+            if not live:
+                rec["stop"] = "every snippet declined"
+                break
+            snip, _ = live[visit % len(live)]
             first_pass = visit < len(ranked)
             visit += 1
-            arm = bandit.select(("repair",), self.rng)
+            # v2: the first proposal on each snippet comes from the largest model (LEVI-style routing); the bandit spends the rest
+            arm = ("repair_rewrite", self.models[0], "fix") if (b.v2 and first_pass) else bandit.select(("repair",), self.rng)
             _, model, template = arm
             assert model is not None
             file_text = files[snip.file]
@@ -157,7 +182,12 @@ class Repairer:
                 rec["candidates"].append({"snippet": snip.symbol_path, "model": model, "template": template, "stage": "llm", "reason": str(exc)[:300]})
                 bandit.update(("repair",), arm, 0.0, cost=time.monotonic() - ts)
                 continue
-            rw = repair.parse_fix(text, snip, file_text)
+            rw = repair.parse_fix(text, snip, file_text, allow_unfenced=b.v2)
+            if b.v2 and not rw.ok and rw.reason == "identical to the original":
+                declines[snip.symbol_path] += 1
+                if self.free_declines < b.llm_calls // 2:  # "the bug is not here" is not charged, up to half the budget
+                    self.free_declines += 1
+                    self.calls -= 1
             cand: dict[str, Any] = {"snippet": snip.symbol_path, "model": model, "template": template, "prompt_hash": _h(prompt),
                                     "response_hash": _h(text)}
             verdict: Verdict | None = None
@@ -178,19 +208,33 @@ class Repairer:
             self.log(f"  [{self.calls:>2}] {model}/{template} {snip.name[:40]}: {cand.get('stage')} "
                      f"{'ok' if cand.get('ok') else (cand.get('reason') or (cand.get('reasons') or [''])[0])[:90]}"
                      + (f" votes {verdict.votes}/{len(scripts)}" if verdict is not None and verdict.ok else ""))
-            if verdict is not None and verdict.ok:
+            if verdict is not None and verdict.ok and b.v2:
+                # v2: no early stop on the reproductions; pick at the end by votes, then by how many independent
+                # candidates made the same edit (Agentless-style consensus), then the smaller diff
+                cand["signature"] = repair.diff_signature(verdict.diff)
+                oks.append(cand)
+            elif verdict is not None and verdict.ok:
                 key = (verdict.votes, -changed_lines(verdict.diff))
                 if best is None or key > best[0]:
                     best = (key, cand)
                 if scripts and verdict.votes == len(scripts):
                     rec["stop"] = "every validated reproduction resolved"
                     break
+        if b.v2 and oks:
+            agree = Counter(c["signature"] for c in oks)
+            for c in oks:
+                c["consensus"] = agree[c["signature"]]
+            top = max(oks, key=lambda c: (c["votes"], c["consensus"], -c["changed_lines"]))
+            best = ((top["votes"], top["consensus"], -top["changed_lines"]), top)
         rec.setdefault("stop", "budget")
         rec["submission"] = None if best is None else {k: best[1][k] for k in ("snippet", "model", "template", "diff", "votes", "changed_lines",
                                                                                "new_source", "prompt_hash", "response_hash")}
         rec["search_s"] = round(time.monotonic() - t0, 1)
         rec["llm_calls"], rec["tokens_in"], rec["tokens_out"] = self.calls, self.tokens[0], self.tokens[1]
         rec["calls"] = self.call_log
+        rec["protocol"] = b.protocol
+        if b.v2:
+            rec["free_declines"], rec["empty_retries"] = self.free_declines, self.empty_retries
         rec["arms"] = {f"{m}/{t}": bandit.posterior(("repair",), (o, m, t))[0] for o, m, t in arms}
         return rec
 
@@ -249,7 +293,8 @@ def run(sample: Sequence[str], tasks: dict[str, dict[str, Any]], out_dir: Path, 
             box = ctr.Container(task["image"], f"colloid-swe-{iid.lower()}")
             box.start()
             try:
-                judge = RepairJudge(box, task["repo"], task["version"], grader_python=grader_python, test_timeout=budget.test_timeout_s, log=log)
+                judge = RepairJudge(box, task["repo"], task["version"], grader_python=grader_python, test_timeout=budget.test_timeout_s, log=log,
+                                    protocol=budget.protocol)
                 root = judge.export(inst_dir / "repo")
                 rec.update(Repairer(llm, models, budget, seed=n, log=log).solve(task, judge, root))
             finally:

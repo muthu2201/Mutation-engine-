@@ -59,8 +59,12 @@ class Verdict:
 
 class RepairJudge:
     def __init__(self, container: Container, repo: str, version: str, *, grader_python: str, test_timeout: float = 300,
-                 repro_timeout: float = 90, log: Callable[[str], None] = print) -> None:
+                 repro_timeout: float = 90, log: Callable[[str], None] = print, protocol: str = "v1") -> None:
         self.c, self.repo, self.version = container, repo, version
+        # v2 (ADR 0014): transitive test selection, six files, each run on its own; a file that times out at
+        # base_commit is left out of the comparison instead of turning a partial log into false regressions
+        self.protocol = protocol
+        self.timed_out_at_base: set[str] = set()
         self.grader_python, self.test_timeout, self.repro_timeout, self.log = grader_python, test_timeout, repro_timeout, log
         self.root: Path | None = None
         self._base: dict[tuple[str, ...], dict[str, str]] = {}
@@ -79,20 +83,35 @@ class RepairJudge:
             raise RuntimeError(f"log parser failed: {res.stderr[-500:]}")
         return dict(json.loads(res.stdout))
 
-    def run_tests(self, files: Sequence[str]) -> tuple[dict[str, str], str]:
-        ex = self.c.run(repos.test_command(self.repo, files), timeout=self.test_timeout)
-        return self.parse(ex.output), ex.output[-3000:] + ("\n[timed out]" if ex.timed_out else "")
+    def run_tests(self, files: Sequence[str], *, at_base: bool = False) -> tuple[dict[str, str], str]:
+        if self.protocol == "v1":
+            ex = self.c.run(repos.test_command(self.repo, files), timeout=self.test_timeout)
+            return self.parse(ex.output), ex.output[-3000:] + ("\n[timed out]" if ex.timed_out else "")
+        merged: dict[str, str] = {}
+        tail = ""
+        for f in files:
+            if not at_base and f in self.timed_out_at_base:
+                continue
+            ex = self.c.run(repos.test_command(self.repo, [f]), timeout=self.test_timeout)
+            if ex.timed_out and at_base:
+                self.timed_out_at_base.add(f)
+                continue
+            merged.update(self.parse(ex.output))
+            tail = ex.output[-3000:] + ("\n[timed out]" if ex.timed_out else "")
+        return merged, tail
 
     def baseline(self, files: Sequence[str]) -> dict[str, str]:
         key = tuple(files)
         if key not in self._base:
             self.c.reset()
-            self._base[key], _ = self.run_tests(files)
+            self._base[key], _ = self.run_tests(files, at_base=True)
         return self._base[key]
 
     def tests_for(self, edited: Sequence[str]) -> list[str]:
         assert self.root is not None
-        return repos.select_tests(self.root, edited)
+        if self.protocol == "v1":
+            return repos.select_tests(self.root, edited)
+        return repos.select_tests(self.root, edited, limit=6, transitive=True)
 
     # ------------------------------------------------------------------ reproduction scripts
     def run_repro(self, script: str) -> str:

@@ -199,7 +199,7 @@ def cmd_swebench(args: argparse.Namespace) -> int:
     run_args = {"gold": data / "gold.jsonl", "grader_python": args.grader_python, "keep_images": args.keep_images}
     if args.provider != "local":  # the API arm (ADR 0012): the same search, a hosted model
         api, api_model, api_pace, extra = _hosted(args)
-        budget = swe.Budget(search_s=args.search_minutes * 60, llm_calls=args.llm_calls, max_tokens_extra=extra)
+        budget = swe.Budget(search_s=args.search_minutes * 60, llm_calls=args.llm_calls, max_tokens_extra=extra, protocol=args.protocol)
         swe.run(sample, tasks, Path(args.out), api, [api_model], budget=budget, pace=api_pace, **run_args)
         return 0
     models = [m for m in (args.model or list(MODEL_FILES)) if Path(MODEL_FILES[m]).exists()]
@@ -207,7 +207,7 @@ def cmd_swebench(args: argparse.Namespace) -> int:
     server.start()
     try:
         llm = OpenAICompatProvider(server.base_url, models, name="local")
-        budget = swe.Budget(search_s=args.search_minutes * 60, llm_calls=args.llm_calls)
+        budget = swe.Budget(search_s=args.search_minutes * 60, llm_calls=args.llm_calls, protocol=args.protocol)
         swe.run(sample, tasks, Path(args.out), llm, models, budget=budget, **run_args)
     finally:
         server.stop()
@@ -526,6 +526,7 @@ def main(argv: list[str] | None = None) -> int:
     sw.add_argument("--search-minutes", type=float, default=20.0)
     sw.add_argument("--llm-calls", type=int, default=16)
     sw.add_argument("--keep-images", action="store_true")
+    sw.add_argument("--protocol", choices=["v1", "v2"], default="v1", help="v2: the engine changes of ADR 0014 (v1 is ADR 0011/0012)")
     sw.add_argument("--lake", default="git:colloid/datalake")
     sw.add_argument("--provider", choices=["local", "openrouter", "nvidia", "gemini", "groq", "xkiro", "bedrock"], default="local",
                     help="hosted arms read their key (e.g. NVIDIA_API_KEY, GEMINI_API_KEY, GROQ_API_KEY) from the environment")
