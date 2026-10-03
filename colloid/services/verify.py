@@ -29,7 +29,7 @@ from typing import Any
 
 from colloid.adapters.cost.static_prices import StaticPriceCostModel
 from colloid.adapters.store.sql_store import open_store
-from colloid.adapters.target.stackzero.adapter import StackZeroTarget
+from colloid.adapters.target import open_target, run_target
 from colloid.core.genome import Genome
 from colloid.core.models import Evaluation, ProgramStatus, Stage, Verdict
 from colloid.core.objectives import gain_percent
@@ -100,7 +100,7 @@ def _verify(store: Any, run: str, top: int, cycles: int, program_ids: list[str] 
         log("no eligible programs (all were promoted, rejected, or already failed L6 for a candidate reason)")
         return {"programs": []}
     replicate = Protocol(f"replicate-x{cycles}", cycles=cycles, measure_s=5.0, chunks=5)
-    ev = Evaluator(StackZeroTarget(), StaticPriceCostModel(), rate=setup.get("rate_rps"), log=log)
+    ev = Evaluator(open_target(run_target(store)), StaticPriceCostModel(), rate=setup.get("rate_rps"), log=log)
     ev.setup(baseline.id)
     ev.noise_floor = {k: float(v) for k, v in (aa.get("noise_floor_per_cycle") or {}).items()}
     gate_ok = bool(aa.get("promotions_allowed"))
@@ -198,7 +198,7 @@ def recheck_breaches(run: str, log: Callable[[str], None] = print) -> list[dict[
             return out
         setup = store.kv_get("setup") or {}
         baseline = next(p for p in store.programs(island="baseline"))
-        ev = Evaluator(StackZeroTarget(), StaticPriceCostModel(), rate=setup.get("rate_rps"), log=log)
+        ev = Evaluator(open_target(run_target(store)), StaticPriceCostModel(), rate=setup.get("rate_rps"), log=log)
         ev.setup(baseline.id)
         rng = random.Random(0)
         for pid in flagged:
@@ -269,7 +269,7 @@ def ablate(run: str, program_id: str, *, cycles: int = 6, log: Callable[[str], N
         prog = store.get_program(program_id)
         if prog is None:
             raise SystemExit(f"unknown program {program_id}")
-        ev = evr = Evaluator(StackZeroTarget(), StaticPriceCostModel(), rate=setup.get("rate_rps"), log=log)
+        ev = evr = Evaluator(open_target(run_target(store)), StaticPriceCostModel(), rate=setup.get("rate_rps"), log=log)
         evr.setup(baseline.id)
         evr.noise_floor = {k: float(v) for k, v in (aa.get("noise_floor_per_cycle") or {}).items()}
         replicate = Protocol(f"replicate-x{cycles}", cycles=cycles, measure_s=5.0, chunks=5)

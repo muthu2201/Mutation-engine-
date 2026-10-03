@@ -121,11 +121,15 @@ class CausalProfiler:
         atlas = self.target.atlas_seed()
         unit = atlas.units[unit_id]
         base = str(unit.tags["baseline_source"])
-        new = _inject_delay_source(base, d)
+        language = str(unit.tags.get("language", "python"))
+        if language == "go":
+            new = self.target.probe_source(unit_id, d)  # `defer colloidProbe(d)()` at function entry
+        else:
+            new = _inject_delay_source(base, d)
         if new is None or new == base:
             return None
         loc = atlas.locus_for(unit_id, Surface.CODE_REGION)
-        payload = {"source": new, "base_hash": sha256_hex(base)[:16], "language": "python", "diff_lines": 0}
+        payload = {"source": new, "base_hash": sha256_hex(base)[:16], "language": language, "diff_lines": 0}
         return Gene.make(loc.id, PayloadKind.VALUE if False else PayloadKind.SOURCE, payload, Provenance(operator="profile_delay"))
 
     def latency_share(self, ws: Genome | Any, seed: int = 0) -> ProfileResult:

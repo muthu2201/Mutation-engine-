@@ -1,0 +1,19 @@
+{
+  "cold": {
+    "run": "stackzero-go",
+    "best_gain_pct": 29.98,
+    "hours_to_best": 1.51,
+    "hours_to_first": 1.059,
+    "verified": 10,
+    "evaluated": 28
+  },
+  "primed": {
+    "run": "stackzero-go-primed",
+    "best_gain_pct": 23.2,
+    "hours_to_best": 1.56,
+    "hours_to_first": 0.697,
+    "verified": 3,
+    "evaluated": 26
+  },
+  "config_differences_besides_the_lake": []
+}

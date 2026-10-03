@@ -191,12 +191,23 @@ class CpuCounterFile:
     for a cgroup's ``cpuacct.usage``. The benchmark's load generator reads it at chunk
     boundaries exactly as it reads a cgroup file.
 
-    A sampling thread walks the tree every ``interval`` seconds and remembers, per process
-    (keyed by pid + creation time, so a recycled pid is a new process), the last CPU time it
-    saw. The counter is the sum of those, so it never goes backwards, and a process that exits
-    keeps the CPU it had at its last sample. What is lost is at most one interval of CPU per
-    exiting process. On Linux, :mod:`tests.portable` measures the error against cgroup
-    accounting."""
+    A sampling thread walks the tree every ``interval`` seconds. Each process (keyed by pid +
+    creation time, so a recycled pid is a new process) contributes its own CPU time **plus the
+    CPU of the children it has already reaped**: Linux and BSD add a reaped child's times, its
+    own reaped descendants included, to the parent's ``children_user``/``children_system``. A
+    child that a live tree member reaps is therefore counted exactly, however late the sampler
+    runs. Without that, a short-lived child lost all the CPU it burned after its last sample,
+    and a loaded CI runner lost about a quarter of a 1.25 s test load.
+
+    - When a child disappears, its parent is credited at least the child's last-seen CPU, as a
+      floor on the parent's reaped CPU, until the parent's reaped field shows it. A race between
+      reaping and sampling can delay the credit but never drop it.
+    - A process reaped outside the tree, or reparented away, keeps its last-seen CPU.
+    - The value never goes backwards.
+    - On Windows, ``children_*`` are always 0, so the counter falls back to last-seen CPU per
+      process: at most one interval lost per exiting process.
+
+    On Linux, :mod:`tests.portable` measures the error against cgroup accounting."""
 
     def __init__(self, root_pid: int, path: Path, interval: float = 0.01) -> None:
         if psutil is None:
@@ -204,7 +215,11 @@ class CpuCounterFile:
         self.root_pid = root_pid
         self.path = Path(path)
         self.interval = interval
-        self._seen: dict[tuple[int, float], int] = {}
+        # live processes: key -> (own CPU ns, reaped-children CPU ns, parent pid)
+        self._live: dict[tuple[int, float], tuple[int, int, int]] = {}
+        self._floor: dict[tuple[int, float], int] = {}  # lower bound on a live process's reaped-children CPU
+        self._retained = 0  # processes gone from the tree whose CPU no tree member holds
+        self._last = 0
         self._lock = threading.Lock()
         self._stop = threading.Event()
         self._thread = threading.Thread(target=self._run, name=f"cpu-counter-{root_pid}", daemon=True)
@@ -232,15 +247,38 @@ class CpuCounterFile:
         except psutil.Error:
             procs = []
         with self._lock:
+            now: dict[tuple[int, float], tuple[int, int, int]] = {}
+            key_of: dict[int, tuple[int, float]] = {}
             for p in procs:
                 try:
                     with p.oneshot():
                         t = p.cpu_times()
                         key = (p.pid, p.create_time())
-                    self._seen[key] = int((t.user + t.system) * 1e9)
+                        ppid = p.ppid()
                 except psutil.Error:
                     continue
-            return sum(self._seen.values())
+                reaped = getattr(t, "children_user", 0.0) + getattr(t, "children_system", 0.0)
+                now[key] = (int((t.user + t.system) * 1e9), int(reaped * 1e9), ppid)
+                key_of[p.pid] = key
+            owed: dict[tuple[int, float], int] = {}
+            for key, (own, reaped, ppid) in self._live.items():
+                if key in now:
+                    continue
+                gone = own + max(reaped, self._floor.pop(key, 0))
+                parent = key_of.get(ppid)
+                if parent is not None and parent in self._live:
+                    owed[parent] = owed.get(parent, 0) + gone  # the parent reaps it: credited through children_*
+                else:
+                    self._retained += gone  # reaped outside the tree, or reparented away
+            for parent, gone in owed.items():
+                growth = now[parent][1] - self._live[parent][1]
+                missing = gone - max(growth, 0)
+                if missing > 0:  # not (yet) visible in the parent's children_*: hold it as a floor
+                    self._floor[parent] = max(self._floor.get(parent, 0), now[parent][1]) + missing
+            self._live = now
+            total = self._retained + sum(own + max(reaped, self._floor.get(k, 0)) for k, (own, reaped, _) in now.items())
+            self._last = max(self._last, total)
+            return self._last
 
     def _run(self) -> None:
         while not self._stop.is_set():

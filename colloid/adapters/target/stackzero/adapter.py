@@ -110,6 +110,7 @@ OBJECTIVES = [
 class StackZeroTarget:
     PORT_API = "1.0.0"
     name = "stackzero"
+    language = "python"
 
     def __init__(
         self,
@@ -126,7 +127,7 @@ class StackZeroTarget:
         self.sandbox = sandbox or select_sandbox()
         self._knobs = load_knobs(observe_system=observe_system)
         self._knob_by_name = {k.name: k for k in self._knobs}
-        self.pg = PostgresCluster(self.sandbox, root=state / "pg")
+        self.pg = PostgresCluster.shared(self.sandbox, state / "pg")
         self.os_layer = OsLayer(state / "os_journal.json")
         self.py_code = PythonAstCode()
         self.c_code = ClangCCode(include_dirs=[str(root / "native")])
@@ -137,8 +138,17 @@ class StackZeroTarget:
         self._atlas: StackAtlas | None = None
 
     # ------------------------------------------------------------------ description
+    @staticmethod
+    def catalog(observe_system: bool = False) -> list[KnobSpec]:
+        """The knob catalogue without instantiating the target (cross-target knob comparison)."""
+        return load_knobs(observe_system=observe_system)
+
     def knobs(self) -> Sequence[KnobSpec]:
         return self._knobs
+
+    def schema_sql(self) -> str:
+        """The database schema script (primary keys are the indexes every stack starts with)."""
+        return (self.root / "db" / "schema.sql").read_text()
 
     def knob(self, name: str) -> KnobSpec:
         return self._knob_by_name[name]
@@ -346,6 +356,11 @@ class StackZeroTarget:
         return changed
 
     def fresh_db(self, tag: str) -> str:
+        if not self.pg.running():
+            # The cluster died under us (OOM killer, an operator, a crash): restart it with the
+            # configuration it had, rather than failing every evaluation that follows.
+            print(f"[{self.name}] evaluation cluster not running; restarting it", file=sys.stderr)
+            self.pg.start(self.pg.current_gucs, self.pg.current_cpus)
         name = f"cz_{tag}_{content_hash(tag, time.time_ns(), length=8)}"
         self.pg.clone(name)
         return name

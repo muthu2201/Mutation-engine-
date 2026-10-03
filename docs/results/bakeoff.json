@@ -1,0 +1,807 @@
+{
+  "implementations": {
+    "stackzero": {
+      "language": "python",
+      "footprint": {
+        "runtime": "CPython 3.12.3 + uvicorn",
+        "runtime_bytes": 61275220,
+        "dependencies": [
+          "click",
+          "h11",
+          "psycopg",
+          "psycopg-pool",
+          "typing-extensions",
+          "uvicorn"
+        ],
+        "dependency_bytes": 1884405,
+        "app_bytes": 102863,
+        "startup_ms_median": 274.1,
+        "startup_ms": [
+          290.3,
+          271.0,
+          274.1,
+          272.4,
+          274.6
+        ],
+        "service_pss_mb_after_warmup": 32.5
+      },
+      "at_equal_load": {
+        "cpu_us_per_req": {
+          "point": 26962.0587,
+          "ci": [
+            25396.4807,
+            28340.2084
+          ],
+          "n": 24
+        },
+        "usd_per_mreq": {
+          "point": 0.3413,
+          "ci": [
+            0.3219,
+            0.3584
+          ],
+          "n": 24
+        },
+        "latency_p50_ms": {
+          "point": 11.25,
+          "ci": [
+            10.324,
+            12.2713
+          ],
+          "n": 1080
+        },
+        "latency_p95_ms": {
+          "point": 113.8672,
+          "ci": [
+            110.281,
+            122.6545
+          ],
+          "n": 1080
+        },
+        "latency_p99_ms": {
+          "point": 149.785,
+          "ci": [
+            142.5419,
+            156.3538
+          ],
+          "n": 1080
+        },
+        "mem_pss_mb": {
+          "point": 218.2749,
+          "ci": [
+            217.5118,
+            218.4143
+          ],
+          "n": 119
+        },
+        "throughput_rps": {
+          "point": 42.9539,
+          "ci": [
+            40.8959,
+            44.5245
+          ],
+          "n": 4
+        }
+      },
+      "spot_checks_under_load": {
+        "mismatches": 0,
+        "first": []
+      },
+      "capacity": {
+        "knee_rps": 90,
+        "curve": [
+          {
+            "offered": 20,
+            "achieved": 18.946148887363723,
+            "p50_ms": 9.395,
+            "p99_ms": 136.2025599999998,
+            "errors": 0,
+            "cpu_us_per_req": 30800.448562499998
+          },
+          {
+            "offered": 40,
+            "achieved": 42.922450131490244,
+            "p50_ms": 10.900500000000001,
+            "p99_ms": 141.25084999999993,
+            "errors": 0,
+            "cpu_us_per_req": 25499.61561875
+          },
+          {
+            "offered": 60,
+            "achieved": 60.98145071313995,
+            "p50_ms": 18.889,
+            "p99_ms": 231.15596,
+            "errors": 0,
+            "cpu_us_per_req": 29008.3732375
+          },
+          {
+            "offered": 90,
+            "achieved": 82.81786878336871,
+            "p50_ms": 28.826,
+            "p99_ms": 304.15877000000063,
+            "errors": 0,
+            "cpu_us_per_req": 26616.212138888888
+          },
+          {
+            "offered": 130,
+            "achieved": 107.70788709645012,
+            "p50_ms": 791.4235000000001,
+            "p99_ms": 2033.4935099999982,
+            "errors": 0,
+            "cpu_us_per_req": 26627.711503846156
+          }
+        ]
+      }
+    },
+    "stackzero-go": {
+      "language": "go",
+      "conformance": {
+        "requests": 501,
+        "mismatches": 0,
+        "first": []
+      },
+      "footprint": {
+        "runtime": "Go (static binary)",
+        "runtime_bytes": 0,
+        "dependencies": [
+          "github.com/davecgh/go-spew",
+          "github.com/jackc/pgpassfile",
+          "github.com/jackc/pgservicefile",
+          "github.com/jackc/pgx/v5",
+          "github.com/jackc/puddle/v2",
+          "github.com/pmezard/go-difflib",
+          "github.com/stretchr/testify",
+          "golang.org/x/crypto",
+          "golang.org/x/sync",
+          "golang.org/x/text",
+          "gopkg.in/yaml.v3"
+        ],
+        "dependency_bytes": 0,
+        "app_bytes": 15066141,
+        "startup_ms_median": 61.4,
+        "startup_ms": [
+          61.4,
+          41.9,
+          72.7,
+          76.4,
+          48.6
+        ],
+        "service_pss_mb_after_warmup": 18.7
+      },
+      "at_equal_load": {
+        "cpu_us_per_req": {
+          "point": 27466.8255,
+          "ci": [
+            25765.7088,
+            28968.4144
+          ],
+          "n": 24
+        },
+        "usd_per_mreq": {
+          "point": 0.3471,
+          "ci": [
+            0.3261,
+            0.3657
+          ],
+          "n": 24
+        },
+        "latency_p50_ms": {
+          "point": 8.1355,
+          "ci": [
+            7.7395,
+            8.5255
+          ],
+          "n": 1080
+        },
+        "latency_p95_ms": {
+          "point": 119.4443,
+          "ci": [
+            110.5861,
+            128.3644
+          ],
+          "n": 1080
+        },
+        "latency_p99_ms": {
+          "point": 152.0556,
+          "ci": [
+            140.3415,
+            168.4393
+          ],
+          "n": 1080
+        },
+        "mem_pss_mb": {
+          "point": 204.2324,
+          "ci": [
+            202.7197,
+            205.761
+          ],
+          "n": 120
+        },
+        "throughput_rps": {
+          "point": 43.0677,
+          "ci": [
+            41.0681,
+            44.6122
+          ],
+          "n": 4
+        }
+      },
+      "vs_reference": {
+        "cost": {
+          "gain_pct": -1.7,
+          "ci_pct": [
+            -3.58,
+            0.12
+          ],
+          "p": 0.12555
+        },
+        "cpu": {
+          "gain_pct": -1.87,
+          "ci_pct": [
+            -3.79,
+            -0.01
+          ],
+          "p": 0.09765
+        },
+        "p50": {
+          "gain_pct": 27.68,
+          "ci_pct": [
+            23.3,
+            33.01
+          ],
+          "p": 0.0005
+        },
+        "p95": {
+          "gain_pct": -4.9,
+          "ci_pct": [
+            -8.51,
+            0.92
+          ],
+          "p": 0.04
+        },
+        "mem": {
+          "gain_pct": 6.43,
+          "ci_pct": [
+            5.37,
+            7.15
+          ],
+          "p": 0.00025
+        }
+      },
+      "spot_checks_under_load": {
+        "mismatches": 0,
+        "first": []
+      },
+      "capacity": {
+        "knee_rps": 90,
+        "curve": [
+          {
+            "offered": 20,
+            "achieved": 18.94540408178731,
+            "p50_ms": 7.1975,
+            "p99_ms": 139.48924999999977,
+            "errors": 0,
+            "cpu_us_per_req": 31699.538699999997
+          },
+          {
+            "offered": 40,
+            "achieved": 43.13490468399234,
+            "p50_ms": 8.211500000000001,
+            "p99_ms": 144.71059999999986,
+            "errors": 0,
+            "cpu_us_per_req": 25830.22945625
+          },
+          {
+            "offered": 60,
+            "achieved": 61.121285258386415,
+            "p50_ms": 11.9925,
+            "p99_ms": 224.07314999999994,
+            "errors": 0,
+            "cpu_us_per_req": 32049.978841666667
+          },
+          {
+            "offered": 90,
+            "achieved": 83.64642655495223,
+            "p50_ms": 16.4215,
+            "p99_ms": 314.9800000000001,
+            "errors": 0,
+            "cpu_us_per_req": 27402.541130555557
+          },
+          {
+            "offered": 130,
+            "achieved": 104.11277495783433,
+            "p50_ms": 869.707,
+            "p99_ms": 2206.0447,
+            "errors": 0,
+            "cpu_us_per_req": 28180.628636538462
+          }
+        ]
+      }
+    },
+    "stackzero-node": {
+      "language": "typescript",
+      "conformance": {
+        "requests": 501,
+        "mismatches": 0,
+        "first": []
+      },
+      "footprint": {
+        "runtime": "node v22.22.0",
+        "runtime_bytes": 123405064,
+        "dependencies": [
+          "pg",
+          "pg-cloudflare",
+          "pg-connection-string",
+          "pg-int8",
+          "pg-pool",
+          "pg-protocol",
+          "pg-types",
+          "pgpass",
+          "postgres-array",
+          "postgres-bytea",
+          "postgres-date",
+          "postgres-interval",
+          "split2",
+          "xtend"
+        ],
+        "dependency_bytes": 475174,
+        "app_bytes": 31344,
+        "startup_ms_median": 187.2,
+        "startup_ms": [
+          187.5,
+          186.9,
+          187.2,
+          189.6,
+          166.0
+        ],
+        "service_pss_mb_after_warmup": 119.3
+      },
+      "at_equal_load": {
+        "cpu_us_per_req": {
+          "point": 27579.5382,
+          "ci": [
+            25811.0591,
+            29160.2033
+          ],
+          "n": 24
+        },
+        "usd_per_mreq": {
+          "point": 0.352,
+          "ci": [
+            0.3301,
+            0.3715
+          ],
+          "n": 24
+        },
+        "latency_p50_ms": {
+          "point": 10.747,
+          "ci": [
+            9.979,
+            11.806
+          ],
+          "n": 1080
+        },
+        "latency_p95_ms": {
+          "point": 136.9606,
+          "ci": [
+            127.1472,
+            145.7747
+          ],
+          "n": 1080
+        },
+        "latency_p99_ms": {
+          "point": 190.83,
+          "ci": [
+            172.1767,
+            200.7417
+          ],
+          "n": 1080
+        },
+        "mem_pss_mb": {
+          "point": 305.9911,
+          "ci": [
+            305.5806,
+            306.1057
+          ],
+          "n": 119
+        },
+        "throughput_rps": {
+          "point": 42.8102,
+          "ci": [
+            40.307,
+            44.5545
+          ],
+          "n": 4
+        }
+      },
+      "vs_reference": {
+        "cost": {
+          "gain_pct": -3.12,
+          "ci_pct": [
+            -5.61,
+            -0.68
+          ],
+          "p": 0.03495
+        },
+        "cpu": {
+          "gain_pct": -2.29,
+          "ci_pct": [
+            -4.82,
+            0.21
+          ],
+          "p": 0.14115
+        },
+        "p50": {
+          "gain_pct": 4.47,
+          "ci_pct": [
+            -2.66,
+            10.57
+          ],
+          "p": 0.1835
+        },
+        "p95": {
+          "gain_pct": -20.28,
+          "ci_pct": [
+            -23.98,
+            -12.04
+          ],
+          "p": 0.0005
+        },
+        "mem": {
+          "gain_pct": -40.19,
+          "ci_pct": [
+            -40.76,
+            -39.93
+          ],
+          "p": 0.00025
+        }
+      },
+      "spot_checks_under_load": {
+        "mismatches": 0,
+        "first": []
+      },
+      "capacity": {
+        "knee_rps": 90,
+        "curve": [
+          {
+            "offered": 20,
+            "achieved": 18.946871314981554,
+            "p50_ms": 8.686,
+            "p99_ms": 155.29162999999966,
+            "errors": 0,
+            "cpu_us_per_req": 32508.602175
+          },
+          {
+            "offered": 40,
+            "achieved": 42.94604500477104,
+            "p50_ms": 10.657,
+            "p99_ms": 159.31097999999986,
+            "errors": 0,
+            "cpu_us_per_req": 26429.667881249996
+          },
+          {
+            "offered": 60,
+            "achieved": 61.16563347717452,
+            "p50_ms": 20.8755,
+            "p99_ms": 271.92074999999994,
+            "errors": 0,
+            "cpu_us_per_req": 30139.544566666667
+          },
+          {
+            "offered": 90,
+            "achieved": 82.41509185161986,
+            "p50_ms": 29.0235,
+            "p99_ms": 326.66921000000025,
+            "errors": 0,
+            "cpu_us_per_req": 25801.805969444446
+          },
+          {
+            "offered": 130,
+            "achieved": 94.7573146724595,
+            "p50_ms": 1203.8165,
+            "p99_ms": 2728.185459999999,
+            "errors": 0,
+            "cpu_us_per_req": 27587.93708076923
+          }
+        ]
+      }
+    },
+    "stackzero-bun": {
+      "language": "typescript",
+      "conformance": {
+        "requests": 501,
+        "mismatches": 0,
+        "first": []
+      },
+      "footprint": {
+        "runtime": "bun 1.3.14",
+        "runtime_bytes": 92752752,
+        "dependencies": [
+          "pg",
+          "pg-cloudflare",
+          "pg-connection-string",
+          "pg-int8",
+          "pg-pool",
+          "pg-protocol",
+          "pg-types",
+          "pgpass",
+          "postgres-array",
+          "postgres-bytea",
+          "postgres-date",
+          "postgres-interval",
+          "split2",
+          "xtend"
+        ],
+        "dependency_bytes": 475174,
+        "app_bytes": 31344,
+        "startup_ms_median": 126.1,
+        "startup_ms": [
+          128.0,
+          125.7,
+          126.1,
+          129.8,
+          122.9
+        ],
+        "service_pss_mb_after_warmup": 116.3
+      },
+      "at_equal_load": {
+        "cpu_us_per_req": {
+          "point": 27948.4806,
+          "ci": [
+            26291.5938,
+            29429.645
+          ],
+          "n": 24
+        },
+        "usd_per_mreq": {
+          "point": 0.3581,
+          "ci": [
+            0.3377,
+            0.3765
+          ],
+          "n": 24
+        },
+        "latency_p50_ms": {
+          "point": 10.439,
+          "ci": [
+            9.759,
+            11.1525
+          ],
+          "n": 1080
+        },
+        "latency_p95_ms": {
+          "point": 127.1465,
+          "ci": [
+            119.371,
+            133.085
+          ],
+          "n": 1080
+        },
+        "latency_p99_ms": {
+          "point": 166.1012,
+          "ci": [
+            152.1751,
+            180.6633
+          ],
+          "n": 1080
+        },
+        "mem_pss_mb": {
+          "point": 385.786,
+          "ci": [
+            385.6199,
+            386.2885
+          ],
+          "n": 119
+        },
+        "throughput_rps": {
+          "point": 42.9557,
+          "ci": [
+            40.7723,
+            44.6599
+          ],
+          "n": 4
+        }
+      },
+      "vs_reference": {
+        "cost": {
+          "gain_pct": -4.93,
+          "ci_pct": [
+            -6.02,
+            -3.85
+          ],
+          "p": 5e-05
+        },
+        "cpu": {
+          "gain_pct": -3.66,
+          "ci_pct": [
+            -4.76,
+            -2.56
+          ],
+          "p": 5e-05
+        },
+        "p50": {
+          "gain_pct": 7.21,
+          "ci_pct": [
+            0.97,
+            12.85
+          ],
+          "p": 0.0235
+        },
+        "p95": {
+          "gain_pct": -11.66,
+          "ci_pct": [
+            -15.42,
+            -4.8
+          ],
+          "p": 0.0005
+        },
+        "mem": {
+          "gain_pct": -76.74,
+          "ci_pct": [
+            -77.41,
+            -76.6
+          ],
+          "p": 0.00025
+        }
+      },
+      "spot_checks_under_load": {
+        "mismatches": 0,
+        "first": []
+      },
+      "capacity": {
+        "knee_rps": 90,
+        "curve": [
+          {
+            "offered": 20,
+            "achieved": 18.951642515167237,
+            "p50_ms": 8.465,
+            "p99_ms": 141.17605999999975,
+            "errors": 0,
+            "cpu_us_per_req": 33529.304025000005
+          },
+          {
+            "offered": 40,
+            "achieved": 43.142976633494214,
+            "p50_ms": 10.2135,
+            "p99_ms": 140.67981999999984,
+            "errors": 0,
+            "cpu_us_per_req": 26381.417849999998
+          },
+          {
+            "offered": 60,
+            "achieved": 61.12637572549367,
+            "p50_ms": 19.216,
+            "p99_ms": 227.63711,
+            "errors": 0,
+            "cpu_us_per_req": 30412.448099999998
+          },
+          {
+            "offered": 90,
+            "achieved": 82.3440609346051,
+            "p50_ms": 31.1995,
+            "p99_ms": 319.8535000000001,
+            "errors": 0,
+            "cpu_us_per_req": 26729.905325
+          },
+          {
+            "offered": 130,
+            "achieved": 101.5147563411583,
+            "p50_ms": 1004.683,
+            "p99_ms": 2350.7625899999966,
+            "errors": 0,
+            "cpu_us_per_req": 27071.034528846154
+          }
+        ]
+      }
+    }
+  },
+  "reference": "stackzero",
+  "protocol": "bakeoff",
+  "reference_calibration": {
+    "knee_rps": 90,
+    "rate_rps": 45.0
+  },
+  "rate_rps": 45.0,
+  "failures": {},
+  "fingerprint": {
+    "cpus": 4,
+    "kernel": "6.18.44-fc-v64",
+    "machine": "x86_64"
+  },
+  "scale_projection": {
+    "assumptions": {
+      "utilisation": 0.6,
+      "usd_per_vcpu_hour": 0.0446,
+      "usd_per_gb_hour": 0.0056,
+      "price_snapshot": "c7i-on-demand-2026",
+      "hours_per_month": 730.0,
+      "unit_vcpus": 3
+    },
+    "implementations": {
+      "stackzero": {
+        "cpu_ms_per_req": 26.96,
+        "stack_pss_mb": 218.3,
+        "load": {
+          "100": {
+            "vcpus": 4.5,
+            "serving_units": 2,
+            "usd_per_month": 148.0
+          },
+          "1000": {
+            "vcpus": 44.9,
+            "serving_units": 15,
+            "usd_per_month": 1476.0
+          },
+          "10000": {
+            "vcpus": 449.4,
+            "serving_units": 150,
+            "usd_per_month": 14761.0
+          }
+        }
+      },
+      "stackzero-go": {
+        "cpu_ms_per_req": 27.47,
+        "stack_pss_mb": 204.2,
+        "load": {
+          "100": {
+            "vcpus": 4.6,
+            "serving_units": 2,
+            "usd_per_month": 151.0
+          },
+          "1000": {
+            "vcpus": 45.8,
+            "serving_units": 16,
+            "usd_per_month": 1503.0
+          },
+          "10000": {
+            "vcpus": 457.8,
+            "serving_units": 153,
+            "usd_per_month": 15029.0
+          }
+        }
+      },
+      "stackzero-node": {
+        "cpu_ms_per_req": 27.58,
+        "stack_pss_mb": 306.0,
+        "load": {
+          "100": {
+            "vcpus": 4.6,
+            "serving_units": 2,
+            "usd_per_month": 152.0
+          },
+          "1000": {
+            "vcpus": 46.0,
+            "serving_units": 16,
+            "usd_per_month": 1516.0
+          },
+          "10000": {
+            "vcpus": 459.7,
+            "serving_units": 154,
+            "usd_per_month": 15154.0
+          }
+        }
+      },
+      "stackzero-bun": {
+        "cpu_ms_per_req": 27.95,
+        "stack_pss_mb": 385.8,
+        "load": {
+          "100": {
+            "vcpus": 4.7,
+            "serving_units": 2,
+            "usd_per_month": 155.0
+          },
+          "1000": {
+            "vcpus": 46.6,
+            "serving_units": 16,
+            "usd_per_month": 1541.0
+          },
+          "10000": {
+            "vcpus": 465.8,
+            "serving_units": 156,
+            "usd_per_month": 15406.0
+          }
+        }
+      }
+    }
+  }
+}

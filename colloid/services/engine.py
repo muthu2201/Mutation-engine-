@@ -36,6 +36,7 @@ from typing import Any
 
 from colloid.adapters.cost.static_prices import StaticPriceCostModel
 from colloid.adapters.store.sql_store import open_store
+from colloid.adapters.target import open_target
 from colloid.adapters.target.stackzero.adapter import StackZeroTarget
 from colloid.adapters.telemetry.jsonl import JsonlTelemetry
 from colloid.core import budget as budget_mod
@@ -85,7 +86,7 @@ class Engine:
         self.rng = random.Random(config.seed)
         run_dir = config.run_dir()
         run_dir.mkdir(parents=True, exist_ok=True)
-        self.target = target or StackZeroTarget()
+        self.target = target or open_target(config.target)
         self.cost = StaticPriceCostModel(config.cost_usd_per_vcpu_hour, config.cost_usd_per_gb_hour)
         self.store = open_store(config.resolved("store_url"))
         self.tele = JsonlTelemetry(config.resolved("telemetry_path"), run_id=config.name, echo=True)
@@ -95,7 +96,8 @@ class Engine:
         self.knobs = {k.name: k for k in self.target.knobs()}
         self.knob_of_locus = self.target.knob_name_of_locus(self.atlas)
         self.baseline_id = self.target.baseline_id()
-        self.factory = MutationFactory(self.atlas, self.knobs, self.knob_of_locus, self.target.unit_source, self.target.mutation_context, self.providers)
+        self.factory = MutationFactory(self.atlas, self.knobs, self.knob_of_locus, self.target.unit_source, self.target.mutation_context, self.providers,
+                                       parse_code=getattr(self.target, "parse_response", None))
         self.bandit = ThompsonBandit(prior_mean=config.bandit_prior_mean)
         self.surrogate = Surrogate()
         self.ledger = LineageLedger()
@@ -137,6 +139,7 @@ class Engine:
                 self.tele.emit("profile.failed", error=repr(exc)[:300])
         if self.cfg.aa_runs:
             self._aa_test()
+        self._load_rules()
         self._build_islands()
         self._lake_priors()
         self.store.put_atlas(self.atlas)
@@ -152,7 +155,7 @@ class Engine:
             for path in self.atlas.paths:
                 for uid in path.unit_ids:
                     u = self.atlas.units[uid]
-                    if u.kind == UnitKind.FUNCTION and u.layer.value == "svc" and u.tags.get("language") == "python" and uid not in code_units:
+                    if u.kind == UnitKind.FUNCTION and u.layer.value == "svc" and u.tags.get("language") in ("python", "go") and uid not in code_units:
                         code_units.append(uid)
             lev = prof.causal_leverage(code_units[: prof.cfg.top_units], log=lambda m: self.tele.emit("log", msg=m))
             decorate_atlas(self.atlas, latency, lev)
@@ -212,7 +215,32 @@ class Engine:
         for a in self.cfg.llm_arms:
             for tmpl in a.templates:
                 arms.append(("llm_rewrite", a.model, tmpl))
+        for rule in sorted(self.factory.rule_options):
+            arms.append(("rule_apply", None, rule))
         return arms
+
+    def _load_rules(self) -> None:
+        """CRL rules from the lake become ``rule_apply`` arms: each rule's proposals for *this*
+        stack, mapped onto its index knobs (``services.rules``). Only with ``rules: true``."""
+        if not (self.cfg.rules and self.cfg.lake):
+            return
+        from colloid.adapters.lake import open_lake
+        from colloid.services import rules as rules_svc
+
+        try:
+            rules = rules_svc.load_rules(open_lake(self.cfg.lake))
+            mapped = rules_svc.apply(rules, self.atlas, list(self.knobs.values()), self.target.schema_sql())
+        except Exception as exc:
+            self.tele.emit("rules.unavailable", location=self.cfg.lake, error=repr(exc)[:300])
+            return
+        locus_of = {name: lid for lid, name in self.knob_of_locus.items()}
+        options: dict[str, list[tuple[str, str]]] = {}
+        for m in mapped:
+            if m.knob is not None and m.knob in locus_of:
+                options.setdefault(m.proposal.rule, []).append((locus_of[m.knob], f"{m.proposal.render()} via {m.knob}"))
+            self.tele.emit("rules.proposal", rule=m.proposal.rule, index=m.proposal.render(), knob=m.knob, exact=m.exact,
+                           queries=len(m.proposal.queries))
+        self.factory.rule_options = options
 
     def _island_arms(self, island: str) -> list[Arm]:
         if island == "redteam":
@@ -225,7 +253,7 @@ class Engine:
             op = arm[0]
             if op in CODE_OPS and not has_code:
                 continue
-            if op.startswith("knob") and not has_knob:
+            if (op.startswith("knob") or op == "rule_apply") and not has_knob:
                 continue
             arms.append(arm)
         return arms or self._all_arms()
@@ -343,7 +371,8 @@ class Engine:
         from colloid.services.lake import operator_evidence
 
         try:
-            evidence = operator_evidence(open_lake(self.cfg.lake))
+            # with lake_transfer, what other implementations proved about an arm counts too
+            evidence = operator_evidence(open_lake(self.cfg.lake), target=None if self.cfg.lake_transfer else self.target.name)
         except Exception as exc:
             self.tele.emit("lake.unavailable", location=self.cfg.lake, error=repr(exc)[:300])
             return
@@ -359,10 +388,15 @@ class Engine:
         if gen != 1 or not self.cfg.lake:
             return []
         from colloid.adapters.lake import open_lake
-        from colloid.services.lake import seeds
+        from colloid.services.lake import seeds, transfer_seeds
 
         try:
-            found, skipped = seeds(open_lake(self.cfg.lake), self.atlas, self.knob_of_locus, top=self.cfg.lake_seed_top)
+            lake = open_lake(self.cfg.lake)
+            found, skipped = seeds(lake, self.atlas, self.knob_of_locus, top=self.cfg.lake_seed_top, target=self.target.name)
+            if self.cfg.lake_transfer:
+                moved, why_not = transfer_seeds(lake, self.atlas, self.knob_of_locus, self.knobs, target=self.target.name, top=self.cfg.lake_seed_top)
+                found += moved
+                skipped += why_not
         except Exception as exc:  # an unreadable or unverifiable lake must not stop a run
             self.tele.emit("lake.unavailable", location=self.cfg.lake, error=repr(exc)[:300])
             return []

@@ -449,17 +449,125 @@ Discoveries feed back as *data*:
 - **bandit priors**: every attribution in the lake scores the arm that produced the gene,
   as a win worth its contribution, or zero for a hitchhiker. These enter
   `ThompsonBandit.seed` as weighted pseudo-observations, so measured credit in the new run
-  still dominates.
+  still dominates;
+- **transfer seeds** (`lake_transfer`): another implementation's carrying genes on shared
+  loci, for example a database index proven on Python and offered to the Go run;
+- **learned rules** (CRL, §17): patterns generalised from verified genes become `rule_apply`
+  arms that propose candidates on any implementation. The rules are data in the lake. Their
+  language is reviewed code.
 
 Lessons about the *method* become reviewed code. The hitchhikers this run found led to
 `verify --ablate` and carrying-only materialisation.
 
 The judge is out of reach by construction. `policy.JUDGE_PATHS` lists the evaluator,
 `tests/`, `stress/`, `core/stats.py`, `core/lake.py`, the sandbox, the load generator and the
-platform layer. L0 rejects any gene there, and the engine refuses to start on an Atlas that
+platform layer. Every language's L0 scanner and fuzz driver (`gopolicy/`, `gofuzz/`,
+`native_fuzz.c`) lives inside the evaluator package, so it is covered by the same rule. L0 rejects any gene there, and the engine refuses to start on an Atlas that
 exposes one. An optimiser that can edit its grader will.
 
-## 16. Branches
+## 16. Many implementations, one judge (ADR 0008)
+
+The StackZero *contract* (HTTP API, Postgres schema and data, SQL, the deliberate
+first-version inefficiencies) has one implementation per language:
+
+| target | language | runtime | Colloid can… |
+|---|---|---|---|
+| `stackzero` | Python + C | CPython + uvicorn, `libshopnative` | mutate code (Python, C), knobs at every layer |
+| `stackzero-go` | Go | static binary, pgx | mutate code (Go), Go runtime/build knobs, shared OS/DB knobs |
+| `stackzero-node` / `stackzero-bun` | TypeScript | Node / Bun, node-postgres | measure; shared OS/DB knobs (no TypeScript code loci yet) |
+
+**Why one contract and not separate demo apps.** With the same contract, the same workloads,
+oracle and benchmark protocol judge every implementation. That makes three things possible:
+- a port's *conformance* is decided by the differential oracle, not by inspection;
+- language comparisons are fair: same algorithms, same database, same requests;
+- knowledge can transfer, because a database index is the *same locus* on every implementation.
+
+**What is per language, and what is not.**
+- *Per language*:
+  - the code representation, built on the language's own parser (`ast`, clang, `go/ast` via
+    `gounits`);
+  - the L0 scanner (`policy.scan_python`, `scan_c`, the Go `gopolicy` tool in the evaluator
+    package);
+  - the canary suite (Python 17, Go 14), which must reach 100% rejection;
+  - the deep checks:
+    - C: differential fuzzer and sanitizers;
+    - Go: kernel differential fuzzer (`gofuzz`) and an oracle pass on the race-detector build.
+- *Shared*:
+  - workloads, oracles, the benchmark protocol, the A/A gate and the statistics;
+  - the SQL policy (every gene's string constants) and the **dynamic SQL audit** (what a
+    candidate actually sent, from `pg_stat_statements`). Session settings and temporary
+    tables on a pooled connection outlive the request, so the audit catches cross-request
+    caches assembled at run time;
+  - candidate databases revoke `TEMPORARY`.
+
+**Shared knowledge.** Knob loci with the same name and the same specification
+(`knob_fingerprint`: mechanism, key, type, unit, DDL) mean the same thing on every
+implementation. With `lake_transfer: true`, a run seeds generation 1 with other
+implementations' carrying genes on such loci. The run must re-verify them: the lake is a prior,
+never a verdict. Code genes never transfer between languages. Query units are shared too:
+placeholders are normalised, so a statement issued by Python and by Go is one Atlas unit.
+
+## 17. CRL — learned rules (ADR 0009)
+
+`colloid.core.rules` is the start of Colloid's own language: declarative optimisation rules
+mined from verified evidence.
+
+```
+rule equality-filter-sorted-index v1 {
+  doc "Index the equality filter together with the sort order the read asks for, ..."
+  when query filters $table.$column = ? and orders by $table.$sort
+  propose index $table ($column, $sort)
+  unless covered
+  evidence lake fc1bc599367a2d44... gain 7.48% ci [1.11%, 13.44%] on stackzero
+}
+```
+
+- **Facts, not syntax trees.** `sqlfacts` reads the DML that services issue (tables, aliases,
+  equality-to-parameter conjuncts, the leading ORDER BY keys per table). It is conservative:
+  a top-level `OR`, a range or a computed sort key yields no fact. A rule may fail to fire;
+  it never fires wrongly.
+- **Evidence or nothing.** The parser refuses a rule without evidence lines or with an
+  evidence CI that includes zero. `colloid rules mine` writes evidence lines from each
+  carrying gene's own leave-one-out contribution, explained by the query the index serves.
+- **Identity.** `rule_id` hashes the canonical *meaning*; the lake record (`kind: rule`) hashes
+  meaning + evidence. Rules live in the lake; the language lives in `main`.
+- **Use.** `colloid rules apply --target T` maps proposals onto T's index loci. In a run,
+  `rules: true` adds one `rule_apply` arm per rule; its proposals go through L0–L6 like any
+  other.
+
+## 18. The evidence ladder (`colloid ladder`)
+
+`colloid.core.ladder` turns the lake, the canary reports and a transfer A/B into gate
+verdicts:
+
+| rung | meaning |
+|---|---|
+| J | the judge holds on every implementation |
+| M1a | language neutrality |
+| M1b | transfer pays |
+| M2 | rules generalise to a held-out schema |
+| M3 | rules work across languages |
+
+The criteria are fixed in code and were committed before the measurements they judge (ADR
+0008). The roadmap is: build the next rung only when the gate below it passes. That is the
+mechanism that keeps the project from building ahead of its evidence.
+
+## 19. The bake-off (`colloid bakeoff`)
+
+One contract, every implementation, one judge:
+
+- **conformance**: the differential oracle against the Python reference, deep sequences,
+  several seeds;
+- **footprint**: runtime + dependencies + app bytes, third-party packages, start-up time,
+  service memory;
+- **cost and latency at equal load**: every implementation is an arm of *one* interleaved
+  benchmark comparison with paired CIs against the reference (a bench arm may be served by
+  another target);
+- **capacity**: the evaluator's knee sweep per implementation;
+- **scale projection**: monthly compute at 100 / 1k / 10k req/s from measured CPU per request
+  and memory, priced with the engine's cost model, with every assumption printed.
+
+## 20. Branches
 
 Three branches, each with exactly one job. Code and data never share a branch.
 
@@ -478,33 +586,38 @@ Three branches, each with exactly one job. Code and data never share a branch.
 - A new data branch is created only when there is a real artifact for it. ADR 0007 records
   the milestones that would justify more.
 
-## 17. Repository map
+## 21. Repository map
 
 ```
 colloid/
   core/            pure domain (no I/O): atlas, genome, knobs, operators, selection,
                    archive, bandit, attribution, splicing, budget, surrogate, novelty, stats,
-                   lake (records + hash chain)
+                   lake (records + hash chain), rules/ (CRL: facts, grammar, matching), ladder
   ports/           typing.Protocol contracts + versions (incl. LakeStore)
   adapters/        llm/ code/ sandbox/ (linux + portable) store/ cost/ telemetry/ bench/
-                   target/stackzero/ lake/ (directory + git branch) gitref.py platform.py
+                   target/ (registry: stackzero, stackzero_go, stackzero_ts) code/ (python_ast,
+                   c_clang, go_ast + gosrc/gounits.go) lake/ (directory + git branch) gitref.py platform.py
   services/        engine (the generation loop), factory, shapley_runner, splice_runner,
                    config, cli, dashboard, report, verify (L6 + replicate + ablation),
-                   lake (ingest, seeds, priors), stack (materialise + publish)
+                   lake (ingest, seeds, priors, transfer), stack (materialise + publish),
+                   rules (mine/apply CRL), ladder (gate inputs), bakeoff (language comparison)
 colloid_evaluator/ the judge: policy (L0 + JUDGE_PATHS), oracles (L2/L6), protocol (L4/L5),
                    profiler (causal leverage), cascade (L0–L6 + A/A noise floor), canaries,
-                   workloads, fingerprint, native_fuzz.c (ptrace-free leak check)
-targets/stackzero/ service/ (the shop API) · native/ (libshopnative C) · db/ (schema + seed)
+                   workloads, fingerprint, native_fuzz.c (ptrace-free leak check),
+                   gopolicy/ (Go L0 scanner), gofuzz/ (Go kernel differential fuzz)
+targets/stackzero/ service/ (the shop API) · native/ (libshopnative C) · db/ (schema + seed: the contract)
+targets/stackzero-go/  the same contract in Go (pgx)
+targets/stackzero-ts/  the same contract in TypeScript (node-postgres), run on Node and Bun
 tests/             core/ adapters/ evaluator/ conformance/ portable/
 stress/            sandbox and evaluator stress harnesses, results renderer
 scripts/           provision-linux.sh (bench host / container)
 docker/            container docs (+ extra CA certs for proxied builds); Dockerfile at the root
 .github/workflows/ CI: portable matrix (ubuntu/macos/windows) + cgroup v2 root sandbox job
 experiments/       run configs (YAML, data only)
-docs/              this file, INITIAL_RESULTS.md, adr/ (0001–0007)
+docs/              this file, INITIAL_RESULTS.md, POLYGLOT_RESULTS.md, adr/ (0001–0009)
 ```
 
-## 18. Running it
+## 22. Running it
 
 ```
 pip install -e ".[dev]"            # plus the local-LLM extra to use Qwen arms
@@ -519,6 +632,12 @@ colloid verify runs/stackzero --ablate <program>   # what the gain is made of
 colloid redteam-recheck runs/stackzero  # re-adjudicate red-team breach alerts (live vs inert)
 colloid lake ingest runs/stackzero # add verified mutations to the data lake; lake verify | list | push
 colloid stack materialize <record> --carrying-only --out DIR && colloid stack publish DIR --push
+colloid canaries --target stackzero-go       # the Go judge's gate (14/14)
+colloid run experiments/stackzero-go.yaml    # the Go implementation (cold); -primed.yaml warm-starts across languages
+colloid compare runs/stackzero-go runs/stackzero-go-primed   # the transfer A/B
+colloid rules mine --commit        # CRL rules from the lake's verified evidence; rules apply --target T
+colloid ladder --cold runs/stackzero-go --primed runs/stackzero-go-primed   # which gates the evidence passes
+colloid bakeoff --out docs/results/bakeoff.json   # one contract, every implementation, one judge
 colloid report runs/stackzero      # summarise a run
 colloid dashboard runs/stackzero   # live FastAPI dashboard
 ```

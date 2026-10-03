@@ -56,12 +56,13 @@ from colloid.core.models import (
 )
 from colloid.core.stats import calibrate_aa, combine_effects_se, with_noise_floor
 from colloid.ports import CostModel, Workspace
-from colloid_evaluator import oracles, policy
+from colloid_evaluator import memory, oracles, policy
 from colloid_evaluator.fingerprint import fingerprint
 from colloid_evaluator.protocol import (
     HOLDOUT,
     L4,
     L5,
+    PSS_INTERVAL_S,
     SHAPLEY,
     SOAK,
     Arm,
@@ -80,6 +81,7 @@ METRIC_UNITS = {
     "latency_p99_ms": "ms", "mem_pss_mb": "MB", "throughput_rps": "req/s",
 }
 SUSPICION_LOG_RATIO = math.log(2.0)
+GO_KERNEL_FILES = ("service/score.go", "service/util.go")
 
 
 def fresh_seed() -> int:
@@ -176,6 +178,14 @@ class Evaluator:
             shutil.rmtree(old.root, ignore_errors=True)
         return ws
 
+    def touches_go_kernel(self, genome: Genome) -> bool:
+        """A Go gene in a pure-function file (the ranking kernel, text and number helpers)."""
+        for g in genome:
+            unit = self.atlas.units[self.atlas.loci[g.locus_id].unit_id]
+            if unit.tags.get("language") == "go" and unit.tags.get("file") in GO_KERNEL_FILES:
+                return True
+        return False
+
     def touches_native(self, genome: Genome) -> bool:
         for g in genome:
             unit = self.atlas.units[self.atlas.loci[g.locus_id].unit_id]
@@ -186,7 +196,7 @@ class Evaluator:
     # ------------------------------------------------------------------ L0
     def l0(self, program_id: str, genome: Genome) -> StageResult:
         t0 = time.monotonic()
-        verdict = policy.check_genome(genome, self.atlas, self.knobs, self.knob_of_locus)
+        verdict = policy.check_genome(genome, self.atlas, self.knobs, self.knob_of_locus, source_root=self.target.root)
         v = Verdict.PASS if verdict.ok else Verdict.FAIL
         reasons = list(verdict.reasons) + [f"warning: {w}" for w in verdict.warnings]
         return StageResult(self._evaluation(program_id, Stage.L0, "policy-v1", v, reasons, duration=time.monotonic() - t0))
@@ -217,6 +227,11 @@ class Evaluator:
             raw["unit_tests"] = out.strip().splitlines()[-1] if out.strip() else ""
             if not ok:
                 reasons.append(f"unit tests failed: {out[-800:]}")
+        if not reasons and self.touches_go_kernel(genome):
+            ok, out = oracles.go_kernel_fuzz(self.target, self.baseline_ws, ws, seed=fresh_seed(), iterations=3000 if size == "quick" else 20000)
+            raw["go_kernel_fuzz"] = out.strip().splitlines()[-1] if out.strip() else ""
+            if not ok:
+                reasons.append(out[-1200:])
         if not reasons and self.touches_native(genome):
             ok, out = oracles.native_fuzz(self.target.sandbox, self.baseline_ws, ws, self.target.work, seed=fresh_seed(),
                                           iterations=3000 if size == "quick" else 20000, sanitize=size != "quick")
@@ -345,6 +360,18 @@ class Evaluator:
         if not deep.passed:
             return StageResult(self._evaluation(program_id, Stage.L6, "deep", deep.evaluation.verdict, ["deep oracle: " + r for r in deep.evaluation.reasons],
                                                 raw=raw, duration=time.monotonic() - t0), ws)
+        if getattr(self.target, "language", "") == "go" and any(g.payload_kind == PayloadKind.SOURCE for g in genome):
+            # Go code genes: the differential oracle again, against the candidate's race-detector build
+            assert self.oracle is not None
+            try:
+                race = self.oracle.run(ws, seed=fresh_seed(), size="quick", race=True)
+            except RuntimeError as exc:
+                return StageResult(self._evaluation(program_id, Stage.L6, "deep", Verdict.ERROR, [f"race build oracle infrastructure: {exc}"],
+                                                    raw=raw, duration=time.monotonic() - t0), ws)
+            raw["race_oracle"] = {"ok": race.ok, "requests": race.requests, "mismatches": race.mismatches[:3]}
+            if not race.ok:
+                return StageResult(self._evaluation(program_id, Stage.L6, "deep", Verdict.FAIL, ["race build: " + m for m in race.mismatches[:5]],
+                                                    raw=raw, duration=time.monotonic() - t0), ws)
         holdout = self._comparison_stage(Stage.L6, HOLDOUT, program_id, genome, ws, [("baseline", self.baseline_program_id, Genome())], None)
         raw["holdout"] = {"verdict": holdout.evaluation.verdict.value, "reasons": list(holdout.evaluation.reasons)[:5]}
         if holdout.evaluation.verdict in (Verdict.FAIL, Verdict.ERROR):
@@ -369,17 +396,10 @@ class Evaluator:
         if cmp.failures:
             return False, {"reason": cmp.failures.get("child", "failed")}
         ph = cmp.arm_phases("child")[0]
-        pss = np.asarray(ph.pss_mb)
-        if len(pss) < 10:
-            return True, {"samples": len(pss)}
-        t = np.arange(len(pss)) * 0.2
-        slope = float(np.polyfit(t, pss, 1)[0])  # MB per second
-        info = {"pss_start_mb": float(pss[:5].mean()), "pss_end_mb": float(pss[-5:].mean()), "slope_mb_per_s": slope,
-                "cpu_us_per_req": ph.cpu_us_per_req, "requests": sum(ph.chunk_requests)}
-        if slope > 0.5:
-            info["reason"] = f"memory grows {slope:.2f} MB/s under sustained load (leak suspected)"
-            return False, info
-        return True, info
+        service = ph.pss_parts.get("service", ph.pss_mb)
+        ok, info = memory.soak_verdict(service, ph.pss_parts.get("db", []), PSS_INTERVAL_S)
+        info.update(cpu_us_per_req=ph.cpu_us_per_req, requests=sum(ph.chunk_requests))
+        return ok, info
 
     # ------------------------------------------------------------------ Shapley subsets
     def measure_vs_baseline(self, program_id: str, genome: Genome) -> tuple[Measured | None, str]:

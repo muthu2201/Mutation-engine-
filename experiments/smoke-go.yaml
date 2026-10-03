@@ -1,0 +1,26 @@
+# Short end-to-end check of the engine on the Go implementation (one generation, every code
+# path: profiling, knob and LLM arms, L0-L5, the lake warm start with transfer).
+name: smoke-go
+target: stackzero-go
+seed: 3
+generations: 2
+proposals_per_generation: 6
+rate_rps: null
+pool_capacity: 6
+code_operators: [llm_rewrite]
+knob_operators: [knob_sample, knob_perturb]
+llm_arms:
+  - {provider: local, model: qwen2.5-coder-1.5b, templates: [optimize, sql_batching]}
+redteam_island: false
+run_l5_top_k: 2
+promote: true
+shapley_every: 2
+shapley_max_genes: 4
+shapley_budget_subsets: 8
+splice_every: 2
+profile: true
+profile_delays: [0.0, 0.4]
+aa_runs: 0
+max_runtime_minutes: 40
+lake: git:colloid/datalake
+lake_transfer: true

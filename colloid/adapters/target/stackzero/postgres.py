@@ -17,6 +17,11 @@ it is managed with the same care as a candidate:
   session-level GUCs are passed per connection by the service and need no restart.
 * ``autovacuum`` is off on the benchmark cluster: a background vacuum kicking in during one
   arm of an A/B comparison is measurement noise, not a property of the candidate.
+* **One owner.** A cluster belongs to one process at a time (an exclusive lock next to its
+  data directory). Inside that process every target shares one cluster object
+  (:meth:`PostgresCluster.shared`). A second process that tries to start the cluster fails
+  with the owner's pid instead of stopping it, so an experiment cannot be killed by a test,
+  a bake-off or another run that happens to use the same state directory.
 """
 
 from __future__ import annotations
@@ -26,6 +31,7 @@ import os
 import secrets
 import shutil
 import subprocess
+import sys
 import time
 from collections.abc import Mapping
 from pathlib import Path
@@ -44,7 +50,40 @@ class PostgresError(RuntimeError):
     pass
 
 
+_SHARED: dict[Path, PostgresCluster] = {}
+_OWNER_LOCKS: dict[Path, int] = {}
+
+
+def _take_ownership(root: Path) -> None:
+    """Hold the cluster's owner lock for the rest of this process's life (released by exit)."""
+    key = root.resolve()
+    if key in _OWNER_LOCKS or not sys.platform.startswith("linux"):
+        return
+    import fcntl
+
+    root.mkdir(parents=True, exist_ok=True)
+    fd = os.open(root / "owner.lock", os.O_RDWR | os.O_CREAT, 0o600)
+    try:
+        fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError:
+        owner = os.pread(fd, 64, 0).decode(errors="replace").strip() or "unknown"
+        os.close(fd)
+        raise PostgresError(f"the evaluation cluster at {root} is owned by another Colloid process (pid {owner}); "
+                            "wait for it to finish - starting it here would stop that process's database") from None
+    os.ftruncate(fd, 0)
+    os.pwrite(fd, str(os.getpid()).encode(), 0)
+    _OWNER_LOCKS[key] = fd
+
+
 class PostgresCluster:
+    @classmethod
+    def shared(cls, sandbox: LinuxSandbox, root: Path) -> PostgresCluster:
+        """The process-wide cluster object for ``root`` (every target of the process uses it)."""
+        key = Path(root).resolve()
+        if key not in _SHARED:
+            _SHARED[key] = cls(sandbox, root)
+        return _SHARED[key]
+
     def __init__(self, sandbox: LinuxSandbox, root: Path = Path("/opt/colloid/state/pg"), schema_dir: Path | None = None) -> None:
         self.sandbox = sandbox
         self.root = root
@@ -137,6 +176,7 @@ class PostgresCluster:
     def start(self, gucs: Mapping[str, Any] | None = None, cpus: str | None = None, timeout: float = 60.0) -> None:
         if self.running():
             return
+        _take_ownership(self.root)
         self._stop_orphan()
         args = [str(PG_BIN / "postgres"), "-D", str(self.data)]
         for k, v in (gucs or {}).items():
@@ -250,6 +290,9 @@ class PostgresCluster:
         with self.superuser("postgres") as conn:
             conn.execute(f"DROP DATABASE IF EXISTS {name} WITH (FORCE)")
             conn.execute(f"CREATE DATABASE {name} TEMPLATE {TEMPLATE_DB}")
+            # No temporary tables for candidates: on a pooled connection they outlive the request
+            # (a cross-request cache). Database ACLs are not copied from the template.
+            conn.execute(f"REVOKE TEMPORARY ON DATABASE {name} FROM PUBLIC")
 
     def drop(self, name: str) -> None:
         with self.superuser("postgres") as conn:

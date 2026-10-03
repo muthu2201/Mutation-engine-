@@ -1,0 +1,24 @@
+# Fast check of the generation loop on the Go implementation: knob operators only, attribution
+# and splicing every generation (no LLM, no profiling, no A/A).
+name: smoke-go-knobs
+target: stackzero-go
+seed: 5
+generations: 2
+proposals_per_generation: 5
+rate_rps: 30
+pool_capacity: 6
+code_operators: []
+knob_operators: [knob_sample, knob_perturb]
+llm_arms: []
+redteam_island: false
+run_l5_top_k: 2
+promote: true
+shapley_every: 1
+shapley_max_genes: 4
+shapley_budget_subsets: 6
+splice_every: 1
+splice_pool: 6
+splice_top_k: 2
+profile: false
+aa_runs: 0
+max_runtime_minutes: 30

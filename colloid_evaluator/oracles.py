@@ -18,6 +18,15 @@
 4. **Spot checks under load**: response bodies recorded by the load generator for a hidden
    random subset of read requests must equal the reference arm's bodies for the same
    requests (see :func:`compare_spot_checks`).
+
+5. **SQL audit** (every language): after the differential run, the statements the candidate
+   actually sent (``pg_stat_statements`` of its database, role ``shop``) are checked with the
+   same SQL policy as L0 (:func:`policy.sql_violations`). Anything the reference did not also
+   do is a failure. This catches SQL assembled at run time, which no static scan can see.
+
+6. **Go**: the kernel differential fuzz (``gofuzz/driver.go``, the counterpart of
+   ``native_fuzz.c``) for genes in pure-function files, and in L6 the differential oracle
+   against the candidate's race-detector build.
 """
 
 from __future__ import annotations
@@ -37,6 +46,7 @@ from colloid.adapters.sandbox.linux import LinuxSandbox
 from colloid.adapters.target.stackzero.adapter import StackZeroTarget
 from colloid.adapters.target.stackzero.atlas_builder import C_FILES
 from colloid.ports import SandboxSpec, Workspace
+from colloid_evaluator import policy
 from colloid_evaluator.workloads import Request, Universe, oracle_sequence
 
 FLOAT_REL_TOL = 1e-9
@@ -125,7 +135,7 @@ class DifferentialOracle:
         self.universe = universe
         self.baseline_ws = baseline_ws
 
-    def run(self, cand_ws: Workspace, seed: int, size: str = "quick", max_mismatches: int = 5) -> OracleResult:
+    def run(self, cand_ws: Workspace, seed: int, size: str = "quick", max_mismatches: int = 5, *, race: bool = False) -> OracleResult:
         import random
 
         t0 = time.monotonic()
@@ -139,7 +149,8 @@ class DifferentialOracle:
             self.target.apply_shared_state(cand_ws.launch, cand_db)
             ref = self.target.start_service(self.baseline_ws, ref_db, hash_seed=seed % 1000)
             try:
-                cand = self.target.start_service(cand_ws, cand_db, hash_seed=(seed + 1) % 1000)
+                kw = {"race": True} if race else {}
+                cand = self.target.start_service(cand_ws, cand_db, hash_seed=(seed + 1) % 1000, **kw)
             except RuntimeError as exc:
                 return OracleResult(False, 0, [f"candidate failed to start: {str(exc)[:500]}"], time.monotonic() - t0)
             with ref.client(timeout=30.0) as rc, cand.client(timeout=30.0) as cc:
@@ -168,11 +179,71 @@ class DifferentialOracle:
             if cand is not None:
                 out, err = self.target.stop_service(cand)
                 log = (out + err)[-4000:]
+                if race and "WARNING: DATA RACE" in out + err:
+                    i = (out + err).index("WARNING: DATA RACE")
+                    mismatches.insert(0, "race detector: " + " ".join((out + err)[i : i + 600].split())[:500])
             if ref is not None:
                 self.target.stop_service(ref)
+            if cand is not None and not mismatches:
+                mismatches += sql_audit(self.target.pg, ref_db, cand_db)
             self.target.drop_db(ref_db)
             self.target.drop_db(cand_db)
         return OracleResult(not mismatches, len(seq), mismatches, time.monotonic() - t0, log)
+
+
+def sent_statements(pg: Any, dbname: str) -> list[str]:
+    """Statements the unprivileged ``shop`` role ran in ``dbname`` (pg_stat_statements)."""
+    with pg.superuser(dbname) as conn:
+        rows = conn.execute(
+            "SELECT s.query FROM pg_stat_statements s JOIN pg_database d ON d.oid = s.dbid JOIN pg_roles r ON r.oid = s.userid "
+            "WHERE d.datname = %s AND r.rolname = 'shop'", (dbname,)).fetchall()
+    return [str(r[0]) for r in rows]
+
+
+def sql_audit(pg: Any, ref_db: str, cand_db: str) -> list[str]:
+    """SQL-policy violations in what the candidate sent that the reference did not also commit
+    (drivers issue their own transaction control; that is not the candidate's doing)."""
+    try:
+        reference = {r for q in sent_statements(pg, ref_db) for r in policy.sql_violations(q)}
+        found: list[str] = []
+        for q in sent_statements(pg, cand_db):
+            for r in policy.sql_violations(q):
+                if r not in reference:
+                    found.append(f"SQL audit: {r}: {' '.join(q.split())[:160]}")
+        return sorted(set(found))[:5]
+    except Exception:  # the audit is defence in depth; an infrastructure hiccup must not fail a candidate
+        return []
+
+
+GOFUZZ_DIR = Path(__file__).with_name("gofuzz")
+
+
+def go_kernel_fuzz(target: Any, baseline_ws: Workspace, cand_ws: Workspace, *, seed: int, iterations: int) -> tuple[bool, str]:
+    """Differentially fuzz the candidate's pure Go functions against the baseline's: both
+    packages are copied under new package names into one module with the driver, built and
+    run in the sandbox (see ``gofuzz/driver.go``)."""
+    import re as _re
+
+    export = (GOFUZZ_DIR / "export.go.txt").read_text()
+    files: dict[str, bytes] = {
+        "go.mod": (baseline_ws.root / "service" / "go.mod").read_bytes(),
+        "go.sum": (baseline_ws.root / "service" / "go.sum").read_bytes(),
+        "fuzz/main.go": (GOFUZZ_DIR / "driver.go").read_bytes(),
+    }
+    for pkg, ws in (("base", baseline_ws), ("cand", cand_ws)):
+        for src in sorted((ws.root / "service").glob("*.go")):
+            if src.name.endswith("_test.go"):
+                continue
+            text = _re.sub(r"^package main\b", f"package {pkg}", src.read_text(), count=1, flags=_re.M)
+            files[f"{pkg}/{src.name}"] = text.encode()
+        files[f"{pkg}/zz_export.go"] = export.replace("package PKG", f"package {pkg}").encode()
+    rc, out = target.run_go_module(files, [["go", "build", "-trimpath", "-o", "fuzzdriver", "./fuzz"], ["fuzzdriver", str(seed), str(iterations)]],
+                                   label="gofuzz")
+    if rc != 0:
+        if "MISMATCH" in out:
+            return False, "Go kernel differential fuzz: " + out[out.index("MISMATCH"):][:1200]
+        return False, f"Go kernel differential fuzz failed ({rc}): {out[-1200:]}"
+    return True, out
 
 
 def compare_spot_checks(reference: dict[int, bytes], candidate: dict[int, bytes]) -> list[str]:

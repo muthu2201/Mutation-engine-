@@ -28,7 +28,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from colloid.adapters.cost.static_prices import StaticPriceCostModel
-from colloid.adapters.target.stackzero.adapter import StackZeroTarget
+from colloid.adapters.target import open_target
 from colloid.core.genome import Genome
 from colloid.core.ids import sha256_hex
 from colloid.core.models import Gene, PayloadKind, Provenance, Surface
@@ -78,9 +78,10 @@ def evaluate(ev, name, genome):
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--rate", type=float, default=45.0)
+    ap.add_argument("--target", default="stackzero")
     ap.add_argument("--aa-runs", type=int, default=20)
     args = ap.parse_args()
-    ev = Evaluator(StackZeroTarget(), StaticPriceCostModel(), rate=args.rate)
+    ev = Evaluator(open_target(args.target), StaticPriceCostModel(), rate=args.rate)
     ev.setup("baseline")
     out = {"pathologies": [], "canaries": {}, "aa": {}}
     try:

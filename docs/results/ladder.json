@@ -1,0 +1,56 @@
+[
+  {
+    "rung": "J",
+    "title": "the judge holds on every implementation",
+    "status": "passed",
+    "evidence": [
+      "stackzero: 17/17 canaries rejected",
+      "stackzero-go: 14/14 canaries rejected"
+    ],
+    "needs": []
+  },
+  {
+    "rung": "M1a",
+    "title": "language neutrality",
+    "status": "passed",
+    "evidence": [
+      "go: verified programs on stackzero-go",
+      "python: verified programs on stackzero"
+    ],
+    "needs": []
+  },
+  {
+    "rung": "M1b",
+    "title": "knowledge transfers between implementations",
+    "status": "open",
+    "evidence": [
+      "cold stackzero-go: best verified 29.98% after 1.51 h -> 19.85 %/h; first verified after 1.059 h; 10 verified of 28 evaluated",
+      "primed stackzero-go-primed: best verified 23.2% after 1.56 h -> 14.87 %/h; first verified after 0.697 h; 3 verified of 26 evaluated",
+      "VGPH ratio 0.75 (needs >= 1.25); endpoint difference -6.78 pp (needs >= -3.0)"
+    ],
+    "needs": [
+      "a primed run that beats the cold run by the pre-registered margin"
+    ]
+  },
+  {
+    "rung": "M2",
+    "title": "learned rules generalise to a held-out system",
+    "status": "open",
+    "evidence": [
+      "rule equality-filter-sorted-index v1: evidence on stackzero, stackzero-go; held-out targets available: none",
+      "rule equality-filter-index v1: evidence on stackzero, stackzero-go; held-out targets available: none"
+    ],
+    "needs": [
+      "a target whose database schema differs from the rules' evidence, and a verified rule_apply gene on it"
+    ]
+  },
+  {
+    "rung": "M3",
+    "title": "rules work across languages",
+    "status": "blocked",
+    "evidence": [],
+    "needs": [
+      "M2"
+    ]
+  }
+]

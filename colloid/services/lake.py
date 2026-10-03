@@ -15,6 +15,14 @@ is there now (``base_hash``). Applicable programs are injected in generation 1 a
 ``lake_seed`` proposals, and they go through the full cascade like any other candidate. The
 lake is a prior, never a verdict: a mutation verified on another machine, data set or day must
 re-earn its place here.
+
+**Transfer** (``lake_transfer: true``). Verified programs of *other* targets - other
+implementations of the same system - contribute their carrying genes (attribution CI above
+zero) whose locus means exactly the same thing here: a knob of the same name whose
+specification (mechanism, key, type, unit, DDL) is identical on both targets. Code genes
+never transfer between languages; they are skipped and the reason is logged. This is how a
+database index proven on the Python implementation reaches the Go one - as a candidate the Go
+run must verify for itself.
 """
 
 from __future__ import annotations
@@ -27,15 +35,27 @@ from pathlib import Path
 from typing import Any
 
 from colloid.adapters.store.sql_store import open_store
+from colloid.adapters.target import DEFAULT_TARGET, run_target, target_class
 from colloid.core.atlas import StackAtlas
 from colloid.core.ids import sha256_hex
-from colloid.core.lake import ChainError, LedgerEntry, Record, append, head, record_id, sanitize, verify_chain
+from colloid.core.knobs import KnobSpec
+from colloid.core.lake import (
+    ChainError,
+    LedgerEntry,
+    Record,
+    append,
+    canonical,
+    head,
+    record_id,
+    sanitize,
+    verify_chain,
+)
 from colloid.core.models import Gene, PayloadKind, ProgramStatus, Provenance, Stage, Verdict
 from colloid.core.objectives import gain_percent
 from colloid.ports import LakeStore
 from colloid.services.report import _store_url, explain_gene
 
-TARGET = "stackzero"
+TARGET = DEFAULT_TARGET
 
 
 def utc_now() -> str:
@@ -95,6 +115,7 @@ def ingest_run(run: str, lake: LakeStore, *, recorded_at: str | None = None, log
         atlas = store.get_atlas()
         if atlas is None:
             raise ChainError(f"run {run} has no stored Atlas; nothing to ingest")
+        target = run_target(store)
         setup = store.kv_get("setup") or {}
         aa = store.kv_get("aa_test") or {}
         verification = {r["program"]: r for r in (store.kv_get("verification") or {}).get("programs", [])}
@@ -124,7 +145,7 @@ def ingest_run(run: str, lake: LakeStore, *, recorded_at: str | None = None, log
             gene_ids: list[str] = []
             gene_rec_of: dict[str, str] = {}
             for g in genes:
-                gr = gene_record(g, atlas, explain_gene(store, g.id, atlas))
+                gr = gene_record(g, atlas, explain_gene(store, g.id, atlas), target)
                 gene_ids.append(gr.id)
                 gene_rec_of[g.id] = gr.id
                 if gr.id not in existing and gr.id not in new:
@@ -147,7 +168,7 @@ def ingest_run(run: str, lake: LakeStore, *, recorded_at: str | None = None, log
                                     "minimal": {"gain_pct": m["gain_pct"], "ci_pct": m["ci_pct"], "check": "L2 oracle + replicate",
                                                 "genes": sorted(by_explain[e] for e in ablation.get("minimal_genes", []) if e in by_explain)}}
             content = {
-                "target": TARGET, "baseline_id": baseline.id, "program_id": prog.id, "genes": sorted(gene_ids),
+                "target": target, "baseline_id": baseline.id, "program_id": prog.id, "genes": sorted(gene_ids),
                 "status": prog.status.value, "island": prog.island, "operator": prog.operator,
                 "effects": effects, "protocol": protocol, "holdout": holdout, "attribution": attribution,
                 "noise_floor": {"per_cycle": aa.get("noise_floor_per_cycle"), "gate": aa.get("gate")},
@@ -167,7 +188,7 @@ def ingest_run(run: str, lake: LakeStore, *, recorded_at: str | None = None, log
                 continue
             # newer knowledge points at what it extends (strict subsets) or supersedes (same genes, newer evidence)
             content["derived_from"] = sorted(rid for rid, r in {**existing, **new}.items()
-                                             if r.kind == "program" and r.content.get("target") == TARGET and set(r.content["genes"]) <= gset)
+                                             if r.kind == "program" and r.content.get("target") == target and set(r.content["genes"]) <= gset)
             pr = Record.make("program", content)
             rep.programs.append({"record": pr.id, "program": prog.id, "status": prog.status.value,
                                  "cost_gain_pct": (effects.get("cost") or {}).get("gain_pct"), "new": pr.id not in existing})
@@ -195,7 +216,7 @@ def verify(lake: LakeStore) -> dict[str, Any]:
     if orphans:
         raise ChainError(f"{len(orphans)} record(s) present but never entered in the ledger, e.g. {orphans[0][:12]}")
     return {"location": lake.location, "head": h, "entries": len(entries), "genes": sum(1 for e in entries if e.kind == "gene"),
-            "programs": sum(1 for e in entries if e.kind == "program"),
+            "programs": sum(1 for e in entries if e.kind == "program"), "rules": sum(1 for e in entries if e.kind == "rule"),
             "oldest": entries[0].recorded_at if entries else None, "newest": entries[-1].recorded_at if entries else None}
 
 
@@ -207,6 +228,8 @@ def listing(lake: LakeStore) -> list[dict[str, Any]]:
         row: dict[str, Any] = {"seq": e.seq, "recorded_at": e.recorded_at, "kind": e.kind, "id": e.record, "entry_hash": e.entry_hash}
         if e.kind == "gene":
             row["what"] = r.content["explain"]
+        elif e.kind == "rule":
+            row["what"] = f"CRL rule {r.content['name']} v{r.content['version']} ({len(r.content['evidence'])} evidence)"
         else:
             cost = r.content["effects"].get("cost") or {}
             row["what"] = (f"{len(r.content['genes'])} genes, {r.content['status']}, cost {cost.get('gain_pct')}% "
@@ -223,6 +246,7 @@ class Seed:
     genes: list[Gene]
     cost_gain_pct: float | None
     recorded_at: str
+    source: str | None = None  # the target the evidence was measured on, when it is another one
 
 
 def applicable_gene(content: dict[str, Any], atlas: StackAtlas, knob_of_locus: dict[str, str]) -> tuple[Gene | None, str]:
@@ -275,8 +299,86 @@ def seeds(lake: LakeStore, atlas: StackAtlas, knob_of_locus: dict[str, str], *, 
     return out[:top], skipped
 
 
+# ---------------------------------------------------------------------- cross-target transfer
+def knob_fingerprint(spec: KnobSpec) -> str:
+    """What a knob *does*: mechanism, key, value type, unit and extra (e.g. an index's DDL).
+    Equal fingerprints on two targets mean a value set on one means the same on the other.
+    Ranges and defaults are left out: the receiving target's own spec validates the value."""
+    return sha256_hex(canonical({"mechanism": spec.mechanism, "key": spec.key, "type": spec.type, "unit": spec.unit,
+                                 "extra": sanitize(dict(spec.extra))}))[:16]
+
+
+def carrying_genes(content: dict[str, Any]) -> list[str]:
+    """Genes of a program record whose measured contribution has a CI above zero. A
+    leave-one-out ablation of a gene, when present, overrides its Shapley value."""
+    best: dict[str, tuple[int, bool]] = {}
+    for a in content.get("attribution", []):
+        ci = a.get("ci") or [None]
+        if ci[0] is None:
+            continue
+        rank = 1 if a.get("method") == "leave_one_out" else 0
+        if a["gene"] not in best or rank >= best[a["gene"]][0]:
+            best[a["gene"]] = (rank, float(ci[0]) > 0)
+    return sorted(g for g, (_, carries) in best.items() if carries)
+
+
+def transfer_seeds(lake: LakeStore, atlas: StackAtlas, knob_of_locus: dict[str, str], knobs: dict[str, KnobSpec], *, target: str,
+                   top: int = 4) -> tuple[list[Seed], list[str]]:
+    """Seeds from *other* targets' verified programs: their carrying genes whose locus has the
+    same meaning here (see the module docstring). Newest evidence first; one seed per distinct
+    transferable gene set."""
+    records = lake.records()
+    entries = lake.entries()
+    verify_chain(entries, records)
+    catalogs: dict[str, dict[str, KnobSpec]] = {}
+    out: list[Seed] = []
+    skipped: list[str] = []
+    seen: set[frozenset[str]] = set()
+    for e in reversed(entries):
+        r = records[e.record]
+        source = str(r.content.get("target") or DEFAULT_TARGET)
+        if r.kind != "program" or source == target:
+            continue
+        carrying = carrying_genes(r.content)
+        if not carrying:
+            skipped.append(f"{e.record[:12]} ({source}): no gene with a contribution CI above zero")
+            continue
+        if source not in catalogs:
+            try:
+                catalogs[source] = {k.name: k for k in target_class(source).catalog()}
+            except SystemExit:
+                skipped.append(f"{e.record[:12]}: source target {source!r} is not registered here")
+                continue
+        genes: list[Gene] = []
+        for gid in carrying:
+            content = records[gid].content
+            loc = content["locus"]
+            if content["payload_kind"] == PayloadKind.SOURCE.value:
+                skipped.append(f"{gid[:12]} ({source}, {loc.get('language')}): code genes do not transfer between implementations")
+                continue
+            name = str(loc["unit"])
+            src_spec, here = catalogs[source].get(name), knobs.get(name)
+            if src_spec is None or here is None or knob_fingerprint(src_spec) != knob_fingerprint(here):
+                skipped.append(f"{gid[:12]} ({source}): knob {name} does not mean the same thing on {target}")
+                continue
+            g, why = applicable_gene(content, atlas, knob_of_locus)
+            if g is None:
+                skipped.append(f"{gid[:12]} ({source}): {why}")
+                continue
+            genes.append(g)
+        key = frozenset(g.id for g in genes)
+        if not genes or key in seen:
+            continue
+        seen.add(key)
+        minimal = (r.content.get("ablation") or {}).get("minimal") or {}
+        gain = minimal.get("gain_pct") if set(minimal.get("genes", [])) == {g for g in carrying} else (r.content["effects"].get("cost") or {}).get("gain_pct")
+        out.append(Seed(e.record, genes, gain, e.recorded_at, source=source))
+    out.sort(key=lambda s: -(s.cost_gain_pct if s.cost_gain_pct is not None else -1e9))
+    return out[:top], skipped
+
+
 # ---------------------------------------------------------------------- operator priors
-def operator_evidence(lake: LakeStore, target: str = TARGET) -> dict[tuple[str, str | None, str | None], list[float]]:
+def operator_evidence(lake: LakeStore, target: str | None = TARGET) -> dict[tuple[str, str | None, str | None], list[float]]:
     """What earlier runs proved about each *arm* (operator, model, template).
 
     Every attribution the lake holds (exact Shapley or leave-one-out ablation, with its CI)
@@ -284,12 +386,12 @@ def operator_evidence(lake: LakeStore, target: str = TARGET) -> dict[tuple[str, 
     a measured win worth its log-ratio contribution. A gene whose CI spans zero (a
     hitchhiker) is evidence of *no* gain and scores 0. The bandit takes these as weighted
     pseudo-observations (:meth:`ThompsonBandit.seed`), which is how a verified discovery
-    changes where the next run spends its budget."""
+    changes where the next run spends its budget. ``target=None`` pools every target's evidence."""
     records = lake.records()
     verify_chain(lake.entries(), records)
     out: dict[tuple[str, str | None, str | None], list[float]] = {}
     for r in records.values():
-        if r.kind != "program" or r.content.get("target") != target:
+        if r.kind != "program" or (target is not None and r.content.get("target", DEFAULT_TARGET) != target):
             continue
         for a in r.content.get("attribution", []):
             gene = records.get(a["gene"])
@@ -301,4 +403,5 @@ def operator_evidence(lake: LakeStore, target: str = TARGET) -> dict[tuple[str, 
     return out
 
 
-__all__ = ["IngestReport", "LedgerEntry", "Seed", "ingest_run", "listing", "operator_evidence", "seeds", "verify"]
+__all__ = ["IngestReport", "LedgerEntry", "Seed", "carrying_genes", "ingest_run", "knob_fingerprint", "listing", "operator_evidence",
+           "seeds", "transfer_seeds", "verify"]

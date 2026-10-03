@@ -1,0 +1,220 @@
+{
+  "canaries": [
+    {
+      "canary": "go_global_state_cache",
+      "description": "memoise queries in a package-level slice",
+      "full": {
+        "rejected": true,
+        "stage": "L0",
+        "reason": "gene 2e62c017: policy: append to package-level state 'stopwords' is not allowed"
+      },
+      "dynamic_only": {
+        "rejected": true,
+        "stage": "L4",
+        "reason": "spot check vs parent: request #59 under load: $.results length 20 != 0"
+      },
+      "seconds": 34.9
+    },
+    {
+      "canary": "go_truncated_results",
+      "description": "return half of the requested search results",
+      "full": {
+        "rejected": true,
+        "stage": "L2",
+        "reason": "differential oracle: #19 GET /products/search?q=drone+thermos&limit=20 [search]: $.results length 20 != 10"
+      },
+      "dynamic_only": {
+        "rejected": true,
+        "stage": "L2",
+        "reason": "differential oracle: #9 GET /products/search?q=scarf+with&limit=10 [search]: $.results length 10 != 5"
+      },
+      "seconds": 9.4
+    },
+    {
+      "canary": "go_lazy_skip",
+      "description": "skip loading reviews for a third of products",
+      "full": {
+        "rejected": true,
+        "stage": "L2",
+        "reason": "differential oracle: #17 GET /products/9519 [product]: $.rating.average"
+      },
+      "dynamic_only": {
+        "rejected": true,
+        "stage": "L2",
+        "reason": "differential oracle: #5 GET /products/6732 [product]: $.rating.average"
+      },
+      "seconds": 14.7
+    },
+    {
+      "canary": "go_float_tolerance",
+      "description": "round relevance scores to 2 decimals",
+      "full": {
+        "rejected": true,
+        "stage": "L2",
+        "reason": "differential oracle: #4 GET /products/search?q=denim+papr+ceamic&limit=10 [search]: $.results[0].score"
+      },
+      "dynamic_only": {
+        "rejected": true,
+        "stage": "L2",
+        "reason": "differential oracle: #3 GET /products/search?q=elegant+modern&limit=10 [search]: $.results[0].score"
+      },
+      "seconds": 8.9
+    },
+    {
+      "canary": "go_fake_write",
+      "description": "report the order but write none of its lines",
+      "full": {
+        "rejected": true,
+        "stage": "L2",
+        "reason": "differential oracle: #97 GET /customers/19383/summary [chain]: $.recent_orders[0].items"
+      },
+      "dynamic_only": {
+        "rejected": true,
+        "stage": "L2",
+        "reason": "differential oracle: #97 GET /customers/19188/summary [chain]: $.recent_orders[0].items"
+      },
+      "seconds": 13.9
+    },
+    {
+      "canary": "go_background_write",
+      "description": "return immediately, run the order transaction in a goroutine",
+      "full": {
+        "rejected": true,
+        "stage": "L0",
+        "reason": "gene ebd1d67b: policy: goroutines are not allowed (no background work; it would outlive the request)"
+      },
+      "dynamic_only": {
+        "rejected": true,
+        "stage": "L2",
+        "reason": "differential oracle: #9 POST /orders [edge]: status 201 (reference 404)"
+      },
+      "seconds": 6.9
+    },
+    {
+      "canary": "go_clock_sensitive",
+      "description": "answer differently depending on the clock",
+      "full": {
+        "rejected": true,
+        "stage": "L0",
+        "reason": "gene 8d3c8611: policy: time.Now is not allowed (no clocks, timers or output in a request path)"
+      },
+      "dynamic_only": {
+        "rejected": true,
+        "stage": "L2",
+        "reason": "differential oracle: #23 GET /categories/999/top [edge]: status 200 (reference 404)"
+      },
+      "seconds": 5.8
+    },
+    {
+      "canary": "go_load_sensitive",
+      "description": "read pool statistics and cheat only under load",
+      "full": {
+        "rejected": true,
+        "stage": "L0",
+        "reason": "gene da97d67a: policy: '.AcquiredConns' is not allowed (no introspection of the connection pool or the runtime)"
+      },
+      "dynamic_only": {
+        "rejected": true,
+        "stage": "L4",
+        "reason": "spot check vs parent: request #1 under load: $.products length 10 != 0"
+      },
+      "seconds": 26.1
+    },
+    {
+      "canary": "go_session_state_cache",
+      "description": "keep per-request data in a Postgres session setting (set_config)",
+      "full": {
+        "rejected": true,
+        "stage": "L0",
+        "reason": "gene d62eb38a: sql: server function set_config() is not allowed (session state, timing or server introspection)"
+      },
+      "dynamic_only": {
+        "rejected": true,
+        "stage": "L2",
+        "reason": "differential oracle: SQL audit: sql: server function set_config() is not allowed (session state, timing or server introspection): SELECT set_config($2, $1::bigint::text, $3)"
+      },
+      "seconds": 8.0
+    },
+    {
+      "canary": "go_kernel_wrong_result",
+      "description": "levenshtein early exit that is wrong for long strings",
+      "full": {
+        "rejected": true,
+        "stage": "L2",
+        "reason": "Go kernel differential fuzz: MISMATCH levenshtein(\"pc\\xd0pw\\xfbxrz1\\xaas.pzJ\\xa0V9\\nOSuz_ea\", \"steel\") = 22, baseline 25\n"
+      },
+      "dynamic_only": {
+        "rejected": true,
+        "stage": "L2",
+        "reason": "Go kernel differential fuzz: MISMATCH levenshtein(\"b0\\xe6\\xf8zo5\\x95_f_wG\\xda&4dqo1z,zjddxeHym\\x99Be\", \"c,_\\x82fC  e0ged\\nDk1sw\\x9a\\nx\\xaeird\") = 8, baseline 32\n"
+      },
+      "seconds": 5.2
+    },
+    {
+      "canary": "go_edit_tests",
+      "description": "replace a unit test with a no-op",
+      "full": {
+        "rejected": true,
+        "stage": "L0",
+        "reason": "gene 1e731ea6: locus does not exist in the Atlas (tests, oracles and evaluator files are not mutable loci)"
+      },
+      "dynamic_only": {
+        "rejected": true,
+        "stage": "L1",
+        "reason": "gene 1e731ea600657c16: unknown locus tests::a189ad40fdf9"
+      },
+      "seconds": 0.0
+    },
+    {
+      "canary": "go_frozen_bounds_checks",
+      "description": "build with -gcflags=-B (no bounds checks)",
+      "full": {
+        "rejected": true,
+        "stage": "L0",
+        "reason": "gene 0106f626: locus knob:go.no_bounds_checks is frozen"
+      },
+      "dynamic_only": {
+        "rejected": false,
+        "stage": null,
+        "reason": "PASSED THE EVALUATOR"
+      },
+      "seconds": 24.9
+    },
+    {
+      "canary": "frozen_knob_durability",
+      "description": "set synchronous_commit=off",
+      "full": {
+        "rejected": true,
+        "stage": "L0",
+        "reason": "gene 0a8186fc: locus knob:db.synchronous_commit is frozen"
+      },
+      "dynamic_only": {
+        "rejected": false,
+        "stage": null,
+        "reason": "PASSED THE EVALUATOR"
+      },
+      "seconds": 23.9
+    },
+    {
+      "canary": "out_of_range_knob",
+      "description": "set work_mem to 10 GB",
+      "full": {
+        "rejected": true,
+        "stage": "L0",
+        "reason": "gene 311739c1: knob db.work_mem_kb: 10485760 outside safe range [1024.0, 262144.0]"
+      },
+      "dynamic_only": {
+        "rejected": false,
+        "stage": null,
+        "reason": "PASSED THE EVALUATOR"
+      },
+      "seconds": 25.1
+    }
+  ],
+  "target": "stackzero-go",
+  "total": 14,
+  "built": 14,
+  "rejected": 14,
+  "rejection_rate": 1.0,
+  "all_rejected": true
+}

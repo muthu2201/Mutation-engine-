@@ -1,0 +1,43 @@
+# M1, arm A (cold): the Go implementation of the StackZero contract, optimised from scratch.
+#
+# Same judge as the Python run (oracles, workloads, benchmark protocol, A/A gate) and the same
+# budget as arm B (stackzero-go-primed.yaml); the only difference between the arms is the lake.
+# Code arms: LLM rewrites only - the deterministic py_rewrite/gi_edit operators are Python
+# rewriters and never earned credit there (lake operator evidence), so they are not ported.
+# The red-team island attacks Python code and is off here; the Go canary suite covers the
+# Go judge (colloid canaries --target stackzero-go).
+name: stackzero-go
+target: stackzero-go
+seed: 11
+generations: 8
+proposals_per_generation: 8
+rate_rps: null
+
+pool_capacity: 10
+migration_interval: 3
+stagnation_limit: 4
+budget_epsilon: 0.2
+
+code_operators: [llm_rewrite]
+knob_operators: [knob_sample, knob_perturb, knob_reset]
+llm_arms:
+  - {provider: local, model: qwen2.5-coder-3b, templates: [optimize, sql_batching, algorithmic]}
+  - {provider: local, model: qwen2.5-coder-1.5b, templates: [optimize]}
+redteam_island: false
+bandit_prior_mean: 0.03
+
+surrogate_keep_fraction: 0.6
+run_l5_top_k: 3
+promote: true
+
+shapley_every: 4
+shapley_max_genes: 8
+shapley_budget_subsets: 40
+splice_every: 4
+splice_pool: 10
+splice_top_k: 3
+
+profile: true
+profile_delays: [0.0, 0.4]
+aa_runs: 20
+max_runtime_minutes: 150

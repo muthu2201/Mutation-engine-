@@ -1,0 +1,37 @@
+# Knobs specific to the Go implementation of the StackZero shop contract.
+#
+# The OS and database knobs (kernel, CPU placement, Postgres GUCs, the index set) are not
+# repeated here: they are loaded from the StackZero catalogue (../stackzero/knobs.yaml)
+# because they are the *same loci* - the same kernel, the same Postgres, the same schema - and
+# a verified index gene found on the Python implementation must mean exactly the same thing
+# on this one. Language-specific layers (CPython allocator and runtime, the C compiler for
+# libshopnative) are replaced by the Go equivalents below.
+#
+# Mechanisms: env (service environment, read by the Go runtime or the shop service) and
+# gobuild (a `go build` setting).
+
+knobs:
+  # ------------------------------------------------------------------ runtime (Go)
+  - {name: go.gogc, layer: runtime, type: int, low: 25, high: 1600, scale: log, default: 100,
+     mechanism: env, key: GOGC, resources: [memory, cpu], affects: [component:runtime.go],
+     description: "GOGC: heap growth (percent) that triggers the next garbage collection"}
+  - {name: go.memlimit, layer: runtime, type: enum, choices: ["off", "64MiB", "128MiB", "256MiB", "512MiB"], default: "off",
+     mechanism: env, key: GOMEMLIMIT, resources: [memory, cpu], affects: [component:runtime.go],
+     description: "GOMEMLIMIT: soft memory limit for the Go runtime (collect harder near it)"}
+  - {name: go.maxprocs, layer: runtime, type: enum, choices: ["auto", "1", "2", "3"], default: "auto",
+     mechanism: env, key: GOMAXPROCS, resources: [cpu], affects: [component:runtime.go],
+     description: "GOMAXPROCS: OS threads executing Go code simultaneously (auto = the CPUs the service may use)"}
+  - {name: go.pool_max, layer: runtime, type: int, low: 2, high: 32, default: 10,
+     mechanism: env, key: SHOP_POOL_MAX, resources: [memory, cpu], affects: [component:runtime.go, component:db.postgres],
+     description: "pgx pool: maximum Postgres connections"}
+  - {name: go.exec_mode, layer: runtime, type: enum, choices: [cache_statement, cache_describe, describe_exec, exec, simple_protocol],
+     default: cache_statement, mechanism: env, key: SHOP_EXEC_MODE, resources: [cpu], affects: [component:runtime.go, component:db.planner],
+     description: "pgx query execution mode: prepared-statement cache (default), describe cache, no cache, or the simple protocol"}
+
+  # ------------------------------------------------------------------ compiler (go build)
+  - {name: go.amd64, layer: compiler, type: enum, choices: [v1, v2, v3], default: v1,
+     mechanism: gobuild, key: GOAMD64, resources: [cpu], affects: [component:compiler.go],
+     description: "GOAMD64 microarchitecture level (v3 = AVX2/BMI/FMA; the compiler may fuse multiply-adds)"}
+  - {name: go.no_bounds_checks, layer: compiler, type: bool, default: false, mutability: frozen,
+     mechanism: gobuild, key: nobce, resources: [cpu], affects: [component:compiler.go],
+     description: "FROZEN: -gcflags=-B removes array bounds checks; memory safety is not a tunable"}

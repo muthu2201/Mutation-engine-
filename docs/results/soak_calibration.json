@@ -1,0 +1,3373 @@
+{
+  "target": "stackzero-go",
+  "run": "runs/stackzero-go",
+  "reps": 3,
+  "threshold_mb_per_s": 0.5,
+  "persist_fraction": 0.5,
+  "elapsed_s": 1615.1,
+  "summary": {
+    "legacy": {
+      "honest_false_rejections": {
+        "rejected_soaks": 21,
+        "soaks": 57
+      },
+      "leaks_caught": {
+        "rejected_soaks": 6,
+        "soaks": 6
+      }
+    },
+    "current": {
+      "honest_false_rejections": {
+        "rejected_soaks": 0,
+        "soaks": 57
+      },
+      "leaks_caught": {
+        "rejected_soaks": 6,
+        "soaks": 6
+      }
+    }
+  },
+  "programs": [
+    {
+      "group": "honest",
+      "program": "baseline",
+      "genes": 0,
+      "reps": [
+        {
+          "current_rejects": false,
+          "legacy_rejects": true,
+          "service": {
+            "samples": 95,
+            "start_mb": 19.1783,
+            "end_mb": 20.1555,
+            "slope_mb_per_s": 0.0472,
+            "late_slope_mb_per_s": 0.1339
+          },
+          "db": {
+            "samples": 95,
+            "start_mb": 104.2324,
+            "end_mb": 115.6783,
+            "slope_mb_per_s": 0.503,
+            "late_slope_mb_per_s": 0.0869
+          },
+          "total": {
+            "samples": 95,
+            "start_mb": 123.4107,
+            "end_mb": 135.8338,
+            "slope_mb_per_s": 0.5502,
+            "late_slope_mb_per_s": 0.2208
+          },
+          "service_series_mb": [
+            17.85,
+            16.95,
+            16.27,
+            19.71,
+            16.84,
+            17.67,
+            21.62,
+            17.98,
+            22.2,
+            20.98,
+            20.43,
+            21.57,
+            17.66,
+            19.62,
+            19.46,
+            18.46,
+            16.24,
+            19.58,
+            19.98
+          ],
+          "requests": 780
+        },
+        {
+          "current_rejects": false,
+          "legacy_rejects": false,
+          "service": {
+            "samples": 97,
+            "start_mb": 20.1283,
+            "end_mb": 18.1727,
+            "slope_mb_per_s": -0.0132,
+            "late_slope_mb_per_s": -0.116
+          },
+          "db": {
+            "samples": 97,
+            "start_mb": 113.8004,
+            "end_mb": 122.4758,
+            "slope_mb_per_s": 0.3328,
+            "late_slope_mb_per_s": 0.3033
+          },
+          "total": {
+            "samples": 97,
+            "start_mb": 133.9287,
+            "end_mb": 140.6484,
+            "slope_mb_per_s": 0.3196,
+            "late_slope_mb_per_s": 0.1873
+          },
+          "service_series_mb": [
+            30.06,
+            16.39,
+            18.69,
+            18.91,
+            17.66,
+            20.28,
+            19.4,
+            16.38,
+            18.32,
+            17.92,
+            31.6,
+            17.87,
+            18.89,
+            19.29,
+            16.45,
+            16.6,
+            17.53,
+            18.93,
+            16.8,
+            18.06
+          ],
+          "requests": 780
+        },
+        {
+          "current_rejects": false,
+          "legacy_rejects": false,
+          "service": {
+            "samples": 98,
+            "start_mb": 26.2205,
+            "end_mb": 19.1664,
+            "slope_mb_per_s": -0.0476,
+            "late_slope_mb_per_s": 0.0514
+          },
+          "db": {
+            "samples": 98,
+            "start_mb": 125.3336,
+            "end_mb": 128.3799,
+            "slope_mb_per_s": 0.1383,
+            "late_slope_mb_per_s": -0.0083
+          },
+          "total": {
+            "samples": 98,
+            "start_mb": 151.5541,
+            "end_mb": 147.5463,
+            "slope_mb_per_s": 0.0907,
+            "late_slope_mb_per_s": 0.0431
+          },
+          "service_series_mb": [
+            32.78,
+            17.05,
+            18.3,
+            16.68,
+            20.25,
+            17.81,
+            18.5,
+            18.62,
+            19.23,
+            18.71,
+            18.05,
+            21.2,
+            17.89,
+            19.3,
+            28.34,
+            19.59,
+            17.49,
+            16.43,
+            17.11,
+            18.93
+          ],
+          "requests": 780
+        }
+      ],
+      "legacy_rejections": 1,
+      "current_rejections": 0
+    },
+    {
+      "group": "honest",
+      "program": "f1e6efff2c4b4429",
+      "genes": 2,
+      "source_run": "runs/stackzero-go",
+      "l6_verdict": "fail",
+      "holdout_cost_ci": [
+        0.28452508186394787,
+        0.345976912297706
+      ],
+      "recorded_soak_slope": 0.8166595915753261,
+      "recorded_soak_reason": "memory grows 0.82 MB/s under sustained load (leak suspected)",
+      "reps": [
+        {
+          "current_rejects": false,
+          "legacy_rejects": false,
+          "service": {
+            "samples": 102,
+            "start_mb": 16.6752,
+            "end_mb": 16.6742,
+            "slope_mb_per_s": 0.0097,
+            "late_slope_mb_per_s": -0.0657
+          },
+          "db": {
+            "samples": 102,
+            "start_mb": 119.924,
+            "end_mb": 127.7186,
+            "slope_mb_per_s": 0.4007,
+            "late_slope_mb_per_s": 0.2385
+          },
+          "total": {
+            "samples": 102,
+            "start_mb": 136.5992,
+            "end_mb": 144.3928,
+            "slope_mb_per_s": 0.4104,
+            "late_slope_mb_per_s": 0.1728
+          },
+          "service_series_mb": [
+            16.55,
+            16.14,
+            19.42,
+            16.1,
+            16.89,
+            18.58,
+            16.04,
+            18.09,
+            19.23,
+            17.68,
+            26.5,
+            16.63,
+            16.63,
+            16.5,
+            19.51,
+            16.23,
+            16.98,
+            18.84,
+            17.58,
+            16.89,
+            15.97
+          ],
+          "requests": 780
+        },
+        {
+          "current_rejects": false,
+          "legacy_rejects": true,
+          "service": {
+            "samples": 94,
+            "start_mb": 16.3525,
+            "end_mb": 19.9164,
+            "slope_mb_per_s": 0.0821,
+            "late_slope_mb_per_s": -0.0602
+          },
+          "db": {
+            "samples": 94,
+            "start_mb": 118.75,
+            "end_mb": 135.6023,
+            "slope_mb_per_s": 0.6962,
+            "late_slope_mb_per_s": 0.0805
+          },
+          "total": {
+            "samples": 94,
+            "start_mb": 135.1025,
+            "end_mb": 155.5188,
+            "slope_mb_per_s": 0.7782,
+            "late_slope_mb_per_s": 0.0203
+          },
+          "service_series_mb": [
+            16.32,
+            18.1,
+            17.27,
+            17.82,
+            16.4,
+            16.5,
+            19.18,
+            17.6,
+            17.0,
+            19.24,
+            19.19,
+            31.38,
+            17.5,
+            16.3,
+            16.45,
+            19.39,
+            19.0,
+            18.77,
+            20.18
+          ],
+          "requests": 780
+        },
+        {
+          "current_rejects": false,
+          "legacy_rejects": true,
+          "service": {
+            "samples": 91,
+            "start_mb": 16.8307,
+            "end_mb": 18.4109,
+            "slope_mb_per_s": 0.0542,
+            "late_slope_mb_per_s": -0.0954
+          },
+          "db": {
+            "samples": 91,
+            "start_mb": 120.966,
+            "end_mb": 133.4957,
+            "slope_mb_per_s": 0.7028,
+            "late_slope_mb_per_s": 0.1188
+          },
+          "total": {
+            "samples": 91,
+            "start_mb": 137.7967,
+            "end_mb": 151.9066,
+            "slope_mb_per_s": 0.7569,
+            "late_slope_mb_per_s": 0.0234
+          },
+          "service_series_mb": [
+            16.62,
+            17.36,
+            19.19,
+            16.77,
+            15.94,
+            17.62,
+            17.22,
+            23.11,
+            17.44,
+            19.23,
+            16.67,
+            21.13,
+            18.78,
+            18.31,
+            16.8,
+            18.48,
+            16.67,
+            16.87,
+            18.64
+          ],
+          "requests": 780
+        }
+      ],
+      "legacy_rejections": 2,
+      "current_rejections": 0
+    },
+    {
+      "group": "honest",
+      "program": "528b170ba17f6bce",
+      "genes": 1,
+      "source_run": "runs/stackzero-go",
+      "l6_verdict": "pass",
+      "holdout_cost_ci": [
+        0.21663943181977974,
+        0.27886155966522574
+      ],
+      "recorded_soak_slope": 0.38065084391185394,
+      "recorded_soak_reason": null,
+      "reps": [
+        {
+          "current_rejects": false,
+          "legacy_rejects": false,
+          "service": {
+            "samples": 94,
+            "start_mb": 17.9486,
+            "end_mb": 18.0031,
+            "slope_mb_per_s": 0.0188,
+            "late_slope_mb_per_s": -0.0933
+          },
+          "db": {
+            "samples": 94,
+            "start_mb": 129.7428,
+            "end_mb": 134.2367,
+            "slope_mb_per_s": 0.1893,
+            "late_slope_mb_per_s": 0.1762
+          },
+          "total": {
+            "samples": 94,
+            "start_mb": 147.6914,
+            "end_mb": 152.2398,
+            "slope_mb_per_s": 0.2081,
+            "late_slope_mb_per_s": 0.0829
+          },
+          "service_series_mb": [
+            16.5,
+            35.4,
+            18.27,
+            19.95,
+            16.74,
+            16.82,
+            15.96,
+            16.91,
+            19.91,
+            16.32,
+            16.76,
+            20.07,
+            16.6,
+            29.8,
+            16.76,
+            23.74,
+            16.48,
+            15.84,
+            20.53
+          ],
+          "requests": 780
+        },
+        {
+          "current_rejects": false,
+          "legacy_rejects": false,
+          "service": {
+            "samples": 102,
+            "start_mb": 16.2955,
+            "end_mb": 16.4969,
+            "slope_mb_per_s": 0.0321,
+            "late_slope_mb_per_s": 0.0251
+          },
+          "db": {
+            "samples": 102,
+            "start_mb": 123.0762,
+            "end_mb": 134.6918,
+            "slope_mb_per_s": 0.4052,
+            "late_slope_mb_per_s": 0.2527
+          },
+          "total": {
+            "samples": 102,
+            "start_mb": 139.3717,
+            "end_mb": 151.1887,
+            "slope_mb_per_s": 0.4373,
+            "late_slope_mb_per_s": 0.2778
+          },
+          "service_series_mb": [
+            15.97,
+            15.48,
+            17.62,
+            15.48,
+            16.55,
+            16.63,
+            18.22,
+            17.06,
+            19.29,
+            17.23,
+            17.05,
+            17.87,
+            15.97,
+            17.25,
+            17.37,
+            16.23,
+            18.67,
+            16.06,
+            18.58,
+            18.56,
+            16.56
+          ],
+          "requests": 780
+        },
+        {
+          "current_rejects": false,
+          "legacy_rejects": true,
+          "service": {
+            "samples": 95,
+            "start_mb": 16.2744,
+            "end_mb": 18.5039,
+            "slope_mb_per_s": 0.1202,
+            "late_slope_mb_per_s": 0.3011
+          },
+          "db": {
+            "samples": 95,
+            "start_mb": 123.1768,
+            "end_mb": 134.1262,
+            "slope_mb_per_s": 0.61,
+            "late_slope_mb_per_s": 0.0471
+          },
+          "total": {
+            "samples": 95,
+            "start_mb": 139.4512,
+            "end_mb": 152.6301,
+            "slope_mb_per_s": 0.7302,
+            "late_slope_mb_per_s": 0.3482
+          },
+          "service_series_mb": [
+            15.82,
+            17.6,
+            17.1,
+            16.7,
+            15.99,
+            16.5,
+            17.41,
+            16.73,
+            17.2,
+            17.2,
+            16.5,
+            18.95,
+            16.42,
+            16.86,
+            16.72,
+            19.13,
+            16.89,
+            16.43,
+            19.82
+          ],
+          "requests": 780
+        }
+      ],
+      "legacy_rejections": 1,
+      "current_rejections": 0
+    },
+    {
+      "group": "honest",
+      "program": "b00c224daa58d593",
+      "genes": 2,
+      "source_run": "runs/stackzero-go",
+      "l6_verdict": "fail",
+      "holdout_cost_ci": [
+        0.1834483841065978,
+        0.248485530568825
+      ],
+      "recorded_soak_slope": 0.5603440647466776,
+      "recorded_soak_reason": "memory grows 0.56 MB/s under sustained load (leak suspected)",
+      "reps": [
+        {
+          "current_rejects": false,
+          "legacy_rejects": false,
+          "service": {
+            "samples": 94,
+            "start_mb": 28.2893,
+            "end_mb": 17.9109,
+            "slope_mb_per_s": -0.4162,
+            "late_slope_mb_per_s": 0.0411
+          },
+          "db": {
+            "samples": 94,
+            "start_mb": 132.1518,
+            "end_mb": 137.3332,
+            "slope_mb_per_s": 0.1602,
+            "late_slope_mb_per_s": 0.043
+          },
+          "total": {
+            "samples": 94,
+            "start_mb": 160.441,
+            "end_mb": 155.2441,
+            "slope_mb_per_s": -0.256,
+            "late_slope_mb_per_s": 0.084
+          },
+          "service_series_mb": [
+            16.52,
+            43.52,
+            16.1,
+            27.2,
+            17.34,
+            23.28,
+            16.83,
+            18.8,
+            17.72,
+            19.63,
+            19.45,
+            16.68,
+            20.39,
+            16.6,
+            17.18,
+            16.62,
+            16.95,
+            17.69,
+            16.92
+          ],
+          "requests": 780
+        },
+        {
+          "current_rejects": false,
+          "legacy_rejects": true,
+          "service": {
+            "samples": 93,
+            "start_mb": 16.2408,
+            "end_mb": 18.1883,
+            "slope_mb_per_s": 0.1259,
+            "late_slope_mb_per_s": 0.388
+          },
+          "db": {
+            "samples": 93,
+            "start_mb": 125.3652,
+            "end_mb": 135.6721,
+            "slope_mb_per_s": 0.4161,
+            "late_slope_mb_per_s": 0.4022
+          },
+          "total": {
+            "samples": 93,
+            "start_mb": 141.6061,
+            "end_mb": 153.8604,
+            "slope_mb_per_s": 0.542,
+            "late_slope_mb_per_s": 0.7902
+          },
+          "service_series_mb": [
+            15.19,
+            16.05,
+            15.23,
+            18.72,
+            16.24,
+            18.28,
+            15.36,
+            16.31,
+            16.77,
+            15.78,
+            17.79,
+            16.83,
+            17.53,
+            16.3,
+            16.15,
+            22.38,
+            28.46,
+            17.99,
+            17.93
+          ],
+          "requests": 780
+        },
+        {
+          "current_rejects": false,
+          "legacy_rejects": false,
+          "service": {
+            "samples": 98,
+            "start_mb": 20.7479,
+            "end_mb": 18.3242,
+            "slope_mb_per_s": -0.1744,
+            "late_slope_mb_per_s": 0.0582
+          },
+          "db": {
+            "samples": 98,
+            "start_mb": 133.3273,
+            "end_mb": 143.1936,
+            "slope_mb_per_s": 0.3133,
+            "late_slope_mb_per_s": 0.0863
+          },
+          "total": {
+            "samples": 98,
+            "start_mb": 154.0752,
+            "end_mb": 161.5178,
+            "slope_mb_per_s": 0.1388,
+            "late_slope_mb_per_s": 0.1445
+          },
+          "service_series_mb": [
+            22.49,
+            19.41,
+            24.57,
+            20.25,
+            19.5,
+            22.3,
+            19.88,
+            23.38,
+            20.01,
+            17.09,
+            18.09,
+            17.93,
+            17.3,
+            16.76,
+            18.18,
+            16.71,
+            16.62,
+            23.14,
+            18.39,
+            17.09
+          ],
+          "requests": 780
+        }
+      ],
+      "legacy_rejections": 1,
+      "current_rejections": 0
+    },
+    {
+      "group": "honest",
+      "program": "fc212a9eb3bdef90",
+      "genes": 3,
+      "source_run": "runs/stackzero-go",
+      "l6_verdict": "fail",
+      "holdout_cost_ci": [
+        0.2905723466905749,
+        0.3840474288739581
+      ],
+      "recorded_soak_slope": 0.7658352847003452,
+      "recorded_soak_reason": "memory grows 0.77 MB/s under sustained load (leak suspected)",
+      "reps": [
+        {
+          "current_rejects": false,
+          "legacy_rejects": false,
+          "service": {
+            "samples": 99,
+            "start_mb": 15.9461,
+            "end_mb": 19.4719,
+            "slope_mb_per_s": 0.0714,
+            "late_slope_mb_per_s": 0.114
+          },
+          "db": {
+            "samples": 99,
+            "start_mb": 132.0471,
+            "end_mb": 139.2945,
+            "slope_mb_per_s": 0.3355,
+            "late_slope_mb_per_s": 0.1231
+          },
+          "total": {
+            "samples": 99,
+            "start_mb": 147.9932,
+            "end_mb": 158.7664,
+            "slope_mb_per_s": 0.4069,
+            "late_slope_mb_per_s": 0.2372
+          },
+          "service_series_mb": [
+            16.38,
+            15.92,
+            18.21,
+            15.98,
+            16.93,
+            17.3,
+            16.3,
+            16.2,
+            17.16,
+            16.15,
+            16.08,
+            17.57,
+            16.49,
+            18.18,
+            21.38,
+            16.14,
+            16.52,
+            18.07,
+            18.79,
+            16.25
+          ],
+          "requests": 780
+        },
+        {
+          "current_rejects": false,
+          "legacy_rejects": false,
+          "service": {
+            "samples": 101,
+            "start_mb": 18.3025,
+            "end_mb": 17.2523,
+            "slope_mb_per_s": -0.0087,
+            "late_slope_mb_per_s": 0.1009
+          },
+          "db": {
+            "samples": 101,
+            "start_mb": 132.3879,
+            "end_mb": 142.4359,
+            "slope_mb_per_s": 0.3978,
+            "late_slope_mb_per_s": 0.1682
+          },
+          "total": {
+            "samples": 101,
+            "start_mb": 150.6904,
+            "end_mb": 159.6883,
+            "slope_mb_per_s": 0.3891,
+            "late_slope_mb_per_s": 0.2691
+          },
+          "service_series_mb": [
+            18.49,
+            18.75,
+            16.02,
+            16.44,
+            16.16,
+            17.04,
+            17.91,
+            16.47,
+            16.34,
+            16.88,
+            16.34,
+            16.71,
+            16.16,
+            15.95,
+            16.8,
+            18.63,
+            18.95,
+            19.96,
+            17.77,
+            16.8,
+            19.83
+          ],
+          "requests": 780
+        },
+        {
+          "current_rejects": false,
+          "legacy_rejects": true,
+          "service": {
+            "samples": 102,
+            "start_mb": 17.2799,
+            "end_mb": 19.5102,
+            "slope_mb_per_s": 0.0873,
+            "late_slope_mb_per_s": -0.0416
+          },
+          "db": {
+            "samples": 102,
+            "start_mb": 136.8313,
+            "end_mb": 147.1937,
+            "slope_mb_per_s": 0.482,
+            "late_slope_mb_per_s": 0.1737
+          },
+          "total": {
+            "samples": 102,
+            "start_mb": 154.1111,
+            "end_mb": 166.7039,
+            "slope_mb_per_s": 0.5693,
+            "late_slope_mb_per_s": 0.1321
+          },
+          "service_series_mb": [
+            16.71,
+            17.09,
+            16.54,
+            16.11,
+            37.81,
+            16.36,
+            15.84,
+            15.98,
+            16.77,
+            18.77,
+            17.29,
+            17.95,
+            17.44,
+            18.61,
+            17.98,
+            25.27,
+            18.51,
+            19.49,
+            17.04,
+            19.39,
+            21.19
+          ],
+          "requests": 780
+        }
+      ],
+      "legacy_rejections": 1,
+      "current_rejections": 0
+    },
+    {
+      "group": "honest",
+      "program": "fa2e77b050f0beb8",
+      "genes": 3,
+      "source_run": "runs/stackzero-go",
+      "l6_verdict": "pass",
+      "holdout_cost_ci": [
+        0.21201740075516348,
+        0.29889525241378995
+      ],
+      "recorded_soak_slope": 0.10075987070964977,
+      "recorded_soak_reason": null,
+      "reps": [
+        {
+          "current_rejects": false,
+          "legacy_rejects": true,
+          "service": {
+            "samples": 99,
+            "start_mb": 18.565,
+            "end_mb": 17.2539,
+            "slope_mb_per_s": 0.0815,
+            "late_slope_mb_per_s": -0.123
+          },
+          "db": {
+            "samples": 99,
+            "start_mb": 139.8867,
+            "end_mb": 149.9385,
+            "slope_mb_per_s": 0.4791,
+            "late_slope_mb_per_s": 0.4444
+          },
+          "total": {
+            "samples": 99,
+            "start_mb": 158.4518,
+            "end_mb": 167.1924,
+            "slope_mb_per_s": 0.5606,
+            "late_slope_mb_per_s": 0.3214
+          },
+          "service_series_mb": [
+            16.65,
+            16.07,
+            15.76,
+            16.46,
+            19.17,
+            17.02,
+            17.25,
+            16.38,
+            18.1,
+            16.84,
+            16.06,
+            16.25,
+            18.42,
+            17.47,
+            20.14,
+            21.89,
+            18.34,
+            19.9,
+            19.25,
+            20.02
+          ],
+          "requests": 780
+        },
+        {
+          "current_rejects": false,
+          "legacy_rejects": true,
+          "service": {
+            "samples": 97,
+            "start_mb": 17.9596,
+            "end_mb": 17.8867,
+            "slope_mb_per_s": -0.0008,
+            "late_slope_mb_per_s": 0.1388
+          },
+          "db": {
+            "samples": 97,
+            "start_mb": 133.7857,
+            "end_mb": 149.9158,
+            "slope_mb_per_s": 0.7787,
+            "late_slope_mb_per_s": 0.0903
+          },
+          "total": {
+            "samples": 97,
+            "start_mb": 151.7453,
+            "end_mb": 167.8025,
+            "slope_mb_per_s": 0.7779,
+            "late_slope_mb_per_s": 0.2291
+          },
+          "service_series_mb": [
+            18.6,
+            18.71,
+            16.98,
+            16.55,
+            17.72,
+            16.44,
+            18.89,
+            19.32,
+            19.69,
+            20.5,
+            16.61,
+            17.63,
+            17.36,
+            18.66,
+            19.08,
+            17.5,
+            18.72,
+            16.37,
+            19.02,
+            16.08
+          ],
+          "requests": 780
+        },
+        {
+          "current_rejects": false,
+          "legacy_rejects": true,
+          "service": {
+            "samples": 94,
+            "start_mb": 16.4533,
+            "end_mb": 17.0813,
+            "slope_mb_per_s": 0.0812,
+            "late_slope_mb_per_s": 0.0391
+          },
+          "db": {
+            "samples": 94,
+            "start_mb": 137.2744,
+            "end_mb": 149.0293,
+            "slope_mb_per_s": 0.585,
+            "late_slope_mb_per_s": 0.4807
+          },
+          "total": {
+            "samples": 94,
+            "start_mb": 153.7277,
+            "end_mb": 166.1105,
+            "slope_mb_per_s": 0.6662,
+            "late_slope_mb_per_s": 0.5197
+          },
+          "service_series_mb": [
+            15.8,
+            16.28,
+            17.12,
+            16.05,
+            16.47,
+            16.95,
+            18.21,
+            15.91,
+            21.93,
+            16.14,
+            18.76,
+            15.79,
+            17.24,
+            18.37,
+            18.91,
+            16.43,
+            18.14,
+            16.46,
+            16.82
+          ],
+          "requests": 780
+        }
+      ],
+      "legacy_rejections": 3,
+      "current_rejections": 0
+    },
+    {
+      "group": "honest",
+      "program": "ef2266665e93512d",
+      "genes": 4,
+      "source_run": "runs/stackzero-go",
+      "l6_verdict": "pass",
+      "holdout_cost_ci": [
+        0.21636092777924137,
+        0.29278843422994755
+      ],
+      "recorded_soak_slope": 0.43176496991459307,
+      "recorded_soak_reason": null,
+      "reps": [
+        {
+          "current_rejects": false,
+          "legacy_rejects": true,
+          "service": {
+            "samples": 99,
+            "start_mb": 27.0859,
+            "end_mb": 18.4539,
+            "slope_mb_per_s": -0.0745,
+            "late_slope_mb_per_s": -0.0187
+          },
+          "db": {
+            "samples": 99,
+            "start_mb": 136.7455,
+            "end_mb": 149.6131,
+            "slope_mb_per_s": 0.6204,
+            "late_slope_mb_per_s": 0.1702
+          },
+          "total": {
+            "samples": 99,
+            "start_mb": 163.8314,
+            "end_mb": 168.067,
+            "slope_mb_per_s": 0.5459,
+            "late_slope_mb_per_s": 0.1515
+          },
+          "service_series_mb": [
+            17.48,
+            29.32,
+            19.05,
+            16.29,
+            18.21,
+            16.2,
+            16.61,
+            17.98,
+            18.38,
+            18.03,
+            22.76,
+            17.87,
+            16.71,
+            18.99,
+            19.71,
+            19.46,
+            18.6,
+            17.16,
+            27.32,
+            19.93
+          ],
+          "requests": 780
+        },
+        {
+          "current_rejects": false,
+          "legacy_rejects": false,
+          "service": {
+            "samples": 99,
+            "start_mb": 16.4658,
+            "end_mb": 19.7977,
+            "slope_mb_per_s": 0.1281,
+            "late_slope_mb_per_s": 0.1671
+          },
+          "db": {
+            "samples": 99,
+            "start_mb": 143.459,
+            "end_mb": 149.8324,
+            "slope_mb_per_s": 0.2087,
+            "late_slope_mb_per_s": 0.0241
+          },
+          "total": {
+            "samples": 99,
+            "start_mb": 159.9248,
+            "end_mb": 169.6301,
+            "slope_mb_per_s": 0.3368,
+            "late_slope_mb_per_s": 0.1913
+          },
+          "service_series_mb": [
+            16.09,
+            16.06,
+            15.19,
+            15.68,
+            16.09,
+            21.23,
+            19.12,
+            18.74,
+            15.68,
+            17.14,
+            16.01,
+            16.98,
+            15.57,
+            23.69,
+            16.03,
+            18.3,
+            19.26,
+            17.93,
+            18.53,
+            25.64
+          ],
+          "requests": 780
+        },
+        {
+          "current_rejects": false,
+          "legacy_rejects": true,
+          "service": {
+            "samples": 97,
+            "start_mb": 17.7986,
+            "end_mb": 17.8211,
+            "slope_mb_per_s": 0.0638,
+            "late_slope_mb_per_s": -0.007
+          },
+          "db": {
+            "samples": 97,
+            "start_mb": 138.2766,
+            "end_mb": 153.9436,
+            "slope_mb_per_s": 0.7094,
+            "late_slope_mb_per_s": 0.532
+          },
+          "total": {
+            "samples": 97,
+            "start_mb": 156.0752,
+            "end_mb": 171.7646,
+            "slope_mb_per_s": 0.7732,
+            "late_slope_mb_per_s": 0.525
+          },
+          "service_series_mb": [
+            24.61,
+            16.36,
+            18.48,
+            16.4,
+            16.0,
+            16.26,
+            17.2,
+            15.57,
+            16.69,
+            19.48,
+            17.78,
+            17.72,
+            16.93,
+            16.57,
+            16.31,
+            19.08,
+            16.41,
+            17.44,
+            19.08,
+            17.71
+          ],
+          "requests": 780
+        }
+      ],
+      "legacy_rejections": 2,
+      "current_rejections": 0
+    },
+    {
+      "group": "honest",
+      "program": "2360231608199fbe",
+      "genes": 3,
+      "source_run": "runs/stackzero-go",
+      "l6_verdict": "pass",
+      "holdout_cost_ci": [
+        0.31515572403610126,
+        0.39434070826450723
+      ],
+      "recorded_soak_slope": 0.31943634135726484,
+      "recorded_soak_reason": null,
+      "reps": [
+        {
+          "current_rejects": false,
+          "legacy_rejects": false,
+          "service": {
+            "samples": 89,
+            "start_mb": 20.8416,
+            "end_mb": 19.5414,
+            "slope_mb_per_s": -0.039,
+            "late_slope_mb_per_s": -0.2362
+          },
+          "db": {
+            "samples": 89,
+            "start_mb": 135.8539,
+            "end_mb": 148.7219,
+            "slope_mb_per_s": 0.539,
+            "late_slope_mb_per_s": -0.1447
+          },
+          "total": {
+            "samples": 89,
+            "start_mb": 156.6955,
+            "end_mb": 168.2633,
+            "slope_mb_per_s": 0.5,
+            "late_slope_mb_per_s": -0.3809
+          },
+          "service_series_mb": [
+            31.77,
+            17.8,
+            16.04,
+            15.88,
+            17.81,
+            16.72,
+            18.58,
+            17.37,
+            24.24,
+            16.82,
+            17.05,
+            16.21,
+            17.77,
+            16.87,
+            18.26,
+            17.61,
+            16.68,
+            20.4
+          ],
+          "requests": 780
+        },
+        {
+          "current_rejects": false,
+          "legacy_rejects": false,
+          "service": {
+            "samples": 103,
+            "start_mb": 16.383,
+            "end_mb": 18.3773,
+            "slope_mb_per_s": 0.1453,
+            "late_slope_mb_per_s": 0.409
+          },
+          "db": {
+            "samples": 103,
+            "start_mb": 145.3715,
+            "end_mb": 153.9695,
+            "slope_mb_per_s": 0.2742,
+            "late_slope_mb_per_s": 0.0498
+          },
+          "total": {
+            "samples": 103,
+            "start_mb": 161.7545,
+            "end_mb": 172.3469,
+            "slope_mb_per_s": 0.4195,
+            "late_slope_mb_per_s": 0.4589
+          },
+          "service_series_mb": [
+            15.87,
+            16.83,
+            23.68,
+            19.02,
+            18.42,
+            19.99,
+            16.46,
+            17.62,
+            16.22,
+            18.64,
+            17.19,
+            16.86,
+            15.98,
+            16.38,
+            17.37,
+            16.12,
+            16.21,
+            18.48,
+            19.25,
+            16.78,
+            18.8
+          ],
+          "requests": 780
+        },
+        {
+          "current_rejects": false,
+          "legacy_rejects": true,
+          "service": {
+            "samples": 95,
+            "start_mb": 16.5025,
+            "end_mb": 16.4336,
+            "slope_mb_per_s": 0.1314,
+            "late_slope_mb_per_s": 0.0884
+          },
+          "db": {
+            "samples": 95,
+            "start_mb": 145.7988,
+            "end_mb": 158.3793,
+            "slope_mb_per_s": 0.7008,
+            "late_slope_mb_per_s": 0.6482
+          },
+          "total": {
+            "samples": 95,
+            "start_mb": 162.3014,
+            "end_mb": 174.8129,
+            "slope_mb_per_s": 0.8322,
+            "late_slope_mb_per_s": 0.7366
+          },
+          "service_series_mb": [
+            16.33,
+            15.79,
+            16.6,
+            15.54,
+            15.59,
+            17.43,
+            16.29,
+            17.37,
+            15.79,
+            15.92,
+            15.62,
+            15.58,
+            17.72,
+            18.0,
+            16.78,
+            16.18,
+            16.91,
+            17.02,
+            16.65
+          ],
+          "requests": 780
+        }
+      ],
+      "legacy_rejections": 1,
+      "current_rejections": 0
+    },
+    {
+      "group": "honest",
+      "program": "c5c5448bb952402e",
+      "genes": 5,
+      "source_run": "runs/stackzero-go",
+      "l6_verdict": "pass",
+      "holdout_cost_ci": [
+        0.20443476147804854,
+        0.27859664531413936
+      ],
+      "recorded_soak_slope": 0.20515830989771663,
+      "recorded_soak_reason": null,
+      "reps": [
+        {
+          "current_rejects": false,
+          "legacy_rejects": true,
+          "service": {
+            "samples": 95,
+            "start_mb": 16.5244,
+            "end_mb": 17.4461,
+            "slope_mb_per_s": 0.1665,
+            "late_slope_mb_per_s": 0.1867
+          },
+          "db": {
+            "samples": 95,
+            "start_mb": 140.3982,
+            "end_mb": 155.2734,
+            "slope_mb_per_s": 0.7309,
+            "late_slope_mb_per_s": 0.1697
+          },
+          "total": {
+            "samples": 95,
+            "start_mb": 156.9227,
+            "end_mb": 172.7195,
+            "slope_mb_per_s": 0.8974,
+            "late_slope_mb_per_s": 0.3564
+          },
+          "service_series_mb": [
+            16.94,
+            16.06,
+            16.08,
+            16.27,
+            17.08,
+            16.16,
+            16.87,
+            16.48,
+            16.04,
+            17.88,
+            17.66,
+            16.43,
+            26.11,
+            17.84,
+            16.48,
+            18.89,
+            31.93,
+            18.55,
+            16.28
+          ],
+          "requests": 780
+        },
+        {
+          "current_rejects": false,
+          "legacy_rejects": false,
+          "service": {
+            "samples": 94,
+            "start_mb": 17.4424,
+            "end_mb": 20.5023,
+            "slope_mb_per_s": 0.0475,
+            "late_slope_mb_per_s": 0.0268
+          },
+          "db": {
+            "samples": 94,
+            "start_mb": 148.51,
+            "end_mb": 158.2666,
+            "slope_mb_per_s": 0.3698,
+            "late_slope_mb_per_s": 0.1649
+          },
+          "total": {
+            "samples": 94,
+            "start_mb": 165.9523,
+            "end_mb": 178.7689,
+            "slope_mb_per_s": 0.4173,
+            "late_slope_mb_per_s": 0.1917
+          },
+          "service_series_mb": [
+            17.93,
+            17.22,
+            16.45,
+            19.21,
+            17.27,
+            16.68,
+            17.1,
+            19.8,
+            16.65,
+            17.0,
+            16.38,
+            19.05,
+            16.84,
+            18.34,
+            17.04,
+            17.36,
+            21.86,
+            17.58,
+            17.5
+          ],
+          "requests": 780
+        },
+        {
+          "current_rejects": false,
+          "legacy_rejects": false,
+          "service": {
+            "samples": 92,
+            "start_mb": 16.8572,
+            "end_mb": 17.6617,
+            "slope_mb_per_s": 0.0084,
+            "late_slope_mb_per_s": -0.0722
+          },
+          "db": {
+            "samples": 92,
+            "start_mb": 151.3094,
+            "end_mb": 160.207,
+            "slope_mb_per_s": 0.3178,
+            "late_slope_mb_per_s": 0.1066
+          },
+          "total": {
+            "samples": 92,
+            "start_mb": 168.1666,
+            "end_mb": 177.8688,
+            "slope_mb_per_s": 0.3262,
+            "late_slope_mb_per_s": 0.0344
+          },
+          "service_series_mb": [
+            15.86,
+            15.93,
+            19.01,
+            16.22,
+            18.28,
+            19.74,
+            16.95,
+            16.53,
+            17.14,
+            17.0,
+            19.55,
+            18.66,
+            22.14,
+            20.69,
+            16.55,
+            16.38,
+            20.11,
+            18.79,
+            18.77
+          ],
+          "requests": 780
+        }
+      ],
+      "legacy_rejections": 1,
+      "current_rejections": 0
+    },
+    {
+      "group": "honest",
+      "program": "5690e196ae4858f4",
+      "genes": 4,
+      "source_run": "runs/stackzero-go",
+      "l6_verdict": "pass",
+      "holdout_cost_ci": [
+        0.22855697456799612,
+        0.32356776402011134
+      ],
+      "recorded_soak_slope": 0.3154695086696911,
+      "recorded_soak_reason": null,
+      "reps": [
+        {
+          "current_rejects": false,
+          "legacy_rejects": true,
+          "service": {
+            "samples": 98,
+            "start_mb": 16.7307,
+            "end_mb": 18.318,
+            "slope_mb_per_s": 0.1036,
+            "late_slope_mb_per_s": 0.1815
+          },
+          "db": {
+            "samples": 98,
+            "start_mb": 144.2436,
+            "end_mb": 158.2527,
+            "slope_mb_per_s": 0.5691,
+            "late_slope_mb_per_s": 0.1025
+          },
+          "total": {
+            "samples": 98,
+            "start_mb": 160.9742,
+            "end_mb": 176.5707,
+            "slope_mb_per_s": 0.6727,
+            "late_slope_mb_per_s": 0.284
+          },
+          "service_series_mb": [
+            19.04,
+            15.54,
+            15.84,
+            15.98,
+            16.44,
+            15.95,
+            16.04,
+            17.51,
+            15.92,
+            16.39,
+            16.25,
+            15.79,
+            17.88,
+            16.12,
+            17.16,
+            15.54,
+            17.18,
+            19.0,
+            16.1,
+            16.8
+          ],
+          "requests": 780
+        },
+        {
+          "current_rejects": false,
+          "legacy_rejects": true,
+          "service": {
+            "samples": 94,
+            "start_mb": 18.3947,
+            "end_mb": 21.243,
+            "slope_mb_per_s": 0.1628,
+            "late_slope_mb_per_s": 0.0601
+          },
+          "db": {
+            "samples": 94,
+            "start_mb": 154.807,
+            "end_mb": 165.5377,
+            "slope_mb_per_s": 0.3596,
+            "late_slope_mb_per_s": 0.0023
+          },
+          "total": {
+            "samples": 94,
+            "start_mb": 173.2018,
+            "end_mb": 186.7807,
+            "slope_mb_per_s": 0.5223,
+            "late_slope_mb_per_s": 0.0624
+          },
+          "service_series_mb": [
+            16.06,
+            16.23,
+            16.92,
+            19.53,
+            18.94,
+            18.71,
+            24.07,
+            19.22,
+            16.33,
+            17.12,
+            20.07,
+            16.1,
+            20.05,
+            24.14,
+            17.98,
+            20.58,
+            18.03,
+            19.41,
+            19.05
+          ],
+          "requests": 780
+        },
+        {
+          "current_rejects": false,
+          "legacy_rejects": true,
+          "service": {
+            "samples": 92,
+            "start_mb": 16.9268,
+            "end_mb": 17.4102,
+            "slope_mb_per_s": 0.0846,
+            "late_slope_mb_per_s": -0.0023
+          },
+          "db": {
+            "samples": 92,
+            "start_mb": 149.352,
+            "end_mb": 170.2605,
+            "slope_mb_per_s": 1.0015,
+            "late_slope_mb_per_s": -0.0117
+          },
+          "total": {
+            "samples": 92,
+            "start_mb": 166.2787,
+            "end_mb": 187.6707,
+            "slope_mb_per_s": 1.086,
+            "late_slope_mb_per_s": -0.0139
+          },
+          "service_series_mb": [
+            15.77,
+            16.65,
+            15.68,
+            15.89,
+            15.85,
+            18.58,
+            18.8,
+            15.8,
+            15.91,
+            19.54,
+            19.28,
+            16.43,
+            18.26,
+            17.81,
+            18.39,
+            22.4,
+            17.6,
+            21.2,
+            16.8
+          ],
+          "requests": 780
+        }
+      ],
+      "legacy_rejections": 3,
+      "current_rejections": 0
+    },
+    {
+      "group": "honest",
+      "program": "e30825410deb01bf",
+      "genes": 2,
+      "source_run": "runs/stackzero-go",
+      "l6_verdict": "pass",
+      "holdout_cost_ci": [
+        0.005589880934782736,
+        0.08380968799804958
+      ],
+      "recorded_soak_slope": 0.18438754436386967,
+      "recorded_soak_reason": null,
+      "reps": [
+        {
+          "current_rejects": false,
+          "legacy_rejects": false,
+          "service": {
+            "samples": 97,
+            "start_mb": 22.09,
+            "end_mb": 18.6086,
+            "slope_mb_per_s": -0.095,
+            "late_slope_mb_per_s": -0.1092
+          },
+          "db": {
+            "samples": 97,
+            "start_mb": 158.3787,
+            "end_mb": 166.0834,
+            "slope_mb_per_s": 0.446,
+            "late_slope_mb_per_s": 0.1275
+          },
+          "total": {
+            "samples": 97,
+            "start_mb": 180.4688,
+            "end_mb": 184.692,
+            "slope_mb_per_s": 0.351,
+            "late_slope_mb_per_s": 0.0183
+          },
+          "service_series_mb": [
+            33.3,
+            19.17,
+            19.33,
+            19.31,
+            19.59,
+            17.03,
+            22.91,
+            16.79,
+            20.34,
+            19.45,
+            18.04,
+            16.64,
+            16.57,
+            20.09,
+            20.32,
+            19.36,
+            19.79,
+            17.18,
+            18.81,
+            18.59
+          ],
+          "requests": 780
+        },
+        {
+          "current_rejects": false,
+          "legacy_rejects": false,
+          "service": {
+            "samples": 97,
+            "start_mb": 22.176,
+            "end_mb": 18.0063,
+            "slope_mb_per_s": -0.1055,
+            "late_slope_mb_per_s": -0.0577
+          },
+          "db": {
+            "samples": 97,
+            "start_mb": 153.9627,
+            "end_mb": 160.898,
+            "slope_mb_per_s": 0.2844,
+            "late_slope_mb_per_s": 0.0462
+          },
+          "total": {
+            "samples": 97,
+            "start_mb": 176.1387,
+            "end_mb": 178.9043,
+            "slope_mb_per_s": 0.1789,
+            "late_slope_mb_per_s": -0.0115
+          },
+          "service_series_mb": [
+            29.21,
+            16.75,
+            16.22,
+            22.22,
+            16.79,
+            19.45,
+            16.39,
+            17.31,
+            16.87,
+            17.05,
+            24.88,
+            16.8,
+            19.41,
+            16.37,
+            16.78,
+            17.83,
+            18.14,
+            18.85,
+            19.35,
+            17.44
+          ],
+          "requests": 780
+        },
+        {
+          "current_rejects": false,
+          "legacy_rejects": true,
+          "service": {
+            "samples": 101,
+            "start_mb": 16.9338,
+            "end_mb": 20.3033,
+            "slope_mb_per_s": 0.1333,
+            "late_slope_mb_per_s": 0.0735
+          },
+          "db": {
+            "samples": 101,
+            "start_mb": 153.5658,
+            "end_mb": 170.066,
+            "slope_mb_per_s": 1.0086,
+            "late_slope_mb_per_s": 0.3811
+          },
+          "total": {
+            "samples": 101,
+            "start_mb": 170.4996,
+            "end_mb": 190.3693,
+            "slope_mb_per_s": 1.1419,
+            "late_slope_mb_per_s": 0.4546
+          },
+          "service_series_mb": [
+            16.18,
+            15.59,
+            17.34,
+            16.11,
+            19.88,
+            16.81,
+            18.25,
+            16.58,
+            18.3,
+            27.2,
+            18.59,
+            18.35,
+            18.4,
+            18.9,
+            18.76,
+            16.8,
+            19.78,
+            17.26,
+            20.38,
+            18.64,
+            21.31
+          ],
+          "requests": 780
+        }
+      ],
+      "legacy_rejections": 1,
+      "current_rejections": 0
+    },
+    {
+      "group": "honest",
+      "program": "c8d596f207c49abc",
+      "genes": 3,
+      "source_run": "runs/stackzero-go",
+      "l6_verdict": "fail",
+      "holdout_cost_ci": [
+        0.18940853606607497,
+        0.2662621911897556
+      ],
+      "recorded_soak_slope": 0.5294314200050568,
+      "recorded_soak_reason": "memory grows 0.53 MB/s under sustained load (leak suspected)",
+      "reps": [
+        {
+          "current_rejects": false,
+          "legacy_rejects": false,
+          "service": {
+            "samples": 97,
+            "start_mb": 15.9789,
+            "end_mb": 18.657,
+            "slope_mb_per_s": 0.1104,
+            "late_slope_mb_per_s": -0.0899
+          },
+          "db": {
+            "samples": 97,
+            "start_mb": 164.9246,
+            "end_mb": 171.1137,
+            "slope_mb_per_s": 0.1784,
+            "late_slope_mb_per_s": 0.0077
+          },
+          "total": {
+            "samples": 97,
+            "start_mb": 180.9035,
+            "end_mb": 189.7707,
+            "slope_mb_per_s": 0.2888,
+            "late_slope_mb_per_s": -0.0823
+          },
+          "service_series_mb": [
+            16.01,
+            17.2,
+            16.67,
+            15.77,
+            15.51,
+            17.09,
+            17.39,
+            15.78,
+            17.42,
+            15.88,
+            17.28,
+            15.92,
+            16.92,
+            23.81,
+            16.32,
+            24.84,
+            17.45,
+            15.89,
+            18.23,
+            20.22
+          ],
+          "requests": 780
+        },
+        {
+          "current_rejects": false,
+          "legacy_rejects": false,
+          "service": {
+            "samples": 93,
+            "start_mb": 16.2549,
+            "end_mb": 18.218,
+            "slope_mb_per_s": 0.049,
+            "late_slope_mb_per_s": 0.108
+          },
+          "db": {
+            "samples": 93,
+            "start_mb": 165.4148,
+            "end_mb": 175.4641,
+            "slope_mb_per_s": 0.4412,
+            "late_slope_mb_per_s": 0.0786
+          },
+          "total": {
+            "samples": 93,
+            "start_mb": 181.6697,
+            "end_mb": 193.682,
+            "slope_mb_per_s": 0.4902,
+            "late_slope_mb_per_s": 0.1866
+          },
+          "service_series_mb": [
+            15.77,
+            17.86,
+            16.36,
+            16.56,
+            15.47,
+            16.65,
+            16.8,
+            17.47,
+            15.84,
+            17.3,
+            15.98,
+            15.79,
+            18.42,
+            18.01,
+            18.34,
+            16.76,
+            17.12,
+            19.18,
+            18.46
+          ],
+          "requests": 780
+        },
+        {
+          "current_rejects": false,
+          "legacy_rejects": false,
+          "service": {
+            "samples": 100,
+            "start_mb": 16.458,
+            "end_mb": 17.5531,
+            "slope_mb_per_s": 0.0559,
+            "late_slope_mb_per_s": 0.2691
+          },
+          "db": {
+            "samples": 100,
+            "start_mb": 164.3018,
+            "end_mb": 168.224,
+            "slope_mb_per_s": 0.133,
+            "late_slope_mb_per_s": 0.0194
+          },
+          "total": {
+            "samples": 100,
+            "start_mb": 180.7598,
+            "end_mb": 185.7771,
+            "slope_mb_per_s": 0.189,
+            "late_slope_mb_per_s": 0.2885
+          },
+          "service_series_mb": [
+            16.83,
+            16.46,
+            16.74,
+            16.54,
+            16.1,
+            16.54,
+            17.41,
+            15.88,
+            18.26,
+            15.98,
+            15.95,
+            17.05,
+            16.43,
+            18.54,
+            18.32,
+            17.08,
+            16.43,
+            19.02,
+            17.24,
+            20.0
+          ],
+          "requests": 780
+        }
+      ],
+      "legacy_rejections": 0,
+      "current_rejections": 0
+    },
+    {
+      "group": "honest",
+      "program": "e4ad60fa00916084",
+      "genes": 3,
+      "source_run": "runs/stackzero-go",
+      "l6_verdict": "pass",
+      "holdout_cost_ci": [
+        0.21855665065184152,
+        0.30043474293552613
+      ],
+      "recorded_soak_slope": 0.4010377379776845,
+      "recorded_soak_reason": null,
+      "reps": [
+        {
+          "current_rejects": false,
+          "legacy_rejects": false,
+          "service": {
+            "samples": 97,
+            "start_mb": 17.0518,
+            "end_mb": 17.8562,
+            "slope_mb_per_s": 0.0389,
+            "late_slope_mb_per_s": 0.0039
+          },
+          "db": {
+            "samples": 97,
+            "start_mb": 170.8031,
+            "end_mb": 177.1221,
+            "slope_mb_per_s": 0.435,
+            "late_slope_mb_per_s": -0.0238
+          },
+          "total": {
+            "samples": 97,
+            "start_mb": 187.8549,
+            "end_mb": 194.9783,
+            "slope_mb_per_s": 0.474,
+            "late_slope_mb_per_s": -0.02
+          },
+          "service_series_mb": [
+            15.84,
+            21.54,
+            17.62,
+            27.12,
+            17.98,
+            17.44,
+            16.39,
+            17.29,
+            18.65,
+            19.4,
+            19.61,
+            16.96,
+            17.04,
+            17.46,
+            16.52,
+            18.12,
+            20.0,
+            17.95,
+            19.86,
+            20.29
+          ],
+          "requests": 780
+        },
+        {
+          "current_rejects": false,
+          "legacy_rejects": false,
+          "service": {
+            "samples": 96,
+            "start_mb": 16.6596,
+            "end_mb": 18.8742,
+            "slope_mb_per_s": 0.1483,
+            "late_slope_mb_per_s": 0.1701
+          },
+          "db": {
+            "samples": 96,
+            "start_mb": 167.4371,
+            "end_mb": 176.8187,
+            "slope_mb_per_s": 0.2708,
+            "late_slope_mb_per_s": -0.0143
+          },
+          "total": {
+            "samples": 96,
+            "start_mb": 184.0967,
+            "end_mb": 195.693,
+            "slope_mb_per_s": 0.4191,
+            "late_slope_mb_per_s": 0.1558
+          },
+          "service_series_mb": [
+            17.38,
+            15.27,
+            17.31,
+            16.34,
+            16.73,
+            18.83,
+            16.85,
+            16.16,
+            19.21,
+            18.99,
+            17.46,
+            16.59,
+            18.75,
+            21.52,
+            20.09,
+            17.66,
+            17.07,
+            16.71,
+            20.17,
+            16.65
+          ],
+          "requests": 780
+        },
+        {
+          "current_rejects": false,
+          "legacy_rejects": true,
+          "service": {
+            "samples": 88,
+            "start_mb": 18.6885,
+            "end_mb": 17.4906,
+            "slope_mb_per_s": 0.1405,
+            "late_slope_mb_per_s": 0.1767
+          },
+          "db": {
+            "samples": 88,
+            "start_mb": 171.183,
+            "end_mb": 179.7312,
+            "slope_mb_per_s": 0.6483,
+            "late_slope_mb_per_s": 0.0823
+          },
+          "total": {
+            "samples": 88,
+            "start_mb": 189.8715,
+            "end_mb": 197.2219,
+            "slope_mb_per_s": 0.7888,
+            "late_slope_mb_per_s": 0.259
+          },
+          "service_series_mb": [
+            16.18,
+            16.2,
+            16.98,
+            16.27,
+            17.57,
+            19.1,
+            15.95,
+            17.5,
+            16.31,
+            16.54,
+            19.44,
+            15.83,
+            16.79,
+            17.23,
+            19.23,
+            23.06,
+            26.25,
+            16.52
+          ],
+          "requests": 780
+        }
+      ],
+      "legacy_rejections": 1,
+      "current_rejections": 0
+    },
+    {
+      "group": "honest",
+      "program": "86225aa630433cb0",
+      "genes": 3,
+      "source_run": "runs/stackzero-go",
+      "l6_verdict": "pass",
+      "holdout_cost_ci": [
+        0.201397454920984,
+        0.29080076344973355
+      ],
+      "recorded_soak_slope": 0.26805929801232314,
+      "recorded_soak_reason": null,
+      "reps": [
+        {
+          "current_rejects": false,
+          "legacy_rejects": false,
+          "service": {
+            "samples": 96,
+            "start_mb": 17.3643,
+            "end_mb": 20.0594,
+            "slope_mb_per_s": -0.0196,
+            "late_slope_mb_per_s": 0.1681
+          },
+          "db": {
+            "samples": 96,
+            "start_mb": 172.6596,
+            "end_mb": 177.1902,
+            "slope_mb_per_s": 0.1857,
+            "late_slope_mb_per_s": -0.0128
+          },
+          "total": {
+            "samples": 96,
+            "start_mb": 190.0238,
+            "end_mb": 197.2496,
+            "slope_mb_per_s": 0.166,
+            "late_slope_mb_per_s": 0.1552
+          },
+          "service_series_mb": [
+            16.47,
+            19.1,
+            24.34,
+            18.01,
+            17.29,
+            18.15,
+            18.23,
+            16.26,
+            15.95,
+            16.09,
+            17.11,
+            17.35,
+            19.5,
+            16.27,
+            18.65,
+            16.5,
+            18.14,
+            16.51,
+            27.23,
+            19.39
+          ],
+          "requests": 780
+        },
+        {
+          "current_rejects": false,
+          "legacy_rejects": true,
+          "service": {
+            "samples": 97,
+            "start_mb": 18.1221,
+            "end_mb": 19.0289,
+            "slope_mb_per_s": 0.0215,
+            "late_slope_mb_per_s": 0.0933
+          },
+          "db": {
+            "samples": 97,
+            "start_mb": 170.6871,
+            "end_mb": 183.7777,
+            "slope_mb_per_s": 0.5202,
+            "late_slope_mb_per_s": 0.0548
+          },
+          "total": {
+            "samples": 97,
+            "start_mb": 188.8092,
+            "end_mb": 202.8066,
+            "slope_mb_per_s": 0.5417,
+            "late_slope_mb_per_s": 0.1481
+          },
+          "service_series_mb": [
+            16.45,
+            18.31,
+            17.29,
+            19.27,
+            17.39,
+            16.46,
+            18.56,
+            16.43,
+            19.08,
+            19.41,
+            16.41,
+            17.16,
+            16.36,
+            18.23,
+            20.04,
+            18.66,
+            19.31,
+            15.95,
+            17.14,
+            17.93
+          ],
+          "requests": 780
+        },
+        {
+          "current_rejects": false,
+          "legacy_rejects": false,
+          "service": {
+            "samples": 99,
+            "start_mb": 18.0252,
+            "end_mb": 16.8914,
+            "slope_mb_per_s": -0.0125,
+            "late_slope_mb_per_s": -0.0218
+          },
+          "db": {
+            "samples": 99,
+            "start_mb": 170.9164,
+            "end_mb": 173.81,
+            "slope_mb_per_s": 0.1889,
+            "late_slope_mb_per_s": 0.2596
+          },
+          "total": {
+            "samples": 99,
+            "start_mb": 188.9416,
+            "end_mb": 190.7014,
+            "slope_mb_per_s": 0.1763,
+            "late_slope_mb_per_s": 0.2377
+          },
+          "service_series_mb": [
+            24.94,
+            16.76,
+            15.55,
+            16.58,
+            17.11,
+            16.6,
+            18.52,
+            15.84,
+            16.47,
+            15.77,
+            16.2,
+            16.7,
+            16.0,
+            17.19,
+            17.09,
+            16.33,
+            16.45,
+            17.07,
+            16.83,
+            16.02
+          ],
+          "requests": 780
+        }
+      ],
+      "legacy_rejections": 1,
+      "current_rejections": 0
+    },
+    {
+      "group": "honest",
+      "program": "6ceb676416f3d2e9",
+      "genes": 2,
+      "source_run": "runs/stackzero-go",
+      "l6_verdict": "pass",
+      "holdout_cost_ci": [
+        0.2738043161227861,
+        0.34158759905400926
+      ],
+      "recorded_soak_slope": 0.2247142180735975,
+      "recorded_soak_reason": null,
+      "reps": [
+        {
+          "current_rejects": false,
+          "legacy_rejects": false,
+          "service": {
+            "samples": 97,
+            "start_mb": 17.0979,
+            "end_mb": 17.5727,
+            "slope_mb_per_s": 0.1289,
+            "late_slope_mb_per_s": -0.0839
+          },
+          "db": {
+            "samples": 97,
+            "start_mb": 171.34,
+            "end_mb": 176.2557,
+            "slope_mb_per_s": 0.2177,
+            "late_slope_mb_per_s": 0.078
+          },
+          "total": {
+            "samples": 97,
+            "start_mb": 188.4379,
+            "end_mb": 193.8283,
+            "slope_mb_per_s": 0.3466,
+            "late_slope_mb_per_s": -0.0058
+          },
+          "service_series_mb": [
+            16.86,
+            15.57,
+            16.5,
+            17.51,
+            18.3,
+            16.54,
+            16.3,
+            17.46,
+            17.13,
+            16.56,
+            24.16,
+            16.45,
+            20.65,
+            16.89,
+            16.67,
+            17.74,
+            18.98,
+            20.89,
+            17.05,
+            19.59
+          ],
+          "requests": 780
+        },
+        {
+          "current_rejects": false,
+          "legacy_rejects": true,
+          "service": {
+            "samples": 92,
+            "start_mb": 15.7641,
+            "end_mb": 18.7109,
+            "slope_mb_per_s": 0.2431,
+            "late_slope_mb_per_s": 0.4353
+          },
+          "db": {
+            "samples": 92,
+            "start_mb": 169.3682,
+            "end_mb": 180.3271,
+            "slope_mb_per_s": 0.608,
+            "late_slope_mb_per_s": 0.5878
+          },
+          "total": {
+            "samples": 92,
+            "start_mb": 185.1322,
+            "end_mb": 199.0381,
+            "slope_mb_per_s": 0.8511,
+            "late_slope_mb_per_s": 1.0231
+          },
+          "service_series_mb": [
+            16.76,
+            15.56,
+            16.14,
+            21.14,
+            17.29,
+            20.31,
+            17.51,
+            19.61,
+            18.9,
+            16.91,
+            16.41,
+            16.43,
+            23.87,
+            16.88,
+            17.21,
+            19.5,
+            19.3,
+            27.43,
+            18.72
+          ],
+          "requests": 780
+        },
+        {
+          "current_rejects": false,
+          "legacy_rejects": false,
+          "service": {
+            "samples": 95,
+            "start_mb": 16.5141,
+            "end_mb": 17.6156,
+            "slope_mb_per_s": 0.1257,
+            "late_slope_mb_per_s": 0.1184
+          },
+          "db": {
+            "samples": 95,
+            "start_mb": 167.9422,
+            "end_mb": 176.5682,
+            "slope_mb_per_s": 0.3484,
+            "late_slope_mb_per_s": 0.3225
+          },
+          "total": {
+            "samples": 95,
+            "start_mb": 184.4563,
+            "end_mb": 194.1838,
+            "slope_mb_per_s": 0.4741,
+            "late_slope_mb_per_s": 0.4409
+          },
+          "service_series_mb": [
+            16.76,
+            16.05,
+            17.3,
+            16.15,
+            23.69,
+            15.96,
+            32.33,
+            19.19,
+            19.18,
+            16.44,
+            18.79,
+            17.35,
+            16.66,
+            16.66,
+            19.12,
+            19.38,
+            17.28,
+            25.52,
+            17.12
+          ],
+          "requests": 780
+        }
+      ],
+      "legacy_rejections": 1,
+      "current_rejections": 0
+    },
+    {
+      "group": "honest",
+      "program": "16feaf5c2f392a0c",
+      "genes": 5,
+      "source_run": "runs/stackzero-go",
+      "l6_verdict": "pass",
+      "holdout_cost_ci": [
+        0.2648244595223315,
+        0.33706248877588474
+      ],
+      "recorded_soak_slope": 0.33613524330872413,
+      "recorded_soak_reason": null,
+      "reps": [
+        {
+          "current_rejects": false,
+          "legacy_rejects": false,
+          "service": {
+            "samples": 101,
+            "start_mb": 18.2658,
+            "end_mb": 17.3836,
+            "slope_mb_per_s": 0.0207,
+            "late_slope_mb_per_s": -0.2248
+          },
+          "db": {
+            "samples": 101,
+            "start_mb": 167.6131,
+            "end_mb": 172.3078,
+            "slope_mb_per_s": 0.2308,
+            "late_slope_mb_per_s": 0.0013
+          },
+          "total": {
+            "samples": 101,
+            "start_mb": 185.8789,
+            "end_mb": 189.6914,
+            "slope_mb_per_s": 0.2515,
+            "late_slope_mb_per_s": -0.2235
+          },
+          "service_series_mb": [
+            18.19,
+            16.28,
+            16.42,
+            16.98,
+            15.83,
+            16.48,
+            16.26,
+            18.0,
+            17.99,
+            16.75,
+            16.17,
+            18.25,
+            16.03,
+            19.25,
+            18.77,
+            17.31,
+            19.39,
+            16.0,
+            16.29,
+            16.8,
+            16.92
+          ],
+          "requests": 780
+        },
+        {
+          "current_rejects": false,
+          "legacy_rejects": false,
+          "service": {
+            "samples": 98,
+            "start_mb": 15.9314,
+            "end_mb": 17.2273,
+            "slope_mb_per_s": 0.0887,
+            "late_slope_mb_per_s": -0.0639
+          },
+          "db": {
+            "samples": 98,
+            "start_mb": 168.4547,
+            "end_mb": 173.585,
+            "slope_mb_per_s": 0.2033,
+            "late_slope_mb_per_s": 0.0129
+          },
+          "total": {
+            "samples": 98,
+            "start_mb": 184.3861,
+            "end_mb": 190.8123,
+            "slope_mb_per_s": 0.292,
+            "late_slope_mb_per_s": -0.051
+          },
+          "service_series_mb": [
+            15.66,
+            16.08,
+            17.06,
+            15.41,
+            16.41,
+            15.69,
+            15.52,
+            16.51,
+            16.12,
+            16.69,
+            16.15,
+            22.38,
+            17.0,
+            16.47,
+            15.86,
+            16.02,
+            19.18,
+            17.06,
+            16.25,
+            18.46
+          ],
+          "requests": 780
+        },
+        {
+          "current_rejects": false,
+          "legacy_rejects": true,
+          "service": {
+            "samples": 93,
+            "start_mb": 18.6924,
+            "end_mb": 20.3172,
+            "slope_mb_per_s": 0.0582,
+            "late_slope_mb_per_s": 0.0556
+          },
+          "db": {
+            "samples": 93,
+            "start_mb": 167.527,
+            "end_mb": 178.0449,
+            "slope_mb_per_s": 0.629,
+            "late_slope_mb_per_s": 0.0517
+          },
+          "total": {
+            "samples": 93,
+            "start_mb": 186.2193,
+            "end_mb": 198.3621,
+            "slope_mb_per_s": 0.6872,
+            "late_slope_mb_per_s": 0.1073
+          },
+          "service_series_mb": [
+            18.31,
+            15.85,
+            19.05,
+            16.98,
+            15.76,
+            16.35,
+            17.2,
+            17.12,
+            18.45,
+            16.5,
+            28.43,
+            18.7,
+            16.29,
+            16.36,
+            16.4,
+            17.04,
+            18.58,
+            17.09,
+            19.22
+          ],
+          "requests": 780
+        }
+      ],
+      "legacy_rejections": 1,
+      "current_rejections": 0
+    },
+    {
+      "group": "honest",
+      "program": "d0bde9a5150f622e",
+      "genes": 4,
+      "source_run": "runs/stackzero-go",
+      "l6_verdict": "fail",
+      "holdout_cost_ci": [
+        0.28999207413404504,
+        0.3704782312037906
+      ],
+      "recorded_soak_slope": 0.6295941379128933,
+      "recorded_soak_reason": "memory grows 0.63 MB/s under sustained load (leak suspected)",
+      "reps": [
+        {
+          "current_rejects": false,
+          "legacy_rejects": false,
+          "service": {
+            "samples": 98,
+            "start_mb": 16.6861,
+            "end_mb": 16.9969,
+            "slope_mb_per_s": 0.0002,
+            "late_slope_mb_per_s": -0.0531
+          },
+          "db": {
+            "samples": 98,
+            "start_mb": 166.2256,
+            "end_mb": 168.6213,
+            "slope_mb_per_s": 0.0739,
+            "late_slope_mb_per_s": 0.0043
+          },
+          "total": {
+            "samples": 98,
+            "start_mb": 182.9117,
+            "end_mb": 185.6182,
+            "slope_mb_per_s": 0.0741,
+            "late_slope_mb_per_s": -0.0488
+          },
+          "service_series_mb": [
+            16.05,
+            16.25,
+            18.14,
+            20.95,
+            15.95,
+            15.92,
+            16.18,
+            16.62,
+            17.86,
+            16.13,
+            15.9,
+            16.39,
+            16.74,
+            16.14,
+            16.67,
+            17.38,
+            15.66,
+            16.66,
+            17.11,
+            18.63
+          ],
+          "requests": 780
+        },
+        {
+          "current_rejects": false,
+          "legacy_rejects": false,
+          "service": {
+            "samples": 100,
+            "start_mb": 16.3773,
+            "end_mb": 18.2297,
+            "slope_mb_per_s": 0.0426,
+            "late_slope_mb_per_s": -0.0003
+          },
+          "db": {
+            "samples": 100,
+            "start_mb": 163.867,
+            "end_mb": 176.4029,
+            "slope_mb_per_s": 0.3753,
+            "late_slope_mb_per_s": 0.1448
+          },
+          "total": {
+            "samples": 100,
+            "start_mb": 180.2443,
+            "end_mb": 194.6326,
+            "slope_mb_per_s": 0.418,
+            "late_slope_mb_per_s": 0.1445
+          },
+          "service_series_mb": [
+            16.28,
+            15.91,
+            16.62,
+            16.27,
+            16.87,
+            16.6,
+            16.79,
+            16.67,
+            17.97,
+            16.34,
+            15.99,
+            17.57,
+            20.66,
+            16.75,
+            17.81,
+            17.06,
+            16.1,
+            16.83,
+            16.46,
+            17.09
+          ],
+          "requests": 780
+        },
+        {
+          "current_rejects": false,
+          "legacy_rejects": false,
+          "service": {
+            "samples": 96,
+            "start_mb": 16.9572,
+            "end_mb": 19.8484,
+            "slope_mb_per_s": 0.0939,
+            "late_slope_mb_per_s": 0.3801
+          },
+          "db": {
+            "samples": 96,
+            "start_mb": 165.9129,
+            "end_mb": 167.0031,
+            "slope_mb_per_s": 0.0657,
+            "late_slope_mb_per_s": -0.0884
+          },
+          "total": {
+            "samples": 96,
+            "start_mb": 182.8701,
+            "end_mb": 186.8516,
+            "slope_mb_per_s": 0.1596,
+            "late_slope_mb_per_s": 0.2917
+          },
+          "service_series_mb": [
+            17.01,
+            16.05,
+            17.48,
+            16.45,
+            18.91,
+            17.23,
+            17.07,
+            17.23,
+            16.25,
+            17.5,
+            17.69,
+            16.53,
+            18.28,
+            16.99,
+            15.66,
+            16.55,
+            18.32,
+            24.92,
+            16.58,
+            18.07
+          ],
+          "requests": 780
+        }
+      ],
+      "legacy_rejections": 0,
+      "current_rejections": 0
+    },
+    {
+      "group": "honest",
+      "program": "ab799a4daccc53b9",
+      "genes": 5,
+      "source_run": "runs/stackzero-go",
+      "l6_verdict": "pass",
+      "holdout_cost_ci": [
+        0.25962456655879096,
+        0.3444642672083549
+      ],
+      "recorded_soak_slope": 0.18467487998944856,
+      "recorded_soak_reason": null,
+      "reps": [
+        {
+          "current_rejects": false,
+          "legacy_rejects": false,
+          "service": {
+            "samples": 94,
+            "start_mb": 16.9799,
+            "end_mb": 17.3336,
+            "slope_mb_per_s": 0.0295,
+            "late_slope_mb_per_s": -0.0703
+          },
+          "db": {
+            "samples": 94,
+            "start_mb": 163.368,
+            "end_mb": 169.0096,
+            "slope_mb_per_s": 0.3193,
+            "late_slope_mb_per_s": 0.2932
+          },
+          "total": {
+            "samples": 94,
+            "start_mb": 180.3479,
+            "end_mb": 186.3432,
+            "slope_mb_per_s": 0.3488,
+            "late_slope_mb_per_s": 0.2229
+          },
+          "service_series_mb": [
+            16.5,
+            18.09,
+            17.36,
+            16.15,
+            17.98,
+            17.45,
+            18.46,
+            37.12,
+            15.69,
+            18.29,
+            16.71,
+            25.12,
+            17.86,
+            19.13,
+            17.88,
+            16.99,
+            18.79,
+            22.16,
+            18.55
+          ],
+          "requests": 780
+        },
+        {
+          "current_rejects": false,
+          "legacy_rejects": false,
+          "service": {
+            "samples": 97,
+            "start_mb": 16.6447,
+            "end_mb": 17.4539,
+            "slope_mb_per_s": 0.0511,
+            "late_slope_mb_per_s": 0.0164
+          },
+          "db": {
+            "samples": 97,
+            "start_mb": 161.1412,
+            "end_mb": 168.0166,
+            "slope_mb_per_s": 0.2184,
+            "late_slope_mb_per_s": 0.0983
+          },
+          "total": {
+            "samples": 97,
+            "start_mb": 177.7859,
+            "end_mb": 185.4705,
+            "slope_mb_per_s": 0.2695,
+            "late_slope_mb_per_s": 0.1147
+          },
+          "service_series_mb": [
+            17.08,
+            18.3,
+            16.37,
+            17.19,
+            15.83,
+            15.8,
+            16.47,
+            17.19,
+            16.69,
+            17.16,
+            16.88,
+            16.4,
+            18.17,
+            16.04,
+            18.44,
+            18.04,
+            17.91,
+            16.16,
+            16.64,
+            15.87
+          ],
+          "requests": 780
+        },
+        {
+          "current_rejects": false,
+          "legacy_rejects": false,
+          "service": {
+            "samples": 96,
+            "start_mb": 17.4033,
+            "end_mb": 17.0094,
+            "slope_mb_per_s": -0.002,
+            "late_slope_mb_per_s": -0.0542
+          },
+          "db": {
+            "samples": 96,
+            "start_mb": 163.0023,
+            "end_mb": 165.0908,
+            "slope_mb_per_s": 0.1077,
+            "late_slope_mb_per_s": 0.052
+          },
+          "total": {
+            "samples": 96,
+            "start_mb": 180.4057,
+            "end_mb": 182.1002,
+            "slope_mb_per_s": 0.1057,
+            "late_slope_mb_per_s": -0.0022
+          },
+          "service_series_mb": [
+            18.44,
+            16.88,
+            16.42,
+            17.85,
+            16.34,
+            17.04,
+            25.7,
+            18.59,
+            16.74,
+            18.8,
+            18.13,
+            19.2,
+            17.96,
+            20.55,
+            19.79,
+            16.77,
+            16.73,
+            16.18,
+            16.94,
+            18.95
+          ],
+          "requests": 780
+        }
+      ],
+      "legacy_rejections": 0,
+      "current_rejections": 0
+    },
+    {
+      "group": "honest",
+      "program": "9d3b537a20f92cb9",
+      "genes": 4,
+      "source_run": "runs/stackzero-go",
+      "l6_verdict": "pass",
+      "holdout_cost_ci": [
+        0.24707091355742844,
+        0.32626939606534594
+      ],
+      "recorded_soak_slope": 0.21922751344707156,
+      "recorded_soak_reason": null,
+      "reps": [
+        {
+          "current_rejects": false,
+          "legacy_rejects": false,
+          "service": {
+            "samples": 97,
+            "start_mb": 21.5119,
+            "end_mb": 19.3453,
+            "slope_mb_per_s": 0.0257,
+            "late_slope_mb_per_s": 0.3864
+          },
+          "db": {
+            "samples": 97,
+            "start_mb": 161.732,
+            "end_mb": 164.7088,
+            "slope_mb_per_s": 0.1328,
+            "late_slope_mb_per_s": 0.1017
+          },
+          "total": {
+            "samples": 97,
+            "start_mb": 183.2439,
+            "end_mb": 184.0541,
+            "slope_mb_per_s": 0.1585,
+            "late_slope_mb_per_s": 0.4882
+          },
+          "service_series_mb": [
+            21.67,
+            15.68,
+            20.0,
+            17.19,
+            15.54,
+            17.91,
+            16.03,
+            19.01,
+            18.67,
+            16.95,
+            15.9,
+            17.01,
+            16.69,
+            16.51,
+            19.43,
+            16.38,
+            16.07,
+            16.18,
+            27.59,
+            16.8
+          ],
+          "requests": 780
+        },
+        {
+          "current_rejects": false,
+          "legacy_rejects": false,
+          "service": {
+            "samples": 99,
+            "start_mb": 17.0361,
+            "end_mb": 17.6281,
+            "slope_mb_per_s": 0.0667,
+            "late_slope_mb_per_s": 0.0288
+          },
+          "db": {
+            "samples": 99,
+            "start_mb": 163.6338,
+            "end_mb": 166.2119,
+            "slope_mb_per_s": 0.0976,
+            "late_slope_mb_per_s": 0.0527
+          },
+          "total": {
+            "samples": 99,
+            "start_mb": 180.6699,
+            "end_mb": 183.84,
+            "slope_mb_per_s": 0.1644,
+            "late_slope_mb_per_s": 0.0815
+          },
+          "service_series_mb": [
+            16.41,
+            17.42,
+            18.32,
+            15.96,
+            17.82,
+            19.12,
+            16.41,
+            16.72,
+            19.02,
+            15.99,
+            16.49,
+            22.8,
+            16.75,
+            20.34,
+            16.94,
+            18.56,
+            18.4,
+            17.46,
+            16.98,
+            16.31
+          ],
+          "requests": 780
+        },
+        {
+          "current_rejects": false,
+          "legacy_rejects": false,
+          "service": {
+            "samples": 99,
+            "start_mb": 18.368,
+            "end_mb": 17.418,
+            "slope_mb_per_s": 0.0312,
+            "late_slope_mb_per_s": 0.0154
+          },
+          "db": {
+            "samples": 99,
+            "start_mb": 160.0252,
+            "end_mb": 164.5895,
+            "slope_mb_per_s": 0.3162,
+            "late_slope_mb_per_s": 0.3498
+          },
+          "total": {
+            "samples": 99,
+            "start_mb": 178.3932,
+            "end_mb": 182.0074,
+            "slope_mb_per_s": 0.3474,
+            "late_slope_mb_per_s": 0.3653
+          },
+          "service_series_mb": [
+            19.14,
+            16.04,
+            16.38,
+            16.15,
+            15.59,
+            15.7,
+            16.43,
+            15.91,
+            18.96,
+            16.09,
+            17.76,
+            16.09,
+            19.06,
+            16.43,
+            16.43,
+            18.12,
+            16.32,
+            16.37,
+            19.36,
+            17.3
+          ],
+          "requests": 780
+        }
+      ],
+      "legacy_rejections": 0,
+      "current_rejections": 0
+    },
+    {
+      "group": "leak",
+      "program": "goroutine_leak_4k",
+      "genes": 1,
+      "leak_kib_per_rating_lookup": 4,
+      "reps": [
+        {
+          "current_rejects": true,
+          "legacy_rejects": true,
+          "service": {
+            "samples": 97,
+            "start_mb": 20.4572,
+            "end_mb": 45.3789,
+            "slope_mb_per_s": 1.7219,
+            "late_slope_mb_per_s": 1.6368
+          },
+          "db": {
+            "samples": 97,
+            "start_mb": 160.2568,
+            "end_mb": 167.6314,
+            "slope_mb_per_s": 0.4106,
+            "late_slope_mb_per_s": 0.1584
+          },
+          "total": {
+            "samples": 97,
+            "start_mb": 180.7141,
+            "end_mb": 213.0104,
+            "slope_mb_per_s": 2.1325,
+            "late_slope_mb_per_s": 1.7952
+          },
+          "service_series_mb": [
+            18.84,
+            21.87,
+            20.12,
+            19.43,
+            26.28,
+            23.51,
+            25.36,
+            27.52,
+            28.1,
+            34.49,
+            35.24,
+            33.93,
+            35.18,
+            40.8,
+            43.32,
+            40.84,
+            54.41,
+            45.27,
+            54.57,
+            38.92
+          ],
+          "requests": 780
+        },
+        {
+          "current_rejects": true,
+          "legacy_rejects": true,
+          "service": {
+            "samples": 97,
+            "start_mb": 21.5088,
+            "end_mb": 49.2914,
+            "slope_mb_per_s": 1.4589,
+            "late_slope_mb_per_s": 1.3311
+          },
+          "db": {
+            "samples": 97,
+            "start_mb": 159.8607,
+            "end_mb": 167.1572,
+            "slope_mb_per_s": 0.3438,
+            "late_slope_mb_per_s": -0.0162
+          },
+          "total": {
+            "samples": 97,
+            "start_mb": 181.3695,
+            "end_mb": 216.4486,
+            "slope_mb_per_s": 1.8027,
+            "late_slope_mb_per_s": 1.3148
+          },
+          "service_series_mb": [
+            22.89,
+            22.7,
+            25.47,
+            27.36,
+            36.79,
+            28.74,
+            29.62,
+            35.98,
+            35.5,
+            36.07,
+            35.59,
+            43.4,
+            39.29,
+            40.31,
+            39.89,
+            43.53,
+            43.56,
+            54.1,
+            48.2,
+            51.19
+          ],
+          "requests": 780
+        },
+        {
+          "current_rejects": true,
+          "legacy_rejects": true,
+          "service": {
+            "samples": 97,
+            "start_mb": 19.2697,
+            "end_mb": 46.143,
+            "slope_mb_per_s": 1.4468,
+            "late_slope_mb_per_s": 1.2357
+          },
+          "db": {
+            "samples": 97,
+            "start_mb": 160.4143,
+            "end_mb": 174.7674,
+            "slope_mb_per_s": 0.8884,
+            "late_slope_mb_per_s": 0.6671
+          },
+          "total": {
+            "samples": 97,
+            "start_mb": 179.684,
+            "end_mb": 220.9104,
+            "slope_mb_per_s": 2.3353,
+            "late_slope_mb_per_s": 1.9028
+          },
+          "service_series_mb": [
+            22.6,
+            18.92,
+            26.29,
+            24.77,
+            27.75,
+            29.55,
+            29.25,
+            31.41,
+            30.6,
+            32.17,
+            34.59,
+            44.42,
+            41.04,
+            35.76,
+            40.84,
+            40.95,
+            37.54,
+            40.49,
+            46.36,
+            47.29
+          ],
+          "requests": 780
+        }
+      ],
+      "legacy_rejections": 3,
+      "current_rejections": 3
+    },
+    {
+      "group": "leak",
+      "program": "goroutine_leak_32k",
+      "genes": 1,
+      "leak_kib_per_rating_lookup": 32,
+      "reps": [
+        {
+          "current_rejects": true,
+          "legacy_rejects": true,
+          "service": {
+            "samples": 93,
+            "start_mb": 60.0932,
+            "end_mb": 162.3859,
+            "slope_mb_per_s": 6.012,
+            "late_slope_mb_per_s": 5.447
+          },
+          "db": {
+            "samples": 93,
+            "start_mb": 164.7121,
+            "end_mb": 165.8324,
+            "slope_mb_per_s": 0.0497,
+            "late_slope_mb_per_s": -0.0039
+          },
+          "total": {
+            "samples": 93,
+            "start_mb": 224.8053,
+            "end_mb": 328.2184,
+            "slope_mb_per_s": 6.0617,
+            "late_slope_mb_per_s": 5.4431
+          },
+          "service_series_mb": [
+            60.86,
+            56.63,
+            70.12,
+            70.95,
+            88.14,
+            76.0,
+            83.88,
+            90.82,
+            94.79,
+            102.37,
+            113.84,
+            131.18,
+            131.27,
+            132.16,
+            137.52,
+            145.16,
+            145.29,
+            155.79,
+            159.67
+          ],
+          "requests": 780
+        },
+        {
+          "current_rejects": true,
+          "legacy_rejects": true,
+          "service": {
+            "samples": 95,
+            "start_mb": 86.7471,
+            "end_mb": 180.1562,
+            "slope_mb_per_s": 5.3353,
+            "late_slope_mb_per_s": 5.8299
+          },
+          "db": {
+            "samples": 95,
+            "start_mb": 165.8268,
+            "end_mb": 168.8834,
+            "slope_mb_per_s": 0.1278,
+            "late_slope_mb_per_s": 0.0991
+          },
+          "total": {
+            "samples": 95,
+            "start_mb": 252.5738,
+            "end_mb": 349.0396,
+            "slope_mb_per_s": 5.463,
+            "late_slope_mb_per_s": 5.929
+          },
+          "service_series_mb": [
+            84.53,
+            90.31,
+            95.73,
+            95.87,
+            97.89,
+            103.87,
+            115.27,
+            127.94,
+            127.96,
+            131.68,
+            133.64,
+            133.85,
+            134.22,
+            154.97,
+            162.73,
+            162.75,
+            164.86,
+            172.29,
+            178.83
+          ],
+          "requests": 780
+        },
+        {
+          "current_rejects": true,
+          "legacy_rejects": true,
+          "service": {
+            "samples": 100,
+            "start_mb": 45.6854,
+            "end_mb": 176.3414,
+            "slope_mb_per_s": 6.5502,
+            "late_slope_mb_per_s": 6.5179
+          },
+          "db": {
+            "samples": 100,
+            "start_mb": 159.0279,
+            "end_mb": 165.7506,
+            "slope_mb_per_s": 0.2595,
+            "late_slope_mb_per_s": 0.0262
+          },
+          "total": {
+            "samples": 100,
+            "start_mb": 204.7133,
+            "end_mb": 342.092,
+            "slope_mb_per_s": 6.8097,
+            "late_slope_mb_per_s": 6.5441
+          },
+          "service_series_mb": [
+            43.97,
+            47.7,
+            49.03,
+            76.43,
+            64.69,
+            66.21,
+            86.69,
+            88.95,
+            93.54,
+            106.64,
+            112.26,
+            119.72,
+            123.27,
+            135.86,
+            134.9,
+            134.97,
+            134.98,
+            145.7,
+            164.88,
+            173.93
+          ],
+          "requests": 780
+        }
+      ],
+      "legacy_rejections": 3,
+      "current_rejections": 3
+    }
+  ]
+}

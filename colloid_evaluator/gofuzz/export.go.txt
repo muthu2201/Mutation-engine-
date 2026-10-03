@@ -1,0 +1,20 @@
+package PKG
+
+// Exported entry points for the evaluator's differential fuzz driver (copied into the
+// baseline and candidate copies of the package; never part of the service).
+
+func ScoreBatch(terms []string, docs []string) []float64 { return scoreBatch(terms, docs) }
+func Levenshtein(a, b string) int                     { return levenshtein(a, b) }
+func FuzzySimilarity(a, b string) float64             { return fuzzySimilarity(a, b) }
+func ShopTokenize(text string) []string               { return shopTokenize(text) }
+func Tokenize(text string) []string                   { return tokenize(text) }
+func FormatMoney(cents int64) string                  { return formatMoney(cents) }
+func PyRound(x float64, ndigits int) float64          { return pyRound(x, ndigits) }
+
+func ParseInt(value string, name string, low, high int64) (int64, string) {
+	n, err := parseInt(value, name, low, high)
+	if err != nil {
+		return 0, err.Error()
+	}
+	return n, ""
+}
