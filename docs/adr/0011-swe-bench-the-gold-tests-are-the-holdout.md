@@ -127,7 +127,10 @@ model (temperature 0, at most 600 tokens), `colloid_evaluator/swebench/contamina
 **Reported:**
 
 - each resolved instance's verdict for the model that solved it;
-- a resolve rate on the instances `clean` for that model, alongside the pre-registered rate.
+- a resolve rate on the instances `clean` for that model, alongside the pre-registered rate;
+- in the lake: each resolved fix's program record carries the solving model's verdict
+  (`memorisation_probe`). A later run that reuses the gene can then see whether it may have been
+  recalled rather than found.
 
 **Limits.**
 

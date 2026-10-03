@@ -117,7 +117,13 @@ def cmd_swebench(args: argparse.Namespace) -> int:
     if args.action == "ingest":
         from colloid.adapters.lake import open_lake
 
-        swe.ingest(Path(args.out), open_lake(args.lake))
+        probe_path = Path(args.probe_out or f"docs/results/swebench/contamination_{'api' if args.provider == 'openrouter' else 'local'}.json")
+        if probe_path.exists():
+            probes = json.loads(probe_path.read_text())
+        else:
+            probes = None
+            print(f"note: no probe report at {probe_path}; ingesting without memorisation verdicts (run `colloid swebench probe` first)")
+        swe.ingest(Path(args.out), open_lake(args.lake), probes=probes)
         return 0
     if args.action == "probe":  # post-hoc memorisation probes (ADR 0011 addendum); reads gold, after grading only
         from colloid_evaluator.swebench import contamination

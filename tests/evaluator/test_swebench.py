@@ -72,3 +72,21 @@ def test_resolved_fixes_enter_the_lake_and_unresolved_ones_do_not(tmp_path: Path
     prog = next(r for r in records.values() if r.kind == "program")
     assert prog.content["target"] == "swebench:django/django" and prog.content["effects"]["resolved"] is True
     assert swe.ingest(run, lake, recorded_at="2026-10-02T00:00:01.000000Z") == 0  # idempotent
+
+
+def test_ingested_programs_carry_the_memorisation_verdict_of_the_solving_model(tmp_path: Path):
+    run = tmp_path / "swebench-run"
+    run.mkdir()
+    sub = {"snippet": "py:django/contrib/auth/validators.py::ASCIIUsernameValidator.<L7-9>", "model": "qwen2.5-coder-7b",
+           "template": "fix", "diff": PATCH, "votes": 0, "changed_lines": 2, "new_source": "x\n", "prompt_hash": "p", "response_hash": "r"}
+    (run / "results.jsonl").write_text(json.dumps({"instance_id": "django__django-11099", "repo": "django/django", "base_commit": "abc",
+                                                   "submission": sub, "grade": {"resolved": True}}) + "\n")
+    probe = {"instance_id": "django__django-11099", "path_hit": True, "path_mentioned_in_issue": False, "task_id_overlap": 0.7,
+             "task_id_exact_lines": 1, "verdict": "suspect"}
+    probes = {"probes": [{**probe, "model": "qwen2.5-coder-3b", "verdict": "clean"}, {**probe, "model": "qwen2.5-coder-7b"}],
+              "submissions": [{"instance_id": "django__django-11099", "overlap5": 1.0, "identical_added_lines": True}]}
+    lake = DirectoryLake(tmp_path / "lake")
+    assert swe.ingest(run, lake, probes=probes, recorded_at="2026-10-02T00:00:00.000000Z") == 2
+    prog = next(r for r in lake.records().values() if r.kind == "program")
+    mp = prog.content["memorisation_probe"]
+    assert mp["verdict"] == "suspect" and mp["task_id_exact_lines"] == 1 and mp["submission_identical_to_gold"] is True

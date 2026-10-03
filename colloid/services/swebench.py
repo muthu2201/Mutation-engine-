@@ -278,9 +278,16 @@ def run(sample: Sequence[str], tasks: dict[str, dict[str, Any]], out_dir: Path, 
 
 
 # ---------------------------------------------------------------------- the lake
-def ingest(out_dir: Path, lake: LakeStore, *, recorded_at: str | None = None, log: Callable[[str], None] = print) -> int:
+def ingest(out_dir: Path, lake: LakeStore, *, probes: dict[str, Any] | None = None, recorded_at: str | None = None,
+           log: Callable[[str], None] = print) -> int:
     """Resolved fixes become lake records: one gene (the rewritten snippet at its locus) and one
-    program carrying the official grade as evidence. Unresolved submissions stay out."""
+    program carrying the official grade as evidence. Unresolved submissions stay out.
+
+    ``probes`` is a ``colloid swebench probe`` report (ADR 0011 addendum). When given, each
+    program also records the memorisation verdict for the model that produced the fix, so a later
+    run that reuses the gene knows whether it may have been recalled rather than found."""
+    verdicts = {(p["instance_id"], p["model"]): p for p in (probes or {}).get("probes", [])}
+    overlaps = {o["instance_id"]: o for o in (probes or {}).get("submissions", [])}
     existing, entries = lake.records(), lake.entries()
     verify_chain(entries, existing)
     order: list[Record] = []
@@ -308,6 +315,12 @@ def ingest(out_dir: Path, lake: LakeStore, *, recorded_at: str | None = None, lo
             "attribution": [{"gene": gene.id, "method": "official_grade", "value": 1.0, "ci": [1.0, 1.0]}],
             "platform": {"image": r.get("image_digest")}, "run": out_dir.name,
         })
+        if probes is not None:
+            pr, ov = verdicts.get((r["instance_id"], sub["model"])), overlaps.get(r["instance_id"], {})
+            program = Record.make("program", {**program.content, "memorisation_probe": {
+                "rule": "ADR 0011 addendum", "verdict": pr["verdict"] if pr else "not probed",
+                **({k: pr[k] for k in ("path_hit", "path_mentioned_in_issue", "task_id_overlap", "task_id_exact_lines")} if pr else {}),
+                "submission_overlap5": ov.get("overlap5"), "submission_identical_to_gold": ov.get("identical_added_lines")}})
         order += [rec for rec in (gene, program) if rec.id not in existing]
     new_entries = append(entries, order, recorded_at or utc_now())
     if new_entries:
