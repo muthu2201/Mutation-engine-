@@ -1,6 +1,6 @@
 {
  "schema": "colloid.mutation/1",
- "head": "83040daa18525bd369aa41290194fdaedc90a159bd3f5cc6c94eaaa29ac9b1b2",
- "entries": 40,
- "last_message": "lake: +8 records from run stackzero-go-primed (seq 32..39)"
+ "head": "a7da3c1896df823f2a686bfe5088816629266d3b2f0b23c8aca68be3471a4bad",
+ "entries": 42,
+ "last_message": "lake: +2 CRL rule record(s)"
 }

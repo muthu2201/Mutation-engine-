@@ -1,0 +1,31 @@
+{
+ "content": {
+  "evidence": [
+   {
+    "ci_pct": [
+     9.1,
+     14.59
+    ],
+    "gain_pct": 11.89,
+    "record": "d4aebbf6e936a0ef5e78306238f6f4ae07da94532626f9d72368bf38f5bd4ed4",
+    "target": "stackzero-go"
+   },
+   {
+    "ci_pct": [
+     1.11,
+     13.44
+    ],
+    "gain_pct": 7.48,
+    "record": "fc1bc599367a2d44d8d3bfa62fad3c9e91a28c58210e7ae4a088a8aeedb770b9",
+    "target": "stackzero"
+   }
+  ],
+  "name": "equality-filter-sorted-index",
+  "rule_id": "01b5f7cdda21f38ca62b6e022d7543d16f3e4e774d2ebb9f75b87cfaa353cd6d",
+  "text": "rule equality-filter-sorted-index v1 {\n  doc \"Index the equality filter together with the sort order the read asks for, so the index returns rows already ordered\"\n  when query filters $table.$column = ? and orders by $table.$sort\n  propose index $table ($column, $sort)\n  unless covered\n  evidence lake d4aebbf6e936a0ef5e78306238f6f4ae07da94532626f9d72368bf38f5bd4ed4 gain 11.89% ci [9.1%, 14.59%] on stackzero-go\n  evidence lake fc1bc599367a2d44d8d3bfa62fad3c9e91a28c58210e7ae4a088a8aeedb770b9 gain 7.48% ci [1.11%, 13.44%] on stackzero\n}\n",
+  "version": 1
+ },
+ "id": "5ac4fcf100a4231f8c9b98afa7560ec027efcb86c6e2e691d78087d56f919403",
+ "kind": "rule",
+ "schema": "colloid.mutation/1"
+}
